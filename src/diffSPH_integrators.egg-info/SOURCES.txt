@@ -8,7 +8,9 @@ src/integrators/butcher.py
 src/integrators/enums.py
 src/integrators/euler.py
 src/integrators/integration.py
+src/integrators/protocol.py
 src/integrators/ruth.py
+src/integrators/specs.py
 src/integrators/tvd.py
 src/integrators/util.py
 src/integrators/verlet.py

@@ -14,33 +14,56 @@ class butcherTableau(NamedTuple):
 
 
 def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
+    verbose = True if 'verbose' in kwargs and kwargs['verbose'] else False
+
     priorStep = kwargs.pop('priorStep', None)
+    if verbose:
+        print(f"[Integrator] Running Runge-Kutta with dt={dt:.4f} and scheme={butcherTableau}")
     initializeSystem(initialState, dt, *args, **kwargs)
     with record_function("[Integration] Butcher"):
+        if verbose:
+            print(f"[Integrator] Butcher: Starting with initial state at t={initialState.t:.4f}")
         currentState = initialState.initializeNewState(*args, **kwargs)
+        if verbose:
+            if priorStep is not None:
+                print(f"[Integrator] Using prior step as k0")
+            else:
+                print(f"[Integrator] Running first step to compute k0")
         k0, r0 = updateStep(initialState, currentState, dt, f, *args, **kwargs) if priorStep is None else priorStep
         ks = [k0]
         rs = [r0]
         for ic, c in enumerate(butcherTableau.c[1:]):
             with record_function(f"[Integration] Butcher: k{ic+1} prep"):
                 current_as = butcherTableau.a[ic+1,:ic+1]
+                if verbose:
+                    print(f"[Integrator] Preparing k{ic+1} with c={c:.4f} and a={current_as}")
                 currentState = initialState.initializeNewState(*args, **kwargs)
                 for i, a in enumerate(current_as):
                     if a != 0:
+                        if verbose:
+                            print(f"[Integrator] Updating state for k{ic+1} with a={a:.4f} and dt={dt:.4f} using k{i}")
                         currentState = updateStateEuler(currentState, ks[i], a * dt, copyState = False, **kwargs)
                 currentState.t = initialState.t + c * dt
             with record_function(f"[Integration] Butcher: k{ic+1}"):
+                if verbose:
+                    print(f"[Integrator] Computing k{ic+1} with c={c:.4f} and a={current_as}")
                 k, r = updateStep(initialState, currentState, dt, f, *args, **kwargs)
                 ks.append(k)
                 rs.append(r)
         
         with record_function("[Integration] Butcher: Update"):
             if not isinstance(butcherTableau.b, tuple):
+                if verbose:
+                    print(f"[Integrator] Updating state with b={butcherTableau.b} and dt={dt:.4f}")
                 new_state = initialState.initializeNewState(*args, **kwargs)
                 for i, b in enumerate(butcherTableau.b):
                     if b != 0:
+                        if verbose:
+                            print(f"[Integrator] Updating state with b={b:.4f} and dt={dt:.4f} using k{i}")
                         new_state = updateStateEuler(new_state, ks[i], b * dt, **kwargs)
                 new_state.t = initialState.t + dt
+                if verbose:                    
+                    print(f"[Integrator] Finalizing state at t={new_state.t:.4f} with b={butcherTableau.b} and dt={dt:.4f}")
                 finalizeSystem(new_state, initialState, dt, rs, ks, butcherTableau.b, *args, **kwargs)
                 if any([t is not None for t in rs]):
                     return new_state, rs, ks
@@ -48,13 +71,20 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
             else:
                 new_states = []
                 for b_ in butcherTableau.b:
+                    if verbose:
+                        print(f"[Integrator] Updating state with b={butcherTableau.b} and dt={dt:.4f} [substep with b={b_}]")
+                    new_state = initialState.initializeNewState(*args, **kwargs)
                     new_state = updateStateEuler(new_state, ks[i], b * dt, **kwargs)
                     for i, b in enumerate(b_):
                         if b != 0:
+                            if verbose:
+                                print(f"[Integrator] Updating state with b={b:.4f} and dt={dt:.4f} using k{i} [substep with b={b_}]")
                             new_state = updateStateEuler(new_state, ks[i], b * dt, **kwargs)
                     new_state.t = initialState.t + dt
                     new_states.append(new_state)
                 for new_state in new_states:
+                    if verbose:                    
+                        print(f"[Integrator] Finalizing state at t={new_state.t:.4f} with b={butcherTableau.b} and dt={dt:.4f}")
                     finalizeSystem(new_state, initialState, dt, rs, ks, b_, *args, **kwargs)
                 if any([t is not None for t in rs]):
                     return new_states, rs, ks

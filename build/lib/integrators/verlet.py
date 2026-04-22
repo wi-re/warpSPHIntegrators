@@ -3,7 +3,8 @@ from .util import updateStateEuler, updateStateSemiImplicitEuler
 import torch
 import copy
 import numpy as np
-from .util import split_return, preprocessSystem, postprocessSystem, finalizeSystem, updateStep, initializeSystem
+from .util import applyPositionUpdate, applyQuantityUpdate, applyStateUpdate, applyVelocityUpdate, split_return, preprocessSystem, postprocessSystem, finalizeSystem, updateStep, initializeSystem
+from .specs import blend_state, explicit_step, semi_implicit_position_step, verlet_position_step
 from torch.profiler import record_function
 
 
@@ -19,7 +20,11 @@ def leapFrog(initialState, dt, f, *args, **kwargs):
             # k0, r0 = updateStep(initialState, currentState, dt/2, f, *args, **kwargs)
 
             halfState = initialState.initializeNewState(*args, **kwargs)
-            halfState.integratePosition(k0, dt, verletScale=0.5 * dt**2)
+            applyPositionUpdate(
+                halfState,
+                k0,
+                verlet_position_step(dt, update_velocity_dt=0.5 * dt**2),
+            )
             halfState.t = initialState.t + 0.5 * dt
 
         with record_function("[Integration] Leap Frog: k1"):
@@ -27,9 +32,13 @@ def leapFrog(initialState, dt, f, *args, **kwargs):
     
         with record_function("[Integration] Leap Frog: Update"):
             finalState = initialState.initializeNewState(*args, **kwargs)
-            finalState.integratePosition(k0, dt, verletScale=0.5 * dt**2)
-            finalState.integrateVelocity([k0, k1], [0.5 * dt, 0.5 * dt])
-            finalState.integrateQuantities([k0, k1], [0.5 * dt, 0.5 * dt])
+            applyPositionUpdate(
+                finalState,
+                k0,
+                verlet_position_step(dt, update_velocity_dt=0.5 * dt**2),
+            )
+            applyVelocityUpdate(finalState, [k0, k1], explicit_step([0.5 * dt, 0.5 * dt]))
+            applyQuantityUpdate(finalState, [k0, k1], explicit_step([0.5 * dt, 0.5 * dt]))
             finalState.t = initialState.t + dt
             
             rs = [r0, r1]
@@ -52,20 +61,20 @@ def symplecticEuler(initialState, dt, f, *args, **kwargs):
             k0, r0 = updateStep(initialState, currentState, dt/2, f, *args, **kwargs) if priorStep is None else priorStep
             # k0, r0 = updateStep(initialState, currentState, dt/2, f, *args, **kwargs)
             halfState = initialState.initializeNewState(*args, **kwargs)
-            halfState.integrate(k0, dt / 2, **kwargs)
+            applyStateUpdate(halfState, k0, explicit_step(dt / 2), **kwargs)
 
         with record_function("[Integration] Symplectic Euler: k1"):
             k1, r1 = updateStep(initialState, halfState, dt / 2, f, *args, **kwargs)
 
         with record_function("[Integration] Symplectic Euler: Update"):
             finalState = initialState.initializeNewState(*args, **kwargs)
-            finalState.integrateVelocity(k1, dt, **kwargs)
-            finalState.integratePosition(k0, dt / 2, semiImplicitScale = dt / 2, **kwargs)
+            applyVelocityUpdate(finalState, k1, explicit_step(dt), **kwargs)
+            applyPositionUpdate(finalState, k0, semi_implicit_position_step(dt / 2), **kwargs)
             if hasattr(finalState, 'integrateDensity'):
                 finalState.integrateDensity(k1, dt, **kwargs)
-                finalState.integrateQuantities(k1, dt, densitySwitch = True, **kwargs)
+                applyQuantityUpdate(finalState, k1, explicit_step(dt), densitySwitch = True, **kwargs)
             else:
-                finalState.integrateQuantities(k1, dt, **kwargs)
+                applyQuantityUpdate(finalState, k1, explicit_step(dt), **kwargs)
             finalState.t = initialState.t + dt
             
             rs = [r0, r1]
@@ -96,8 +105,8 @@ def velocityVerlet(initialState, dt, f, *args, **kwargs):
             k0, r0 = updateStep(initialState, currentState, dt/2, f, *args, **kwargs) if priorStep is None else priorStep
             # k0, r0 = updateStep(initialState, currentState, dt/2, f, *args, **kwargs)
             halfState = initialState.initializeNewState(*args, **kwargs)
-            halfState.integrateVelocity(k0, dt / 2)
-            halfState.integratePosition(k0, 0.0, semiImplicitScale = dt)
+            applyVelocityUpdate(halfState, k0, explicit_step(dt / 2))
+            applyPositionUpdate(halfState, k0, semi_implicit_position_step(dt))
             halfState.t = initialState.t + dt / 2
 
         with record_function("[Integration] Velocity Verlet: k1"):
@@ -105,8 +114,8 @@ def velocityVerlet(initialState, dt, f, *args, **kwargs):
 
         with record_function("[Integration] Velocity Verlet: Update"):
             finalState = halfState.initializeNewState(*args, **kwargs)
-            finalState.integrateVelocity(k1, dt / 2)
-            finalState.integrateQuantities(k1, dt)
+            applyVelocityUpdate(finalState, k1, explicit_step(dt / 2))
+            applyQuantityUpdate(finalState, k1, explicit_step(dt))
             
             finalState.t = initialState.t + dt
             rs = [r0, r1]

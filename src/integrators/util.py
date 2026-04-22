@@ -2,23 +2,108 @@ import copy
 import torch
 from typing import NamedTuple, Optional, List, Union
 
+from integrators.fields import get_tagged_attr
+
+from .specs import (
+    ComponentUpdateSpec,
+    PositionUpdateSpec,
+    StateBlend,
+    blend_state,
+    explicit_step,
+    semi_implicit_position_step,
+    verlet_position_step,
+)
+
 def updateStateEuler(systemState_, systemUpdate, dt, copyState = True, **kwargs):
     if copyState:
         systemState = systemState_.initializeNewState(**kwargs)
     else:
         systemState = systemState_
-    return systemState.integrate(systemUpdate, dt, **kwargs)
+    return applyStateUpdate(systemState, systemUpdate, explicit_step(dt), **kwargs)
 
 def updateStateSemiImplicitEuler(systemState_, systemUpdate, dt, copyState = True, **kwargs):
     if copyState:
         systemState = systemState_.initializeNewState(**kwargs)
     else:
         systemState = systemState_
-    systemState.integrateVelocity(systemUpdate, dt, semiImplicit = True, **kwargs)
-    systemState.integratePosition(systemUpdate, 0., semiImplicitScale=dt, **kwargs)
-    systemState.integrateQuantities(systemUpdate, dt, **kwargs)
+    applyVelocityUpdate(systemState, systemUpdate, explicit_step(dt), semiImplicit = True, **kwargs)
+    applyPositionUpdate(systemState, systemUpdate, semi_implicit_position_step(dt), **kwargs)
+    applyQuantityUpdate(systemState, systemUpdate, explicit_step(dt), **kwargs)
     systemState.t = systemState.t + dt
     return systemState
+
+
+def _normalize_blend(blend: Optional[StateBlend]) -> StateBlend:
+    if blend is None:
+        return StateBlend()
+    return blend
+
+
+def applyStateUpdate(systemState, systemUpdate, spec: ComponentUpdateSpec, **kwargs):
+    if hasattr(systemState, 'apply_state_update'):
+        return systemState.apply_state_update(systemUpdate, spec, **kwargs)
+
+    blend = _normalize_blend(spec.blend)
+    return systemState.integrate(
+        systemUpdate,
+        spec.derivative_dt,
+        selfScale=blend.self_scale,
+        referenceState=blend.reference_state,
+        referenceWeight=blend.reference_weight,
+        **kwargs,
+    )
+
+
+def applyPositionUpdate(systemState, systemUpdate, spec: PositionUpdateSpec, **kwargs):
+    if hasattr(systemState, 'apply_position_update'):
+        return systemState.apply_position_update(systemUpdate, spec, **kwargs)
+
+    blend = _normalize_blend(spec.blend)
+    legacy_kwargs = {}
+    if spec.current_velocity_dt is not None:
+        legacy_kwargs['semiImplicitScale'] = spec.current_velocity_dt
+    if spec.update_velocity_dt is not None:
+        legacy_kwargs['verletScale'] = spec.update_velocity_dt
+
+    return systemState.integratePosition(
+        systemUpdate,
+        spec.derivative_dt,
+        selfScale=blend.self_scale,
+        referenceState=blend.reference_state,
+        referenceWeight=blend.reference_weight,
+        **legacy_kwargs,
+        **kwargs,
+    )
+
+
+def applyVelocityUpdate(systemState, systemUpdate, spec: ComponentUpdateSpec, **kwargs):
+    if hasattr(systemState, 'apply_velocity_update'):
+        return systemState.apply_velocity_update(systemUpdate, spec, **kwargs)
+
+    blend = _normalize_blend(spec.blend)
+    return systemState.integrateVelocity(
+        systemUpdate,
+        spec.derivative_dt,
+        selfScale=blend.self_scale,
+        referenceState=blend.reference_state,
+        referenceWeight=blend.reference_weight,
+        **kwargs,
+    )
+
+
+def applyQuantityUpdate(systemState, systemUpdate, spec: ComponentUpdateSpec, **kwargs):
+    if hasattr(systemState, 'apply_quantity_update'):
+        return systemState.apply_quantity_update(systemUpdate, spec, **kwargs)
+
+    blend = _normalize_blend(spec.blend)
+    return systemState.integrateQuantities(
+        systemUpdate,
+        spec.derivative_dt,
+        selfScale=blend.self_scale,
+        referenceState=blend.reference_state,
+        referenceWeight=blend.reference_weight,
+        **kwargs,
+    )
 
 
 from enum import Enum
@@ -127,3 +212,6 @@ def updateStep(initialState, currentState, dt, f, *args, **kwargs):
         k, r = split_return(f(currentState, dt, *args, **kwargs))
         postprocessSystem(initialState, currentState, dt, r, *args, **kwargs)
         return k, r
+    
+
+# from integrators.integration import *

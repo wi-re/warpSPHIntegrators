@@ -1,4 +1,17 @@
 from .util import IntegrationScheme, updateStateEuler, updateStateSemiImplicitEuler
+from .util import applyStateUpdate, applyPositionUpdate, applyVelocityUpdate, applyQuantityUpdate
+from .specs import (
+    StateBlend,
+    ComponentUpdateSpec,
+    PositionUpdateSpec,
+    StepEvaluation,
+    IntegrationResult,
+    blend_state,
+    explicit_step,
+    semi_implicit_position_step,
+    verlet_position_step,
+)
+from .protocol import IntegrationSystem, BaseIntegrationSystem
 from .euler import integrateExplicitEuler, integrateSemiImplicitEuler
 from .butcher import forwardEuler, RungeKutta2, midPoint, heunsMethod, ralston2nd, RungeKutta3, heunsMethod3rd, ralston3rd, Wray3rd, SSPRK3, RungeKutta4, RungeKutta4alt, Nystrom5th, EPEC, EPECmodified
 from .verlet import leapFrog, symplecticEuler, velocityVerlet
