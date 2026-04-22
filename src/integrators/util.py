@@ -125,8 +125,8 @@ class IntegrationScheme(NamedTuple):
     dissipation: bool = False
     nonLagrangian: bool = False
     
-    def __call__(self, state, dt, f):
-        return self.function(state, dt, f)
+    def __call__(self, state, dt, f, *args, **kwargs):
+        return self.function(state, dt, f, *args, **kwargs)
     
     def __str__(self):
         return self.name

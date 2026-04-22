@@ -4,7 +4,7 @@ import torch
 import copy
 import numpy as np
 from .util import applyPositionUpdate, applyQuantityUpdate, applyStateUpdate, applyVelocityUpdate, split_return, preprocessSystem, postprocessSystem, finalizeSystem, updateStep, initializeSystem
-from .specs import blend_state, explicit_step, semi_implicit_position_step, verlet_position_step
+from .specs import blend_state, explicit_step, semi_implicit_position_step, verlet_position_step, IntegrationResult, StageResult
 from torch.profiler import record_function
 
 
@@ -43,10 +43,8 @@ def leapFrog(initialState, dt, f, *args, **kwargs):
             
             rs = [r0, r1]
             ks = [k0, k1]
-            finalizeSystem(finalState, dt, rs, ks, [0.5, 0.5], *args, **kwargs)
-            if any([t is not None for t in rs]):
-                return finalState, rs, ks
-    return finalState, ks
+            finalizeSystem(finalState, initialState, dt, rs, ks, [0.5, 0.5], *args, **kwargs)
+            return IntegrationResult(state=finalState, stages=[StageResult(aux=r, update=k) for r, k in zip(rs, ks)])
 
 # Also known as kick-drift-kick form and position verlet
 # see 'Improvements in SPH method by means of interparticle
@@ -80,9 +78,7 @@ def symplecticEuler(initialState, dt, f, *args, **kwargs):
             rs = [r0, r1]
             ks = [k0, k1]
             finalizeSystem(finalState, initialState, dt, rs, ks, [0,1], *args, **kwargs)
-            if any([t is not None for t in rs]):
-                return finalState, rs, ks
-    return finalState, ks
+            return IntegrationResult(state=finalState, stages=[StageResult(aux=r, update=k) for r, k in zip(rs, ks)])
 
     # finalVelocity = state.velocity + dt * k1.velocity
     # finalPosition = state.position + dt * (k0.position + finalVelocity) / 2
@@ -121,9 +117,7 @@ def velocityVerlet(initialState, dt, f, *args, **kwargs):
             rs = [r0, r1]
             ks = [k0, k1]
             finalizeSystem(finalState, initialState, dt, rs, ks, [1/2, 1/2], *args, **kwargs)
-            if any([t is not None for t in rs]):
-                return finalState, rs, ks
-    return finalState, ks
+            return IntegrationResult(state=finalState, stages=[StageResult(aux=r, update=k) for r, k in zip(rs, ks)])
     
     k0 = f(state)
     halfStateVelocity = state.velocity + k0.velocity * dt / 2

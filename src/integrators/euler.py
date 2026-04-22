@@ -2,6 +2,7 @@ from .util import updateStateEuler, updateStateSemiImplicitEuler
 import torch
 import copy
 from .util import split_return, preprocessSystem, postprocessSystem, finalizeSystem, updateStep, initializeSystem
+from .specs import IntegrationResult, StageResult
 from torch.profiler import record_function
 import warnings
 
@@ -17,7 +18,7 @@ def integrateExplicitEuler(initialState, dt, f, *args, **kwargs):
         with record_function("[Integration] Explicit Euler: Update"):
             newState = updateStateEuler(initialState, k1, dt, **kwargs)
             finalizeSystem(newState, initialState, dt, [r1], [k1], [1], *args, **kwargs)
-        return (newState, [k1] )if r1 is None else (newState, [r1], [k1])
+        return IntegrationResult(state=newState, stages=[StageResult(aux=r1, update=k1)])
 
 def integrateSemiImplicitEuler(initialState, dt, f, *args, **kwargs):
     priorStep = kwargs.pop('priorStep', None)
@@ -31,4 +32,4 @@ def integrateSemiImplicitEuler(initialState, dt, f, *args, **kwargs):
         with record_function("[Integration] Semi-Implicit Euler: Update"):
             newState = updateStateSemiImplicitEuler(initialState, k1, dt, **kwargs)
             finalizeSystem(newState, initialState, dt, [r1], [k1], [1], *args, **kwargs)
-        return (newState, [k1] )if r1 is None else (newState, [r1], [k1])
+        return IntegrationResult(state=newState, stages=[StageResult(aux=r1, update=k1)])

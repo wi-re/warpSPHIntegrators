@@ -4,6 +4,7 @@ from .specs import (
     StateBlend,
     ComponentUpdateSpec,
     PositionUpdateSpec,
+    StageResult,
     StepEvaluation,
     IntegrationResult,
     blend_state,

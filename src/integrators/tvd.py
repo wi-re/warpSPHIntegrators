@@ -7,7 +7,7 @@ from .util import (
     postprocessSystem,
     finalizeSystem,
 )
-from .specs import blend_state, explicit_step
+from .specs import blend_state, explicit_step, IntegrationResult, StageResult
 import torch
 import copy
 import numpy as np
@@ -57,9 +57,7 @@ def TVDRK3(state, dt, f, *args, **kwargs):
             rs = [r0, r_1_3, r_2_3]
             ks = [k0, k_1_3, k_2_3]
             finalizeSystem(finalState, state, dt, rs, ks, *args, **kwargs)
-    if any([t is not None for t in rs]):
-        return finalState, rs, ks
-    return finalState, ks
+    return IntegrationResult(state=finalState, stages=[StageResult(aux=r, update=k) for r, k in zip(rs, ks)])
     
     # return state._replace(
     #     position = finalPosition,
@@ -93,9 +91,7 @@ def TVDRK2(state, dt, f, *args, **kwargs):
             rs = [r0, r1]
             ks = [k0, k1]
             finalizeSystem(finalState, state, dt, rs, ks, [], *args, **kwargs)
-        if any([t is not None for t in rs]):
-            return finalState, rs, ks
-        return finalState, ks
+        return IntegrationResult(state=finalState, stages=[StageResult(aux=r, update=k) for r, k in zip(rs, ks)])
     
     # finalPosition = 1/2 * state.position + 1/2 * (state1.position + dt * k1.position)
     # finalVelocity = 1/2 * state.velocity + 1/2 * (state1.velocity + dt * k1.velocity)

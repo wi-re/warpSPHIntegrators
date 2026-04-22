@@ -7,7 +7,7 @@ from .util import (
     postprocessSystem,
     finalizeSystem,
 )
-from .specs import semi_implicit_position_step, explicit_step
+from .specs import semi_implicit_position_step, explicit_step, IntegrationResult, StageResult
 import torch
 import copy
 from torch.profiler import record_function
@@ -70,12 +70,9 @@ def PEFRL(state, dt, f, *args, **kwargs):
             rs = [r0, r1, r2, r3]
             ks = [k0, k1, k2, k3]
             finalizeSystem(finalState, state, dt, rs, ks, [], *args, **kwargs)
-    if any([t is not None for t in rs]):
-        return finalState, rs, ks
-    return finalState, ks
+    return IntegrationResult(state=finalState, stages=[StageResult(aux=r, update=k) for r, k in zip(rs, ks)])
     
     # r4 = r3 + chi * dt * v3
-    # k3 = f(state3._replace(position = r4, t = state3.t + chi * dt))
     
     # finalVelocity = v3 + (1 - 2 * lamda) * dt / 2 * k3.velocity
     # finalPosition = r4 + xi * dt * finalVelocity
@@ -140,9 +137,7 @@ def VEFRL(state, dt, f, *args, **kwargs):
             rs = [r0, r1, r2, r3, r4]
             ks = [k0, k1, k2, k3, k4]
             finalizeSystem(finalState, state, dt, rs, ks, [], *args, **kwargs)
-    if any([t is not None for t in rs]):
-        return finalState, rs, ks
-    return finalState, ks
+    return IntegrationResult(state=finalState, stages=[StageResult(aux=r, update=k) for r, k in zip(rs, ks)])
     
     
     # finalVelocity = v4 + xi * dt * k4.velocity

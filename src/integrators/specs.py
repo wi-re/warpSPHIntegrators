@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Union, NamedTuple
 
 
 StepSize = Union[float, List[float]]
@@ -32,6 +32,12 @@ class PositionUpdateSpec:
             )
 
 
+class StageResult(NamedTuple):
+    """Result from a single RK stage: paired auxiliary value and update/derivative."""
+    aux: Any = None
+    update: Any = None
+
+
 @dataclass(frozen=True)
 class StepEvaluation:
     update: Any
@@ -40,8 +46,16 @@ class StepEvaluation:
 
 @dataclass(frozen=True)
 class IntegrationResult:
+    """Result from a full integration step.
+    
+    Attributes:
+        state: The final integrated state after the step.
+        stages: List of StageResult, one per RK stage. Each contains the auxiliary
+                return value (aux) and the k-value (update) from that stage.
+                Access the last stage with stages[-1] to get (aux, k) for priorStep.
+    """
     state: Any
-    evaluations: List[StepEvaluation]
+    stages: List[StageResult] = field(default_factory=list)
 
 
 def blend_state(

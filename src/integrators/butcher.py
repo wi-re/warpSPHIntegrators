@@ -4,6 +4,7 @@ import torch
 import copy
 import numpy as np
 from .util import split_return, preprocessSystem, postprocessSystem, finalizeSystem, updateStep, initializeSystem
+from .specs import IntegrationResult, StageResult
 from torch.profiler import record_function
 
 
@@ -65,16 +66,13 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
                 if verbose:                    
                     print(f"[Integrator] Finalizing state at t={new_state.t:.4f} with b={butcherTableau.b} and dt={dt:.4f}")
                 finalizeSystem(new_state, initialState, dt, rs, ks, butcherTableau.b, *args, **kwargs)
-                if any([t is not None for t in rs]):
-                    return new_state, rs, ks
-                return new_state, ks
+                return IntegrationResult(state=new_state, stages=[StageResult(aux=r, update=k) for r, k in zip(rs, ks)])
             else:
                 new_states = []
                 for b_ in butcherTableau.b:
                     if verbose:
                         print(f"[Integrator] Updating state with b={butcherTableau.b} and dt={dt:.4f} [substep with b={b_}]")
                     new_state = initialState.initializeNewState(*args, **kwargs)
-                    new_state = updateStateEuler(new_state, ks[i], b * dt, **kwargs)
                     for i, b in enumerate(b_):
                         if b != 0:
                             if verbose:
@@ -86,10 +84,8 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
                     if verbose:                    
                         print(f"[Integrator] Finalizing state at t={new_state.t:.4f} with b={butcherTableau.b} and dt={dt:.4f}")
                     finalizeSystem(new_state, initialState, dt, rs, ks, b_, *args, **kwargs)
-                if any([t is not None for t in rs]):
-                    return new_states, rs, ks
-                else:
-                    return new_states, ks
+                # For embedded schemes, return the last state and all stages
+                return IntegrationResult(state=new_states[-1], stages=[StageResult(aux=r, update=k) for r, k in zip(rs, ks)])
 
 
 def getButcherTableau(scheme, alpha = 1/2, beta = 2/3):
