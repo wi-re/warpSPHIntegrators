@@ -197,7 +197,13 @@ class IntegrationSystem(Protocol):
         spec: ComponentUpdateSpec,
         **kwargs: Any,
     ) -> "IntegrationSystem":
-        """Apply a combined position + velocity + quantity update from a typed spec."""
+        """Apply a combined position + velocity + quantity update from a typed spec.
+        
+        **IMPORTANT:** This method must NOT modify the system's `t` (time) field.
+        Time management is exclusively handled by the integrator. User-defined
+        `apply_state_update` implementations must only update state variables,
+        not time.
+        """
         ...
 
     def apply_position_update(

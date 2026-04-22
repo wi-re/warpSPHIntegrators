@@ -30,6 +30,11 @@ class PositionUpdateSpec:
             raise ValueError(
                 "PositionUpdateSpec cannot combine current_velocity_dt and update_velocity_dt in compatibility mode"
             )
+        if self.current_velocity_dt is not None and self.derivative_dt != 0.0:
+            raise ValueError(
+                f"PositionUpdateSpec with current_velocity_dt (semi-implicit mode) requires derivative_dt=0.0, "
+                f"but got {self.derivative_dt}. Use semi_implicit_position_step(dt) to construct this spec."
+            )
 
 
 class StageResult(NamedTuple):

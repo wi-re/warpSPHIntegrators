@@ -145,6 +145,22 @@ def integrateQ(q : torch.Tensor, dqdt : Union[torch.Tensor, List[torch.Tensor]],
                 referenceWeight: Optional[float] = None,
                 integrateSpecies: Optional[List[int]] = None,
                 species: Optional[torch.Tensor] = None):
+    """Legacy direct integration function. DEPRECATED.
+    
+    This function is no longer used by the main integrator library, which now uses
+    the typed `apply_*_update` protocol with `ComponentUpdateSpec`, `PositionUpdateSpec`,
+    and state helpers in `fields.py`.
+    
+    Use the new `apply_component_update` helpers instead, or migrate your system to
+    use the typed protocol with proper state tagging.
+    """
+    import warnings
+    warnings.warn(
+        "integrateQ is deprecated and no longer used by the integrator library. "
+        "Use the typed apply_*_update protocol with ComponentUpdateSpec instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
     if integrateSpecies is not None:
         mask = torch.zeros(q.shape[0], device=q.device, dtype=torch.bool)
         for i in integrateSpecies:

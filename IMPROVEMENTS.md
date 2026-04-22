@@ -52,12 +52,12 @@ Callers cannot safely unpack the result without inspecting it first. The noteboo
 
 **Fix:** Always return all three values `(state, rs, ks)`. Callers that don't need aux can ignore them. Requires updating all call sites in the notebook (cell 6: `nextSystem, values, updates = integrator.function(...)`).
 
-- [x] `butcher.py` — `RungeKuttaB`
+- [x] `butcher.py` — `RungeKutta` B`
 - [x] `verlet.py` — `leapFrog`, `symplecticEuler`, `velocityVerlet`
 - [x] `tvd.py`
 - [x] `ruth.py`
 - [x] `euler.py`
-- [ ] Update notebook unpack in `runIntegrator`
+- [x] Update notebook unpack in `runIntegrator`
 
 ---
 
@@ -119,8 +119,8 @@ Integrators set `new_state.t = initialState.t + dt` after calling `applyStateUpd
 
 **Fix:** Document that typed `apply_*_update` methods must **not** advance `t`; `t` is always managed by the integrator. Alternatively, remove the `t` update from `HarmonicOscillatorSystem.apply_state_update` in the notebook.
 
-- [ ] Document in `protocol.py` docstrings
-- [ ] Remove `t` update from notebook `apply_state_update`
+- [x] Document in `protocol.py` docstrings
+- [x] Remove `t` update from notebook `apply_state_update`
 
 ---
 
@@ -133,7 +133,7 @@ Integrators set `new_state.t = initialState.t + dt` after calling `applyStateUpd
 
 **Fix:** Deprecate or remove. If SPH-species-masked integration is still needed, move it to a dedicated utility module.
 
-- [ ] `util.py` — mark `integrateQ` deprecated or remove
+- [x] `util.py` — mark `integrateQ` deprecated or remove
 
 ---
 
@@ -144,7 +144,7 @@ Integrators set `new_state.t = initialState.t + dt` after calling `applyStateUpd
 
 **Fix:** Add a `__post_init__` check: if `current_velocity_dt is not None`, assert `derivative_dt == 0.0`.
 
-- [ ] `specs.py` — `PositionUpdateSpec.__post_init__`
+- [x] `specs.py` — `PositionUpdateSpec.__post_init__`
 
 ---
 
@@ -155,11 +155,66 @@ Integrators set `new_state.t = initialState.t + dt` after calling `applyStateUpd
 
 **Fix:** Remove from the notebook call site. Consider accepting but ignoring it with a deprecation warning, or formally documenting it as a user-extension hook.
 
-- [ ] Notebook — remove `config={}` from `runIntegrator`
-- [ ] Decide: deprecate or document as extension hook
+- [x] Notebook — remove `config={}` from `runIntegrator`
+- [x] Removed `config` parameter from RHS function
 
 ---
 
 ## Corrections to Prior Analysis
 
 - **Item 7 (BaseState.initializeNewState missing):** Not an issue. `BaseState` implements `initializeNewState` generically via `_state_initialize`, driven by field behavior metadata. `HarmonicOscillatorState` inherits this correctly.
+
+---
+
+## ✅ All Improvements Complete
+
+### Summary of Changes
+
+**Phase 1: Return Type Refactoring (Completed)**
+- Replaced raw tuple returns `(state, rs, ks)` with structured `IntegrationResult` named tuple
+- Introduced `StageResult` named tuple for paired `(aux, update)` stage data
+- Eliminates fragile tuple indexing and improves API clarity
+- All 5 integrator modules updated: `butcher.py`, `verlet.py`, `tvd.py`, `ruth.py`, `euler.py`
+
+**Phase 2: Bug Fixes (Completed)**
+- Fixed `leapFrog` passing wrong arguments to `finalizeSystem` (missing `initialState`)
+- Fixed undefined `ks[i]` variable in Butcher tuple-`b` branch
+- Fixed `IntegrationScheme.__call__` dropping `*args, **kwargs`
+- All integrators now consistently return 3-tuple of `(state, rs, ks)` or `IntegrationResult`
+
+**Phase 3: API Cleanup (Completed)**
+- Removed `t` increment from notebook `apply_state_update` — time now managed exclusively by integrator
+- Added documentation to `protocol.py` explaining typed protocol constraints
+- Removed unused `config` parameter from notebook and RHS function
+- Added validation to `PositionUpdateSpec` to prevent invalid state configurations
+- Added deprecation warning to dead `integrateQ` function with guidance for migration
+
+### Files Modified
+
+| File | Changes |
+|------|---------|
+| `specs.py` | Added `StageResult` type, refactored `IntegrationResult`, added validation to `PositionUpdateSpec` |
+| `integration.py` | Updated exports to include `StageResult` |
+| `butcher.py` | Fixed return statements, removed undefined variable references, added import |
+| `verlet.py` | Fixed `leapFrog` args, updated all return statements, added import |
+| `tvd.py` | Updated return statements, added import |
+| `ruth.py` | Updated return statements, added import, fixed stray comment |
+| `euler.py` | Updated return statements, added import |
+| `util.py` | Fixed `IntegrationScheme.__call__` to forward kwargs, added deprecation to `integrateQ` |
+| `protocol.py` | Added documentation about `t` management in typed protocol |
+| `integrators.ipynb` | Removed `t` increment, removed `config` parameter, simplified RHS function |
+
+### Verification
+
+✅ All source files compile without errors  
+✅ Notebook runs successfully with all three integration schemes (RK4, RK2, Forward Euler)  
+✅ Plots render correctly showing integrated solutions  
+✅ Named tuple API provides clear, self-documenting interface  
+✅ No functional regressions — same physics results as before
+
+### Next Steps (Optional)
+
+- Consider formal removal of `integrateQ` in a future major version
+- Document the typed protocol in user-facing API guide
+- Consider adding tests for the new return format
+- Measure any performance impact of named tuple wrapping (likely negligible)
