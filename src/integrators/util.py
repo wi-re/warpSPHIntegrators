@@ -14,6 +14,11 @@ from .specs import (
     verlet_position_step,
 )
 
+
+def verbosePrint(verbose, *args):
+    if verbose:
+        print(*args)
+
 def updateStateEuler(systemState_, systemUpdate, dt, copyState = True, **kwargs):
     if copyState:
         systemState = systemState_.initializeNewState(**kwargs)
