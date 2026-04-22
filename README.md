@@ -242,12 +242,22 @@ See [integrators.ipynb](integrators.ipynb) for the complete interactive example.
 
 **Example Output:**
 
-![Integration schemes comparison: Phase plot and energy evolution](example.png)
+![Integration schemes comparison: Phase plot and energy evolution](images/example.png)
 
 The visualization shows:
 - **Phase Plot (top-left)**: How position and velocity evolve together
 - **Energy (top-right & bottom-right)**: Kinetic, potential, and total energy over time
 - **Position/Velocity Trajectories**: Individual component evolution for each scheme
+
+## Integrator Image Gallery
+
+| Order | Modified Harmonic Oscillator | Integrator Comparison |
+|------:|-------------------------------|-----------------------|
+| 1 | ![Modified harmonic oscillator: order 1 integrators](images/modified_harmonic_oscillator_order_1_integrators.png) | ![Integrator comparison for order 1](images/integrator_comparison_order_1.png) |
+| 2 | ![Modified harmonic oscillator: order 2 integrators](images/modified_harmonic_oscillator_order_2_integrators.png) | ![Integrator comparison for order 2](images/integrator_comparison_order_2.png) |
+| 3 | ![Modified harmonic oscillator: order 3 integrators](images/modified_harmonic_oscillator_order_3_integrators.png) | ![Integrator comparison for order 3](images/integrator_comparison_order_3.png) |
+| 4 | ![Modified harmonic oscillator: order 4 integrators](images/modified_harmonic_oscillator_order_4_integrators.png) | ![Integrator comparison for order 4](images/integrator_comparison_order_4.png) |
+| 5 | ![Modified harmonic oscillator: order 5 integrators](images/modified_harmonic_oscillator_order_5_integrators.png) | ![Integrator comparison for order 5](images/integrator_comparison_order_5.png) |
 
 ## API Reference
 
