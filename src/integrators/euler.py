@@ -17,6 +17,7 @@ def integrateExplicitEuler(initialState, dt, f, *args, **kwargs):
             k1, r1 = updateStep(initialState, currentState, dt, f, *args, **kwargs)
         with record_function("[Integration] Explicit Euler: Update"):
             newState = updateStateEuler(initialState, k1, dt, **kwargs)
+            newState.t = initialState.t + dt
             finalizeSystem(newState, initialState, dt, [r1], [k1], [1], *args, **kwargs)
         return IntegrationResult(state=newState, stages=[StageResult(aux=r1, update=k1)])
 
@@ -31,5 +32,6 @@ def integrateSemiImplicitEuler(initialState, dt, f, *args, **kwargs):
             k1, r1 = updateStep(initialState, currentState, dt, f, *args, **kwargs)
         with record_function("[Integration] Semi-Implicit Euler: Update"):
             newState = updateStateSemiImplicitEuler(initialState, k1, dt, **kwargs)
+            newState.t = initialState.t + dt
             finalizeSystem(newState, initialState, dt, [r1], [k1], [1], *args, **kwargs)
         return IntegrationResult(state=newState, stages=[StageResult(aux=r1, update=k1)])
