@@ -27,7 +27,7 @@ classifiers = [
 dependencies = [
   "torch", "numpy"
 ]
-license = {file = "LICENSE"}
+license = {file = "license.md"}
 
 [project.urls]
 Repository = "https://github.com/wi-re/integrators"
