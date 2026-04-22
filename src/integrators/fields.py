@@ -302,9 +302,9 @@ def update_position(
     if has_derivative and spec.derivative_dt:
         delta = _resolve_delta(update, position_derivative_tag)
         value = _accumulate(value, delta, spec.derivative_dt)
-    if spec.current_velocity_dt is not None:
+    if hasattr(spec, 'current_velocity_dt') and spec.current_velocity_dt is not None:
         value = value + spec.current_velocity_dt * get_tagged_attr(state, tag=velocity_tag)
-    if spec.update_velocity_dt is not None and has_derivative and velocity_derivative_tag is not None:
+    if hasattr(spec, 'update_velocity_dt') and spec.update_velocity_dt is not None and has_derivative and velocity_derivative_tag is not None:
         value = value + spec.update_velocity_dt * _resolve_delta(update, velocity_derivative_tag)
     set_tagged_attr(state, value, tag=position_tag)
     return system

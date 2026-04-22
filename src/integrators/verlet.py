@@ -66,8 +66,21 @@ def symplecticEuler(initialState, dt, f, *args, **kwargs):
 
         with record_function("[Integration] Symplectic Euler: Update"):
             finalState = initialState.initializeNewState(*args, **kwargs)
-            applyVelocityUpdate(finalState, k1, explicit_step(dt), **kwargs)
-            applyPositionUpdate(finalState, k0, semi_implicit_position_step(dt / 2), **kwargs)
+            # Based on the DualSPHysics wiki:
+            # r^n+1/2 = r^n + 0.5 * dt * v^n
+            # v^n+1/2 = v^n + dt * a^n
+            # v^n+1 = v^n + dt * a^n+1/2
+            # r^n+1 = r^n + dt/2 * (v^n + v^n+1)
+            # at this point we have k0 = a^n, k1 = a^n+1/2, and we want to compute the final state at n+1
+
+            applyVelocityUpdate(finalState, k1, explicit_step(dt), **kwargs) # update velocity first using the half-step acceleration
+
+            # We can apply the position update in two stages, however, the seconmd stage does not use the returned update value, just the result of applying the velocity update in the previous op
+            applyPositionUpdate(finalState, k0, explicit_step(dt / 2), **kwargs) # update position using the initial velocity
+            applyPositionUpdate(finalState, [], semi_implicit_position_step(dt / 2), **kwargs) # update position using the initial velocity
+
+
+
             if hasattr(finalState, 'integrateDensity'):
                 finalState.integrateDensity(k1, dt, **kwargs)
                 applyQuantityUpdate(finalState, k1, explicit_step(dt), densitySwitch = True, **kwargs)
