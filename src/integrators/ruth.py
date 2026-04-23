@@ -72,23 +72,15 @@ def PEFRL(state, dt, f, *args, **kwargs):
             finalizeSystem(finalState, state, dt, rs, ks, [], *args, **kwargs)
     return IntegrationResult(state=finalState, stages=[StageResult(aux=r, update=k) for r, k in zip(rs, ks)])
     
-    # r4 = r3 + chi * dt * v3
-    
-    # finalVelocity = v3 + (1 - 2 * lamda) * dt / 2 * k3.velocity
-    # finalPosition = r4 + xi * dt * finalVelocity
-    # finalEnergy = e3 + (1 - 2 * lamda) * dt / 2 * k3.energy if hasattr(k3, 'energy') else e3
-    
-    # return state._replace(
-    #     position = finalPosition,
-    #     velocity = finalVelocity,
-    #     energy = finalEnergy,
-    #     t = state.t + dt
-    # )
 def VEFRL(state, dt, f, *args, **kwargs):
     with record_function("[Integration] VEFRL"):
-        lamda = -0.2123418310626054
-        xi = +0.1786178958448091
-        chi = -0.06626458266981849
+        # lamda = -0.2094333910398989e-01
+        # xi = +0.1644986515575760e+00
+        # chi = +0.1235692651138917e+01
+
+        xi = +0.1720865590295143e+00
+        lamda = -0.9156203075515678e-01
+        chi = -0.1616217622107222e+00
         with record_function("[Integration] VEFRL: Step 1"):
             preprocessSystem(state, state, xi * dt, *args, **kwargs)
             k0, r0 = split_return(f(state, xi * dt, *args, **kwargs))
@@ -96,7 +88,7 @@ def VEFRL(state, dt, f, *args, **kwargs):
             state1 = copy.deepcopy(state)
             applyVelocityUpdate(state1, k0, explicit_step(xi * dt))
             applyQuantityUpdate(state1, k0, explicit_step(xi * dt))
-            applyPositionUpdate(state1, k0, semi_implicit_position_step((1 - 2 * lamda) * dt / 2))
+            applyPositionUpdate(state1, [], semi_implicit_position_step((1 - 2 * lamda) * dt / 2))
 
         with record_function("[Integration] VEFRL: Step 2"):
             preprocessSystem(state1, state, chi * dt, *args, **kwargs)
@@ -105,7 +97,7 @@ def VEFRL(state, dt, f, *args, **kwargs):
             state2 = copy.deepcopy(state1)
             applyVelocityUpdate(state2, k1, explicit_step(chi * dt))
             applyQuantityUpdate(state2, k1, explicit_step(chi * dt))
-            applyPositionUpdate(state2, k1, semi_implicit_position_step(lamda * dt))
+            applyPositionUpdate(state2, [], semi_implicit_position_step(lamda * dt))
 
         with record_function("[Integration] VEFRL: Step 3"):
             preprocessSystem(state2, state, (1 - 2 * (chi + xi)) * dt, *args, **kwargs)
@@ -114,7 +106,7 @@ def VEFRL(state, dt, f, *args, **kwargs):
             state3 = copy.deepcopy(state2)
             applyVelocityUpdate(state3, k2, explicit_step((1 - 2 * (chi + xi)) * dt))
             applyQuantityUpdate(state3, k2, explicit_step((1 - 2 * (chi + xi)) * dt))
-            applyPositionUpdate(state3, k2, semi_implicit_position_step(lamda * dt))
+            applyPositionUpdate(state3, [], semi_implicit_position_step(lamda * dt))
 
         with record_function("[Integration] VEFRL: Step 4"):
             preprocessSystem(state3, state, chi * dt, *args, **kwargs)
@@ -123,7 +115,7 @@ def VEFRL(state, dt, f, *args, **kwargs):
             state4 = copy.deepcopy(state3)
             applyVelocityUpdate(state4, k3, explicit_step(chi * dt))
             applyQuantityUpdate(state4, k3, explicit_step(chi * dt))
-            applyPositionUpdate(state4, k3, semi_implicit_position_step((1 - 2 * lamda) * dt / 2))
+            applyPositionUpdate(state4, [], semi_implicit_position_step((1 - 2 * lamda) * dt / 2))
 
         with record_function("[Integration] VEFRL: Step 5"):
             preprocessSystem(state4, state, xi * dt, *args, **kwargs)
@@ -138,15 +130,3 @@ def VEFRL(state, dt, f, *args, **kwargs):
             ks = [k0, k1, k2, k3, k4]
             finalizeSystem(finalState, state, dt, rs, ks, [], *args, **kwargs)
     return IntegrationResult(state=finalState, stages=[StageResult(aux=r, update=k) for r, k in zip(rs, ks)])
-    
-    
-    # finalVelocity = v4 + xi * dt * k4.velocity
-    # finalPosition = r4
-    # finalEnergy = e4 + xi * dt * k4.energy if hasattr(k4, 'energy') else e4
-    
-    # return state._replace(
-    #     position = finalPosition,
-    #     velocity = finalVelocity,
-    #     energy = finalEnergy,
-    #     t = state.t + dt
-    # )
