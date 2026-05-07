@@ -30,9 +30,23 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
                 print(f"[Integrator] Using prior step as k0")
             else:
                 print(f"[Integrator] Running first step to compute k0")
-        k0, r0 = updateStep(initialState, currentState, dt, f, *args, **kwargs) if priorStep is None else priorStep
+        if priorStep is None:
+            k0, r0 = updateStep(initialState, currentState, dt, f, *args, **kwargs) 
+        else:
+            if isinstance(priorStep, StageResult):
+                if verbose:
+                    print(f"[Integrator] Extracting k0 and r0 from priorStep NamedTuple with fields: {priorStep._fields} and values: {priorStep}")
+                k0, r0 = priorStep.update, priorStep.aux
+            elif isinstance(priorStep, Tuple):
+                if verbose:
+                    print(f"[Integrator] Extracting k0 and r0 from priorStep tuple with values: {priorStep}")
+                k0, r0 = priorStep
+            else:
+                raise ValueError(f"Invalid priorStep format: {priorStep}")
         ks = [k0]
         rs = [r0]
+        # if verbose:
+            # print('[Integrator] Computed k0 with auxiliary value:', r0, 'and update:', k0)
         for ic, c in enumerate(butcherTableau.c[1:]):
             with record_function(f"[Integration] Butcher: k{ic+1} prep"):
                 current_as = butcherTableau.a[ic+1,:ic+1]
