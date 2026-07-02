@@ -17,11 +17,12 @@ class butcherTableau(NamedTuple):
 def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
     verbose = True if 'verbose' in kwargs and kwargs['verbose'] else False
 
-    priorStep = kwargs.pop('priorStep', None)
-    if verbose:
-        print(f"[Integrator] Running Runge-Kutta with dt={dt:.4f} and scheme={butcherTableau}")
-    initializeSystem(initialState, dt, *args, **kwargs)
     with record_function("[Integration] Butcher"):
+        priorStep = kwargs.pop('priorStep', None)
+        if verbose:
+            print(f"[Integrator] Running Runge-Kutta with dt={dt:.4f} and scheme={butcherTableau}")
+        initializeSystem(initialState, dt, *args, **kwargs)
+        
         if verbose:
             print(f"[Integrator] Butcher: Starting with initial state at t={initialState.t:.4f}")
         currentState = initialState.initializeNewState(*args, **kwargs)

@@ -66,13 +66,15 @@ def leapFrog(state, dt, f, *args, **kwargs):
 # contact algorithm and analysis of perforation tests at moderate
 # projectile velocities.'
 def symplecticEuler(state, dt, f, *args, **kwargs):
-    verbose = True if 'verbose' in kwargs and kwargs['verbose'] else False
-    priorStep = kwargs.pop('priorStep', None)
-    initializeSystem(state, dt, *args, **kwargs)
     with record_function("[Integration] Symplectic Euler"):
+        verbose = True if 'verbose' in kwargs and kwargs['verbose'] else False
+        priorStep = kwargs.pop('priorStep', None)
+        initializeSystem(state, dt, *args, **kwargs)
+
         with record_function("[Integration] Symplectic Euler: k0"):
-            currentState = state.initializeNewState(*args, **kwargs)
             if priorStep is None:
+                with record_function("[Integration] Symplectic Euler: Current State Initialization"):
+                    currentState = state.initializeNewState(*args, **kwargs)
                 if verbose:
                     print(f"[Integrator] No priorStep provided, computing k0 and r0 using updateStep.")
                 k0, r0 = updateStep(state, currentState, dt/2, f, *args, **kwargs)
@@ -89,14 +91,16 @@ def symplecticEuler(state, dt, f, *args, **kwargs):
                     raise ValueError(f"Invalid priorStep format: {priorStep}")
             # k0, r0 = updateStep(state, currentState, dt/2, f, *args, **kwargs) if priorStep is None else priorStep
             # k0, r0 = updateStep(state, currentState, dt/2, f, *args, **kwargs)
-            halfState = state.initializeNewState(*args, **kwargs)
+            with record_function("[Integration] Symplectic Euler: Half State Initialization"):
+                halfState = state.initializeNewState(*args, **kwargs)
             applyStateUpdate(halfState, k0, explicit_step(dt / 2), **kwargs)
 
         with record_function("[Integration] Symplectic Euler: k1"):
             k1, r1 = updateStep(state, halfState, dt / 2, f, *args, **kwargs)
 
         with record_function("[Integration] Symplectic Euler: Update"):
-            finalState = state.initializeNewState(*args, **kwargs)
+            with record_function("[Integration] Symplectic Euler: Final State Initialization"):
+                finalState = state.initializeNewState(*args, **kwargs)
             # Based on the DualSPHysics wiki:
             # r^n+1/2 = r^n + 0.5 * dt * v^n
             # v^n+1/2 = v^n + dt * a^n
