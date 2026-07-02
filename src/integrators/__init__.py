@@ -38,7 +38,7 @@ from .util import IntegrationSchemeType
 
 from .integration import (getPreferredScheme, getIntegrator, getIntegrationEnum, IntegrationSchemes)
 
-__version__ = "0.1.0"
+__version__ = "0.4.0"
 
 __all__ = [
     "verbosePrint",
