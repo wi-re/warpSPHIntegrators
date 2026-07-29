@@ -1,6 +1,6 @@
 [project]
 name = "sphWarpIntegrators"
-version = "0.4.2"
+version = "0.4.5"
 authors = [
   { name="Rene Winchenbach", email="contact@fluids.dev" },
 ]
