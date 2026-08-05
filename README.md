@@ -617,6 +617,9 @@ method runs.
 - Adaptive step-size control not built-in (use external error estimators)
 - No multistep methods (BDF, Adams) yet
 
+The last two are scoped and costed in [NOTES.md §3](NOTES.md#3-multistep-and-implicit-methods),
+including which schemes are worth adding and what each one costs.
+
 ## Contributing
 
 Contributions welcome! Areas of interest:

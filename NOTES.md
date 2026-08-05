@@ -1,71 +1,71 @@
-# `sphWarpIntegrators` — architecture notes, defects, and improvement plan
+# `sphWarpIntegrators` — architecture notes and open work
 
-Analysis date: 2026-08-05, against `ba43c6e` (v0.4.5), conda env `warp`
+Analysis date: 2026-08-05, against `6b9e1d0` (v0.5.0), conda env `warp`
 (Python 3.14.6, torch 2.13.0+cu130, warp 1.15.0, numpy 2.4.6).
 
-Every claim marked **[verified]** was reproduced by running the code; the probe
-scripts are described in [Reproducing the results](#reproducing-the-results).
+Every claim marked **[verified]** was reproduced by running the code. For §0's
+numbers the probe is [scripts/step_reuse_convergence.py](scripts/step_reuse_convergence.py),
+described under [Reproducing the results](#reproducing-the-results); for §3's numbers
+the probes are described in [§3.9](#39-the-probes-behind-these-numbers).
+
+This document originally carried a defect-by-defect audit — misapplied `priorStep`
+reuse, wrong stage times, inconsistent cloning defaults, a broken embedded-pair path,
+wrong registry metadata, and README/`pyproject.toml` drift. Every item in it was fixed
+for v0.5.0 and is now held down by 680 tests in `tests/`; the write-ups were removed
+from this document to keep it focused on what is still open. `git log -- NOTES.md` has
+the full history if the reasoning behind a fix is needed again.
 
 ---
 
-## 0. Status — what has been fixed (v0.5.0)
+## 0. Status
 
-Sections 2.1 through 2.16 below are the **original analysis**, kept as written so the
-reasoning behind each fix stays on record. Everything in P0, P0.5 and P1 of the plan in
-§5 is now done, and `tests/` (680 tests) is what keeps it done.
+**Fixed in v0.5.0:** `priorStep` first-stage reuse now knows which schemes it is valid
+for (`integrators.reuse`: `step_reuse_order` / `supports_step_reuse` / `is_fsal`, plus
+three genuinely FSAL tableaus — Bogacki–Shampine 3(2), Dormand–Prince 5(4), Cash–Karp
+5(4) — so reuse is lossless where it matters); every scheme evaluates its stages at
+the correct time, including stage 0; the embedded-pair path returns a real error
+estimate (`IntegrationResult.error`); cloning is behavior-driven and dispatched by
+value type, so `wp.array` and containers are actually copied instead of aliased;
+registry metadata (order, `dissipation`, enum-name lookup) is correct; and assorted
+hygiene issues (dead code, duplicate definitions, an unreachable `@torch.jit.script`)
+are gone.
 
-| § | Defect | Status |
-|---|---|---|
-| 2.1 | `priorStep` reuse valid nowhere in particular, with no way to tell | **fixed** — `integrators.reuse` promoted into the library; `step_reuse_order` / `supports_step_reuse` / `is_fsal`; `reuse_order` + `fsal` carried on `IntegrationScheme`; warns once, never hard-errors |
-| 2.1a | No FSAL tableau exists | **fixed** — Bogacki–Shampine 3(2), Dormand–Prince 5(4), Cash–Karp 5(4) added; FSAL falls out of the tableau automatically |
-| 2.2 | Wrong stage times → order collapse on time-dependent RHS | **fixed** — every scheme now measures full order on `forced` |
-| 2.3 | Stage 0 pinned to `t=0` | **fixed** — every scheme sets stage-0 time from `initialState.t` |
-| 2.4 | `velocityVerlet` crashes on `priorStep` | **fixed** — one `unpack_prior_step` helper, used by all three Verlet schemes and the Butcher path |
-| 2.5 | `nograd()` raises on non-tensor fields | **fixed** — `_op` precedence |
-| 2.6 | `clone()` / `initializeNewState()` disagree on untagged fields | **fixed** — single `field_behavior()` resolver, default `constant` |
-| 2.7 | `copied` documented but never copied | **fixed** — wired into `finalizeSystem` via `lastStageSystem` |
-| 2.8 | Embedded-pair path broken and unused | **fixed** — `b_` leak gone, `IntegrationResult.error` returns the estimate, three pairs registered |
-| 2.9 | `priorStep` leaks into the user's RHS | **fixed** — `reject_prior_step` in every scheme that cannot reuse |
-| 2.10 | `TVDRK3` finalize arity | **fixed** — passes the equivalent Butcher weights |
-| 2.11 | `copy.deepcopy` in tvd/ruth | **fixed** — `initializeNewState` everywhere |
-| 2.12 | Schemes mutate the caller's state; skip `initialize` | **fixed** — all schemes evaluate on stage buffers and call `initializeSystem` |
-| 2.13 | Registry metadata wrong or arbitrary | **fixed** — Semi-Implicit Euler is order 1; `getIntegrator` accepts all three spellings; `dissipation` now means "energy drifts secularly" and is tested |
-| 2.14 | `integrateDensity` diffSPH-ism | **fixed** — removed |
-| 2.15 | Time bookkeeping split between two owners | **fixed** — the update helpers no longer touch `t` |
-| 2.16 | Hygiene | **fixed** — `integrateQ`, `is_multiple_return_values`, duplicate `verbosePrint`, duplicate `IntegrationSchemes`, the `torch.jit.script` enum decorator, unreachable returns and the absolute import are gone; `StateBlend` validates; `t` stays a `float` |
-| 3 | README / `pyproject.toml` out of sync | **fixed** for everything except the package rename |
-| 4.1 | State machinery torch-only, silently aliases everything else | **fixed** — registry-based `clone_value` / `empty_value` / `move_value`; handlers for torch tensors, `wp.array` (duck-typed, no warp import), and list/tuple/dict recursion; unknown types warn once instead of aliasing silently |
-
-**Headline numbers after the fixes** (`python scripts/step_reuse_convergence.py --all`):
+**Headline numbers** (`python scripts/step_reuse_convergence.py --all`):
 
 - Every registered scheme reaches its claimed order on an autonomous, a
   non-autonomous, and a nonlinear problem. Before, six schemes collapsed to order 1
   on anything time-dependent.
 - Dormand–Prince 5(4) under reuse is **bit-for-bit identical** to Dormand–Prince
   without reuse, at one fewer right-hand-side evaluation per step. Same for
-  Bogacki–Shampine 3(2). That is what §2.1a was for.
+  Bogacki–Shampine 3(2).
 - Every reuse prediction now matches measurement for every scheme, on both problems.
 
 ### Still open
 
-- **P2 (Warp)** — §4.1 is done. §4.2's cheap half is done: the RK weight loop no longer
-  clones per non-zero `b` (9 → 5 clones for RK4, the theoretical minimum). Still open:
-  §4.2's substance — `update_component` still builds three fresh tensors per component
-  per stage, with no buffer pool, no fused `axpy`, no graph capture — and §4.3, the
-  torch-autograd vs `wp.Tape` decision, which should be made before the backend is
-  written rather than retrofitted.
-- **P3 (SPH features)** — adaptive `dt`, particle masking, neighbour-list reuse policy.
-  Untouched, but §2.8 is finished, so the embedded-pair machinery adaptive `dt` needs
-  is now in place.
-- **P4** — the top-level package is still named `integrators`, which is
+- **Warp backend** (§2.1, §2.2) — cloning is fixed and the RK weight loop no longer
+  over-clones (9 → 5 clones for RK4, the theoretical minimum). What's left is
+  substantive: buffer pooling, a fused `axpy` kernel, graph capture, and the
+  torch-autograd vs `wp.Tape` decision.
+- **SPH-awareness** (§2.3) — adaptive `dt` (the embedded-pair machinery it needs is
+  now in place; it needs the driving loop and a step-rejection path) and particle
+  masking are still open. The neighbour-list reuse policy this section used to flag as
+  missing turned out to be a non-issue for the actual downstream simulation — see §3.0.
+- **Packaging** (§2.4) — the top-level package is still named `integrators`, which is
   collision-prone on PyPI. Renaming is a breaking change and was left alone.
-- **A new finding, not in the original analysis:** Leap Frog, Velocity Verlet, PEFRL and
-  VEFRL are only second/fourth order for a **separable** Hamiltonian, i.e. a force
-  depending on position alone. With a velocity-dependent force — artificial viscosity,
-  drag, any real SPH momentum equation — all four drop to first order. This is a
-  property of the schemes rather than a defect here, but it is a sharp edge for SPH
-  specifically. It is measured by `tests/test_convergence.py` on the new `damped`
-  problem and documented in the README scheme table. Symplectic Euler is not affected.
+- **Multistep and implicit** (§3) — the two entries in the README's "Known
+  Limitations". Both are much cheaper here than for a general-purpose library, because
+  the surrounding simulation does not resort particles, holds `dt` constant, and
+  carries its neighbour list through the state (§3.0). Recommended: ~2 weeks for
+  Phase 0 → 2 → 1, headlined by **implicit midpoint**, the symplectic second-order
+  scheme that — unlike everything currently registered — holds order 2 for
+  velocity-dependent forces.
+- **A finding, not a defect:** Leap Frog, Velocity Verlet, PEFRL and VEFRL are only
+  second/fourth order for a **separable** Hamiltonian, i.e. a force depending on
+  position alone. With a velocity-dependent force — artificial viscosity, drag, any
+  real SPH momentum equation — all four drop to first order. This is a property of the
+  schemes rather than a defect here, but it is a sharp edge for SPH specifically. It is
+  measured by `tests/test_convergence.py` on the `damped` problem and documented in
+  the README scheme table. Symplectic Euler is not affected.
 
 ---
 
@@ -124,438 +124,504 @@ finalizeSystem(new_state, state, dt, rs, ks, b)
 return IntegrationResult(state=new_state, stages=[StageResult(aux, update), ...])
 ```
 
-`priorStep` (a `StageResult` from the previous step) can be passed in to skip the
-`k0` evaluation. **This is the single most broken feature in the library — see §2.1.**
+`priorStep` (a `StageResult` from the previous step) can be passed in to skip the `k0`
+evaluation. Whether that costs convergence order is a property of the tableau, not of
+the caller — computed automatically by `integrators.reuse` (`step_reuse_order`,
+`supports_step_reuse`) and carried on the registered `IntegrationScheme`.
 
 ---
 
-## 2. Confirmed defects
-
-### 2.1 🔴 CRITICAL — `priorStep` reuse is applied to schemes where it is not valid, with no way to tell **[verified]**
-
-`priorStep` feeds the *last stage* of step *n* in as the *first stage* `k0` of
-step *n+1*, halving RHS evaluations. **The feature itself is legitimate and worth
-keeping** — it is standard practice in the SPH literature (CRKSPH does exactly
-this for its second-order scheme), and the measurements below confirm it is free
-for the midpoint/Heun family. The defect is that its validity is a property of
-the *tableau*, and the library currently offers it as an unconditional caller
-option with no predicate, no diagnostic, and no FSAL tableau to use it with.
-
-**How much order survives is computable from the tableau.** Reuse substitutes
-`k0` with a derivative evaluated at `(tⁿ + c_s·dt, Y_s)` instead of
-`(tⁿ⁺¹, yⁿ⁺¹)`. Two things set the damage:
-
-- If `c_s = 1`, the times agree and `Y_s` differs from `yⁿ⁺¹` by `O(dtq⁺¹)`, where `q` is the order of the method whose weights are the last row of `a`. If `c_s ≠ 1` the times disagree at `O(dt)` and `q = 0`. When additionally `a[-1] == b`, the stage *is* `yⁿ⁺¹`: the tableau is **FSAL** and reuse is exact.
-- That `O(dtq⁺¹)` perturbation of `k0` reaches the update directly if `b[0] ≠ 0` (costing one power of `dt`), or only through the stage equations if `b[0] = 0` (costing two).
-
-Retained order = `min(p, q + 1)`, or `min(p, q + 2)` when `b[0] = 0`. Measured
-against that prediction — harmonic oscillator (`k=4, m=1`), `T=2`,
-`dt ∈ {0.1, …, 0.0125}`, float64, via
-[scripts/step_reuse_convergence.py](scripts/step_reuse_convergence.py) `--all`:
-
-| Scheme | order | no reuse | reuse | predicted | verdict |
-|---|---|---|---|---|---|
-| Midpoint / EPEC | 2 | 2.01 | 2.00 | 2 | **safe** (`b[0]=0`) |
-| Heun 2nd / EPEC Modified | 2 | 2.01 | 2.00 | 2 | **safe** (`c_s=1`, `a[-1]` is order 1) |
-| Ralston 2nd | 2 | 2.01 | 1.04 | 1 | degraded |
-| RK3 | 3 | 2.99 | 2.02 | 2 | degraded |
-| Heun 3rd / Ralston 3rd / Wray 3rd / SSP-RK3 | 3 | 2.99 | 0.98–1.00 | 1 | degraded |
-| RK4 | 4 | 4.01 | 2.96 | 3 | degraded |
-| RK4 (alt) | 4 | 4.01 | 2.01 | 2 | degraded |
-| Nyström 5th | 5 | 4.99 | 0.99 | 1 | degraded |
-| Leap Frog | 2 | 2.00 | 1.01 | 1 | degraded |
-| Symplectic Euler | 2 | 2.00 | 1.01 | 1 | degraded |
-| Forward Euler | 1 | 1.03 | **0.00** | 1 | degraded **+ unstable** |
-| Velocity Verlet | 2 | 2.00 | **TypeError** | — | broken (§2.4) |
-| PEFRL / VEFRL / TVD-RK2/3 / Euler | — | ok | unaffected | — | reuse silently ignored |
-
-The prediction matches every measurement. The one exception is instructive:
-Forward Euler is predicted order 1 but measures **0.00**, because reuse turns a
-one-stage tableau into the lagged two-step method `yⁿ⁺¹ = yⁿ + dt·f(yⁿ⁻¹)`, which
-is formally consistent but has no stability region on the imaginary axis. So the
-predicate bounds *consistency*; reuse also changes *stability*, and a one-stage
-scheme must simply refuse it.
-
-Note that "safe" still costs a constant factor: midpoint's error is a uniform
-**2.5× larger** under reuse at every step size. That is the real CRKSPH trade —
-half the RHS evaluations for a fixed error constant, order intact — and it is a
-perfectly good deal. What is not a good deal is SSP-RK3 on a time-dependent
-problem, where reuse costs two orders and the error at `dt=0.0125` is
-**22 000× larger**.
-
-This matters today because [integrators.ipynb](integrators.ipynb) cell 5 drives
-every plot in the README with `priorStep = result.stages[-1]` unconditionally, so
-**the published convergence images in `images/` show degraded schemes** for
-everything except the midpoint/Heun family.
-
-**Fix — keep the feature, make it self-diagnosing:**
-1. Promote `reuse_analysis()` from the script into the library as
-   `integrators.step_reuse_order(scheme) -> int | None` plus
-   `integrators.supports_step_reuse(scheme) -> bool`. It is ~40 lines and needs
-   only the tableau. Callers can then ask before they opt in.
-2. Add `reuse_order` / `fsal` to `IntegrationScheme` so the registry carries the
-   answer, and record it by hand for the non-tableau schemes (Verlet family)
-   which currently have no way to express it.
-3. Warn once (not per step) when `priorStep` is supplied to a scheme whose
-   `step_reuse_order < order`, naming the order that will actually be achieved.
-   Do **not** hard-error — accepting a known order loss for half the RHS cost is
-   a legitimate choice the caller is entitled to make.
-4. Make the four schemes that silently ignore `priorStep` say so (§2.9).
-5. Add genuinely FSAL tableaus so reuse is available at no cost at all — see §2.1a.
-
-### 2.1a Add FSAL tableaus
-
-No registered tableau satisfies `c_s = 1 ∧ a[-1] = b`, so lossless reuse is
-currently impossible at any order above 2. Worth adding, in rough priority:
-
-| Tableau | Order | Stages | Why |
-|---|---|---|---|
-| **Bogacki–Shampine 3(2)** | 3(2) | 4 (3 effective under FSAL) | Cheapest useful FSAL pair; the embedded 2nd-order estimate also feeds adaptive `dt` (§2.8, §4.4). `scipy`'s `RK23`. |
-| **Dormand–Prince 5(4)** | 5(4) | 7 (6 effective) | The workhorse FSAL pair; `scipy`'s `RK45`, MATLAB's `ode45`. Direct replacement for the Nyström-5 slot, which loses 4 orders under reuse. |
-| **Cash–Karp 5(4)** | 5(4) | 6 | Not FSAL, but a well-conditioned embedded pair for step control if DP5 is overkill. |
-| **SSP-RK3 with FSAL variant** | 3 | 4 | If the TVD property is needed *and* reuse is wanted; plain SSP-RK3 loses 2 orders under reuse. |
-
-These are all explicit tableaus that drop straight into `getButcherTableau`, and
-`reuse_analysis` will confirm the FSAL property automatically. Adding them also
-completes the embedded-pair path (§2.8) and unblocks adaptive stepping (§4.4),
-so it is the highest-leverage single change in this document.
-
-### 2.2 🔴 Wrong stage times → order collapse for any time-dependent RHS **[verified]**
-
-Several schemes evaluate `f` at the correct *state* but the wrong *time*. Harmless
-for autonomous problems, fatal for SPH with time-varying inlets, moving boundaries,
-prescribed body forces, or ramped viscosity. Measured with `x'' = cos(t)`:
-
-| Scheme | stage times passed to `f` (t₀=1.0, dt=0.1) | should be | order (t-dep) |
-|---|---|---|---|
-| Symplectic Euler | `1.0, 1.0` | `1.0, 1.05` | 2 → **1** |
-| Leap Frog | `1.0, 1.05` | `1.0, 1.1` (state is the *full-step* position) | 2 → **1** |
-| Velocity Verlet | `1.0, 1.05` | `1.0, 1.1` (ditto) | 2 → **1** |
-| TVD-RK2 | `1.0, 1.0` | `1.0, 1.1` | 2 → **1** |
-| TVD-RK3 | `1.0, 1.0, 1.0333` | `1.0, 1.1, 1.05` | 3 → **1** |
-| VEFRL | `1.0, 1.0, 1.0, 1.0, 1.0` | staggered | 4 → **1** |
-| PEFRL | staggered correctly | — | 4 ✓ |
-
-Specifics:
-- [verlet.py:96](src/integrators/verlet.py#L96) — `symplecticEuler` never sets `halfState.t`. Add `halfState.t = state.t + dt/2`.
-- [verlet.py:43](src/integrators/verlet.py#L43) — `leapFrog` sets `halfState.t = state.t + 0.5*dt`, but `halfState` already holds the **full-step** position `xⁿ + dt·v + ½dt²·a`. It is `yⁿ⁺¹`, not a half state. Should be `state.t + dt`; the variable name is also misleading.
-- [verlet.py:154](src/integrators/verlet.py#L154) — same in `velocityVerlet`: the position drift is a full `dt`, so the evaluation point is `t + dt`.
-- [tvd.py:41](src/integrators/tvd.py#L41) — `y_2_3.t = state.t + dt/3` is doubly wrong. In Shu–Osher SSP-RK3, `y⁽¹⁾` sits at `t+dt` and `y⁽²⁾` at `t+dt/2`. And `y_1_3.t` is **never set at all** (`updateStateEuler` does not advance `t`), so stage 2 is evaluated at `tⁿ`.
-- [tvd.py:75](src/integrators/tvd.py#L75) — `TVDRK2`: `state1.t` never set.
-- [ruth.py:75-132](src/integrators/ruth.py#L75-L132) — `VEFRL` sets no stage times at all; only `finalState.t` at the end.
-
-### 2.3 🔴 Stage 0 is evaluated at the wrong time whenever the user's `initializeNewState` drops `t` **[verified]**
-
-`RungeKuttaB` sets `currentState.t` for stages 1..s-1 ([butcher.py:62](src/integrators/butcher.py#L62)) but **never for stage 0**. It inherits whatever `initializeNewState()` returned. The README's own example ([README.md:85-91](README.md#L85-L91)) and the notebook ([integrators.ipynb](integrators.ipynb) cell 4) both construct the new system *without* forwarding `t`:
-
-```python
-return HarmonicOscillatorSystem(state=state.initializeNewState())   # t defaults to 0.0
-```
-
-Observed RK4 stage times over three steps with that exact pattern:
-
-```
-step 0: [0.0,  0.05, 0.05, 0.1]   ← correct
-step 1: [0.0,  0.15, 0.15, 0.2]   ← stage 0 should be 0.1
-step 2: [0.0,  0.25, 0.25, 0.3]   ← stage 0 should be 0.2
-```
-
-Stage 0 is pinned to `t=0` forever. **Fix:** set `currentState.t = initialState.t`
-explicitly before the first `updateStep` in every scheme, and fix the README/notebook
-examples to forward `t`. Better: stop trusting the user to carry `t` — have the
-integrator own it end to end (the protocol docstring at [protocol.py:202](src/integrators/protocol.py#L202) already claims it does).
-
-### 2.4 🟠 `velocityVerlet` crashes on `priorStep`, and would swap `k`/`r` if it didn't **[verified]**
-
-[verlet.py:149](src/integrators/verlet.py#L149):
-
-```python
-k0, r0 = updateStep(...) if priorStep is None else priorStep
-```
-
-`StageResult` is `(aux, update)`, so unpacking binds `k0 = aux`, `r0 = update` — the
-reverse of `leapFrog`/`symplecticEuler`, which carefully do `k0, r0 = priorStep.update, priorStep.aux`.
-Result: `TypeError: must be called with a dataclass type or instance` downstream.
-The same three-branch `StageResult` / `Tuple` / raise block is copy-pasted verbatim
-in `leapFrog` and `symplecticEuler`; **extract it into one `_unpack_prior_step()` helper** so this class of drift cannot recur.
-
-### 2.5 🟠 `BaseState.nograd()` raises on any non-tensor field **[verified]**
-
-[fields.py:187](src/integrators/fields.py#L187):
-
-```python
-def _op(value, detach=False):
-    return value.detach().clone() if detach else value.clone() if isinstance(value, torch.Tensor) else value
-```
-
-Python parses this as `A if detach else (B if isinstance(...) else C)` — the
-`isinstance` guard only protects the **non-detach** branch. With `detach=True`,
-`value.detach()` is called on floats, ints, strings, `None`:
-
-```
-AttributeError: 'float' object has no attribute 'detach'
-```
-
-Every realistic SPH state carries scalar parameters, so `nograd()` is effectively
-unusable. Fix:
-
-```python
-def _op(value, detach=False):
-    if not isinstance(value, torch.Tensor):
-        return value
-    return value.detach().clone() if detach else value.clone()
-```
-
-### 2.6 🟠 `clone()` and `initializeNewState()` disagree on untagged fields **[verified]**
-
-Two different defaults for the same missing metadata:
-
-- [fields.py:198](src/integrators/fields.py#L198) `_clone_state` → `metadata.get(BEHAVIOR_KEY, 'constant')`
-- [fields.py:210](src/integrators/fields.py#L210) `_state_initialize` → `metadata.get(BEHAVIOR_KEY, 'copied')`
-
-A plain `x: torch.Tensor = None` field therefore survives `clone()` but is silently
-**nulled** by `initializeNewState()`:
-
-```
-clone()              -> tensor([0., 1., 2.])
-initializeNewState() -> None
-```
-
-Forgetting one `constant(...)` decorator turns a tensor into `None` mid-step, and the
-failure surfaces far from its cause. Pick one default (`'constant'` is the safe one)
-and share a single resolver.
-
-### 2.7 🟠 `copied` fields are documented but never actually copied **[verified]**
-
-`copied()` promises "copied from last substep in finalize", and `_state_finalize`
-([fields.py:219](src/integrators/fields.py#L219)) implements exactly that — but
-**`_state_finalize` is never called anywhere in the package**. `copied` behaves
-identically to `ephemeral` (nulled in `initializeNewState`, never restored).
-Either wire it into the `finalize` path or delete the behavior and its docs.
-
-### 2.8 🟠 Embedded-tableau path is broken and currently unused **[verified]**
-
-[butcher.py:85-103](src/integrators/butcher.py#L85-L103) supports `b` as a tuple of
-weight vectors (the embedded/error-estimator form), but:
-
-1. `finalizeSystem(new_state, initialState, dt, rs, ks, b_, ...)` at line 101 uses `b_` **leaked from the loop at line 87**, so every state is finalized with the *last* weight vector regardless of which `b_` produced it.
-2. Only `new_states[-1]` is returned; the lower-order estimate is computed and thrown away, so no error estimate ever reaches the caller — the whole point of an embedded pair.
-3. No embedded scheme is registered, so this is untested dead code.
-
-Worth finishing rather than deleting: fix the `b_` leak, return both estimates
-(add an `error` field to `IntegrationResult`), and register the pairs from §2.1a.
-The FSAL tableaus that make step reuse lossless *are* embedded pairs, so this
-work and §2.1a are the same change, and together they unblock adaptive `dt` (§4.4).
-
-### 2.9 🟡 Schemes that ignore `priorStep` leak it into the user's RHS **[verified]**
-
-`TVDRK3`, `TVDRK2`, `PEFRL`, `VEFRL` never `kwargs.pop('priorStep')`, so it flows
-straight through into `f(state, dt, **kwargs)` and into `preprocess`/`postprocess`:
-
-```
-[ok] TVDRK3 priorStep leak: kwargs reaching RHS: ['priorStep']
-[ok] PEFRL  priorStep leak: kwargs reaching RHS: ['priorStep']
-```
-
-Any RHS with a strict signature raises `TypeError` for these four schemes only.
-
-### 2.10 🟡 `TVDRK3` calls `finalizeSystem` with the wrong arity **[verified]**
-
-[tvd.py:59](src/integrators/tvd.py#L59): `finalizeSystem(finalState, state, dt, rs, ks, *args, **kwargs)` — the `weights` positional is missing, so `*args` slides into that slot. With empty `*args` the user's `finalize` sees `weights=()`; with any positional args it sees garbage. Every other scheme passes an explicit list. Add `[1/3, 2/3]` or at minimum `[]`.
-
-### 2.11 🟡 Inconsistent cloning strategy: `initializeNewState` vs `copy.deepcopy`
-
-`butcher`/`verlet`/`euler` use `state.initializeNewState()` (metadata-driven, cheap-ish).
-`tvd`/`ruth` use `copy.deepcopy(state)` ([tvd.py:32](src/integrators/tvd.py#L32), [tvd.py:47](src/integrators/tvd.py#L47), [tvd.py:81](src/integrators/tvd.py#L81), [ruth.py:28](src/integrators/ruth.py#L28) and 5 more). `deepcopy` copies *everything* including `constant` fields and ephemeral scratch, ignores the behavior metadata entirely, and will be catastrophic (or will silently fail) for warp arrays, CUDA graphs, and captured neighbour lists. Standardise on `initializeNewState()`.
-
-### 2.12 🟡 `TVDRK3` / `TVDRK2` / `VEFRL` evaluate `f` on the **caller's** state object
-
-[tvd.py:24-25](src/integrators/tvd.py#L24-L25), [ruth.py:85-86](src/integrators/ruth.py#L85-L86) pass the incoming `state` directly to `preprocessSystem` and `f`, rather than a fresh `initializeNewState()` buffer as the Butcher/Verlet paths do. Since SPH `preprocess` typically writes neighbour lists and scratch buffers into the state, **the caller's state gets mutated**. Also, these four schemes never call `initializeSystem`, so the `initialize` lifecycle hook is skipped entirely for them.
-
-### 2.13 🟡 Registry metadata is wrong or arbitrary
-
-- [integration.py:64](src/integrators/integration.py#L64) — Semi-Implicit Euler registered as **order 2**; measured **1.05**. It is a first-order method.
-- `dissipation` / `nonLagrangian` flags look copy-pasted: `symplecticEuler` is `(True, True)` while `leapFrog` and `velocityVerlet` are `(False, False)`, and `PEFRL` is `(False, False)` while `VEFRL` is `(True, True)`. Nothing in the code reads these flags. Either justify them or drop them.
-- `RungeKutta2`, `midPoint`, and `EPEC` are the same tableau under three names; `heunsMethod` and `EPECmodified` likewise. Harmless but it inflates the "23 schemes" count to ~19 distinct ones and makes `getPreferredScheme` ambiguous.
-- [integration.py:83](src/integrators/integration.py#L83) — `getIntegrator` compares `scheme.identifier == integrator` (enum vs string, never true), while `getIntegrationEnum` correctly uses `.identifier.name`. So `getIntegrator('RK4')` ✓, `getIntegrator(IntegrationSchemeType.rungeKutta4)` ✓, but `getIntegrator('rungeKutta4')` ✗ `ValueError`.
-
-### 2.14 🟡 `symplecticEuler` has a leaked diffSPH-ism
-
-[verlet.py:119-123](src/integrators/verlet.py#L119-L123):
-
-```python
-if hasattr(finalState, 'integrateDensity'):
-    finalState.integrateDensity(k1, dt, **kwargs)
-    applyQuantityUpdate(finalState, k1, explicit_step(dt), densitySwitch=True, **kwargs)
-```
-
-Density is updated **twice** (once via the bespoke method, once via the generic
-path), and `densitySwitch=True` is injected into the user's `apply_quantity_update`
-signature for this one scheme only. This is a solver-specific hook that has no
-business in a generic integrator; it should be expressed through the field-behavior
-metadata instead.
-
-### 2.15 🟡 Time bookkeeping is split between two owners
-
-`protocol.py` states emphatically that "Time management is exclusively handled by
-the integrator", yet [util.py:37](src/integrators/util.py#L37)
-`updateStateSemiImplicitEuler` does `systemState.t = systemState.t + dt` while its
-sibling `updateStateEuler` does not. `integrateSemiImplicitEuler` then overwrites
-`newState.t` anyway, masking it — but both helpers are publicly exported, so a user
-composing them gets double-advanced time. Pick one owner (the integrator) and make
-the helpers time-agnostic.
-
-### 2.16 🟢 Minor / hygiene
-
-- **No tests. None.** `find . -name 'test*'` → empty. For a numerics library where every defect above is a silent accuracy loss, this is the root cause of §2.1–§2.3.
-- [util.py:5](src/integrators/util.py#L5) — `from integrators.fields import get_tagged_attr` is an **absolute** import inside a relative-import package; it breaks under vendoring or rename. Should be `from .fields import ...`. (It is also unused in that module.)
-- `verbosePrint` defined twice, identically ([util.py:18](src/integrators/util.py#L18), [fields.py:251](src/integrators/fields.py#L251)).
-- `IntegrationSchemes = []` defined in both [util.py:138](src/integrators/util.py#L138) (dead) and [integration.py:39](src/integrators/integration.py#L39) (real). `__init__` imports both names; ordering saves it.
-- `integrateQ` ([util.py:140](src/integrators/util.py#L140)) is 55 lines of deprecated dead code with zero callers. `is_multiple_return_values` ([util.py:197](src/integrators/util.py#L197)) has zero callers and calls `func` for its side effects. Delete both.
-- `initializeSystem` / `preprocessSystem` / `postprocessSystem` / `finalizeSystem` each have an unreachable `return` after their `with record_function(...)` block.
-- `@torch.jit.script` on the `IntegrationSchemeType` Enum ([enums.py:5](src/integrators/enums.py#L5)) is a no-op at the Python level (`type(...)` is still `enum.EnumType`) but forces a torch import + TorchScript compilation for a module that is otherwise pure stdlib. Drop it.
-- `StateBlend` allows `reference_state` set with `reference_weight=None`, which then raises deep inside `update_component` on `None * tensor`. Validate in `__post_init__`.
-- `fields.py` imports `numpy` and re-imports `dataclass` at line 250 without using either.
-- Stage times become `np.float64` (`currentState.t = initialState.t + c*dt` with `c` from a numpy array), so `system.t` silently changes dtype mid-run. Cast to `float`.
-
----
-
-## 3. Documentation is out of sync with the code
-
-The README will actively mislead anyone onboarding:
-
-| README says | Reality |
-|---|---|
-| `pip install diffSPH_integrators` ([README.md:20](README.md#L20)) | package is `sphWarpIntegrators`, imports as `integrators` |
-| `blend=StateBlend.IMPLICIT` ([README.md:295](README.md#L295), [README.md:301](README.md#L301)) | `StateBlend` has no such member; it is a 3-field dataclass. This example raises `AttributeError`. |
-| `custom(apply_fn=custom_apply)` ([README.md:386](README.md#L386)) | `custom()` accepts no `apply_fn`; it goes into `**extra` metadata and is never read |
-| `apply_my_behavior_update` is dispatched ([README.md:449](README.md#L449)) | no such dispatch exists — only the four fixed `apply_*_update` names |
-| "Symplectic Euler | Order 1" ([README.md:216](README.md#L216)) | registry says order 2, measured 2.00 (autonomous) |
-| "RK2 (Heun)… Forward Euler | Error O(h²)" | conflates local truncation error with global order; the table's `Error` column is inconsistent with the `Order` column |
-| Example `initializeNewState` drops `t` ([README.md:85](README.md#L85)) | triggers the §2.3 stage-0 bug |
-| Title: "Differentiable ODE Integration with **PyTorch**" | fine today, but contradicts the repo name and the stated Warp direction |
-
-`pyproject.toml` is also stale: `description = "A Fully differentiable SPH Solver."`
-(it is not a solver), `keywords = ["sph","radius","pytorch"]` (`radius` is a leftover
-from the neighbour-search package), no `warp-lang` dependency, and
-`package-data "*" = ["*.*"]` which is a blanket glob that will happily ship
-`__pycache__` if it is present at build time.
-
-The distribution name (`sphwarpintegrators`) and the import name (`integrators`)
-differ, and **`integrators` is an extremely collision-prone top-level name** on
-PyPI. Rename the package directory to `sph_warp_integrators` (or `warpintegrators`)
-before this gets wider use.
-
----
-
-## 4. What has to change to actually be Warp-based
-
-This is the largest gap and it is architectural, not a list of bugs.
-
-### 4.1 The state machinery is torch-only and silently aliases everything else **[verified]**
-
-`_op` and `_empty_like` special-case `torch.Tensor` and pass every other type through
-**by reference**:
-
-```
-warp array aliased after initializeNewState():  True
-warp array aliased after clone():               True
-list-of-tensors aliased after clone():          True
-```
-
-So a state holding `wp.array` fields is **not cloned** — every RK stage writes into
-the same buffer as the initial state. Stage 2 would read stage-1-corrupted data and
-the results would be wrong with no error raised anywhere. Same for any `list`/`dict`
-of tensors.
-
-**Fix:** replace the `isinstance(value, torch.Tensor)` checks with a small
-registry-based `clone_value` / `empty_value` dispatch (torch tensor, `wp.array`,
-list/tuple/dict recursion, `None`, plain scalars), so adding a backend is one
-registration rather than an edit to two functions.
-
-### 4.2 Allocation-per-stage fights Warp's execution model **[verified]**
-
-Measured state clones per step:
-
-| Scheme | `initializeNewState` calls | `copy.deepcopy` calls | theoretical minimum |
-|---|---|---|---|
-| RK4 | **9** | 0 | ~5 |
-| Symplectic Euler | 3 | 0 | 3 |
-| TVD-RK3 | 1 | 2 | 3 |
-| PEFRL | 0 | **4** | 4 |
-
-RK4's four surplus clones come from the final weight-accumulation loop
-([butcher.py:79](src/integrators/butcher.py#L79)) calling `updateStateEuler` with the
-default `copyState=True` — a full state clone per non-zero `b` — while the *stage*
-loop at line 61 correctly passes `copyState=False`. Trivially fixable: pass
-`copyState=False` there too and clone once up front.
-
-More fundamentally, the whole design is **functional and allocating**:
-`update_component` builds `value = value * s; value = value + w * ref; value = value + dt * delta`
-— three fresh tensors per component per stage. That is idiomatic for
-autograd-through-time, but it is the opposite of what Warp wants (preallocated
-buffers, in-place kernel writes, CUDA-graph capture). At SPH scale (10⁶–10⁷
-particles) the allocation traffic alone will dominate.
+## 2. Open work: Warp backend and SPH-awareness
+
+### 2.1 Allocation-per-stage fights Warp's execution model
+
+The cheap fix already landed: the final weight-accumulation loop
+(`butcher._weighted_update`) passes `copyState=False` and clones once up front, so RK4
+takes 5 state clones per step — the theoretical minimum — rather than 9.
+
+What's left is the substantive part. The whole design is **functional and
+allocating**: `update_component` builds
+`value = value * s; value = value + w * ref; value = value + dt * delta` — three fresh
+tensors per component per stage. That is idiomatic for autograd-through-time, but it
+is the opposite of what Warp wants (preallocated buffers, in-place kernel writes,
+CUDA-graph capture). At SPH scale (10⁶–10⁷ particles) the allocation traffic alone
+will dominate.
 
 **Recommended direction:** keep the current spec/tag/protocol layer — it is
-backend-agnostic and worth preserving — and add an out-of-place-vs-in-place switch
-at the `update_component` level:
-- a `WarpState` base whose `initializeNewState` pulls buffers from a per-step pool instead of allocating;
-- an `axpy`-style Warp kernel (`x = s*x + w*ref + Σ dtᵢ·kᵢ`) with a variadic-`k` variant, so the whole accumulation is one launch;
-- fixed stage counts per scheme so the pool is sized once and the step is graph-capturable.
+backend-agnostic and worth preserving — and add an out-of-place-vs-in-place switch at
+the `update_component` level:
+- a `WarpState` base whose `initializeNewState` pulls buffers from a per-step pool
+  instead of allocating;
+- an `axpy`-style Warp kernel (`x = s*x + w*ref + Σ dtᵢ·kᵢ`) with a variadic-`k`
+  variant, so the whole accumulation is one launch;
+- fixed stage counts per scheme so the pool is sized once and the step is
+  graph-capturable. §3.4's fixed-iteration-count implicit driver is aligned with this
+  rather than in tension with it — both want a step shape known in advance.
 
-### 4.3 No differentiability story for Warp
+### 2.2 No differentiability story for Warp
 
 The README's headline claim is "fully differentiable". Warp's `wp.Tape` has a
 completely different gradient model from torch autograd (explicit tape, adjoint
-kernels). A `torch`+`warp` hybrid needs `wp.to_torch`/`wp.from_torch` at the
-boundary, or `warp.autograd`. **Decide which one is authoritative before writing the
-Warp backend** — retrofitting is much worse than choosing up front.
+kernels). A `torch`+`warp` hybrid needs `wp.to_torch`/`wp.from_torch` at the boundary,
+or `warp.autograd`. **Decide which one is authoritative before writing the Warp
+backend** — retrofitting is much worse than choosing up front.
 
-### 4.4 Nothing in the API is SPH-aware
+§3.4 answers the narrower question of what an *implicit stage solve* needs: warp has
+reverse-mode AD (what differentiating through a converged solve wants) but not
+forward-mode (what a Newton solve's Jacobian-vector product would naively want), and
+that asymmetry turns out not to matter because finite-difference directional
+derivatives drive Newton just as well with no AD of any kind. That resolves the
+implicit-solver corner of this question; the general "what backs `.backward()` for a
+Warp state" decision above is still open.
 
-For an SPH driver the following are missing and each interacts with the stage loop:
-- **CFL / adaptive `dt`.** `dt` is a caller-supplied constant. Real SPH recomputes `dt` from `min(h/c_s, sqrt(h/|a|), ...)` every step. Needs the embedded-pair machinery (§2.8) finished, plus a step-rejection path.
-- **Neighbour-list reuse policy.** `preprocess` is called once per stage. For SPH you want "rebuild the list on stage 0, reuse for stages 1..s" — there is no way to express that today.
-- **Particle count changes** (inflow/outflow/refinement) mid-step. All clone paths assume fixed shapes.
-- **`integrateSpecies` / fluid-vs-boundary masking.** The only masking support in the codebase is inside the deprecated `integrateQ` (`integrateSpecies`, `species` args) and the `fluid_only` flag on `integrated()` — which **is never read by anything**. Boundary particles must not be integrated; that has to be a first-class concept.
-- **Density: continuity vs summation.** The `integrateDensity` hack (§2.14) is a symptom of this being unmodelled.
+### 2.3 Nothing in the API is SPH-aware
+
+- **CFL / adaptive `dt`.** `dt` is a caller-supplied constant. Real SPH recomputes
+  `dt` from `min(h/c_s, sqrt(h/|a|), ...)` every step. The embedded-pair machinery
+  this needs is finished (`IntegrationResult.error`, three registered pairs); what's
+  missing is the driving loop and a step-rejection path.
+- **Particle count changes** (inflow/outflow/refinement) mid-step. All clone paths
+  assume fixed shapes. Not a concern for the current downstream — see §3.0 — but a
+  real gap for a general-purpose user.
+- **`integrateSpecies` / fluid-vs-boundary masking.** The only masking support in the
+  codebase is the `fluid_only` flag on `integrated()`, which is never read by
+  anything. Boundary particles must not be integrated; that has to be a first-class
+  concept, and §3.7's Phase 3 implicit work needs it — an unmasked boundary makes the
+  stage system singular.
+- **Neighbour-list reuse policy.** This used to be listed here as missing. It isn't:
+  the actual downstream simulation already carries the neighbour list through the
+  state and revalidates it cheaply rather than rebuilding it — see §3.0.
+
+### 2.4 Packaging
+
+The distribution name (`sphwarpintegrators`) and the import name (`integrators`)
+differ, and **`integrators` is an extremely collision-prone top-level name** on PyPI.
+Renaming the package directory to `sph_warp_integrators` (or `warpintegrators`) is a
+breaking change and has been left alone; do it alongside a major version bump.
 
 ---
 
-## 5. Prioritized plan
+## 3. Multistep and implicit methods
 
-**P0 — correctness (the library is currently producing wrong answers)**
-1. Write a convergence test suite first: one autonomous + one time-dependent + one Hamiltonian problem with analytic solutions, asserting measured order ≥ claimed order − 0.15 for every registered scheme, and asserting that the order measured *with* reuse matches `step_reuse_order(scheme)`. [scripts/step_reuse_convergence.py](scripts/step_reuse_convergence.py) already does the measurement and the prediction; turning it into `tests/` is mostly adding asserts. This pins down §2.1–§2.3 and §2.13 permanently.
-2. Promote `reuse_analysis()` into the library as `step_reuse_order()` / `supports_step_reuse()`; carry the answer on `IntegrationScheme`; warn once when reuse is requested where it costs order (§2.1). Keep the feature enabled — do not gate it behind a hard error.
-3. Fix stage times in `symplecticEuler`, `leapFrog`, `velocityVerlet`, `TVDRK2/3`, `VEFRL` (§2.2). Note these also change each scheme's reuse analysis, so do it before recording `reuse_order` by hand.
-4. Set `currentState.t = initialState.t` for stage 0 everywhere; fix the README/notebook `initializeNewState` examples (§2.3).
-5. Fix `_op` precedence (§2.5) and unify the untagged-field default (§2.6).
-6. Fix `velocityVerlet`'s `priorStep` unpacking; extract the shared `_unpack_prior_step` helper (§2.4).
-7. Regenerate `images/` — either with reuse off, or per-scheme with reuse only where `supports_step_reuse` is true, and say which in the caption.
+Scoping for the two remaining entries under README "Known Limitations". Everything
+marked **[verified]** was measured by one of the five probes in
+[§3.9](#39-the-probes-behind-these-numbers).
 
-**P0.5 — FSAL tableaus (unblocks reuse, embedded pairs, and adaptive dt at once)**
-8. Add Bogacki–Shampine 3(2) and Dormand–Prince 5(4) to `getButcherTableau` and the registry (§2.1a). Verify the FSAL property falls out of `step_reuse_order` automatically.
-9. Finish the embedded-pair path so the second `b` vector is returned as an error estimate rather than discarded (§2.8).
+### 3.0 Constraints from the surrounding simulation
 
-**P1 — consistency**
-10. `pop('priorStep')` in all schemes and report it as unsupported rather than swallowing it (§2.9); `initializeSystem` in all schemes (§2.12).
-11. Replace `copy.deepcopy` with `initializeNewState` in `tvd`/`ruth`; stop mutating the caller's state (§2.11, §2.12).
-12. Fix `TVDRK3`'s `finalizeSystem` arity (§2.10); fix Semi-Implicit Euler's registered order and `getIntegrator`'s enum-name lookup (§2.13).
-13. Either wire up `copied` or delete it (§2.7); remove the `integrateDensity` hack (§2.14).
-14. Delete `integrateQ`, `is_multiple_return_values`, duplicate `verbosePrint`, duplicate `IntegrationSchemes`, the `torch.jit.script` enum decorator, unreachable returns, absolute import (§2.16).
+These are properties of the warpSPH simulation this library is written for. None of
+them is derivable from this repository, and every one of them removes work that a
+general-purpose ODE library would have to do. They are recorded here because the plan
+below is only correct under them — if any stops holding, re-read §3.7.
 
-**P2 — Warp**
-15. Backend-dispatch `clone_value`/`empty_value` so `wp.array` and containers are actually copied (§4.1) — do this *before* any Warp state exists, or the aliasing bug will be blamed on the integrators.
-16. `copyState=False` in the RK weight loop (§4.2, 9 → 5 clones for RK4).
-17. Buffer pooling + fused `axpy` kernel + graph capture (§4.2). Step reuse (§2.1) compounds here: on an FSAL tableau it removes a whole kernel launch *and* a whole state buffer per step.
-18. Decide the torch-autograd vs `wp.Tape` gradient story (§4.3).
+| Constraint | Why it is that way | What it buys |
+|---|---|---|
+| **Particles are never re-sorted.** No inlets or outlets either. | Deliberate performance trade to keep file I/O simple, and because ML bindings need to diff two states by elementwise comparison rather than by matching identities. | Particle index `i` means the same particle at every step. A step history is therefore **valid indefinitely** — this dissolves the largest objection to multistep. |
+| A `uid` integer tensor is carried in the state. | Lets particles be restored to their origin ids if that ever changes. | The cheap guard that turns "indices moved" from a silent wrong answer into an automatic restart. |
+| **`dt` is constant.** Where adaptivity exists it is applied *around* whole steps, not within them. | Networks would otherwise have to generalise across `dt`. | Fixed multistep coefficients are correct as written. No variable-step coefficient regeneration, no Nordsieck / fixed-leading-coefficient machinery. |
+| **The neighbour list is carried through the state**, moved over in `initializeNewState`, with a cheap velocity-Verlet-style validity check and a rebuild only when it fails. | Already the right design. | The "one RHS evaluation = one neighbour rebuild" assumption is **false here**. An implicit iteration costs one rebuild plus N cheap checks, not N rebuilds. This was the single largest cost objection to implicit methods and it does not apply. |
+| Gradients: torch has forward *and* reverse mode; warp currently has **reverse only**. | `wp.Tape` is a reverse-mode tape. | Decides the solver design — see §3.4. |
 
-**P3 — SPH features**
-19. Adaptive `dt` driven by the embedded pair from P0.5; particle masking as a first-class concept; neighbour-list reuse policy (§4.4).
+### 3.1 Headline: both are cheaper than they look, and only one wall is left
 
-**P4 — packaging/docs**
-20. Rewrite README (§3); fix `pyproject.toml` metadata + add `warp-lang`; rename the top-level package off `integrators`; add CI running the P0 test suite.
+The stage machinery already generalises further than the registry uses it.
+
+- **A diagonally-implicit Runge–Kutta driver needs no new state algebra at all.**
+  [verified] A ~60-line DIRK loop written against nothing but the existing public
+  helpers — `initializeNewState`, `applyStateUpdate`, `explicit_step`, `updateStep`,
+  `initializeSystem`, `finalizeSystem` — reaches full order on all three problems:
+
+  | tableau | oscillator | forced | damped |
+  |---|---|---|---|
+  | Backward Euler (1) | 0.97 | 1.01 | 0.96 |
+  | Implicit midpoint (2) | 2.00 | 2.00 | 2.00 |
+  | Trapezoidal / Crank–Nicolson (2) | 2.00 | 2.00 | 2.00 |
+  | SDIRK2, L-stable, γ=1−√2/2 (2) | 2.00 | 2.00 | 2.00 |
+
+  The reason it falls out for free is that a DIRK stage equation
+  `Y_i = y^n + dt·Σ_{j<i} a_ij k_j + dt·a_ii·f(Y_i)` has *exactly* the shape
+  `butcher._weighted_update` already builds. Iterating it is a loop around code that
+  exists.
+
+- **The `b`-weight accumulation already accepts a list of updates with a list of step
+  sizes** — `fields._resolve_delta` / `_accumulate` handle it, and nothing in the
+  registry uses that path. That is precisely `y^{n+1} = y^n + dt·Σ_j β_j k^{n-j}`, so
+  an Adams–Bashforth step is one `applyStateUpdate` call. [verified] AB2–AB4 and
+  ABM2–ABM4 (PECE) all reach nominal order.
+
+- **Two fixed Picard iterations are enough for a second-order implicit tableau.**
+  [verified] With no convergence test and no early exit — a fixed, data-independent
+  iteration count, which is what CUDA-graph capture and deterministic ML training both
+  need:
+
+  | iterations | implicit midpoint | SDIRK2 |
+  |---|---|---|
+  | 1 | 1.03 / 1.00 / 1.04 | 1.01 / 1.01 / 1.02 |
+  | **2** | **2.01 / 2.00 / 2.02** | **2.00 / 2.00 / 2.01** |
+  | 4 | 2.00 / 2.00 / 2.00 | 2.00 / 2.00 / 2.00 |
+
+  (oscillator / forced / damped.) Each iteration buys one order, so `p` iterations
+  suffice for order `p` from a trivial predictor. This matters more than it looks —
+  see §3.4.
+
+The remaining wall, and the only one §3.0 does not remove:
+
+- **The library never sees the state as a vector, and never sees `f`'s Jacobian.**
+  `f` is a black box returning a tagged update object. There is no `norm`, no `dot`,
+  no flatten. A fixed-point stage solve needs none of those — which is why the probe
+  works — but a *stiff* solve needs all of them.
+
+The wall this section used to lead with — "one RHS evaluation is one neighbour
+rebuild, so §2.3's neighbour-list item is a hard prerequisite" — **does not apply**,
+because the adjacency is carried through the state and revalidated cheaply (§3.0).
+Implicit iteration costs force evaluations, not neighbour searches.
+
+### 3.2 What a fixed-point solve can and cannot do
+
+Implicit methods exist for stiffness. A Picard iteration
+`Y^{m+1} = y^n + dt·a_ii·f(Y^m) + …` converges only when `|dt·a_ii·L| < 1`, which is
+the step restriction implicit methods are supposed to remove. Backward Euler —
+unconditionally stable in exact arithmetic — with the probe's fixed-point solve, on
+stiff oscillators at `dt = 0.1` [verified]:
+
+| `k` | `dt·ω` | Picard(20) | Newton, FD Jacobian |
+|---|---|---|---|
+| 4 | 0.2 | 4.7e-01 | 4.7e-01 |
+| 1e2 | 1.0 | 1.0e+00 (stalled, no damping) | 9.8e-04 |
+| 1e4 | 10 | **diverged** (3.7e+239) | 3.8e-15 |
+| 1e6 | 100 | **diverged** (nan) | 9.8e-17 |
+| 1e8 | 1000 | **diverged** (nan) | 1.0e-18 |
+
+Backward Euler is L-stable, so on a highly oscillatory undamped problem it should damp
+hard towards zero and stay bounded; the Newton column does exactly that at every
+stiffness, and is still bounded at `dt·ω = 1000`. Picard is already wrong at
+`dt·ω = 1` — it stalls without damping at all — and blows up past that. So the
+practical Picard limit is *tighter* than the textbook `|dt·a_ii·L| < 1`.
+
+The conclusion is not "implicit needs Newton", it is **two different regimes with two
+different answers**:
+
+- **Non-stiff, which is the normal regime here.** A fixed 2-iteration Picard gives
+  full order (§3.1), needs no norm, no Jacobian, no convergence test, no
+  data-dependent control flow. That is Phase 2 and it is genuinely cheap.
+- **Stiff.** Needs Newton, and Newton needs §3.4 — but that turns out to be much less
+  of an obstacle than it first appears.
+
+### 3.3 What implicit *does* buy, even without stiffness
+
+**Implicit midpoint is strictly better than Velocity Verlet for SPH.** It is
+symplectic, A-stable, symmetric, second order — and unlike the four splitting schemes
+flagged in §0, it keeps second order for a velocity-dependent force. [verified], on
+`oscillator` at `dt=0.05`, maximum relative energy error over the whole run:
+
+| scheme | T=20 | T=160 | order on `damped` |
+|---|---|---|---|
+| Implicit midpoint | 3.1e-15 | 6.9e-15 | **2.00** |
+| RK4 | 5.5e-06 | 4.4e-05 | 4.00 |
+| Velocity Verlet | 2.5e-03 | — | **1.0** |
+
+Bounded to machine precision over an 8× longer run, versus RK4's secular growth. For
+any SPH momentum equation with artificial viscosity or drag — i.e. all of them — this
+is the symplectic scheme the library currently does not have, at one nonlinear solve
+per step with a *single* stage. It is the single highest-value item in this section.
+
+### 3.4 Newton without forward-mode AD
+
+The question "can I run `f` under forward-mode AD to get the Jacobian action?" splits
+into two needs that are usually conflated, and that have **opposite** backend support.
+
+| Need | What it requires | torch | warp |
+|---|---|---|---|
+| **Solving** the stage equation with Newton: `(I − dt·a_ii·J)·δ = −G` | Jacobian-*vector* products `J·v` — **forward mode** (`jvp`) | `torch.func.jvp` ✓ | ✗ no forward mode |
+| **Differentiating through** a converged solve, for training | *vector*-Jacobian products `Jᵀ·λ` via the implicit function theorem — **reverse mode** (`vjp`) | ✓ | `wp.Tape` ✓ |
+
+So warp has exactly the mode the *gradient* needs and lacks exactly the mode the
+*solve* needs. That is a real asymmetry, and it is worth stating clearly because it
+inverts the intuition: the differentiability story is the part that ports, and the
+solver is the part that does not.
+
+**It does not block anything, because Newton does not actually need AD.** An inexact
+Newton needs the *residual* to be exact — and it is, it is just `f` — while the matvec
+`J·v` only has to be good enough to produce a descent direction. A finite-difference
+directional derivative `J·v ≈ (f(Y+εv) − f(Y))/ε` costs one extra RHS evaluation,
+needs no AD of any kind, and works identically under torch and warp.
+
+[verified] Backward Euler with a purely finite-difference Jacobian, no autodiff:
+bounded and correctly L-stably damped at every stiffness up to `dt·ω = 1000`, where
+Picard diverges past `dt·ω = 1` (table in §3.2). FD accuracy is not the limiting
+factor.
+
+**Recommended solver ladder**, cheapest first:
+
+1. **Fixed-count Picard (2 iterations).** Non-stiff. No AD, no norm, no branching.
+   Unrolls to a fixed-depth autograd graph, so it is differentiable in both backends
+   by construction, graph-capturable, and deterministic. **This covers the primary use
+   case and is all Phase 2 ships.**
+2. **JFNK with FD matvecs.** Stiff, backend-agnostic. Needs the flatten/unflatten
+   bijection over integrated fields (mechanical — the field metadata already names
+   them) plus GMRES.
+3. **`torch.func.jvp` matvecs.** Same as 2 with exact matvecs, as a torch-only fast
+   path. A speed and robustness optimisation, *not* a capability gate.
+4. **User-supplied `solve_linear`.** An ISPH code already owns a pressure-projection
+   solve and will always beat a generic Krylov method. This should be the contract;
+   1–3 are the fallbacks.
+
+**Caution: the probe's Jacobian does not scale, and this matters a lot for SPH.**
+`newton_probe.py` (§3.9) builds a *dense* Jacobian one column at a time — one extra
+RHS evaluation per unknown — which is fine for the probe's 3–6-variable oscillator and
+is why it can afford `max_iterations=20`. For a real state that is completely
+intractable: an SPH system has `N` particles times several integrated fields each, so
+`N` is 10⁶–10⁷ and a dense per-column FD Jacobian would cost 10⁶–10⁷ extra force
+evaluations *per Newton iteration*. Never build one.
+
+The distinction that has to survive from probe to implementation is between **forming
+`J`** (fine for a handful of unknowns, never do it above that) and **applying `J` to a
+single vector** (`J·v ≈ (f(Y+εv) − f(Y))/ε`, one extra RHS evaluation regardless of
+`N`). Rung 2 above — JFNK — only ever needs the latter: GMRES calls the matvec once
+per Krylov iteration, not once per unknown, so its cost scales with the number of
+Krylov iterations (typically single digits to a few dozen for a well-conditioned stage
+system), not with particle count. Keep the two operations named differently in the
+implementation (e.g. `jacobian_column` vs `jacobian_vector_product`) so the dense form
+the probe uses for a fast correctness check cannot be copy-pasted into the
+particle-scale path by accident.
+
+**On differentiating through the solve.** With a *fixed* iteration count you should
+simply unroll — 2 extra RHS evaluations in the graph — and for ML that is arguably the
+correct semantics anyway, since it is the gradient of what is actually computed at
+inference rather than the gradient of an idealised converged solution. The implicit
+function theorem adjoint only becomes worth its complexity when iterating to a
+tolerance, i.e. Phase 3 and later. Since IFT needs reverse mode, it works in both
+backends when it is needed.
+
+### 3.5 Shared groundwork (prerequisite for both)
+
+| | Item | Where | Effort |
+|---|---|---|---|
+| **S1** | `state_norm(state, rtol, atol)` — weighted RMS over integrated fields, Hairer–Wanner style, plus `state_difference`. `butcher._error_estimate` already builds a difference, so generalise rather than duplicate. Stable indexing (§3.0) means this is a plain elementwise reduction with no identity matching, which is also exactly what the ML bindings want. **Adaptive `dt` (§2.3) needs the identical primitive.** | `fields.py` | 1 d |
+| **S2** | `StepHistory` — an ordered container of `(t, dt, derivative projection)`, carried on `IntegrationResult` and accepted as a kwarg, exactly as `priorStep` is today. `priorStep` becomes the one-entry degenerate case; do **not** ship two overlapping reuse mechanisms. Store a *projection* onto the tagged derivative fields, not the whole user update object, which in a real SPH run carries far more than derivatives. | `specs.py`, all schemes | 1–2 d |
+| **S2g** | Two cheap history guards, replacing ~2 d of variable-step machinery. **(a)** record `dt` in each entry and restart if it changes — this is what makes fixed multistep coefficients honest under §3.0's "constant *for the most part*". **(b)** record the identity of the `uid` tensor (`data_ptr` + shape, or a generation counter) and restart if it moves. Both turn a silent wrong answer into an automatic, visible restart. | `specs.py` | 0.5 d |
+| **S3** | `IntegrationScheme` metadata: `implicit: bool`, `steps: int`, `stiffly_accurate: bool`, `stability: 'A'\|'L'\|'A(α)'\|None`, `startup_order: int`. `reuse.py` must not choke on schemes with no tableau *and* no `HANDROLLED_REUSE` entry — it currently returns `None` with a reason, which is right, but the multistep case wants its own answer. | `util.py`, `integration.py`, `reuse.py` | 1 d |
+| **S4** | `NonlinearSolver` protocol: `solve(residual, y0, norm, **opts) -> (y, converged, iterations)`. Ship `FixedPointSolver` with a **fixed iteration count** as the default (§3.1: 2 iterations for order 2). Pluggable from the start — rung 4 of the §3.4 ladder is the one that matters long-term. When rung 2 (JFNK) is built, keep its matvec a directional finite difference, never a dense Jacobian — see the caution in §3.4. | new `solvers.py` | 1–2 d |
+| **S5** | Generalise `testing.run` / `conftest.ALL_SCHEMES`. Both assume a stateless one-step callable `scheme(system, dt, f)`. A multistep scheme needs history threading and a starter, so every existing test breaks the day one is registered unless this lands first. | `testing.py`, `tests/conftest.py` | 1 d |
+
+**~5–6 engineer-days** for someone with this codebase in context. The `preprocess`
+caching policy that a general-purpose implicit driver would normally need as a
+blocker is **not needed** here — the simulation already carries and revalidates
+adjacency through the state (§3.0), by a better mechanism than a library-level cache
+would be. The one thing to check is that the *implicit driver* reuses a single stage
+buffer across iterations rather than calling `initializeNewState` per iteration as the
+probe does, so the adjacency is carried once rather than re-cloned each time. That is
+also what §2.1's buffer pooling wants, so it is aligned work, not a detour.
+
+### 3.6 Valid schemes and what each costs
+
+Effort is *marginal*, on top of the groundwork and the driver its group needs.
+"tableau only" means the scheme is a data entry in `getButcherTableau` plus a
+registry line — the same one-line cost that adding Dormand–Prince was.
+
+#### Diagonally implicit RK (sequential 1-stage solves)
+
+The probe driver is ~60 lines; budget ~150 for a registered one with the solver
+protocol, verbose output and scheme metadata wired in.
+
+| Scheme | Order | Stages | Stability | Symplectic | Marginal effort | Worth it? |
+|---|---|---|---|---|---|---|
+| **Implicit midpoint** (Gauss–Legendre s=1) | 2 | 1 | A | **yes** | tableau only | **yes — §3.3** |
+| **Backward Euler** | 1 | 1 | L | no | tableau only | yes, as the reference/fallback |
+| **Trapezoidal / Crank–Nicolson** (Lobatto IIIA-2) | 2 | 2 | A, not L | symmetric | tableau only | yes — cheap, and the classic pair with BDF2 |
+| **SDIRK2** (Ellsiepen, γ=1−√2/2) | 2 | 2 | L | no | tableau only | yes — L-stability matters for real stiffness |
+| **TR-BDF2** | 2(3) | 3 | L | no | tableau only | yes — stiffly accurate, embedded estimate, and the embedded path already works |
+| **ESDIRK3(2)4L[2]SA** (Kennedy–Carpenter) | 3(2) | 4 | L | no | tableau only | yes — explicit first stage is FSAL-shaped, so `reuse.py` handles it |
+| **ESDIRK4(3)6L[2]SA** | 4(3) | 6 | L | no | tableau only | later — same driver, more coefficients |
+
+The `a` matrix stops being strictly lower triangular. `reuse.py`'s
+`tableau_reuse_analysis` reads `a[-1]` and `c[-1]` and will need to understand
+"stiffly accurate" (`a[-1] == b`) as the implicit analogue of FSAL — a small, natural
+extension of code that already exists.
+
+#### Fully implicit RK (needs a *coupled* s·N-unknown solve — a different solver shape)
+
+| Scheme | Order | Stages | Stability | Symplectic | Marginal effort |
+|---|---|---|---|---|---|
+| **Gauss–Legendre s=2** | 4 | 2 | A | **yes** | 4–6 d (block solve) |
+| **Gauss–Legendre s=3** | 6 | 3 | A | **yes** | +1 d after the above |
+| **Radau IIA s=2 / s=3** | 3 / 5 | 2 / 3 | L, stiffly accurate | no | +2 d — the gold standard for stiff ODEs |
+| **Lobatto IIIA–IIIB pair** | 2s−2 | s | A | partitioned-symplectic | 3 d, and only pays off for separable Hamiltonians |
+
+Not recommended until something downstream demands it. The coupled solve is a genuine
+step up in solver machinery, not more tableau data — and its dense/block Jacobian is
+the same scale trap as §3.4's caution, worse: an `s·N × s·N` system rather than
+`N × N`.
+
+#### Linear multistep
+
+| Scheme | Order | Evals/step | History | Implicit | Marginal effort |
+|---|---|---|---|---|---|
+| **Adams–Bashforth 2–5** | k | **1** | k−1 updates | no | 1–2 d for the whole family |
+| **ABM predictor–corrector (PECE)** | k | 2 | k−1 updates | no (fixed corrections) | +1 d |
+| **Adams–Moulton 2–4** as a true corrector | k | solve | k−1 updates | yes | +1 d after the DIRK solver |
+| **BDF1–2** | 1, 2 | solve | k states | yes, A-stable | **2 d** — constant `dt` (§3.0) removes the variable-coefficient work entirely |
+| **BDF3–6** | 3–6 | solve | k states | yes, A(α)-stable only | +1 d; BDF7+ is not zero-stable, do not offer it |
+| **Störmer–Cowell / multistep Nyström** (`x'' = f(x)`) | k | 1 | k states | no | 3 d — fits `PositionUpdateSpec` well; Störmer–Verlet is its 2-step case |
+| **Gauss–Jackson** (8th-order Störmer–Cowell) | 8 | 1 | 8 | no | 1 wk — niche, orbital mechanics |
+
+AB's one evaluation per step is the real prize here: **one force evaluation per step
+at order 4**, against RK4's four, with fixed coefficients that are exactly correct
+under constant `dt` and a history that never expires under stable indexing (§3.0).
+Both of the things that normally make multistep painful are absent. Note that no
+linear multistep method is symplectic for a general Hamiltonian (Tang, 1993);
+symmetric LMMs applied to `x''=f(x)` do show good long-time energy behaviour, but they
+are subject to parasitic-root instability, so don't market them as symplectic.
+
+#### IMEX / additive RK — the right answer for SPH, and the most work
+
+**ARK3(2)4L[2]SA** and **ARK4(3)6L[2]SA** (Kennedy & Carpenter) pair an ESDIRK
+tableau for the stiff terms with an ERK tableau for the rest: viscosity, surface
+tension or the pressure term implicit, advection explicit. This is what production
+stiff-SPH actually wants, and it sidesteps §3.2 — the implicit part is the part with a
+tractable, often *linear* operator.
+
+It needs a split right-hand side (`f_explicit`, `f_implicit`), which is a **protocol
+change**: `updateStep` returns one update object today. Effort **1 wk** on top of a
+working DIRK driver and Newton solver. Gate it on a downstream that has the split.
+
+### 3.7 Pain points and limitations
+
+Ordered by what actually survives the §3.0 constraints. The three that used to head
+this list — particle resorting, variable `dt`, and neighbour rebuild cost — are all
+designed away by the surrounding simulation, and are kept here only as the conditions
+under which the plan stops being valid.
+
+**Multistep — what remains**
+
+1. **Startup order caps the whole method.** [verified] Self-starting AB — ramping the
+   order up as history accumulates — measures order **2.0 for AB3 and AB4 alike**,
+   because the single AB1/Euler startup step contributes `O(dt²)` globally. With a
+   Dormand–Prince starter for the first k−1 steps: AB3 → 2.97, AB4 → 3.99, ABM4 →
+   4.03. So a high-order starter is not a refinement, it is the difference between
+   AB4 and AB2. The starter must be registered scheme metadata, not caller policy.
+   **This is now the only structural obstacle to multistep, and it is a solved
+   problem** — the FSAL pairs added in v0.5.0 are exactly the right starters.
+2. **Backprop-through-time depth grows by `k`.** This is the one that bites the
+   primary use case. History links step *n* to step *n−k* in the autograd graph, so a
+   k-step method deepens BPTT by a factor of k on top of however many steps are already
+   unrolled for training. Needs a documented detach policy — and note the inversion
+   against implicit methods, which cost extra graph *width* per step but no extra depth
+   (§3.4). If training-time memory is the binding constraint, that inversion may matter
+   more than the RHS-evaluation count that motivated multistep in the first place.
+3. **Memory.** k derivative-shaped buffers at 10⁶–10⁷ particles. Store the projection
+   onto tagged derivative fields, not the user's whole update object (S2).
+4. **`copied` / `ephemeral` semantics.** History entries were computed against a
+   *previous* step's adjacency. Since that adjacency is carried and revalidated rather
+   than rebuilt (§3.0), this is now a question about `lastStageSystem` and
+   `copy_finalized_fields` bookkeeping rather than a correctness hazard — but read it
+   before writing the code, not after.
+
+**Multistep — dormant, guard rather than solve**
+
+5. **Resorting would invalidate history silently.** Indices are stable today by
+   deliberate design, so `k^{n-1}` stays meaningful indefinitely. If that ever changes,
+   history becomes garbage with no error raised — a silent wrong answer, the same
+   class of failure the value-dispatched cloning fix closed for state aliasing. The
+   `uid` tensor makes the guard cheap (S2g-b): check its identity, restart on mismatch.
+   Guard, don't build a permutation-tracking system for a case that does not exist.
+6. **Variable `dt` would break the fixed coefficients.** Constant `dt` makes fixed
+   β coefficients exactly correct. "For the most part" is doing real work in that
+   sentence, so record `dt` per history entry and restart on change (S2g-a) — 0.5 d
+   instead of the ~2 d of divided-difference coefficient regeneration a CFL-driven
+   code would need.
+
+**Implicit — what remains**
+
+7. **The fixed-point default is not a stiff solver.** [verified] It stalls at
+   `dt·ω = 1` and diverges past it (§3.2). Ship it as the default, because it covers
+   the actual regime at 2 iterations per stage, but document the limit in the same
+   breath and do not let the README imply otherwise.
+8. **Boundary particles must be excluded from the solve** or the stage system is
+   singular. §2.3's masking item becomes a prerequisite for Phase 3+, not a parallel
+   track. (Phase 2's fixed-count Picard has no linear system and so no singularity —
+   another reason to ship that first.)
+9. **Convergence failure needs a step-rejection path**, the same machinery adaptive
+   `dt` (§2.3) needs. Do not build two. Only applies once iteration counts stop being
+   fixed, i.e. Phase 3+.
+10. **Cost per step is honestly higher.** With adjacency carried through the state
+    (§3.0) an implicit step is ~2–3× an explicit one at 2 Picard iterations, not the
+    ~50× it would be if every iteration rebuilt neighbours. That is the real price of
+    implicitness and it buys A-stability and symplecticity (§3.3).
+
+**Implicit — resolved by §3.4, recorded so it is not re-litigated**
+
+11. **Warp's lack of forward-mode AD does not block the solver.** FD directional
+    derivatives drive Newton to `dt·ω = 1000` with no AD at all [verified], and a
+    fixed-count Picard needs no Jacobian action whatsoever. `torch.func.jvp` is a
+    fast path, not a gate. The thing that *does* need care at scale is the FD matvec
+    staying a directional derivative rather than a dense Jacobian — see §3.4's caution.
+12. **Warp graph capture is fine with a fixed iteration count.** A data-dependent
+    iteration count breaks capture (§2.1); the recommended default does not have one.
+    Decide alongside §2.2, but the constraint points the same way as ML determinism
+    does, which is a rare piece of luck.
+
+### 3.8 Phased plan
+
+Each phase is independently shippable and independently useful.
+
+| Phase | Content | Effort | Gate |
+|---|---|---|---|
+| **0** | S1–S5 + S2g groundwork (§3.5) | 5–6 d | none — S1 also unblocks §2.3's adaptive `dt` |
+| **2** | DIRK driver + fixed-count `FixedPointSolver` + implicit midpoint, backward Euler, trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2) | 4–5 d | Phase 0 |
+| **1** | Explicit multistep: AB2–5 + ABM PECE, FSAL starter, `dt`/`uid` guards | 2–3 d | Phase 0 |
+| **3** | JFNK with FD matvecs + user `solve_linear` hook + particle masking | 1–1.5 wk | Phase 2, **and** a downstream that is actually stiff |
+| **4** | BDF1–6, fixed coefficients | 3–4 d | Phase 3 |
+| **5** | IMEX / ARK, split right-hand side | 1 wk | Phase 3 + a downstream with a split RHS |
+| **6** | Fully implicit: Gauss–Legendre, Radau IIA | 1–1.5 wk | demand-driven; symplectic order 4 is the draw |
+
+Phases 1 and 2 are listed out of numeric order deliberately: Phase 1's old gate —
+"measure the resort cadence first" — is void, because there is no resorting (§3.0),
+but Phase 2 has the stronger standalone case, so it should land first.
+
+**Recommendation: Phase 0 → 2 → 1, ~2 weeks total, then stop and reassess.**
+
+- **Phase 2 is the headline.** Implicit midpoint is symplectic, A-stable, and holds
+  order 2 for velocity-dependent forces — which nothing currently registered does
+  (§3.3). At a fixed 2 Picard iterations it needs no norm, no Jacobian, no branching,
+  and unrolls to a fixed-depth graph, so it is differentiable in both backends by
+  construction and CUDA-graph-capturable. Five more tableaus come along for one
+  registry line each.
+- **Phase 1 is now unconditionally worth doing**, where before it was gated on an
+  unmeasured number. AB4 at one force evaluation per step against RK4's four, with
+  exactly-correct fixed coefficients and a history that never expires. The one thing
+  to weigh first is pain point 2 in §3.7: k-step history deepens BPTT by k, so if
+  training memory is already the binding constraint, the win is smaller than the
+  evaluation count suggests. That is a question about the training setup, not about
+  this library, and it is worth answering before spending the 2–3 days.
+- **Phases 3–6 stay gated on a downstream that is actually stiff.** Nothing here needs
+  them yet, and building a solver contract with no user is the same mistake §2.2 warns
+  about for gradients. §3.4 records the design so the decision does not have to be
+  re-derived when a user appears.
+
+**Testing.** Every phase extends the existing net rather than replacing it: the four
+problems in `testing.py` already separate the failure modes (`forced` catches stage
+times, `damped` catches the separable-Hamiltonian assumption, `kepler` catches
+linear-only errors). Add a stiff problem for Phase 2+ (`stiff_oscillator`, `k=1e4`)
+and assert that A-stable schemes stay bounded at `dt·ω = 10` while explicit ones do
+not — that test is what stops §3.2 from being quietly forgotten. Phase 1 additionally
+needs a test that a `dt` change or a `uid` change forces a restart rather than
+consuming stale history; that is the only place a silent wrong answer can enter.
+
+### 3.9 The probes behind these numbers
+
+Five scripts, written against the installed v0.5.0 and using only public helpers.
+They are not committed — they are evidence for the tables above — but they are the
+starting point for Phases 1 and 2 and worth promoting to
+`scripts/implicit_multistep_probe.py` if this work is picked up.
+
+| probe | establishes |
+|---|---|
+| `dirk_probe.py` | A DIRK driver over existing primitives reaches order 1/2/2/2 for backward Euler, implicit midpoint, trapezoidal, SDIRK2 on `oscillator` / `forced` / `damped` (§3.1) |
+| `multistep_probe.py` | The list-of-updates path already expresses Adams–Bashforth; AB2–4 and ABM2–4 run; implicit midpoint's energy drift is bounded at 1e-15 over T=160 (§3.1, §3.3) |
+| `starter_probe.py` | Self-starting AB caps at order 2; a Dormand–Prince starter recovers 2.97 / 3.99 / 4.03 (§3.7 pain point 1) |
+| `stiff_probe.py` | The Picard stage solve diverges at `dt·ω ≳ 10`, i.e. exactly where implicit methods are needed (§3.2) |
+| `newton_probe.py` | 2 fixed Picard iterations suffice for order 2 (§3.1); Newton on a **dense, per-column finite-difference** Jacobian — no AD, forward or reverse — stays bounded and L-stably damped to `dt·ω = 1000` (§3.2, §3.4). The dense form is a toy-scale correctness check only — see §3.4's caution before building anything from it. |
 
 ---
 
@@ -563,8 +629,9 @@ For an SPH driver the following are missing and each interacts with the stage lo
 
 ### `scripts/step_reuse_convergence.py` (committed)
 
-The step-reuse study of §2.1, as a reusable tool. It predicts the retained order
-from the tableau and measures it, so the two can be compared:
+A reusable tool for the first-stage reuse study behind §0's headline numbers. It
+predicts the retained order from the tableau and measures it, so the two can be
+compared:
 
 ```bash
 conda activate warp
@@ -573,15 +640,16 @@ conda activate warp
 python scripts/step_reuse_convergence.py --scheme RK4
 python scripts/step_reuse_convergence.py --scheme 'SSP RK3' --problem forced
 
-# every registered scheme, one line each (this produced the §2.1 table)
+# every registered scheme, one line each
 python scripts/step_reuse_convergence.py --all
 
 # log-log convergence plot with reference slopes
 python scripts/step_reuse_convergence.py --scheme RK4 --plot rk4_reuse.png
 ```
 
-`--problem oscillator` is autonomous, `--problem forced` (`x'' = cos t`) is not —
-the gap between them is what exposes the stage-time bugs of §2.2.
+`--problem oscillator` is autonomous, `--problem forced` (`x'' = cos t`) is not — the
+gap between them is what would expose a stage-time bug in a scheme's tableau or
+hand-rolled logic, which is why `test_convergence.py` runs every scheme on both.
 
 Sample output showing the trade concretely:
 
@@ -613,19 +681,17 @@ measured order   no reuse: 2.01
 
 ### `tests/` (committed)
 
-The ad-hoc probes that produced the original measurements have been rewritten as a
-pytest suite. `pytest` from the repository root, inside the `warp` environment; ~100 s
-for 680 tests.
+`pytest` from the repository root, inside the `warp` environment; ~100 s for 680 tests.
 
 | file | what it pins down |
 |---|---|
-| `test_convergence.py` | every scheme reaches its registered order on `oscillator` (autonomous), `forced` (time-dependent) and `kepler` (nonlinear); errors decrease monotonically; the four splitting schemes lose order on `damped` and nothing else does (§2.2, §2.3) |
-| `test_step_reuse.py` | measured reuse order matches `scheme.reuse_order` exactly — neither optimistic nor pessimistic; FSAL reuse is bit-for-bit free; Forward Euler refuses; the four non-reusing schemes warn, ignore, and do not leak `priorStep` into the RHS; the warning fires once and names the achieved order (§2.1, §2.9) |
-| `test_state.py` | `nograd()` on non-tensor fields; untagged-field agreement between the two clone paths; stage times translate by `dt` each step; `t` stays a Python `float`; the update helpers do not advance time; `getIntegrator` accepts all three spellings; schemes do not mutate the caller (§2.3, §2.5, §2.6, §2.12, §2.13, §2.15) |
-| `test_embedded.py` | the error estimate reaches the caller, scales as `dt^p`, brackets the true error, and the *high-order* branch is the one propagated; tableau row sums and the FSAL property (§2.8) |
-| `test_hamiltonian.py` | the `dissipation` flag predicts energy behaviour: symplectic schemes stay inside an `O(dt^p)` band over an 8× longer run, dissipative ones grow ~linearly (§2.13) |
-| `test_copied_fields.py` | `copied()` fields arrive holding the *last stage's* value, `ephemeral()` ones do not survive at all (§2.7) |
-| `test_backend_dispatch.py` | `wp.array`, lists, dicts and nested containers are cloned rather than aliased; `to(device)` reaches inside them; unknown types warn once; and no scheme hands the caller's own container back (§4.1) |
+| `test_convergence.py` | every scheme reaches its registered order on `oscillator` (autonomous), `forced` (time-dependent) and `kepler` (nonlinear); errors decrease monotonically; the four splitting schemes lose order on `damped` and nothing else does |
+| `test_step_reuse.py` | measured reuse order matches `scheme.reuse_order` exactly — neither optimistic nor pessimistic; FSAL reuse is bit-for-bit free; Forward Euler refuses; the four non-reusing schemes warn, ignore, and do not leak `priorStep` into the RHS; the warning fires once and names the achieved order |
+| `test_state.py` | `nograd()` on non-tensor fields; untagged-field agreement between the two clone paths; stage times translate by `dt` each step; `t` stays a Python `float`; the update helpers do not advance time; `getIntegrator` accepts all three spellings; schemes do not mutate the caller |
+| `test_embedded.py` | the error estimate reaches the caller, scales as `dt^p`, brackets the true error, and the *high-order* branch is the one propagated; tableau row sums and the FSAL property |
+| `test_hamiltonian.py` | the `dissipation` flag predicts energy behaviour: symplectic schemes stay inside an `O(dt^p)` band over an 8× longer run, dissipative ones grow ~linearly |
+| `test_copied_fields.py` | `copied()` fields arrive holding the *last stage's* value, `ephemeral()` ones do not survive at all |
+| `test_backend_dispatch.py` | `wp.array`, lists, dicts and nested containers are cloned rather than aliased; `to(device)` reaches inside them; unknown types warn once; and no scheme hands the caller's own container back |
 | `test_kwargs_passthrough.py` | caller kwargs survive every scheme — `verbose` in both states, alongside `priorStep`, and an unknown kwarg reaching the RHS intact |
 
 The shared harness — three tagged-field reference systems, four problems with analytic
