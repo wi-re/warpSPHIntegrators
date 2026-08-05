@@ -1,3 +1,6 @@
+import functools
+import warnings
+
 from .util import IntegrationScheme, updateStateEuler, updateStateSemiImplicitEuler
 from .util import applyStateUpdate, applyPositionUpdate, applyVelocityUpdate, applyQuantityUpdate
 from .specs import (
@@ -28,10 +31,15 @@ from .fields import (
     get_reference_state,
 )
 from .euler import integrateExplicitEuler, integrateSemiImplicitEuler
-from .butcher import forwardEuler, RungeKutta2, midPoint, heunsMethod, ralston2nd, RungeKutta3, heunsMethod3rd, ralston3rd, Wray3rd, SSPRK3, RungeKutta4, RungeKutta4alt, Nystrom5th, EPEC, EPECmodified
+from .butcher import (
+    forwardEuler, RungeKutta2, midPoint, heunsMethod, ralston2nd, RungeKutta3,
+    heunsMethod3rd, ralston3rd, Wray3rd, SSPRK3, RungeKutta4, RungeKutta4alt,
+    Nystrom5th, BogackiShampine, DormandPrince, CashKarp, EPEC, EPECmodified,
+)
 from .verlet import leapFrog, symplecticEuler, velocityVerlet
 from .tvd import TVDRK3, TVDRK2
 from .ruth import PEFRL, VEFRL
+from .reuse import step_reuse_analysis, step_reuse_order, supports_step_reuse, is_fsal
 
 semiImplicitEuler = lambda state, dt, f, *args, **kwargs: integrateSemiImplicitEuler(state, dt, f, *args, **kwargs)
 explicitEuler = lambda state, dt, f, *args, **kwargs: integrateExplicitEuler(state, dt, f, *args, **kwargs)
@@ -39,6 +47,20 @@ explicitEuler = lambda state, dt, f, *args, **kwargs: integrateExplicitEuler(sta
 IntegrationSchemes = []
 
 from .util import IntegrationSchemeType
+
+# The two boolean flags are (dissipation, nonLagrangian).
+#
+# `dissipation` is set to False exactly for the symplectic schemes (the Verlet
+# family and the Forest-Ruth variants), which conserve a shadow Hamiltonian and so
+# do not drift in energy secularly, and True for the plain Runge-Kutta schemes,
+# which do. That is the only reading of the flag consistent with the values that
+# were already recorded, and it removes the copy-paste inconsistencies noted in
+# NOTES.md 2.13 (symplecticEuler was True while leapFrog was False; PEFRL was False
+# while VEFRL was True).
+#
+# `nonLagrangian` now agrees with `dissipation` for every registered scheme, i.e. it
+# carries no information. Nothing in the codebase reads either flag. Keep them for
+# API compatibility, but `nonLagrangian` is a candidate for removal.
 
 IntegrationSchemes.append(IntegrationScheme(forwardEuler, 'Forward Euler', IntegrationSchemeType.forwardEuler, 1, True, True))
 IntegrationSchemes.append(IntegrationScheme(RungeKutta2,  'Midpoint',      IntegrationSchemeType.rungeKutta2, 2, True, True))
@@ -52,17 +74,68 @@ IntegrationSchemes.append(IntegrationScheme(SSPRK3,       'SSP RK3',       Integ
 IntegrationSchemes.append(IntegrationScheme(RungeKutta4,  'RK4',           IntegrationSchemeType.rungeKutta4, 4, True, True))
 IntegrationSchemes.append(IntegrationScheme(RungeKutta4alt, 'RK4 (alternative)', IntegrationSchemeType.rungeKutta4alt, 4, True, True))
 IntegrationSchemes.append(IntegrationScheme(Nystrom5th,   'Nystrom 5th order', IntegrationSchemeType.nystrom5th, 5, True, True))
+IntegrationSchemes.append(IntegrationScheme(BogackiShampine, 'Bogacki-Shampine 3(2)', IntegrationSchemeType.bogackiShampine, 3, True, True))
+IntegrationSchemes.append(IntegrationScheme(DormandPrince, 'Dormand-Prince 5(4)', IntegrationSchemeType.dormandPrince, 5, True, True))
+IntegrationSchemes.append(IntegrationScheme(CashKarp,     'Cash-Karp 5(4)', IntegrationSchemeType.cashKarp, 5, True, True))
 IntegrationSchemes.append(IntegrationScheme(leapFrog, 'Leap Frog', IntegrationSchemeType.leapFrog, 2, False, False))
-IntegrationSchemes.append(IntegrationScheme(symplecticEuler, 'Symplectic Euler', IntegrationSchemeType.symplecticEuler, 2, True, True))
+IntegrationSchemes.append(IntegrationScheme(symplecticEuler, 'Symplectic Euler', IntegrationSchemeType.symplecticEuler, 2, False, False))
 IntegrationSchemes.append(IntegrationScheme(velocityVerlet, 'Velocity Verlet', IntegrationSchemeType.velocityVerlet, 2, False, False))
 IntegrationSchemes.append(IntegrationScheme(PEFRL, 'PEFRL', IntegrationSchemeType.pefrl, 4, False, False))
-IntegrationSchemes.append(IntegrationScheme(VEFRL, 'VEFRL', IntegrationSchemeType.vefrl, 4, True, True))
+IntegrationSchemes.append(IntegrationScheme(VEFRL, 'VEFRL', IntegrationSchemeType.vefrl, 4, False, False))
 IntegrationSchemes.append(IntegrationScheme(EPEC, 'EPEC', IntegrationSchemeType.epec, 2, True, True))
-IntegrationSchemes.append(IntegrationScheme(EPECmodified, 'EPEC Modified', IntegrationSchemeType.epecModified, 2, False, False))
+IntegrationSchemes.append(IntegrationScheme(EPECmodified, 'EPEC Modified', IntegrationSchemeType.epecModified, 2, True, True))
 IntegrationSchemes.append(IntegrationScheme(TVDRK3, 'TVD RK3', IntegrationSchemeType.tvdRK3, 3, True, True))
 IntegrationSchemes.append(IntegrationScheme(TVDRK2, 'TVD RK2', IntegrationSchemeType.tvdRK2, 2, True, True))
-IntegrationSchemes.append(IntegrationScheme(lambda state, dt, f, *args, **kwargs: integrateSemiImplicitEuler(state, dt, f, *args, **kwargs), 'Semi-Implicit Euler', IntegrationSchemeType.semiImplicitEuler, 2, True, True))
-IntegrationSchemes.append(IntegrationScheme(lambda state, dt, f, *args, **kwargs: integrateExplicitEuler(state, dt, f, *args, **kwargs), 'Explicit Euler', IntegrationSchemeType.explicitEuler, 1, True, True))
+# Semi-implicit (symplectic) Euler is first order, not second: it is one force
+# evaluation per step, and measures 1.0 (see NOTES.md 2.13).
+IntegrationSchemes.append(IntegrationScheme(semiImplicitEuler, 'Semi-Implicit Euler', IntegrationSchemeType.semiImplicitEuler, 1, False, False))
+IntegrationSchemes.append(IntegrationScheme(explicitEuler, 'Explicit Euler', IntegrationSchemeType.explicitEuler, 1, True, True))
+
+
+# --------------------------------------------------------------------------- #
+# Reuse metadata + guard                                                       #
+# --------------------------------------------------------------------------- #
+
+_warned_reuse = set()
+
+
+def _with_reuse_guard(scheme: IntegrationScheme) -> IntegrationScheme:
+    """Attach the reuse analysis to a scheme and warn (once) if reuse costs order.
+
+    The warning is deliberately not an error: trading a known order loss for half the
+    right-hand-side evaluations is a legitimate choice, and one the SPH literature
+    makes routinely. The caller is only entitled to know which trade they are making.
+    """
+    analysis = step_reuse_analysis(scheme)
+    inner = scheme.function
+
+    @functools.wraps(inner)
+    def guarded(state, dt, f, *args, **kwargs):
+        if kwargs.get('priorStep') is not None and scheme.name not in _warned_reuse:
+            if analysis.order is None:
+                _warned_reuse.add(scheme.name)
+                warnings.warn(
+                    f"{scheme.name}: {analysis.reason}. The supplied priorStep will be ignored.",
+                    RuntimeWarning, stacklevel=2)
+            elif analysis.order < scheme.order:
+                _warned_reuse.add(scheme.name)
+                warnings.warn(
+                    f"{scheme.name}: first-stage reuse (priorStep) drops the convergence order "
+                    f"from {scheme.order} to {analysis.order}, because {analysis.reason}. "
+                    f"This halves the right-hand-side cost and may still be the right trade; "
+                    f"use integrators.supports_step_reuse(scheme) to check beforehand, or pick "
+                    f"an FSAL scheme (Bogacki-Shampine 3(2), Dormand-Prince 5(4)) for lossless reuse.",
+                    RuntimeWarning, stacklevel=2)
+        return inner(state, dt, f, *args, **kwargs)
+
+    # functools.wraps does not carry non-function attributes set on the original.
+    if hasattr(inner, 'butcherTableau'):
+        guarded.butcherTableau = inner.butcherTableau
+    return scheme._replace(function=guarded, reuse_order=analysis.order, fsal=analysis.fsal)
+
+
+IntegrationSchemes[:] = [_with_reuse_guard(scheme) for scheme in IntegrationSchemes]
+
 
 def getPreferredScheme(order):
     if order == 1:
@@ -78,14 +151,16 @@ def getPreferredScheme(order):
     else:
         raise ValueError(f"No scheme for order {order}")
 
-def getIntegrator(integrator: str):
+
+def getIntegrator(integrator):
+    """Look a scheme up by display name, enum member, or enum member name."""
     for scheme in IntegrationSchemes:
-        if scheme.name == integrator or scheme.identifier == integrator:
+        if (scheme.name == integrator
+                or scheme.identifier == integrator
+                or scheme.identifier.name == integrator):
             return scheme
     raise ValueError(f"Unknown integrator {integrator}")
 
-def getIntegrationEnum(integrator: str):
-    for scheme in IntegrationSchemes:
-        if scheme.name == integrator or scheme.identifier.name == integrator:
-            return scheme.identifier
-    raise ValueError(f"Unknown integrator {integrator}")
+
+def getIntegrationEnum(integrator):
+    return getIntegrator(integrator).identifier

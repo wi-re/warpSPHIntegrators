@@ -1,10 +1,14 @@
 from typing import Union, Tuple, NamedTuple
-from .util import updateStateEuler, updateStateSemiImplicitEuler
-import torch
-import copy
+from .util import (
+    applyStateUpdate,
+    finalizeSystem,
+    initializeSystem,
+    unpack_prior_step,
+    updateStateEuler,
+    updateStep,
+)
 import numpy as np
-from .util import split_return, preprocessSystem, postprocessSystem, finalizeSystem, updateStep, initializeSystem
-from .specs import IntegrationResult, StageResult
+from .specs import IntegrationResult, StageResult, blend_state, explicit_step
 from torch.profiler import record_function
 
 
@@ -26,24 +30,19 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
         if verbose:
             print(f"[Integrator] Butcher: Starting with initial state at t={initialState.t:.4f}")
         currentState = initialState.initializeNewState(*args, **kwargs)
+        # Stage 0 sits at t^n. The user's initializeNewState is not required to
+        # forward `t`, so set it explicitly rather than inheriting whatever came
+        # back (see NOTES.md 2.3).
+        currentState.t = float(initialState.t)
         if verbose:
             if priorStep is not None:
                 print(f"[Integrator] Using prior step as k0")
             else:
                 print(f"[Integrator] Running first step to compute k0")
         if priorStep is None:
-            k0, r0 = updateStep(initialState, currentState, dt, f, *args, **kwargs) 
+            k0, r0 = updateStep(initialState, currentState, dt, f, *args, **kwargs)
         else:
-            if isinstance(priorStep, StageResult):
-                if verbose:
-                    print(f"[Integrator] Extracting k0 and r0 from priorStep NamedTuple with fields: {priorStep._fields} and values: {priorStep}")
-                k0, r0 = priorStep.update, priorStep.aux
-            elif isinstance(priorStep, Tuple):
-                if verbose:
-                    print(f"[Integrator] Extracting k0 and r0 from priorStep tuple with values: {priorStep}")
-                k0, r0 = priorStep
-            else:
-                raise ValueError(f"Invalid priorStep format: {priorStep}")
+            k0, r0 = unpack_prior_step(priorStep, verbose)
         ks = [k0]
         rs = [r0]
         # if verbose:
@@ -59,7 +58,7 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
                         if verbose:
                             print(f"[Integrator] Updating state for k{ic+1} with a={a:.4f} and dt={dt:.4f} using k{i}")
                         currentState = updateStateEuler(currentState, ks[i], a * dt, copyState = False, **kwargs)
-                currentState.t = initialState.t + c * dt
+                currentState.t = float(initialState.t + c * dt)
             with record_function(f"[Integration] Butcher: k{ic+1}"):
                 if verbose:
                     print(f"[Integrator] Computing k{ic+1} with c={c:.4f} and a={current_as}")
@@ -67,40 +66,78 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
                 ks.append(k)
                 rs.append(r)
         
+        # The buffer the last right-hand-side evaluation ran on. `copied` fields are
+        # taken from here when the final state is assembled.
+        lastStageState = currentState
+
         with record_function("[Integration] Butcher: Update"):
+            stages = [StageResult(aux=r, update=k) for r, k in zip(rs, ks)]
+
             if not isinstance(butcherTableau.b, tuple):
                 if verbose:
                     print(f"[Integrator] Updating state with b={butcherTableau.b} and dt={dt:.4f}")
-                new_state = initialState.initializeNewState(*args, **kwargs)
-                for i, b in enumerate(butcherTableau.b):
-                    if b != 0:
-                        if verbose:
-                            print(f"[Integrator] Updating state with b={b:.4f} and dt={dt:.4f} using k{i}")
-                        new_state = updateStateEuler(new_state, ks[i], b * dt, **kwargs)
-                new_state.t = initialState.t + dt
-                if verbose:                    
+                new_state = _weighted_update(initialState, ks, butcherTableau.b, dt, *args, **kwargs)
+                new_state.t = float(initialState.t + dt)
+                if verbose:
                     print(f"[Integrator] Finalizing state at t={new_state.t:.4f} with b={butcherTableau.b} and dt={dt:.4f}")
-                finalizeSystem(new_state, initialState, dt, rs, ks, butcherTableau.b, *args, **kwargs)
-                return IntegrationResult(state=new_state, stages=[StageResult(aux=r, update=k) for r, k in zip(rs, ks)])
-            else:
-                new_states = []
-                for b_ in butcherTableau.b:
-                    if verbose:
-                        print(f"[Integrator] Updating state with b={butcherTableau.b} and dt={dt:.4f} [substep with b={b_}]")
-                    new_state = initialState.initializeNewState(*args, **kwargs)
-                    for i, b in enumerate(b_):
-                        if b != 0:
-                            if verbose:
-                                print(f"[Integrator] Updating state with b={b:.4f} and dt={dt:.4f} using k{i} [substep with b={b_}]")
-                            new_state = updateStateEuler(new_state, ks[i], b * dt, **kwargs)
-                    new_state.t = initialState.t + dt
-                    new_states.append(new_state)
-                for new_state in new_states:
-                    if verbose:                    
-                        print(f"[Integrator] Finalizing state at t={new_state.t:.4f} with b={butcherTableau.b} and dt={dt:.4f}")
-                    finalizeSystem(new_state, initialState, dt, rs, ks, b_, *args, **kwargs)
-                # For embedded schemes, return the last state and all stages
-                return IntegrationResult(state=new_states[-1], stages=[StageResult(aux=r, update=k) for r, k in zip(rs, ks)])
+                finalizeSystem(new_state, initialState, dt, rs, ks, butcherTableau.b,
+                               *args, lastStageSystem=lastStageState, **kwargs)
+                return IntegrationResult(state=new_state, stages=stages)
+
+            # Embedded pair: b[0] is the propagated solution, b[1] the lower-order
+            # estimate. Only b[0] is finalized and returned as `state`; the pair is
+            # reported as a state-shaped `error` (see _error_estimate).
+            b_main, b_embedded = butcherTableau.b[0], butcherTableau.b[1]
+            if verbose:
+                print(f"[Integrator] Embedded pair: propagating b={b_main}, error estimate against b={b_embedded}")
+            new_state = _weighted_update(initialState, ks, b_main, dt, *args, **kwargs)
+            new_state.t = float(initialState.t + dt)
+            error = _error_estimate(initialState, ks, b_main, b_embedded, dt, *args, **kwargs)
+            finalizeSystem(new_state, initialState, dt, rs, ks, b_main,
+                           *args, lastStageSystem=lastStageState, **kwargs)
+            return IntegrationResult(state=new_state, stages=stages, error=error)
+
+
+def _weighted_update(initialState, ks, weights, dt, *args, **kwargs):
+    """y^{n+1} = y^n + dt * sum_i weights[i] * k_i, allocating one state.
+
+    `verbose` is read out of kwargs rather than taken as a parameter: the schemes
+    forward the caller's kwargs wholesale and never pop `verbose`, so a named
+    parameter ahead of *args would be bound twice.
+    """
+    verbose = bool(kwargs.get('verbose', False))
+    new_state = initialState.initializeNewState(*args, **kwargs)
+    for i, b in enumerate(weights):
+        if b != 0:
+            if verbose:
+                print(f"[Integrator] Updating state with b={b:.4f} and dt={dt:.4f} using k{i}")
+            # copyState=False: accumulate in place. The clone already happened above.
+            new_state = updateStateEuler(new_state, ks[i], b * dt, copyState=False, **kwargs)
+    return new_state
+
+
+def _error_estimate(initialState, ks, b_main, b_embedded, dt, *args, **kwargs):
+    """Difference between the two solutions of an embedded pair, as a state.
+
+    Returns a state of the same type as the integrated one whose integrated fields
+    hold ``y_main - y_embedded = dt * sum_i (b_main[i] - b_embedded[i]) * k_i``.
+    The initial state cancels out, so it is scaled away with ``self_scale=0`` on the
+    first contribution rather than being subtracted afterwards.
+    """
+    db = np.asarray(b_main, dtype=float) - np.asarray(b_embedded, dtype=float)
+    error = initialState.initializeNewState(*args, **kwargs)
+    error.t = float(initialState.t + dt)
+    zeroed = False
+    for i, d in enumerate(db):
+        if d == 0:
+            continue
+        blend = blend_state(self_scale=0.0) if not zeroed else None
+        applyStateUpdate(error, ks[i], explicit_step(float(d) * dt, blend=blend), **kwargs)
+        zeroed = True
+    if not zeroed:
+        # The two weight vectors agree; the estimate is identically zero.
+        applyStateUpdate(error, ks[0], explicit_step(0.0, blend=blend_state(self_scale=0.0)), **kwargs)
+    return error
 
 
 def getButcherTableau(scheme, alpha = 1/2, beta = 2/3):
@@ -202,7 +239,7 @@ def getButcherTableau(scheme, alpha = 1/2, beta = 2/3):
         )
     elif scheme == 'Nystrom5':
         return butcherTableau(
-            a = np.array([[0,       0,      0,     0, 0,0], 
+            a = np.array([[0,       0,      0,     0, 0,0],
                           [1/3,     0,      0,     0, 0, 0],
                           [4/25, 6/25,      0,     0, 0, 0],
                           [1/4,     -3,  15/4,     0, 0, 0],
@@ -211,44 +248,96 @@ def getButcherTableau(scheme, alpha = 1/2, beta = 2/3):
             b = np.array([23/192, 0, 125/192,  0, -27/64, 125/192]),
             c = np.array([0, 1/3, 2/5, 1, 2/3, 4/5])
         )
+    # ---- Embedded pairs -------------------------------------------------- #
+    # `b` is a tuple (propagated weights, embedded lower-order weights). The first
+    # entry advances the solution; the difference between the two is returned as
+    # IntegrationResult.error for step size control.
+    elif scheme == 'BogackiShampine':
+        # Bogacki-Shampine 3(2), scipy's RK23. FSAL: c[-1] == 1 and a[-1] == b[0],
+        # so the last stage of step n IS f(t^{n+1}, y^{n+1}) and can be reused as k0
+        # of step n+1 at no cost in order -- 4 stages, 3 effective evaluations.
+        return butcherTableau(
+            a = np.array([[  0,   0,   0, 0],
+                          [1/2,   0,   0, 0],
+                          [  0, 3/4,   0, 0],
+                          [2/9, 1/3, 4/9, 0]]),
+            b = (np.array([2/9, 1/3, 4/9, 0]),
+                 np.array([7/24, 1/4, 1/3, 1/8])),
+            c = np.array([0, 1/2, 3/4, 1])
+        )
+    elif scheme == 'DormandPrince':
+        # Dormand-Prince 5(4), scipy's RK45 / MATLAB's ode45. Also FSAL:
+        # 7 stages, 6 effective evaluations under reuse.
+        return butcherTableau(
+            a = np.array([
+                [          0,            0,           0,         0,            0,       0, 0],
+                [       1/5,             0,           0,         0,            0,       0, 0],
+                [      3/40,          9/40,           0,         0,            0,       0, 0],
+                [     44/45,        -56/15,        32/9,         0,            0,       0, 0],
+                [19372/6561,   -25360/2187,  64448/6561,  -212/729,            0,       0, 0],
+                [ 9017/3168,       -355/33,  46732/5247,    49/176,  -5103/18656,       0, 0],
+                [    35/384,             0,    500/1113,   125/192,   -2187/6784,   11/84, 0]]),
+            b = (np.array([35/384, 0, 500/1113, 125/192, -2187/6784, 11/84, 0]),
+                 np.array([5179/57600, 0, 7571/16695, 393/640, -92097/339200, 187/2100, 1/40])),
+            c = np.array([0, 1/5, 3/10, 4/5, 8/9, 1, 1])
+        )
+    elif scheme == 'CashKarp':
+        # Cash-Karp 5(4). Not FSAL (c[-1] = 7/8), but a well-conditioned embedded
+        # pair in 6 stages when Dormand-Prince is more than is needed.
+        return butcherTableau(
+            a = np.array([
+                [          0,        0,          0,             0,        0, 0],
+                [        1/5,        0,          0,             0,        0, 0],
+                [       3/40,     9/40,          0,             0,        0, 0],
+                [       3/10,    -9/10,        6/5,             0,        0, 0],
+                [     -11/54,      5/2,     -70/27,         35/27,        0, 0],
+                [1631/55296,  175/512, 575/13824, 44275/110592, 253/4096, 0]]),
+            b = (np.array([37/378, 0, 250/621, 125/594, 0, 512/1771]),
+                 np.array([2825/27648, 0, 18575/48384, 13525/55296, 277/14336, 1/4])),
+            c = np.array([0, 1/5, 3/10, 3/5, 1, 7/8])
+        )
     else:
         raise ValueError(f"Unknown scheme {scheme}")
-    
+
+
+def butcherScheme(tableau_name: str, **tableau_kwargs):
+    """Build a scheme callable that carries its tableau.
+
+    The tableau is built once here rather than on every step, and is exposed as
+    ``scheme.butcherTableau`` so the reuse analysis (``integrators.reuse``) can
+    inspect it without a name-to-tableau lookup table.
+    """
+    tableau = getButcherTableau(tableau_name, **tableau_kwargs)
+
+    def scheme(state, dt, f, *args, **kwargs):
+        return RungeKuttaB(state, dt, f, tableau, *args, **kwargs)
+
+    scheme.__name__ = tableau_name
+    scheme.butcherTableau = tableau
+    return scheme
+
+
 
 # Evaluate-Predict-Evaluate-Correct (EPEC) scheme based on pySPH code
 # is equivalent to the traditional explicit midpoint method 
-def EPEC(state, dt, f, *args, **kwargs):
-    return RungeKuttaB(state, dt, f, getButcherTableau('midpoint'), *args, **kwargs)
+EPEC = butcherScheme('midpoint')
 # Modified EPEC scheme based on pySPH code, uses $y^{n+1} = y^n + \frac{\Delta t}{2}\left( F(y^n) + F(y^{n+\frac{1}{2}}) \right)$
-def EPECmodified(state, dt, f, *args, **kwargs):
-    return RungeKuttaB(state, dt, f, getButcherTableau('heunsMethod'), *args, **kwargs)
-    # Implementation based on PySPH code, doesn't really work
-    # k0 = f(state) 
-    # halfState = updateFn(state, k0, dt / 2)
-    # k1 = f(halfState)
-
-    # finalPosition = state.position + dt * (k0.position + k1.position) / 2
-    # finalVelocity = state.velocity + dt * (k0.velocity + k1.velocity) / 2
-    # finalEnergy   = state.energy + dt * (k0.energy + k1.energy) / 2 if hasattr(k0, 'energy') else state.energy
-
-    # return state._replace(
-    #     position = finalPosition,
-    #     velocity = finalVelocity,
-    #     energy = finalEnergy,
-    #     t = state.t + dt
-    # )
+EPECmodified = butcherScheme('heunsMethod')
 
 
-forwardEuler    = lambda state, dt, f, *args, **kwargs: RungeKuttaB(state, dt, f, getButcherTableau('forwardEuler'), *args, **kwargs)
-RungeKutta2     = lambda state, dt, f, *args, **kwargs: RungeKuttaB(state, dt, f, getButcherTableau('midpoint'), *args, **kwargs)
-midPoint        = lambda state, dt, f, *args, **kwargs: RungeKuttaB(state, dt, f, getButcherTableau('midpoint'), *args, **kwargs)
-heunsMethod     = lambda state, dt, f, *args, **kwargs: RungeKuttaB(state, dt, f, getButcherTableau('heunsMethod'), *args, **kwargs)
-ralston2nd      = lambda state, dt, f, *args, **kwargs: RungeKuttaB(state, dt, f, getButcherTableau('ralston'), *args, **kwargs)
-RungeKutta3     = lambda state, dt, f, *args, **kwargs: RungeKuttaB(state, dt, f, getButcherTableau('RK3'), *args, **kwargs)
-heunsMethod3rd  = lambda state, dt, f, *args, **kwargs: RungeKuttaB(state, dt, f, getButcherTableau('Heun3'), *args, **kwargs)
-ralston3rd      = lambda state, dt, f, *args, **kwargs: RungeKuttaB(state, dt, f, getButcherTableau('ralston3'), *args, **kwargs)
-Wray3rd         = lambda state, dt, f, *args, **kwargs: RungeKuttaB(state, dt, f, getButcherTableau('Wray3'), *args, **kwargs)
-SSPRK3          = lambda state, dt, f, *args, **kwargs: RungeKuttaB(state, dt, f, getButcherTableau('SSPRK3'), *args, **kwargs)
-RungeKutta4     = lambda state, dt, f, *args, **kwargs: RungeKuttaB(state, dt, f, getButcherTableau('RK4'), *args, **kwargs)
-RungeKutta4alt  = lambda state, dt, f, *args, **kwargs: RungeKuttaB(state, dt, f, getButcherTableau('RK4alt'), *args, **kwargs)
-Nystrom5th      = lambda state, dt, f, *args, **kwargs: RungeKuttaB(state, dt, f, getButcherTableau('Nystrom5'), *args, **kwargs)
+forwardEuler    = butcherScheme('forwardEuler')
+RungeKutta2     = butcherScheme('midpoint')
+midPoint        = butcherScheme('midpoint')
+heunsMethod     = butcherScheme('heunsMethod')
+ralston2nd      = butcherScheme('ralston')
+RungeKutta3     = butcherScheme('RK3')
+heunsMethod3rd  = butcherScheme('Heun3')
+ralston3rd      = butcherScheme('ralston3')
+Wray3rd         = butcherScheme('Wray3')
+SSPRK3          = butcherScheme('SSPRK3')
+RungeKutta4     = butcherScheme('RK4')
+RungeKutta4alt  = butcherScheme('RK4alt')
+Nystrom5th      = butcherScheme('Nystrom5')
+BogackiShampine = butcherScheme('BogackiShampine')
+DormandPrince   = butcherScheme('DormandPrince')
+CashKarp        = butcherScheme('CashKarp')

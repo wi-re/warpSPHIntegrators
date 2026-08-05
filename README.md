@@ -1,14 +1,25 @@
-# Integrators — Differentiable ODE Integration with PyTorch
+# sphWarpIntegrators — Differentiable ODE Integration with PyTorch
 
 A flexible, fully differentiable numerical ODE integration library for PyTorch. Implements multiple integration schemes with support for complex state management, custom field behavior, and both typed and legacy APIs.
+
+> **Status.** Today this is a pure-PyTorch library; there is no NVIDIA Warp code in it
+> yet. The name describes where it is going, not what it does. State cloning is now
+> backend-dispatched, so `wp.array` fields are copied correctly and a Warp state is safe
+> to hold — but a Warp *backend* still needs a preallocated-buffer path instead of the
+> allocate-per-stage design, and a decision between torch autograd and `wp.Tape` for
+> gradients. See `NOTES.md`.
 
 ## Overview
 
 This library provides a set of time integration schemes for solving systems of ordinary differential equations (ODEs) where states may be complex objects with multiple field types and integration behaviors. All computations are differentiable through PyTorch, making the library suitable for physics-informed machine learning, neural ODEs, and scientific computing.
 
+The integrators never refer to `position` / `velocity` / `density` by name. They only say
+"advance the component tagged X by `c·dt` times the derivative tagged Y, optionally
+blended with a reference state", and your system object decides what that means.
+
 ### Key Features
 
-- **Multiple Integration Schemes**: Runge-Kutta (2–4th order), TVD-RK3, symplectic Verlet, Ruth-Forest high-order, and Euler methods
+- **Multiple Integration Schemes**: Runge-Kutta up to 5th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods
 - **Flexible State Management**: Custom state objects with metadata-driven field behavior (integrated, constant, copied, ephemeral, custom)
 - **Type-Safe Protocol**: Structural typing for integration systems with clear separation of concerns
 - **Fully Differentiable**: All operations preserve gradient flow for end-to-end learning
@@ -17,13 +28,16 @@ This library provides a set of time integration schemes for solving systems of o
 ## Installation
 
 ```bash
-pip install diffSPH_integrators
+pip install sphWarpIntegrators
 ```
 
-Or with development dependencies:
+The distribution is `sphWarpIntegrators`; the import name is `integrators`.
+
+For a checkout, with the test dependencies:
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[test]"
+pytest
 ```
 
 ## Quick Start
@@ -49,11 +63,35 @@ class MyState(BaseState):
 ```
 
 **Field Behavior Options:**
-- `integrated('derivative_field', ...)` — Evolves using the provided derivative field
-- `constant(...)` — Remains fixed throughout integration  
-- `copied(...)` — Automatically copied to new state instances
-- `ephemeral(...)` — Created fresh each step (not carried forward)
-- `custom(...)` — Custom update logic via user functions
+
+| Behavior | `initializeNewState()` | End of step | For |
+|---|---|---|---|
+| `integrated('dfield', ...)` | cloned | advanced by the scheme | position, velocity, energy |
+| `constant(...)` | cloned | unchanged | mass, material parameters |
+| `copied(...)` | nulled | **taken from the last stage** | quantities recomputed per stage: summation density, pressure, smoothing length |
+| `ephemeral(...)` | nulled | stays null | stage-local scratch, neighbour lists |
+| `custom(...)` | nulled | your responsibility | anything the generic paths must not touch |
+
+A field with no behavior declared is treated as `constant`. That is the conservative
+default: it survives both `clone()` and `initializeNewState()`, so a forgotten decorator
+cannot silently turn a tensor into `None` halfway through a step.
+
+**Field value types.** Cloning is dispatched on the value's type, not hard-coded to
+`torch.Tensor`. Out of the box: torch tensors, `wp.array` (detected without importing
+warp), and lists / tuples / dicts recursed into. Immutable scalars are shared, which is
+safe. Anything else is shared **by reference** and warns once — that would mean every
+stage writing into the same object — so register a handler for it:
+
+```python
+from integrators import register_clone_handler
+
+register_clone_handler(
+    'mylib.Buffer',
+    matches=lambda v: isinstance(v, mylib.Buffer),
+    clone=lambda v, detach: v.copy(),
+    to_device=lambda v, device: v.to(device),   # optional, drives BaseState.to()
+)
+```
 
 ### 2. Define Your Update Structure
 
@@ -200,36 +238,93 @@ This replaces the older tuple return format and provides a clear, self-documenti
 
 ## Available Integration Schemes
 
+`Order` throughout is the **global** convergence order, verified by `tests/test_convergence.py`
+on an autonomous, a time-dependent, and a nonlinear problem. `Reuse` is the order retained
+when the previous step's last stage is fed back in as `k0` — see
+[First-stage reuse](#first-stage-reuse-priorstep).
+
 ### Explicit Runge-Kutta Methods
 
-| Scheme | Order | Error | Use Case |
-|--------|-------|-------|----------|
-| **Forward Euler** | 1 | O(h²) | Quick, low-accuracy tests; baseline |
-| **RK2 (Heun)** | 2 | O(h³) | Moderate accuracy with 2 function evals |
-| **RK4 (Classic)** | 4 | O(h⁵) | High accuracy; most common choice |
-| **SSP-RK3** | 3 | TVD | Conservation laws; non-oscillatory |
+| Scheme | Order | Stages | Reuse | Use Case |
+|--------|-------|--------|-------|----------|
+| **Forward Euler** / **Explicit Euler** | 1 | 1 | refused | Quick, low-accuracy tests; baseline |
+| **Midpoint** / **RK2** / **EPEC** | 2 | 2 | 2 ✓ | Moderate accuracy in 2 evaluations; reuse is free |
+| **Heun 2nd** / **EPEC Modified** | 2 | 2 | 2 ✓ | As above |
+| **Ralston 2nd** | 2 | 2 | 1 | Minimises the local error constant |
+| **RK3**, **Heun 3rd**, **Ralston 3rd**, **Wray 3rd** | 3 | 3 | 1–2 | Third order in 3 evaluations |
+| **SSP-RK3** | 3 | 3 | 1 | Conservation laws; strong-stability-preserving |
+| **RK4 (Classic)** | 4 | 4 | 3 | High accuracy; the usual default |
+| **RK4 (alternative)** | 4 | 4 | 2 | 3/8 rule |
+| **Nyström 5th** | 5 | 6 | 1 | Fifth order without step control |
+
+### Embedded pairs (error estimate + adaptive `dt`)
+
+These return a step-size-control estimate in `IntegrationResult.error`. The first two are
+**FSAL**, so first-stage reuse is exact and costs one evaluation less per step.
+
+| Scheme | Order | Stages | Reuse | Use Case |
+|--------|-------|--------|-------|----------|
+| **Bogacki–Shampine 3(2)** | 3 | 4 (3 under reuse) | 3 ✓ FSAL | Cheapest useful pair; `scipy`'s `RK23` |
+| **Dormand–Prince 5(4)** | 5 | 7 (6 under reuse) | 5 ✓ FSAL | The workhorse; `scipy`'s `RK45`, MATLAB's `ode45` |
+| **Cash–Karp 5(4)** | 5 | 6 | 1 | Well-conditioned pair when DP5 is more than needed |
 
 ### Symplectic Methods
 
-| Scheme | Type | Use Case |
-|--------|------|----------|
-| **Symplectic Euler** | Order 1 | Fast, symplectic for Hamiltonian systems |
-| **Velocity Verlet** | Order 2 | Standard Verlet; good energy conservation |
-| **Leap-Frog** | Order 2 | Alternative symplectic scheme |
+Energy error stays inside an `O(dt^p)` band however long the run, rather than drifting
+secularly — this is what `dissipation=False` on the scheme records, and
+`tests/test_hamiltonian.py` holds them to it.
 
-### High-Order Hamiltonian Methods
+**These schemes assume a separable Hamiltonian**, i.e. a force depending on position
+alone. With a velocity-dependent force — artificial viscosity, drag, any real SPH
+momentum equation — Leap Frog, Velocity Verlet, PEFRL and VEFRL all drop to **first
+order**. Symplectic Euler does not; it keeps second order either way.
 
-| Scheme | Order | Use Case |
-|--------|-------|----------|
-| **PEFRL** | 4 | High-order, efficient Hamiltonian integrator |
-| **VEFRL** | 4 | Variant with different coefficient pattern |
+| Scheme | Order | Reuse | Use Case |
+|--------|-------|-------|----------|
+| **Semi-Implicit Euler** | 1 | refused | Cheapest symplectic scheme |
+| **Symplectic Euler** | 2 | 1 | Kick-drift-kick; second order even for velocity-dependent forces |
+| **Velocity Verlet** | 2 (1 if `f` sees velocity) | 2 ✓ | Standard Verlet; reuse is free (FSAL property) |
+| **Leap-Frog** | 2 (1 if `f` sees velocity) | 1 | Synchronised form |
+| **PEFRL** | 4 (1 if `f` sees velocity) | refused | High-order Forest–Ruth, position-first |
+| **VEFRL** | 4 (1 if `f` sees velocity) | refused | Velocity-first variant |
 
 ### TVD and Conservative Schemes
 
-| Scheme | Type | Use Case |
-|--------|------|----------|
-| **TVD-RK2** | 2 | Conservation laws with TVD property |
-| **TVD-RK3** | 3 | Higher-order TVD for PDEs |
+| Scheme | Order | Reuse | Use Case |
+|--------|-------|-------|----------|
+| **TVD-RK2** | 2 | refused | Conservation laws with the TVD property |
+| **TVD-RK3** | 3 | refused | Shu–Osher form of SSP-RK3 |
+
+## First-stage reuse (`priorStep`)
+
+Passing `priorStep=result.stages[-1]` feeds the last stage of step *n* in as the first
+stage of step *n+1*, saving one right-hand-side evaluation. It is standard practice in
+the SPH literature, but **whether it is valid is a property of the tableau, not of the
+caller** — so ask before opting in:
+
+```python
+from integrators import getIntegrator, step_reuse_order, supports_step_reuse
+
+scheme = getIntegrator('Dormand-Prince 5(4)')
+supports_step_reuse(scheme)   # True  -- FSAL, reuse is exact
+step_reuse_order(scheme)      # 5
+
+scheme = getIntegrator('SSP RK3')
+supports_step_reuse(scheme)   # False
+step_reuse_order(scheme)      # 1  -- third order becomes first
+```
+
+Supplying `priorStep` to a scheme that loses order still works — trading order for half
+the evaluations is a legitimate choice — but warns once, naming the order you will
+actually get. `step_reuse_order` returns `None` for schemes that do not implement reuse
+at all; they warn and ignore it. Single-stage schemes refuse outright, because reuse
+turns them into `y^{n+1} = y^n + dt·f(y^{n-1})`, which has no stability region on the
+imaginary axis.
+
+```python
+result = scheme(system, dt=dt, f=rhs)
+result.error        # embedded pairs only: y_high - y_low, as a state
+```
 
 ## Example: Damped Harmonic Oscillator with Feedback
 
@@ -274,32 +369,41 @@ class MyState(BaseState):
     # Constant: fixed throughout integration
     m: torch.Tensor = constant(tags=('mass',))
     
-    # Copied: automatically copied to new states
-    name: str = copied()
+    # Copied: recomputed each stage; the final state inherits the last stage's value
+    density: torch.Tensor = copied(default=None)
     
-    # Ephemeral: created fresh each step
-    temp: float = ephemeral()
+    # Ephemeral: stage-local scratch, never carried out of the step
+    neighbours: Any = ephemeral(default=None)
     
-    # Custom: user-defined update logic
-    custom_field: Any = custom()
+    # Custom: the library will not touch it; your system owns it entirely
+    custom_field: Any = custom(default=None)
 ```
 
 ### Update Specifications
 
 ```python
-from integrators import PositionUpdateSpec, ComponentUpdateSpec, StateBlend
-
-# Position update: can include velocity drift and derivative step
-pos_spec = PositionUpdateSpec(
-    derivative_dt=0.5,  # Fraction of dt for the k-value derivative term
-    blend=StateBlend.IMPLICIT,  # How to blend position and velocity updates
+from integrators import (
+    PositionUpdateSpec, ComponentUpdateSpec, StateBlend,
+    blend_state, explicit_step, semi_implicit_position_step, verlet_position_step,
 )
 
-# Component (velocity, quantity, etc.) update
-comp_spec = ComponentUpdateSpec(
-    derivative_dt=0.5,
-    blend=StateBlend.IMPLICIT,
-)
+# `StateBlend` is a three-field dataclass describing how the existing value is folded
+# in:  value <- self_scale * value + reference_weight * reference_state_value + ...
+# `reference_state` and `reference_weight` must be given together.
+blend = blend_state(self_scale=3/4, reference_state=y_1, reference_weight=1/4)
+
+# Component (velocity, quantity, ...) update: value += derivative_dt * k
+comp_spec = ComponentUpdateSpec(derivative_dt=0.5 * dt, blend=blend)
+
+# Position update, plus optionally one of the two special position modes:
+#   current_velocity_dt=s  ->  x += s * v_current       (semi-implicit drift)
+#   update_velocity_dt=s   ->  x += s * update.velocity (Verlet correction)
+pos_spec = PositionUpdateSpec(derivative_dt=0.5 * dt)
+
+# The constructors below are the preferred spelling:
+explicit_step(dt)                                    # x += dt * k
+semi_implicit_position_step(dt)                      # x += dt * v_current
+verlet_position_step(dt, update_velocity_dt=dt**2/2) # x += dt*k.x + (dt^2/2)*k.v
 ```
 
 ### Integration Functions
@@ -374,17 +478,30 @@ class ComplexState(BaseState):
 
 ### Custom Update Logic
 
-For cases where standard field behaviors don't suffice:
+`custom()` marks a field as one the library will not touch: it is neither integrated,
+cloned, nor nulled by the generic paths, and your system is responsible for it entirely.
+There is no `apply_fn` hook — the field is handled by your own `apply_*_update` methods
+and lifecycle hooks.
 
 ```python
-def custom_apply(system, update, **kwargs):
-    """Custom logic that manipulates the system in non-standard ways."""
-    # Implement domain-specific logic here
-    return system
+@dataclass
+class MyState(BaseState):
+    custom_field: Any = custom(default=None)
 
-# Then declare in state:
-custom_field: Any = custom(apply_fn=custom_apply)
+@dataclass
+class MySystem(BaseIntegrationSystem):
+    state: MyState = reference_state()
+    t: float = 0.0
+
+    def initializeNewState(self, *args, **kwargs):
+        fresh = get_reference_state(self).initializeNewState()
+        fresh.custom_field = my_own_rule(get_reference_state(self).custom_field)
+        return MySystem(state=fresh, t=self.t)
 ```
+
+If what you need is "recomputed every stage, and the final state should keep the last
+stage's value" — summation density, pressure, a smoothing length — use `copied()`
+instead. The integrator carries those over for you when the step is finalized.
 
 ### Passing Extra Arguments to RHS
 
@@ -409,10 +526,38 @@ result = integrator.function(
 
 ### Adding a New Integration Scheme
 
+If the scheme has a Butcher tableau, that is the whole job — add it to
+`getButcherTableau` and register `butcherScheme('yourTableau')`. The stage loop, the
+embedded-pair handling, and the reuse analysis all fall out of the tableau:
+
+```python
+# in butcher.py
+elif scheme == 'myTableau':
+    return butcherTableau(a=..., b=..., c=...)   # b may be a (main, embedded) tuple
+
+myScheme = butcherScheme('myTableau')
+
+# in enums.py, then integration.py
+IntegrationSchemes.append(IntegrationScheme(myScheme, 'My Scheme',
+                                            IntegrationSchemeType.myScheme, order,
+                                            dissipation, nonLagrangian))
+```
+
+`reuse_order` and `fsal` are derived automatically from the tableau; do not set them by
+hand. Running `pytest` then holds the new scheme to its declared order on three problems,
+checks its reuse order against the prediction, and checks its `dissipation` flag against
+its actual energy behaviour.
+
+For a hand-rolled scheme with no tableau:
+
 1. Implement the scheme function in a new module or existing one
-2. Add to the `IntegrationSchemes` list in [integration.py](src/integrators/integration.py)
-3. Return `IntegrationResult(state=..., stages=[StageResult(...), ...])`
-4. Register in the `IntegrationSchemeType` enum
+2. `kwargs.pop('priorStep')` — either reuse it or pass it to `reject_prior_step`, but
+   never let it flow through into `f`
+3. Call `initializeSystem` once, and set `.t` explicitly on every stage buffer
+4. Evaluate `f` on a fresh `initializeNewState()` buffer, never on the caller's state
+5. Return `IntegrationResult(state=..., stages=[StageResult(...), ...])`
+6. Register in the `IntegrationSchemeType` enum and record its reuse behaviour in
+   `HANDROLLED_REUSE` in [reuse.py](src/integrators/reuse.py)
 
 Example template:
 
@@ -438,19 +583,26 @@ def myCustomScheme(state, dt, f, *args, **kwargs):
 
 ### Implementing Custom State Behaviors
 
-Define new field behavior tags in your state and implement corresponding update methods in your system:
+There are exactly four dispatch points — `apply_position_update`, `apply_velocity_update`,
+`apply_quantity_update`, `apply_state_update`. There is no dispatch on arbitrary tag
+names, so an extra field is routed through one of those four (`apply_quantity_update`
+is the usual home) rather than through a method named after its tag:
 
 ```python
 @dataclass
 class MyState(BaseState):
-    my_field: torch.Tensor = custom(tags=('my_behavior',))
+    energy:  torch.Tensor = integrated('dedt', tags=('quantity',))
+    entropy: torch.Tensor = integrated('dsdt', tags=('entropy',))
 
 class MySystem(BaseIntegrationSystem):
-    def apply_my_behavior_update(self, update, spec, **kwargs):
-        """Handle 'my_behavior' field updates."""
-        # Custom logic here
+    def apply_quantity_update(self, update, spec, **kwargs):
+        update_component(self, update, spec, 'quantity', 'quantity_derivative')
+        update_component(self, update, spec, 'entropy', 'entropy_derivative')
         return self
 ```
+
+Tags select *which field* `update_component` reads and writes; they do not select which
+method runs.
 
 ## Performance Notes
 

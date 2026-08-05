@@ -1,7 +1,7 @@
 
 from dataclasses import MISSING, dataclass, field as dc_field
 import dataclasses
-from typing import Any
+from typing import Any, Callable, List, NamedTuple, Optional
 import torch
 
 BEHAVIOR_KEY = 'behavior'
@@ -183,21 +183,206 @@ def get_reference_state(system):
     return get_tagged_attr(system, role='reference_state')
 
 
-def _op(value, detach=False):
-    return value.detach().clone() if detach else value.clone() if isinstance(value, torch.Tensor) else value
+#: Behavior assumed for a field that carries no ``behavior`` metadata. ``constant``
+#: is the conservative choice: an untagged field survives both ``clone()`` and
+#: ``initializeNewState()`` rather than being silently nulled by one of them.
+DEFAULT_BEHAVIOR = 'constant'
 
 
-def _empty_like(value):
-    return None if isinstance(value, (torch.Tensor, type(None))) else value
+def field_behavior(f) -> str:
+    """The behavior of a dataclass field. Single source of truth for the default."""
+    return f.metadata.get(BEHAVIOR_KEY, DEFAULT_BEHAVIOR)
+
+
+# --------------------------------------------------------------------------- #
+# Value dispatch: how a single field value is cloned, emptied, and moved       #
+# --------------------------------------------------------------------------- #
+#
+# These used to be two functions that special-cased `torch.Tensor` and passed every
+# other type through *by reference*. That meant a state holding `wp.array` fields --
+# or a plain list or dict of tensors -- was not cloned at all: every RK stage wrote
+# into the same buffer as the initial state, stage 2 read stage-1-corrupted data, and
+# nothing raised anywhere (NOTES.md 4.1).
+#
+# Adding a backend is now one `register_clone_handler` call rather than an edit to two
+# functions. Handlers are tried newest-first, so a registration overrides a built-in.
+
+
+class CloneHandler(NamedTuple):
+    """How to copy one kind of value."""
+
+    name: str
+    #: Does this handler apply to `value`?
+    matches: Callable[[Any], bool]
+    #: (value, detach) -> an independent copy.
+    clone: Callable[[Any, bool], Any]
+    #: (value, device) -> the value on `device`. None means "leave it alone".
+    to_device: Optional[Callable[[Any, Any], Any]] = None
+    #: True if a stage-local (`ephemeral`) field of this kind should be nulled rather
+    #: than carried over. Buffers yes; plain values no.
+    is_buffer: bool = True
+
+
+_CLONE_HANDLERS: List[CloneHandler] = []
+
+#: Types that are immutable, so sharing one is safe and cloning it is pointless.
+IMMUTABLE_TYPES = (type(None), bool, int, float, complex, str, bytes, frozenset)
+
+#: Types seen with no handler, so the "silently aliased" warning fires once each.
+_warned_unhandled = set()
+
+
+def register_clone_handler(name, matches, clone, to_device=None, is_buffer=True):
+    """Teach the state machinery how to copy a new kind of field value.
+
+    Registered last wins, so this overrides the built-ins for an overlapping type.
+
+        register_clone_handler(
+            'mylib.Buffer',
+            matches=lambda v: isinstance(v, mylib.Buffer),
+            clone=lambda v, detach: v.copy(),
+            to_device=lambda v, device: v.to(device),
+        )
+    """
+    handler = CloneHandler(name, matches, clone, to_device, is_buffer)
+    _CLONE_HANDLERS.append(handler)
+    return handler
+
+
+def _find_handler(value) -> Optional[CloneHandler]:
+    for handler in reversed(_CLONE_HANDLERS):
+        if handler.matches(value):
+            return handler
+    return None
+
+
+def clone_value(value, detach=False):
+    """An independent copy of one field value, dispatched on its type.
+
+    Unknown types are passed through by reference and warned about once, because that
+    is precisely the case that produces a silently wrong answer.
+    """
+    if isinstance(value, IMMUTABLE_TYPES):
+        return value
+    handler = _find_handler(value)
+    if handler is not None:
+        return handler.clone(value, detach)
+    _warn_unhandled(value)
+    return value
+
+
+def empty_value(value):
+    """The 'no value here' placeholder for a stage-local or not-yet-computed field.
+
+    Buffers become None. Plain values are left alone: nulling a float parameter that
+    happens to sit on an `ephemeral` field would break systems that read it back.
+    """
+    if value is None or isinstance(value, IMMUTABLE_TYPES):
+        return None if value is None else value
+    handler = _find_handler(value)
+    if handler is not None:
+        return None if handler.is_buffer else value
+    _warn_unhandled(value)
+    return value
+
+
+def move_value(value, device):
+    """`value` on `device`, for types that have a notion of one."""
+    if isinstance(value, IMMUTABLE_TYPES):
+        return value
+    handler = _find_handler(value)
+    if handler is not None and handler.to_device is not None:
+        return handler.to_device(value, device)
+    return value
+
+
+def _warn_unhandled(value):
+    kind = type(value)
+    if kind in _warned_unhandled:
+        return
+    _warned_unhandled.add(kind)
+    import warnings
+    warnings.warn(
+        f"No clone handler for field values of type {kind.__module__}.{kind.__qualname__}; "
+        f"it will be shared by reference between the initial state and every stage buffer. "
+        f"If it holds mutable state, every stage will write into the same object and the "
+        f"result will be wrong with no error raised. Register one with "
+        f"integrators.register_clone_handler(...).",
+        RuntimeWarning,
+        stacklevel=4,
+    )
+
+
+# ---- built-in handlers ----------------------------------------------------- #
+
+register_clone_handler(
+    'torch.Tensor',
+    matches=lambda v: isinstance(v, torch.Tensor),
+    clone=lambda v, detach: v.detach().clone() if detach else v.clone(),
+    to_device=lambda v, device: v.to(device),
+)
+
+
+def _is_warp_array(value) -> bool:
+    """Duck-typed so importing this package never imports warp."""
+    module = type(value).__module__ or ''
+    return module.split('.')[0] == 'warp' and type(value).__name__ == 'array'
+
+
+def _clone_warp(value, detach):
+    import warp as wp
+    return wp.clone(value, requires_grad=False if detach else None)
+
+
+def _warp_to_device(value, device):
+    import warp as wp
+    return wp.clone(value, device=device)
+
+
+register_clone_handler('warp.array', _is_warp_array, _clone_warp, _warp_to_device)
+
+
+def _clone_sequence(value, detach):
+    cloned = [clone_value(v, detach) for v in value]
+    if isinstance(value, tuple):
+        # NamedTuples take their fields positionally, plain tuples take an iterable.
+        return type(value)(*cloned) if hasattr(value, '_fields') else type(value)(cloned)
+    return type(value)(cloned)
+
+
+def _sequence_to_device(value, device):
+    moved = [move_value(v, device) for v in value]
+    if isinstance(value, tuple):
+        return type(value)(*moved) if hasattr(value, '_fields') else type(value)(moved)
+    return type(value)(moved)
+
+
+register_clone_handler(
+    'list/tuple',
+    matches=lambda v: isinstance(v, (list, tuple)),
+    clone=_clone_sequence,
+    to_device=_sequence_to_device,
+)
+
+register_clone_handler(
+    'dict',
+    matches=lambda v: isinstance(v, dict),
+    clone=lambda v, detach: type(v)((k, clone_value(x, detach)) for k, x in v.items()),
+    to_device=lambda v, device: type(v)((k, move_value(x, device)) for k, x in v.items()),
+)
+
+
+# Kept as the internal spelling used by the state helpers below.
+_op = clone_value
+_empty_like = empty_value
 
 
 def _clone_state(state, *, include_ephemeral=False, detach=False):
     """Generic clone driven by behavior metadata. No per-field manual code."""
     kwargs = {}
     for f in dataclasses.fields(state):
-        behavior = f.metadata.get(BEHAVIOR_KEY, 'constant')
         value = getattr(state, f.name)
-        if behavior == 'ephemeral' and not include_ephemeral:
+        if field_behavior(f) == 'ephemeral' and not include_ephemeral:
             kwargs[f.name] = _empty_like(value)
         else:
             kwargs[f.name] = _op(value, detach)
@@ -207,9 +392,8 @@ def _clone_state(state, *, include_ephemeral=False, detach=False):
 def _state_initialize(state, detach=False):
     kwargs = {}
     for f in dataclasses.fields(state):
-        behavior = f.metadata.get(BEHAVIOR_KEY, 'copied')
         value = getattr(state, f.name)
-        if behavior in ('constant', 'integrated'):
+        if field_behavior(f) in ('constant', 'integrated'):
             kwargs[f.name] = _op(value, detach)
         else:
             kwargs[f.name] = _empty_like(value)
@@ -219,8 +403,52 @@ def _state_initialize(state, detach=False):
 def _state_finalize(live_state, last_substep_state):
     """Copy 'copied' fields from last substep. Leave everything else alone."""
     for f in dataclasses.fields(live_state):
-        if f.metadata.get(BEHAVIOR_KEY, 'copied') == 'copied':
+        if field_behavior(f) == 'copied':
             setattr(live_state, f.name, getattr(last_substep_state, f.name))
+    return live_state
+
+
+def _maybe_reference_state(obj):
+    """The tagged reference state of a system, or the object itself if it has none.
+
+    Schemes work with systems, but `copied` is a property of state fields. This lets
+    the finalize path accept either without the caller having to know which it has.
+    """
+    try:
+        return get_tagged_attr(obj, role='reference_state')
+    except (LookupError, TypeError):
+        return obj
+
+
+def clear_ephemeral_fields(system):
+    """Null out `ephemeral` fields in place.
+
+    Most schemes get this for free, because they assemble the final state with a fresh
+    `initializeNewState()`. PEFRL does not -- its final state *is* the buffer the last
+    evaluation ran on -- so it has to ask, or stage-local scratch leaks out of the step.
+    """
+    state = _maybe_reference_state(system)
+    for f in dataclasses.fields(state):
+        if field_behavior(f) == 'ephemeral':
+            setattr(state, f.name, _empty_like(getattr(state, f.name)))
+    return system
+
+
+def copy_finalized_fields(final_system, last_stage_system):
+    """Carry `copied` fields from the last evaluated stage into the final state.
+
+    A `copied` field is one the system recomputes per stage rather than integrating --
+    summation density, pressure, a smoothing length. It is nulled in
+    `initializeNewState` and so would otherwise arrive at the caller as `None`, which
+    is what made the behaviour indistinguishable from `ephemeral` (NOTES.md 2.7).
+
+    Called by `finalizeSystem` before the user's `finalize` hook runs, so a hook that
+    wants to override the copied value still can.
+    """
+    if last_stage_system is None:
+        return final_system
+    _state_finalize(_maybe_reference_state(final_system), _maybe_reference_state(last_stage_system))
+    return final_system
 
 
 @dataclass
@@ -235,22 +463,15 @@ class BaseState:
         return _clone_state(self, detach=True)
 
     def to(self, device):
-        kwargs = {}
-        for f in dataclasses.fields(self):
-            value = getattr(self, f.name)
-            if isinstance(value, torch.Tensor):
-                kwargs[f.name] = value.to(device)
-            else:
-                kwargs[f.name] = value
-        return type(self)(**kwargs)
+        # Dispatched, so a warp array or a list of tensors moves too rather than
+        # silently staying where it was.
+        return type(self)(**{f.name: move_value(getattr(self, f.name), device)
+                             for f in dataclasses.fields(self)})
     
 
-from .specs import ComponentUpdateSpec, PositionUpdateSpec, StateBlend
-import numpy as np
-from dataclasses import dataclass
-def verbosePrint(verbose, *args):
-    if verbose:
-        print(*args)
+from .specs import ComponentUpdateSpec, PositionUpdateSpec
+
+
 def _resolve_state(system, system_role='reference_state'):
     return get_tagged_attr(system, role=system_role)
 def _resolve_delta(update, derivative_tag):

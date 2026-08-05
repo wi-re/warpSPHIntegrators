@@ -32,13 +32,26 @@ from .fields import (
     get_tagged_attr,
     set_tagged_attr,
     get_reference_state,
+    clone_value,
+    empty_value,
+    move_value,
+    register_clone_handler,
+    CloneHandler,
 )
 
 from .util import IntegrationSchemeType
 
 from .integration import (getPreferredScheme, getIntegrator, getIntegrationEnum, IntegrationSchemes)
+from .reuse import (
+    ReuseAnalysis,
+    step_reuse_analysis,
+    step_reuse_order,
+    supports_step_reuse,
+    is_fsal,
+)
+from .util import unpack_prior_step
 
-__version__ = "0.4.5"
+__version__ = "0.5.0"
 
 __all__ = [
     "verbosePrint",
@@ -54,6 +67,11 @@ __all__ = [
     "get_tagged_attr",
     "set_tagged_attr",
     "get_reference_state",
+    "clone_value",
+    "empty_value",
+    "move_value",
+    "register_clone_handler",
+    "CloneHandler",
     "StateBlend",
     "ComponentUpdateSpec",
     "PositionUpdateSpec",
@@ -72,6 +90,12 @@ __all__ = [
     "getIntegrationEnum",
     "IntegrationSchemes",
     "IntegrationScheme",
+    "ReuseAnalysis",
+    "step_reuse_analysis",
+    "step_reuse_order",
+    "supports_step_reuse",
+    "is_fsal",
+    "unpack_prior_step",
     "updateStateEuler",
     "updateStateSemiImplicitEuler",
     "applyStateUpdate",

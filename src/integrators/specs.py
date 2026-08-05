@@ -11,6 +11,15 @@ class StateBlend:
     reference_state: Optional[Any] = None
     reference_weight: Optional[float] = None
 
+    def __post_init__(self):
+        if (self.reference_state is None) != (self.reference_weight is None):
+            raise ValueError(
+                "StateBlend requires reference_state and reference_weight together; got "
+                f"reference_state={'set' if self.reference_state is not None else 'None'}, "
+                f"reference_weight={self.reference_weight!r}. A reference state without a "
+                "weight fails much later, inside update_component, as None * tensor."
+            )
+
 
 @dataclass(frozen=True)
 class ComponentUpdateSpec:
@@ -58,9 +67,15 @@ class IntegrationResult:
         stages: List of StageResult, one per RK stage. Each contains the auxiliary
                 return value (aux) and the k-value (update) from that stage.
                 Access the last stage with stages[-1] to get (aux, k) for priorStep.
+        error:  For embedded pairs only, otherwise None. A state of the same type as
+                `state` whose integrated fields hold the difference between the
+                propagated solution and the lower-order embedded one. Drives step
+                size control; the initial state cancels, so this is a pure
+                difference, not a state you can continue integrating from.
     """
     state: Any
     stages: List[StageResult] = field(default_factory=list)
+    error: Optional[Any] = None
 
 
 def blend_state(

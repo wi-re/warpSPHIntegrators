@@ -1,15 +1,15 @@
 [project]
 name = "sphWarpIntegrators"
-version = "0.4.5"
+version = "0.5.0"
 authors = [
   { name="Rene Winchenbach", email="contact@fluids.dev" },
 ]
 maintainers = [
   { name="Rene Winchenbach", email="contact@fluids.dev" },
 ]
-description = "A Fully differentiable SPH Solver."
+description = "Solver-agnostic explicit ODE time integrators for SPH, in PyTorch."
 readme = "README.md"
-keywords = ["sph","radius","pytorch"]
+keywords = ["sph", "ode", "integrator", "runge-kutta", "symplectic", "pytorch"]
 classifiers = [
   # How mature is this project? Common values are
   #   3 - Alpha
@@ -29,6 +29,9 @@ dependencies = [
 ]
 license = {file = "license.md"}
 
+[project.optional-dependencies]
+test = ["pytest"]
+
 [project.urls]
 Repository = "https://github.com/wi-re/integrators"
 Issues = "https://github.com/wi-re/integrators"
@@ -38,7 +41,13 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-where = ["src"] # <-- this changed
+where = ["src"]
 
+# Only py.typed, not a blanket "*.*" glob -- that shipped __pycache__ whenever one
+# happened to be present at build time.
 [tool.setuptools.package-data]
-"*" = ["*.*"] # <-- this changed
+"integrators" = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]

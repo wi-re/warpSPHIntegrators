@@ -1,8 +1,10 @@
 from enum import Enum
-import torch
 
 
-@torch.jit.script
+# NOTE: this module is deliberately free of torch. It used to carry a
+# `@torch.jit.script` decorator on the enum, which is a no-op at the Python level
+# (`type(IntegrationSchemeType)` is still `enum.EnumType`) but forced a torch import
+# and a TorchScript compilation for an otherwise pure-stdlib module.
 class IntegrationSchemeType(Enum):
     forwardEuler = 0
     rungeKutta2 = 1
@@ -27,5 +29,8 @@ class IntegrationSchemeType(Enum):
     tvdRK2 = 20
     semiImplicitEuler = 21
     explicitEuler = 22
-    
-    
+    # Embedded pairs. Bogacki-Shampine and Dormand-Prince are FSAL, so first-stage
+    # reuse is exact for them; Cash-Karp is not.
+    bogackiShampine = 23
+    dormandPrince = 24
+    cashKarp = 25
