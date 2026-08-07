@@ -1,7 +1,9 @@
-# `sphWarpIntegrators` — architecture notes and open work
+# `warpSPHIntegrators` — architecture notes and open work
 
 Analysis date: 2026-08-05, against `6b9e1d0` (v0.5.0), conda env `warp`
-(Python 3.14.6, torch 2.13.0+cu130, warp 1.15.0, numpy 2.4.6).
+(Python 3.14.6, torch 2.13.0+cu130, warp 1.15.0, numpy 2.4.6). Updated 2026-08-07 for
+`e327d8a`, which renamed the package (§2.4) — distribution and import name are both
+`warpSPHIntegrators` now, and every path below points at `src/warpSPHIntegrators/`.
 
 Every claim marked **[verified]** was reproduced by running the code. For §0's
 numbers the probe is [scripts/step_reuse_convergence.py](scripts/step_reuse_convergence.py),
@@ -11,7 +13,7 @@ the probes are described in [§3.9](#39-the-probes-behind-these-numbers).
 This document originally carried a defect-by-defect audit — misapplied `priorStep`
 reuse, wrong stage times, inconsistent cloning defaults, a broken embedded-pair path,
 wrong registry metadata, and README/`pyproject.toml` drift. Every item in it was fixed
-for v0.5.0 and is now held down by 680 tests in `tests/`; the write-ups were removed
+for v0.5.0 and is now held down by the 960 tests in `tests/`; the write-ups were removed
 from this document to keep it focused on what is still open. `git log -- NOTES.md` has
 the full history if the reasoning behind a fix is needed again.
 
@@ -20,7 +22,7 @@ the full history if the reasoning behind a fix is needed again.
 ## 0. Status
 
 **Fixed in v0.5.0:** `priorStep` first-stage reuse now knows which schemes it is valid
-for (`integrators.reuse`: `step_reuse_order` / `supports_step_reuse` / `is_fsal`, plus
+for (`warpSPHIntegrators.reuse`: `step_reuse_order` / `supports_step_reuse` / `is_fsal`, plus
 three genuinely FSAL tableaus — Bogacki–Shampine 3(2), Dormand–Prince 5(4), Cash–Karp
 5(4) — so reuse is lossless where it matters); every scheme evaluates its stages at
 the correct time, including stage 0; the embedded-pair path returns a real error
@@ -50,8 +52,9 @@ are gone.
   now in place; it needs the driving loop and a step-rejection path) and particle
   masking are still open. The neighbour-list reuse policy this section used to flag as
   missing turned out to be a non-issue for the actual downstream simulation — see §3.0.
-- **Packaging** (§2.4) — the top-level package is still named `integrators`, which is
-  collision-prone on PyPI. Renaming is a breaking change and was left alone.
+- **Packaging** (§2.4) — **done in `e327d8a`.** The top-level package is now
+  `warpSPHIntegrators`, matching the distribution name; nothing is left open here
+  beyond the version bump that should accompany the break.
 - **Multistep and implicit** (§3) — the two entries in the README's "Known
   Limitations". Both are much cheaper here than for a general-purpose library, because
   the surrounding simulation does not resort particles, holds `dt` constant, and
@@ -71,7 +74,7 @@ are gone.
 
 ## 1. What this library actually is
 
-Despite the repository name, **there is not one line of NVIDIA Warp in it**
+Despite the name, **there is not one line of NVIDIA Warp in it**
 (`grep -rn 'warp\|wp\.' src/` → no hits). It is a pure-PyTorch, allocation-based
 library of *explicit* ODE time-integration schemes, extracted from diffSPH
 (`8c213c8 initial commit of integrators from diffSPH`). The "warp" in the name is
@@ -87,14 +90,14 @@ separation and it is the main asset here.
 
 | Layer | File | Role |
 |---|---|---|
-| **Field metadata** | [fields.py](src/integrators/fields.py) | `dataclasses.field` wrappers that stamp `metadata['behavior']` (`integrated` / `constant` / `copied` / `ephemeral` / `custom`) and `metadata['tags']` onto state fields. Drives generic cloning and tag-based lookup. |
-| **Update specs** | [specs.py](src/integrators/specs.py) | Frozen dataclasses describing *what* an update does, without saying to which field: `ComponentUpdateSpec(derivative_dt, blend)`, `PositionUpdateSpec(+current_velocity_dt, +update_velocity_dt)`, `StateBlend(self_scale, reference_state, reference_weight)`. |
-| **Dispatch** | [util.py](src/integrators/util.py), [protocol.py](src/integrators/protocol.py) | `applyPositionUpdate` / `applyVelocityUpdate` / `applyQuantityUpdate` / `applyStateUpdate` try the typed `apply_*_update` methods, else fall back to legacy `integratePosition` / `integrateVelocity` / … . Lifecycle hooks `initialize` / `preprocess` / `postprocess` / `finalize`. |
-| **Schemes** | [butcher.py](src/integrators/butcher.py), [verlet.py](src/integrators/verlet.py), [ruth.py](src/integrators/ruth.py), [tvd.py](src/integrators/tvd.py), [euler.py](src/integrators/euler.py) | 23 registered schemes, all built from the four `apply*` primitives. Registry + lookup in [integration.py](src/integrators/integration.py). |
+| **Field metadata** | [fields.py](src/warpSPHIntegrators/fields.py) | `dataclasses.field` wrappers that stamp `metadata['behavior']` (`integrated` / `constant` / `copied` / `ephemeral` / `custom`) and `metadata['tags']` onto state fields. Drives generic cloning and tag-based lookup. |
+| **Update specs** | [specs.py](src/warpSPHIntegrators/specs.py) | Frozen dataclasses describing *what* an update does, without saying to which field: `ComponentUpdateSpec(derivative_dt, blend)`, `PositionUpdateSpec(+current_velocity_dt, +update_velocity_dt)`, `StateBlend(self_scale, reference_state, reference_weight)`. |
+| **Dispatch** | [util.py](src/warpSPHIntegrators/util.py), [protocol.py](src/warpSPHIntegrators/protocol.py) | `applyPositionUpdate` / `applyVelocityUpdate` / `applyQuantityUpdate` / `applyStateUpdate` try the typed `apply_*_update` methods, else fall back to legacy `integratePosition` / `integrateVelocity` / … . Lifecycle hooks `initialize` / `preprocess` / `postprocess` / `finalize`. |
+| **Schemes** | [butcher.py](src/warpSPHIntegrators/butcher.py), [verlet.py](src/warpSPHIntegrators/verlet.py), [ruth.py](src/warpSPHIntegrators/ruth.py), [tvd.py](src/warpSPHIntegrators/tvd.py), [euler.py](src/warpSPHIntegrators/euler.py) | 23 registered schemes, all built from the four `apply*` primitives. Registry + lookup in [integration.py](src/warpSPHIntegrators/integration.py). |
 
 ### 1.2 The generic update kernel
 
-Everything bottoms out in two functions at [fields.py:267-310](src/integrators/fields.py#L267-L310):
+Everything bottoms out in two functions at [fields.py:267-310](src/warpSPHIntegrators/fields.py#L267-L310):
 
 ```
 update_component:   X ← self_scale·X + reference_weight·X_ref + Σᵢ dtᵢ·kᵢ.dX
@@ -126,7 +129,7 @@ return IntegrationResult(state=new_state, stages=[StageResult(aux, update), ...]
 
 `priorStep` (a `StageResult` from the previous step) can be passed in to skip the `k0`
 evaluation. Whether that costs convergence order is a property of the tableau, not of
-the caller — computed automatically by `integrators.reuse` (`step_reuse_order`,
+the caller — computed automatically by `warpSPHIntegrators.reuse` (`step_reuse_order`,
 `supports_step_reuse`) and carried on the registered `IntegrationScheme`.
 
 ---
@@ -192,12 +195,22 @@ Warp state" decision above is still open.
   the actual downstream simulation already carries the neighbour list through the
   state and revalidates it cheaply rather than rebuilding it — see §3.0.
 
-### 2.4 Packaging
+### 2.4 Packaging — done
 
-The distribution name (`sphwarpintegrators`) and the import name (`integrators`)
-differ, and **`integrators` is an extremely collision-prone top-level name** on PyPI.
-Renaming the package directory to `sph_warp_integrators` (or `warpintegrators`) is a
-breaking change and has been left alone; do it alongside a major version bump.
+This used to read: the distribution name (`sphWarpIntegrators`) and the import name
+(`integrators`) differ, and `integrators` is an extremely collision-prone top-level
+name on PyPI.
+
+Both are now `warpSPHIntegrators` (`e327d8a`): the package directory moved from
+`src/integrators/` to `src/warpSPHIntegrators/`, with the distribution renamed to
+match and tests, scripts, README and `pyproject.toml`'s `package-data` key updated.
+`import integrators` no longer works — that is the breaking change this was always
+going to be, so the version bump that ships it should be the one that says so
+(`pyproject.toml` still reads `0.5.0`). Remaining chores:
+
+- `src/sphWarpIntegrators.egg-info/` is a stale build artefact from the old name and
+  should be deleted (it is not tracked).
+- `dist/` still holds wheels built under the old name.
 
 ---
 
@@ -681,7 +694,11 @@ measured order   no reuse: 2.01
 
 ### `tests/` (committed)
 
-`pytest` from the repository root, inside the `warp` environment; ~100 s for 680 tests.
+`pytest` from the repository root, inside the `warp` environment. Last run 2026-08-07
+against `e327d8a`: **906 passed, 54 skipped in 119 s** out of 960 collected, no
+failures. The skips are almost all per-scheme opt-outs from parametrised tests —
+a scheme that does not implement reuse, or loses no order under it, or is unstable on
+an oscillatory problem — plus the CUDA-gated cases in `test_backend_dispatch.py`.
 
 | file | what it pins down |
 |---|---|
@@ -696,6 +713,6 @@ measured order   no reuse: 2.01
 
 The shared harness — three tagged-field reference systems, four problems with analytic
 solutions, and the order/energy measurement helpers — lives in
-[src/integrators/testing.py](src/integrators/testing.py) so that the tests and
+[src/warpSPHIntegrators/testing.py](src/warpSPHIntegrators/testing.py) so that the tests and
 `scripts/step_reuse_convergence.py` share one definition. It doubles as the smallest
 complete worked example of the protocol.

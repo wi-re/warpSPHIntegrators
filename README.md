@@ -1,4 +1,4 @@
-# sphWarpIntegrators — Differentiable ODE Integration with PyTorch
+# warpSPHIntegrators — Differentiable ODE Integration with PyTorch
 
 A flexible, fully differentiable numerical ODE integration library for PyTorch. Implements multiple integration schemes with support for complex state management, custom field behavior, and both typed and legacy APIs.
 
@@ -28,10 +28,11 @@ blended with a reference state", and your system object decides what that means.
 ## Installation
 
 ```bash
-pip install sphWarpIntegrators
+pip install warpSPHIntegrators
 ```
 
-The distribution is `sphWarpIntegrators`; the import name is `integrators`.
+The distribution and the import name are both `warpSPHIntegrators`. The import name
+used to be `integrators`; `import integrators` no longer works.
 
 For a checkout, with the test dependencies:
 
@@ -557,7 +558,7 @@ For a hand-rolled scheme with no tableau:
 4. Evaluate `f` on a fresh `initializeNewState()` buffer, never on the caller's state
 5. Return `IntegrationResult(state=..., stages=[StageResult(...), ...])`
 6. Register in the `IntegrationSchemeType` enum and record its reuse behaviour in
-   `HANDROLLED_REUSE` in [reuse.py](src/integrators/reuse.py)
+   `HANDROLLED_REUSE` in [reuse.py](src/warpSPHIntegrators/reuse.py)
 
 Example template:
 
@@ -639,10 +640,10 @@ Apache 2.0 — See [license.md](license.md)
 If you use this library in research, please cite:
 
 ```bibtex
-@software{integrators2024,
+@software{warpSPHIntegrators2024,
   title={Differentiable ODE Integration with PyTorch},
   author={Winchenbach, Rene},
-  url={https://github.com/wi-re/integrators},
+  url={https://github.com/wi-re/warpSPHIntegrators},
   year={2024}
 }
 ```

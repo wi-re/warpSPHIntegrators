@@ -46,7 +46,7 @@ where = ["src"]
 # Only py.typed, not a blanket "*.*" glob -- that shipped __pycache__ whenever one
 # happened to be present at build time.
 [tool.setuptools.package-data]
-"integrators" = ["py.typed"]
+"warpSPHIntegrators" = ["py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
