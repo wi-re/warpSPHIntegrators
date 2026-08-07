@@ -17,7 +17,7 @@ from dataclasses import dataclass
 import pytest
 import torch
 
-from integrators import (
+from warpSPHIntegrators import (
     BaseIntegrationSystem,
     BaseState,
     ComponentUpdateSpec,
@@ -34,7 +34,7 @@ from integrators import (
     tagged,
     testing,
 )
-from integrators import fields as F
+from warpSPHIntegrators import fields as F
 
 try:
     import warp as wp
@@ -337,7 +337,7 @@ def test_final_state_owns_its_buffer(scheme):
 @pytest.mark.parametrize('name', ['RK4', 'Midpoint', 'SSP RK3', 'Dormand-Prince 5(4)'])
 def test_runge_kutta_stages_each_start_from_the_initial_state(name):
     """For a Butcher tableau every stage buffer is built from y^n, so writes never stack."""
-    from integrators import getIntegrator
+    from warpSPHIntegrators import getIntegrator
 
     system = _buffer_system()
     result = getIntegrator(name)(system, dt=0.05, f=_buffer_rhs)
@@ -350,7 +350,7 @@ def test_runge_kutta_stages_each_start_from_the_initial_state(name):
 
 def test_container_state_still_integrates_correctly():
     """The dispatch must not disturb the numerics."""
-    from integrators import getIntegrator
+    from warpSPHIntegrators import getIntegrator
 
     s = getIntegrator('RK4')
     order, _ = testing.convergence(s, testing.PROBLEMS['oscillator'](),

@@ -15,7 +15,7 @@ from dataclasses import dataclass
 import pytest
 import torch
 
-from integrators import (
+from warpSPHIntegrators import (
     BaseIntegrationSystem,
     BaseState,
     ComponentUpdateSpec,
@@ -28,7 +28,7 @@ from integrators import (
     reference_state,
     tagged,
 )
-from integrators.fields import update_component, update_position
+from warpSPHIntegrators.fields import update_component, update_position
 
 
 @dataclass

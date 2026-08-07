@@ -9,7 +9,7 @@ from dataclasses import dataclass
 import pytest
 import torch
 
-from integrators import (
+from warpSPHIntegrators import (
     BaseState,
     IntegrationSchemeType,
     StateBlend,
@@ -20,7 +20,7 @@ from integrators import (
     integrated,
     testing,
 )
-from integrators.integration import IntegrationSchemes
+from warpSPHIntegrators.integration import IntegrationSchemes
 
 
 @dataclass
@@ -192,7 +192,7 @@ def test_update_helpers_do_not_advance_time():
 
     Composing the two therefore double-advanced time. Time belongs to the integrator.
     """
-    from integrators import updateStateEuler, updateStateSemiImplicitEuler
+    from warpSPHIntegrators import updateStateEuler, updateStateSemiImplicitEuler
 
     prob = testing.PROBLEMS['oscillator']()
     system = prob.initial()

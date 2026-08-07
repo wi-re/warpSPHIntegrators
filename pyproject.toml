@@ -1,5 +1,5 @@
 [project]
-name = "sphWarpIntegrators"
+name = "warpSPHIntegrators"
 version = "0.5.0"
 authors = [
   { name="Rene Winchenbach", email="contact@fluids.dev" },
@@ -33,8 +33,8 @@ license = {file = "license.md"}
 test = ["pytest"]
 
 [project.urls]
-Repository = "https://github.com/wi-re/integrators"
-Issues = "https://github.com/wi-re/integrators"
+Repository = "https://github.com/wi-re/warpSPHIntegrators"
+Issues = "https://github.com/wi-re/warpSPHIntegrators"
 
 [build-system]
 requires = ["setuptools>=61.0"]

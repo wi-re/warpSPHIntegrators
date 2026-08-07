@@ -49,7 +49,7 @@ Create a state class that inherits from `BaseState` and annotate fields with the
 ```python
 from dataclasses import dataclass
 import torch
-from integrators import BaseState, integrated, constant
+from warpSPHIntegrators import BaseState, integrated, constant
 
 @dataclass
 class MyState(BaseState):
@@ -83,7 +83,7 @@ safe. Anything else is shared **by reference** and warns once — that would mea
 stage writing into the same object — so register a handler for it:
 
 ```python
-from integrators import register_clone_handler
+from warpSPHIntegrators import register_clone_handler
 
 register_clone_handler(
     'mylib.Buffer',
@@ -99,7 +99,7 @@ Create a dataclass that holds all derivatives and auxiliary values:
 
 ```python
 from dataclasses import dataclass
-from integrators import tagged
+from warpSPHIntegrators import tagged
 
 @dataclass
 class MyUpdate:
@@ -112,7 +112,7 @@ class MyUpdate:
 Create an `IntegrationSystem` that knows how to apply updates to your state:
 
 ```python
-from integrators import BaseIntegrationSystem, IntegrationSystem, PositionUpdateSpec, ComponentUpdateSpec
+from warpSPHIntegrators import BaseIntegrationSystem, IntegrationSystem, PositionUpdateSpec, ComponentUpdateSpec
 from dataclasses import dataclass
 
 @dataclass
@@ -186,7 +186,7 @@ def my_rhs(system: MySystem, dt: float, verbose: bool = False) -> tuple:
 ### 5. Choose an Integration Scheme and Integrate
 
 ```python
-from integrators import getIntegrator, IntegrationSchemeType
+from warpSPHIntegrators import getIntegrator, IntegrationSchemeType
 
 # Create initial system
 initial_state = MyState(
@@ -220,7 +220,7 @@ aux_values = last_stage.aux  # Auxiliary output from RHS
 All integrator functions return an `IntegrationResult` named tuple:
 
 ```python
-from integrators import IntegrationResult, StageResult
+from warpSPHIntegrators import IntegrationResult, StageResult
 
 result: IntegrationResult = integrator.function(...)
 
@@ -303,7 +303,7 @@ the SPH literature, but **whether it is valid is a property of the tableau, not 
 caller** — so ask before opting in:
 
 ```python
-from integrators import getIntegrator, step_reuse_order, supports_step_reuse
+from warpSPHIntegrators import getIntegrator, step_reuse_order, supports_step_reuse
 
 scheme = getIntegrator('Dormand-Prince 5(4)')
 supports_step_reuse(scheme)   # True  -- FSAL, reuse is exact
@@ -359,7 +359,7 @@ The visualization shows:
 ### State Definition
 
 ```python
-from integrators import BaseState, integrated, constant, copied, ephemeral, custom
+from warpSPHIntegrators import BaseState, integrated, constant, copied, ephemeral, custom
 
 @dataclass
 class MyState(BaseState):
@@ -382,7 +382,7 @@ class MyState(BaseState):
 ### Update Specifications
 
 ```python
-from integrators import (
+from warpSPHIntegrators import (
     PositionUpdateSpec, ComponentUpdateSpec, StateBlend,
     blend_state, explicit_step, semi_implicit_position_step, verlet_position_step,
 )
@@ -409,7 +409,7 @@ verlet_position_step(dt, update_velocity_dt=dt**2/2) # x += dt*k.x + (dt^2/2)*k.
 ### Integration Functions
 
 ```python
-from integrators import (
+from warpSPHIntegrators import (
     IntegrationSchemeType,
     getIntegrator,
     IntegrationResult,
@@ -436,7 +436,7 @@ stages = result.stages  # List of StageResult namedtuples
 ### Helper Functions
 
 ```python
-from integrators import (
+from warpSPHIntegrators import (
     get_reference_state,        # Extract state from system
     get_tagged_attr,            # Access fields by tag
     update_position,            # Apply position update

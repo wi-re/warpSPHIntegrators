@@ -10,8 +10,8 @@ import math
 import pytest
 import torch
 
-from integrators import getIntegrator, get_reference_state, testing
-from integrators.butcher import getButcherTableau
+from warpSPHIntegrators import getIntegrator, get_reference_state, testing
+from warpSPHIntegrators.butcher import getButcherTableau
 
 EMBEDDED = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)', 'Cash-Karp 5(4)']
 

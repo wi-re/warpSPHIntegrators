@@ -14,8 +14,8 @@ O(dt^p) band however long you integrate, while a dissipative one accumulates.
 
 import pytest
 
-from integrators import getIntegrator, testing
-from integrators.integration import IntegrationSchemes
+from warpSPHIntegrators import getIntegrator, testing
+from warpSPHIntegrators.integration import IntegrationSchemes
 
 #: Short and long horizons over the same problem. The long one is 8x the short one,
 #: so a scheme with secular drift shows a ratio near 8 and a symplectic one near 1.

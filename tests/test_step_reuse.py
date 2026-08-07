@@ -14,8 +14,8 @@ import warnings
 
 import pytest
 
-from integrators import getIntegrator, is_fsal, step_reuse_order, supports_step_reuse, testing
-from integrators.reuse import step_reuse_analysis
+from warpSPHIntegrators import getIntegrator, is_fsal, step_reuse_order, supports_step_reuse, testing
+from warpSPHIntegrators.reuse import step_reuse_analysis
 
 from conftest import ORDER_TOLERANCE, order_of, problem
 
@@ -141,7 +141,7 @@ def test_prior_step_does_not_leak_into_the_rhs(name):
 
 def test_degrading_reuse_warns_once():
     """The warning names the order actually achieved, and does not repeat per step."""
-    from integrators import integration
+    from warpSPHIntegrators import integration
 
     s = getIntegrator('SSP RK3')
     assert s.reuse_order == 1 and s.order == 3
@@ -165,7 +165,7 @@ def test_degrading_reuse_warns_once():
 
 def test_lossless_reuse_does_not_warn():
     """Midpoint keeps its order under reuse, so opting in must be silent."""
-    from integrators import integration
+    from warpSPHIntegrators import integration
 
     s = getIntegrator('Midpoint')
     assert s.supports_reuse

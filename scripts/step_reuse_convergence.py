@@ -28,9 +28,9 @@ import argparse
 import math
 import warnings
 
-from integrators import getIntegrator, testing
-from integrators.integration import IntegrationSchemes
-from integrators.reuse import step_reuse_analysis
+from warpSPHIntegrators import getIntegrator, testing
+from warpSPHIntegrators.integration import IntegrationSchemes
+from warpSPHIntegrators.reuse import step_reuse_analysis
 
 
 def study(scheme, problem, dts, T, quiet=False):

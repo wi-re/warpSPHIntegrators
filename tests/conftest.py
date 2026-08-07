@@ -2,8 +2,8 @@ import warnings
 
 import pytest
 
-from integrators import testing
-from integrators.integration import IntegrationSchemes
+from warpSPHIntegrators import testing
+from warpSPHIntegrators.integration import IntegrationSchemes
 
 
 #: Every registered scheme, as pytest params keyed by display name.

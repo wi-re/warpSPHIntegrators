@@ -15,7 +15,7 @@ import warnings
 
 import pytest
 
-from integrators import get_reference_state, testing
+from warpSPHIntegrators import get_reference_state, testing
 
 from conftest import problem
 
@@ -75,7 +75,7 @@ def test_verbose_works_alongside_step_reuse(scheme):
 @pytest.mark.parametrize('problem_name', ['oscillator', 'forced'])
 def test_convergence_is_unaffected_by_verbose(problem_name, step_sizes):
     """One end-to-end check that the logging path is not a different code path."""
-    from integrators import getIntegrator
+    from warpSPHIntegrators import getIntegrator
 
     s = getIntegrator('RK4')
     prob = testing.PROBLEMS[problem_name]()
