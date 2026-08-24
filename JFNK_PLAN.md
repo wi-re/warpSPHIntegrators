@@ -1,12 +1,16 @@
-# JFNK plan: wave equation bridge → WCSPH
+# JFNK plan: wave equation bridge → WCSPH acoustic subsystem
 
 Plan for building the stiff-solver rung (`NOTES.md` §3.4's ladder rung 2/3, never
 implemented) as a `NonlinearSolver` (S4, done 2026-08-24) usable by the DIRK driver,
 validated first against a case that needs none of the still-missing frontend JVP
-derivations, then used to motivate and scope closing that gap for a real consumer
-inside `warpSPH`. Not started — no code changes have been made yet. Cross-repo:
-`warpSPHIntegrators` (the solver itself), `warpSPH` (the wave-equation bridge case and,
-later, the WCSPH integration), `warpSPHCore` (closing the JVP gap in Phase B).
+derivations, then used on a real consumer: making WCSPH's acoustic subsystem
+(continuity + EOS + pressure force) implicit so `dt` is set by the advective CFL
+instead of the acoustic one, letting the sound speed be chosen purely for
+weak-compressibility accuracy rather than as a timestep tax. Target and validation
+scenario both resolved 2026-08-24 (see Phases B/C). Not started — no code changes
+have been made yet. Cross-repo: `warpSPHIntegrators` (the solver itself), `warpSPH`
+(the wave-equation bridge case and, later, the WCSPH integration), `warpSPHCore`
+(closing the JVP gap in Phase B).
 
 ## Why
 
@@ -99,7 +103,13 @@ tagged state); worth reading for a correctness cross-check, not importing.
 linear `f` like the wave equation it converges in one outer iteration (Newton on a
 linear residual is exact), same shape it will need for a genuinely nonlinear `f`
 later. `opts` selects the matvec (`'fd'` default, `'jvp'` opt-in) and GMRES tolerance/
-iteration cap.
+iteration cap. **Opt-in only** (resolved 2026-08-24, per your call): `FixedPointSolver`
+stays the registry default for every DIRK scheme; `JFNKSolver` is a `solver=`
+override a caller reaches for deliberately, never something the registry picks
+automatically. It's real machinery (flatten/unflatten, GMRES, a matvec choice) for a
+problem `FixedPointSolver` already handles well in the non-stiff regime — no reason
+to pay for it, or to reconsider any scheme's `dissipation`/`stability` registration,
+when nobody asked for it.
 
 **A6. Validation** (extends `test_implicitWaveEquation.py`, doesn't replace it):
 - `getIntegrator('Backward Euler (implicit)')(system, dt=dt, f=f_wave_equation, solver=JFNKSolver())`
@@ -123,63 +133,101 @@ iteration cap.
   SDIRK2 with `solver=JFNKSolver()` on the same problem — broadens coverage for
   free once A1-A5 exist.
 
-## Phase B — close the JVP gap for whichever WCSPH sub-problem gets targeted
+## Phase B — close the JVP gap for the acoustic subsystem
 
-`warpSPHCore` (derivation), `warpSPH` (identifying and wiring the target).
+`warpSPHCore` (derivation), `warpSPH` (wiring). **Target resolved 2026-08-24, per your
+call**: not "whichever WCSPH term," specifically the *acoustic* subsystem — continuity
++ EOS + pressure-gradient force — made implicit so `dt` is governed by the advective
+CFL (fluid velocity) rather than the acoustic one (`C·h/c_s`, confirmed literally that
+formula, no `|v|` term, in `modules/timestep/weaklyCompressible.py:75`), which is what
+currently forces `c_s` and `dt` into direct tension: `setupWeaklyCompressibleTimestep`
+(`modules/timestep/weaklyCompressible.py:108`) today back-solves `c0` *from* a target
+`dt`, i.e. picks the sound speed to fit the timestep budget rather than the accuracy
+you actually want. Decoupling them is the entire point — `c_s` becomes free to set as
+high as weak-compressibility demands once it stops taxing `dt`.
 
-**Open question, needs an answer before this phase can be scoped at all: which part
-of WCSPH is the actual implicit target?** `deltaSPH_step` (`warpSPH/src/warpSPH/
-schemes/deltaSPH.py`) composes far more than the six wrapped operators — density/
-velocity diffusion, momentum, surface-aware pressure force, free-surface detection,
-mDBC boundary handling, forcing/Dirichlet enforcement, gravity, weakly-compressible
-EOS. Deriving JVP for all of it speculatively repeats exactly what this codebase has
-declined every previous time it came up (`warpSPHCore`'s own tracking, item 6: "has
-been declined every time it came up" without a concrete consumer) — Phase A creates
-one, but only for whichever specific term actually needs implicit treatment, not the
-whole RHS at once. The precedent to follow is item 2's own finding: IISPH's pressure
-sub-problem needed only Gradient+Divergence, a small slice of the full incompressible
-solve, not everything solveIncompressible touches.
+**Scoped by reading `deltaSPH_step` directly, not assumed** (this session's research
+against `warpSPH/src/warpSPH/schemes/deltaSPH.py` and the modules it calls):
 
-Once that sub-problem is named:
-1. Read off exactly which operators it touches (likely a strict subset of the list
-   above — e.g. if it's the diffusion terms, probably just `computeVelocityDiffusion`/
-   `computeDensityDiffusion`'s own kernels, not surface detection or mDBC).
-2. Derive JVP for those, Tier-2-style (`warpier_adjoint.md`'s existing methodology),
-   hand-verified against the operator's own math before any code, then gradchecked —
-   same rigor the six existing operators went through, no shortcut for being newer.
-3. Register the new `JVPSpec`s the same way the existing ones are (`OperatorSpec`),
-   so A3's `dual_jvp` primitive picks them up with zero JFNK-side changes — the whole
-   point of A3 being generic rather than wave-equation-specific.
+| Piece | Operator | JVP status |
+|---|---|---|
+| Continuity (`drho/dt = -rho·div(v)`) | `Divergence` (`modules/momentum/inconsistent.py:24-38`) | **Already wrapped** — one of the six. |
+| EOS (`p = f(rho)`, Tait/isothermal/polytropic/Murnaghan) | none — pointwise scalar function of local `rho`, no neighbor sum (`modules/eos/weaklyCompressible.py:37-59`) | **No warpSPHCore JVP needed at all** — differentiates through plain torch autograd like any elementwise op. |
+| Pressure-gradient force | `computePressureForceSurfaceAware` (`modules/pressure/wp_surfaceAware.py`) — a **custom kernel**, called unconditionally, no plain-`Gradient` path exists in the scheme | **The one gap.** |
 
-Not sized further here — the actual effort depends entirely on which sub-problem gets
-picked, and could range from "one linear operator, a day" (if it looks like IISPH's
-pressure equation) to "several genuinely nonlinear kernels, real derivation work"
-(if it's the full momentum equation with artificial viscosity).
+So the acoustic subsystem needs exactly **one** new derivation, not a list. And it
+looks tractable, not speculative-new-math: with `PressureForceScheme.conservative`
+(the scheme's default) or any non-`Antuono` variant, the free-surface mask is ignored
+entirely regardless of whether a free surface is present (`wp_surfaceAware.py:98-108`
+— only the `Antuono` branch reads it), and the force reduces to the classical
+momentum-conserving symmetric SPH pressure gradient,
+`sum_j m_j (p_i/rho_i^2 + p_j/rho_j^2) grad(W_ij)` — **exactly linear in the pressure
+field** for fixed positions/densities/adjacency, the same shape as Tier-1's existing
+value-JVP operators ("relaunch the same kernel on tangent arrays," `warpier_adjoint.md`).
+This is a Tier-1-style derivation, not a Tier-2 geometry-tangent one — no reason to
+expect it harder than the five already-wrapped value-JVP operators were.
+
+**Steps:**
+1. Hand-verify the linearity claim above against the kernel's actual code (not just
+   the classical formula — confirm `wp_surfaceAware.py`'s implementation matches),
+   before writing any JVP code.
+2. Derive and register a `JVPSpec` for `computePressureForceSurfaceAware`, gradchecked
+   against `torch.autograd.gradcheck` the same way the existing six were (per the
+   repo's own `gradcheck` skill/scripts).
+3. Register it exactly like the existing `OperatorSpec`s so A3's `dual_jvp` primitive
+   picks it up with zero JFNK-side changes.
+
+**Density/velocity diffusion (the δ-SPH `computeDensityDiffusion`/
+`computeVelocityDiffusion` terms) are not on this list, deliberately, for the first
+pass.** They're called unconditionally in `deltaSPH_step` but their magnitude is
+fully coefficient-controlled — `densityDelta=0` and `inviscidAlpha=0` zero them out
+without touching scheme code (`configurations/moduleConfigurations/
+weaklyCompressibleDiffusionParams.py`). Two things to resolve, not assumed here:
+`inviscidAlpha` (artificial/numerical stabilization, by its name) vs. `viscidNu`
+(physical kinematic viscosity, by its name) may be separately controlled — if so,
+`viscidNu` likely needs to *stay* nonzero for the TGV case below, since the analytic
+decay solution `KE(t)=KE(0)·exp(-4νk²t)` depends on real viscosity, only
+`inviscidAlpha`/`densityDelta` (numerical stabilization) are candidates to zero. The
+TGV case's own docstring flags `MIN_STABLE_ALPHA=0.01` as an empirical stability
+floor below which artificial viscosity "stops being reliably stable" for the
+*explicit* baseline — whether the same floor applies once the acoustic part is
+implicit is an open empirical question this phase should answer, not assume either
+way; the implicit treatment may itself supply enough numerical damping to relax it,
+or may not.
 
 ## Phase C — JFNK over an actual WCSPH run
 
-`warpSPH`. Wire the Phase B sub-problem into `deltaSPH_step` via a DIRK scheme
-(`getIntegrator(...)`, Phase A's now-proven pattern) with `JFNKSolver` as the solver.
-Compare against the existing explicit baseline on three axes: correctness (no
-regression on `tests/test_physics.py`'s existing cases), stability at a larger `dt`
-than the explicit CFL limit allows (the actual payoff of going implicit — nothing
-here has demonstrated that yet, including Phase A, which only proves the machinery
-works, not that it's faster/better on a real case), and cost (Krylov iterations plus
-matvec cost vs. the extra force evaluations an explicit substep budget would need for
-the same accuracy). Not scoped further until Phase B's target is chosen — this phase
-is entirely downstream of that decision.
+`warpSPH`. **Validation scenario resolved 2026-08-24**: `cases/tgvWeaklyCompressible.py`
+already exists — periodic, boundary-free, 2D weakly-compressible Taylor-Green Vortex,
+no external forcing, no free surface, no mDBC, with an analytic decay solution
+(`KE(t)=KE(0)·exp(-4νk²t)`) already built into the case for comparison. This is
+exactly the "no special treatment needed" scenario asked for, already built — Phase C
+does not need to construct a new case from scratch, only wire the implicit path into
+an existing one. (It is not currently exercised by `tests/test_physics.py`, which only
+runs the *incompressible* TGV case — adding a pytest fixture for the weakly-compressible
+one is part of this phase, not a prerequisite blocking it.)
 
-## Open questions for you
-
-1. Which WCSPH term is the actual implicit target — viscosity, density diffusion,
-   pressure/EOS coupling, something else? Blocks Phase B from being scoped precisely.
-2. Should `JFNKSolver` become a registry-level *default* for any scheme (replacing
-   `FixedPointSolver` where a scheme is registered `stability='L'`, say), or stay an
-   explicit `solver=` override the caller opts into? Affects whether `dissipation`/
-   `stability` flags on the DIRK schemes need re-examining once a real stiff-solver
-   option exists alongside Picard.
-3. Any WCSPH scenario already known to want a larger-than-CFL `dt`? Would sharpen
-   Phase C's target case rather than picking one arbitrarily.
+Steps:
+1. Split `deltaSPH_step`'s RHS so the acoustic subsystem (continuity + EOS + pressure
+   force, Phase B) can be solved implicitly via a DIRK scheme
+   (`getIntegrator('Backward Euler (implicit)')` first, matching Phase A's proven
+   pattern, before trying a higher-order tableau) with `solver=JFNKSolver()`, while
+   whatever stays explicit (viscosity if `MIN_STABLE_ALPHA`'s floor turns out to still
+   apply, anything Phase B left out) continues on its current path. This is a real
+   scheme-level change to how `deltaSPH_step` is called for the implicit path, not
+   just a new option flowing through unchanged — sized once Phase B is further along
+   and the split's exact shape is clearer.
+2. Set `c_s` far higher than the explicit baseline's timestep-constrained value would
+   allow (the entire motivation), and confirm `dt` can grow to the *advective* CFL
+   limit — `computeTimestep`'s viscous/acceleration terms (`modules/timestep/
+   weaklyCompressible.py:72,82`) still apply as a floor; only the acoustic term
+   (`dt_c = C·h/c_s`) is what implicit treatment removes from the `torch.min`.
+3. Compare against the existing explicit TGV baseline on three axes: correctness (the
+   decay rate matches the same analytic `KE(t)` curve, within the case's own existing
+   tolerance), stability at the larger `dt` (the actual payoff — nothing before this
+   phase demonstrates it; Phase A only proves the machinery is correct, not that it's
+   faster/better on a real case), and cost (Krylov iterations + matvec cost per step
+   vs. the many more, cheaper explicit steps the acoustic CFL currently forces).
 
 ## Explicitly not doing (yet)
 
@@ -195,8 +243,9 @@ is entirely downstream of that decision.
   hard PyTorch limitation). Inexact Newton (matvec only, no Hessian) sidesteps
   needing this by construction; not a gap JFNK needs closed.
 - **Deriving JVP for every WCSPH operator up front.** Phase B is deliberately scoped
-  to whatever sub-problem gets named, not the whole scheme — see Phase B's own
-  framing above.
+  to the acoustic subsystem's one gap (`computePressureForceSurfaceAware`), not
+  density/velocity diffusion, surface detection, mDBC, or anything else
+  `deltaSPH_step` touches that the acoustic-implicit path doesn't need.
 
 ## Verification
 
