@@ -354,24 +354,63 @@ per step with a *single* stage. It is the single highest-value item in this sect
 
 ### 3.4 Newton without forward-mode AD
 
+**Corrected 2026-08-24 — the table below originally read `warp: ✗ no forward mode`,
+full stop. That is true of the bare `warp` engine and still is (`warpier_core.md`:
+"Warp 1.15 has no forward-mode AD of any kind"), but it is the wrong fact to lead
+with for this library's actual downstream, `warpSPHCore`, which has since built a
+real — if narrowly scoped — JVP capability on top of warp's reverse-mode kernels.
+Verified directly against `warpSPHCore`'s current source before writing this
+correction (not assumed from an earlier session's memory):**
+
+- **It is a hand-derived tangent-propagation layer, not engine-level forward mode.**
+  `StateAwareWarpFunction` implements PyTorch's native `.jvp()` extension hook; each
+  wrapped operator's `OperatorSpec` carries a hand-derived `JVPSpec` (relaunching the
+  same kernel on tangent arrays for value tangents — exact by linearity — or a
+  separate hand-derived geometry-JVP kernel for position/support/mass tangents).
+  Composable: chaining two wrapped operators inside one
+  `torch.autograd.forward_ad.dual_level()`, feeding the first's dual output as the
+  second's input, propagates the tangent through correctly with no manual wiring —
+  confirmed by `warpSPHCore`'s own
+  `tests/operations/test_forward_mode_dual_wrapper.py`. What still does not work is
+  *nested* dual levels (needed for a Hessian action, not a Jacobian action) — a hard
+  PyTorch limitation reproduced on bare `x**3`, not a `warpSPHCore` gap.
+- **Scoped to exactly six operators plus Covariance**: Density, Interpolate,
+  Gradient, Divergence, Curl, Laplacian, Covariance — with `GradientScheme`/
+  `LaplacianScheme` variants and CRK/renorm correction paths (Laplacian only for
+  Brookshaw/Dot/Default, never Naive). **Nothing outside that set has any JVP path**
+  — the momentum equation, mDBC, surface detection, and every other production
+  kernel were never attempted (`warpSPHCore`'s own residual-open-problems tracking,
+  item 4). An `f` built partly from wrapped operators and partly from anything else
+  gets exact JVPs for the wrapped part and nothing for the rest — there is no partial
+  credit, and no automatic detection that a term was skipped.
+- **This changes the practical shape of rung 3 below** (an exact-JVP matvec is no
+  longer torch-only — it now also reaches warp-native SPH states, for an `f` that
+  qualifies), **without changing rung 1's argument for existing at all** (an `f` with
+  any unwrapped term still has no exact-JVP path, full stop, and needs FD).
+
 The question "can I run `f` under forward-mode AD to get the Jacobian action?" splits
-into two needs that are usually conflated, and that have **opposite** backend support.
+into two needs that are usually conflated, and that have **asymmetric, and now more
+nuanced,** backend support.
 
 | Need | What it requires | torch | warp |
 |---|---|---|---|
-| **Solving** the stage equation with Newton: `(I − dt·a_ii·J)·δ = −G` | Jacobian-*vector* products `J·v` — **forward mode** (`jvp`) | `torch.func.jvp` ✓ | ✗ no forward mode |
+| **Solving** the stage equation with Newton: `(I − dt·a_ii·J)·δ = −G` | Jacobian-*vector* products `J·v` — **forward mode** (`jvp`) | `torch.func.jvp` ✓ | engine: ✗ no forward mode. `warpSPHCore`: ✓, but only for `f` built entirely from the six operators + Covariance above — see the correction. |
 | **Differentiating through** a converged solve, for training | *vector*-Jacobian products `Jᵀ·λ` via the implicit function theorem — **reverse mode** (`vjp`) | ✓ | `wp.Tape` ✓ |
 
-So warp has exactly the mode the *gradient* needs and lacks exactly the mode the
-*solve* needs. That is a real asymmetry, and it is worth stating clearly because it
-inverts the intuition: the differentiability story is the part that ports, and the
-solver is the part that does not.
+So warp has exactly the mode the *gradient* needs and, for an arbitrary `f`, still
+lacks exactly the mode the *solve* needs — the asymmetry the original write-up led
+with is still real for the general case. It is only for the specific, bounded case of
+an `f` assembled from `warpSPHCore`'s wrapped operators that the solve side gets a
+matching capability now, not the general one implied by "warp gained forward mode."
 
-**It does not block anything, because Newton does not actually need AD.** An inexact
-Newton needs the *residual* to be exact — and it is, it is just `f` — while the matvec
-`J·v` only has to be good enough to produce a descent direction. A finite-difference
-directional derivative `J·v ≈ (f(Y+εv) − f(Y))/ε` costs one extra RHS evaluation,
-needs no AD of any kind, and works identically under torch and warp.
+**It does not block anything even in the general case, because Newton does not
+actually need AD.** An inexact Newton needs the *residual* to be exact — and it is,
+it is just `f` — while the matvec `J·v` only has to be good enough to produce a
+descent direction. A finite-difference directional derivative
+`J·v ≈ (f(Y+εv) − f(Y))/ε` costs one extra RHS evaluation, needs no AD of any kind,
+and works identically under torch and warp, for *any* `f`, wrapped-operator or not.
+This is why FD stays the generic fallback (rung 2) rather than something the JVP
+finding replaces.
 
 [verified] Backward Euler with a purely finite-difference Jacobian, no autodiff:
 bounded and correctly L-stably damped at every stiffness up to `dt·ω = 1000`, where
@@ -383,12 +422,32 @@ factor.
 1. **Fixed-count Picard (2 iterations).** Non-stiff. No AD, no norm, no branching.
    Unrolls to a fixed-depth autograd graph, so it is differentiable in both backends
    by construction, graph-capturable, and deterministic. **This covers the primary use
-   case and is all Phase 2 ships.**
-2. **JFNK with FD matvecs.** Stiff, backend-agnostic. Needs the flatten/unflatten
-   bijection over integrated fields (mechanical — the field metadata already names
-   them) plus GMRES.
-3. **`torch.func.jvp` matvecs.** Same as 2 with exact matvecs, as a torch-only fast
-   path. A speed and robustness optimisation, *not* a capability gate.
+   case and is what Phase 2 ships as the default** — though not the *only* thing
+   `FixedPointSolver` can do: it already accepts `tol=`/`norm=` for a bounded,
+   convergence-checked variant (see the note appended to §3.6's DIRK section), which
+   is the right choice whenever CUDA-graph capture and the fixed-unroll-depth
+   semantics for training aren't actually load-bearing for the caller — a purely
+   forward simulation, or one whose gradients come from a separately-managed adjoint
+   rather than backprop through this solve, needs neither.
+2. **JFNK with FD matvecs.** Stiff, backend-agnostic, no capability gate — works for
+   *any* `f`. Needs the flatten/unflatten bijection over integrated fields
+   (mechanical — the field metadata already names them) plus GMRES. **Not built —
+   see `warpier_jfnk_plan.md` for the phased plan to build it, starting from the
+   implicit wave-equation example specifically because it needs nothing outside the
+   six wrapped operators (§3.4's correction), making it the bridge case rather than
+   the hardest one.**
+3. **Exact-JVP matvecs.** `torch.func.jvp` for torch states (a torch-only fast path,
+   as originally scoped); `warpSPHCore`'s dual-tensor composition for warp-native
+   states, but **only** when `f` is built entirely from the six wrapped operators +
+   Covariance (§3.4's correction) — for anything else this rung does not exist, and
+   the implementation must say so loudly. **Every custom (non-wrapped) operator in
+   `warpSPHCore` shares the same `StateAwareWarpFunction`/`OperatorSpec` dispatch
+   path as the wrapped ones** — a JVP-based matvec that walks that dispatch path must
+   treat "no `JVPSpec` registered" as a hard error for that call, not a silent
+   skip/zero-fill, or a caller composing a not-yet-wrapped op into `f` would get a
+   matvec that is quietly wrong (some terms present, some silently dropped) instead
+   of a matvec that fails to build at all. A speed/robustness optimisation over rung
+   2 for the `f`s that qualify, never a substitute for it.
 4. **User-supplied `solve_linear`.** An ISPH code already owns a pressure-projection
    solve and will always beat a generic Krylov method. This should be the contract;
    1–3 are the fallbacks.
@@ -516,6 +575,20 @@ evaluations per step. This same distinction likely also affects the L-stable
 tableaus' *stability* claims under Picard specifically — see the stiff-divergence
 finding two paragraphs down — though stability (staying bounded) turned out to be a
 smaller casualty here than symplecticity (staying bounded *and* non-dissipative) was.
+
+**Note on the fixed-count default specifically (2026-08-24):** `FixedPointSolver`
+already accepts `tol=`/`norm=` for a bounded, convergence-checked variant instead of
+running a hard-coded iteration count — this was built into it from the start (§3.5
+S4), not added for this note. "Ship a fixed count" is the right *default* because it
+is what CUDA-graph capture and a fixed-unroll-depth training graph need (§3.7 pain
+point 12), but neither of those is a universal requirement: a purely forward
+simulation, or one whose gradients come from a separately-managed adjoint rather than
+backprop through this solve, doesn't need either, and can pass a much larger
+`iterations` cap with a real `tol` today to recover the textbook property above
+without waiting on JFNK. The energy-drift recovery measured above used a bare
+iteration-count sweep, not this `tol`-based path specifically; confirming the two give
+the same answer is a small, concrete piece of follow-up if it matters to a caller
+before `warpier_jfnk_plan.md`'s work lands.
 
 **A second finding, matching an existing §3.2 claim exactly rather than contradicting
 it:** L-stability is a property of the *exact* method, not of a truncated Picard
@@ -699,11 +772,18 @@ under which the plan stops being valid.
 
 **Implicit — resolved by §3.4, recorded so it is not re-litigated**
 
-11. **Warp's lack of forward-mode AD does not block the solver.** FD directional
-    derivatives drive Newton to `dt·ω = 1000` with no AD at all [verified], and a
-    fixed-count Picard needs no Jacobian action whatsoever. `torch.func.jvp` is a
-    fast path, not a gate. The thing that *does* need care at scale is the FD matvec
-    staying a directional derivative rather than a dense Jacobian — see §3.4's caution.
+11. **Neither warp's lack of engine-level forward-mode AD, nor its bare existence in
+    `warpSPHCore` for six operators, blocks or unblocks the solver on its own.** FD
+    directional derivatives drive Newton to `dt·ω = 1000` with no AD at all
+    [verified], and a fixed-count Picard needs no Jacobian action whatsoever — this
+    still holds regardless of which operators `warpSPHCore` has since grown JVPs for.
+    Exact JVPs (`torch.func.jvp` for torch states; `warpSPHCore`'s dual-tensor
+    composition for warp states, scoped to six operators + Covariance — §3.4's
+    2026-08-24 correction) are a fast path over FD, not a gate, and not a substitute
+    for FD's genericity. The thing that *does* need care at scale is the FD matvec
+    staying a directional derivative rather than a dense Jacobian — see §3.4's caution
+    — and, for the JVP fast path specifically, failing loudly rather than silently
+    when `f` includes an operator outside the wrapped set.
 12. **Warp graph capture is fine with a fixed iteration count.** A data-dependent
     iteration count breaks capture (§2.1); the recommended default does not have one.
     Decide alongside §2.2, but the constraint points the same way as ML determinism
