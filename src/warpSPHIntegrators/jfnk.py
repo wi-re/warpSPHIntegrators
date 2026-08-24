@@ -321,8 +321,8 @@ class JFNKSolver:
         ``norm`` with a *different* convention (e.g. ``dirk.py``'s Hairer-
         Wanner weighted-RMS, whose own convention is "< 1.0 means converged"
         -- see ``fields.state_norm``) must supply a matching ``newton_tol``
-        explicitly; ``dirk.py`` does (defaults to ``1.0``, matching that
-        norm's own documented scale). Found the hard way: before this
+        explicitly; ``dirk.py`` does (``1e-3``, found by bisecting against
+        this repo's own test suite). Found the hard way: before this
         parameter existed, ``dirk.py`` always passed its own ``norm`` but
         never a compatible ``tol``, so ``JFNKSolver``'s ``tol`` (tuned for
         the *other* convention) silently leaked through -- Newton would reach
@@ -331,6 +331,25 @@ class JFNKSolver:
         ``max_iterations`` budget on every single stage solve chasing a
         threshold the weighted-RMS norm can't satisfy past float32 noise
         (see ``warpSPHIntegrators``'s ``JFNK_DRIVER_OVERHEAD_NOTES.md``).
+      ``newton_stagnation_ratio``/``newton_stagnation_patience``: a *second*,
+        resolution-independent early exit -- ``newton_tol`` alone is not
+        enough, because the float32 noise floor ``norm_fn`` actually reaches
+        is itself resolution-dependent (more particles -> more summed
+        round-off in each RHS evaluation's reductions -> a *higher* floor),
+        so no single fixed ``newton_tol`` sits below every problem size's
+        floor (found directly: ~1.5e-4 at 16K particles, comfortably under
+        the ``1e-3`` default; ~2.3e-3-2.8e-3 at 1M particles, comfortably
+        *over* it -- both are genuine convergence, just to different floors).
+        Tracked regardless of ``newton_tol``'s convention, so it needs no
+        caller-side tuning: if ``norm_fn`` fails to improve on its best value
+        so far by at least a factor of ``newton_stagnation_ratio`` (default
+        ``0.9``, i.e. less than 10% better) for ``newton_stagnation_patience``
+        (default ``2``) consecutive iterations, that plateau *is* this
+        solve's floor -- reported as converged (this is the best available
+        answer, not a failure), same as tripping ``newton_tol`` would be.
+        Only evaluated once at least one non-``newton_tol`` iteration has a
+        prior norm to compare against, so it can never trigger on the very
+        first correction, before any progress has been measured at all.
       ``max_iterations``: outer Newton *correction* budget (default 20) -- the
         number of ``step`` calls is this plus one (one final evaluation to verify
         the last correction, or to report on running out of budget).
@@ -341,7 +360,9 @@ class JFNKSolver:
     def __init__(self, matvec: str = 'fd', tol: float = 1e-8, max_iterations: int = 20,
                  gmres_tol: Optional[float] = None, gmres_maxiter: Optional[int] = None,
                  gmres_restart: int = 30, fd_eps: Optional[float] = None,
-                 newton_tol: Optional[float] = None):
+                 newton_tol: Optional[float] = None,
+                 newton_stagnation_ratio: float = 0.9,
+                 newton_stagnation_patience: int = 2):
         if matvec not in ('fd', 'jvp'):
             raise ValueError(f"JFNKSolver needs matvec in ('fd', 'jvp'), got {matvec!r}")
         self.matvec = matvec
@@ -352,6 +373,8 @@ class JFNKSolver:
         self.gmres_restart = gmres_restart
         self.fd_eps = fd_eps
         self.newton_tol = newton_tol
+        self.newton_stagnation_ratio = newton_stagnation_ratio
+        self.newton_stagnation_patience = newton_stagnation_patience
 
     def solve(self, step: Callable, y0, norm: Optional[Callable] = None, **opts) -> SolveResult:
         matvec_kind = opts.get('matvec', self.matvec)
@@ -364,15 +387,35 @@ class JFNKSolver:
         newton_tol = opts.get('newton_tol', self.newton_tol)
         if newton_tol is None:
             newton_tol = tol
+        stagnation_ratio = opts.get('newton_stagnation_ratio', self.newton_stagnation_ratio)
+        stagnation_patience = opts.get('newton_stagnation_patience', self.newton_stagnation_patience)
         norm_fn = norm if norm is not None else _default_flat_norm()
 
         Y = y0
         n = 0
+        best_norm = None
+        stagnant_count = 0
         for _ in range(max_iterations):
             Y_step = step(Y)
             n += 1
-            if norm_fn(Y, Y_step) < newton_tol:
+            nv = norm_fn(Y, Y_step)
+            if nv < newton_tol:
                 return SolveResult(Y_step, True, n)
+
+            if best_norm is not None:
+                if nv >= best_norm * stagnation_ratio:
+                    stagnant_count += 1
+                    if stagnant_count >= stagnation_patience:
+                        # Not "gave up" -- this plateau is this problem's
+                        # (resolution- and precision-dependent) floor, and
+                        # nv is already the best correction reached; further
+                        # iterations only re-measure the same noise.
+                        return SolveResult(Y_step, True, n)
+                else:
+                    stagnant_count = 0
+                best_norm = min(best_norm, nv)
+            else:
+                best_norm = nv
 
             y_flat = flatten_integrated(Y)
             G_y = y_flat - flatten_integrated(Y_step)

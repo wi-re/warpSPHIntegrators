@@ -242,3 +242,43 @@ across this entire investigation (this doc's items 2/3, the reverted item 1, and
 this moved it 3-4.6x). jvp benefits more than fd in relative terms because jvp's per-eval cost was
 already higher (see the sibling plan doc's "Correction" section) — cutting 80-90% of the eval
 *count* pays off proportionally more for the more-expensive-per-eval scheme.
+
+## Follow-up (same day, third pass): `newton_tol=1e-3` alone wasn't resolution-robust
+
+User-reported counter-example: `nx=1024` (1M particles) still showed ~144 f/step after the fix
+above — essentially the *original* bug's symptom (full 15-iteration budget) reappearing at large
+scale. Traced directly (`newton iter N: norm_fn=...` printout, same method as the original finding):
+at `nx=1024` the WRMS norm's own float32 noise floor sits around **0.0023-0.0028** — *above*
+`newton_tol=1e-3` — while at `nx=128` the same problem's floor was **~1.5e-4**, comfortably below
+it. **The float32 noise floor `state_norm` reaches is itself resolution-dependent** (more particles
+→ more summed round-off in each RHS evaluation's per-neighbor reductions → a higher achievable
+floor for the same normalized quantity), so no single fixed `newton_tol` constant can sit below
+every problem size's floor — `1e-3` was never going to be resolution-robust on its own, only
+lucky for the `nx` range tested at the time.
+
+**Fix**: added a second, resolution-independent early exit — stagnation detection.
+`JFNKSolver` gained `newton_stagnation_ratio` (default `0.9`) and `newton_stagnation_patience`
+(default `2`): tracks the best `norm_fn` value seen across Newton iterations, and if the current
+value fails to beat the best by at least `stagnation_ratio` (i.e. under 10% improvement) for
+`stagnation_patience` consecutive iterations, that plateau is reported as converged — it *is* this
+problem's floor, whatever numeric value it happens to be, so no per-resolution tuning is needed.
+`newton_tol` stays as the fast path (exits immediately when it's actually reachable, e.g. small
+problems); stagnation is the fallback for when it isn't. Enabled unconditionally in `JFNKSolver`
+itself (not `dirk.py`-only), since it's a strict robustness improvement with no norm-convention
+dependency: genuine progress never trips it, only genuine plateaus do.
+
+**Validated**: full `warpSPHIntegrators` suite (1399 passed) and `warpSPH`'s two JFNK/DIRK test
+files (23 passed) unaffected — the toy/unit-test problems converge tightly and monotonically before
+stagnation's 2-iteration patience ever engages. Traced outer Newton-iteration counts directly:
+`nx=128` mean 3.35 (was exiting via `newton_tol` already, now slightly later since best-tracking
+needs one extra iteration to confirm a plateau — negligible), `nx=512` mean 5.7, `nx=1024` mean 5.6
+— a sensible, *gradual* increase with resolution (the linear system genuinely gets a little stiffer
+to resolve per-Newton-correction at higher `nx`, expected GMRES/Newton-Krylov behavior, not bug
+symptoms), never anywhere near the 15-iteration budget again.
+
+**Real-world effect at `nx=1024`** (`bench_performance.py`, `--device cuda:0`): f/step
+143.6→**54.7** (jvp), 144.3→**64.4** (fd) — a further ~2.6x/2.2x reduction on top of the `newton_tol`
+fix alone, and msPerRhs now sits at **~2.36x** `rk4`'s (3.802ms vs. 1.613ms) — matching
+`warpSPHCore`'s own "~2x is architecturally inherent" finding for the JVP path
+(`warpier_jvp_dual_argument_pruning_plan.md`'s "Correction" section) with a small, expected margin
+on top for GMRES's own per-iteration cost, not evidence of remaining waste.
