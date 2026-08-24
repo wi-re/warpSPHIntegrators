@@ -432,7 +432,7 @@ factor.
 2. **JFNK with FD matvecs.** Stiff, backend-agnostic, no capability gate — works for
    *any* `f`. Needs the flatten/unflatten bijection over integrated fields
    (mechanical — the field metadata already names them) plus GMRES. **Not built —
-   see `warpier_jfnk_plan.md` for the phased plan to build it, starting from the
+   see `JFNK_PLAN.md` for the phased plan to build it, starting from the
    implicit wave-equation example specifically because it needs nothing outside the
    six wrapped operators (§3.4's correction), making it the bridge case rather than
    the hardest one.**
@@ -588,7 +588,7 @@ backprop through this solve, doesn't need either, and can pass a much larger
 without waiting on JFNK. The energy-drift recovery measured above used a bare
 iteration-count sweep, not this `tol`-based path specifically; confirming the two give
 the same answer is a small, concrete piece of follow-up if it matters to a caller
-before `warpier_jfnk_plan.md`'s work lands.
+before `JFNK_PLAN.md`'s work lands.
 
 **A second finding, matching an existing §3.2 claim exactly rather than contradicting
 it:** L-stability is a property of the *exact* method, not of a truncated Picard
