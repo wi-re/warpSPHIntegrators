@@ -39,3 +39,12 @@ class IntegrationSchemeType(Enum):
     implicitMidpoint = 27
     trapezoidal = 28
     sdirk2 = 29
+    # Explicit linear multistep (NOTES.md S3.6 Phase 1). `steps == order - 1`; none
+    # implement first-stage reuse (a different, single-entry-lookback mechanism).
+    ab2 = 30
+    ab3 = 31
+    ab4 = 32
+    ab5 = 33
+    abm2 = 34
+    abm3 = 35
+    abm4 = 36

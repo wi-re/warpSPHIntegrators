@@ -40,6 +40,7 @@ from .verlet import leapFrog, symplecticEuler, velocityVerlet
 from .tvd import TVDRK3, TVDRK2
 from .ruth import PEFRL, VEFRL
 from .dirk import backwardEuler as implicitBackwardEuler, implicitMidpoint, trapezoidal, SDIRK2
+from .multistep import AB2, AB3, AB4, AB5, ABM2, ABM3, ABM4
 from .reuse import step_reuse_analysis, step_reuse_order, supports_step_reuse, is_fsal
 
 semiImplicitEuler = lambda state, dt, f, *args, **kwargs: integrateSemiImplicitEuler(state, dt, f, *args, **kwargs)
@@ -118,6 +119,38 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     SDIRK2, 'SDIRK2', IntegrationSchemeType.sdirk2, 2, True, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+
+# ---- Explicit linear multistep (NOTES.md S3.6 Phase 1) -------------------- #
+# `dissipation=True` for all seven, measured directly (max relative energy error on
+# `oscillator` grows ~7-9x over an 8x-longer run for every one) and consistent with
+# NOTES.md S3.6's own citation (Tang 1993: no linear multistep method is symplectic
+# for a general Hamiltonian). `startup_order` equals each scheme's own `order`, not a
+# capped value: the Dormand-Prince 5(4) starter these schemes bootstrap from (S3.7
+# pain point 1) has order 5, at or above every one of these, so none of them lose
+# order to a low-quality cold start the way a self-starting Euler bootstrap would --
+# confirmed empirically (`tests/test_multistep.py`), not assumed from the starter's
+# order alone.
+IntegrationSchemes.append(IntegrationScheme(
+    AB2, 'Adams-Bashforth 2', IntegrationSchemeType.ab2, 2, True, True,
+    implicit=False, steps=1, startup_order=2))
+IntegrationSchemes.append(IntegrationScheme(
+    AB3, 'Adams-Bashforth 3', IntegrationSchemeType.ab3, 3, True, True,
+    implicit=False, steps=2, startup_order=3))
+IntegrationSchemes.append(IntegrationScheme(
+    AB4, 'Adams-Bashforth 4', IntegrationSchemeType.ab4, 4, True, True,
+    implicit=False, steps=3, startup_order=4))
+IntegrationSchemes.append(IntegrationScheme(
+    AB5, 'Adams-Bashforth 5', IntegrationSchemeType.ab5, 5, True, True,
+    implicit=False, steps=4, startup_order=5))
+IntegrationSchemes.append(IntegrationScheme(
+    ABM2, 'Adams-Bashforth-Moulton 2 (PECE)', IntegrationSchemeType.abm2, 2, True, True,
+    implicit=False, steps=1, startup_order=2))
+IntegrationSchemes.append(IntegrationScheme(
+    ABM3, 'Adams-Bashforth-Moulton 3 (PECE)', IntegrationSchemeType.abm3, 3, True, True,
+    implicit=False, steps=2, startup_order=3))
+IntegrationSchemes.append(IntegrationScheme(
+    ABM4, 'Adams-Bashforth-Moulton 4 (PECE)', IntegrationSchemeType.abm4, 4, True, True,
+    implicit=False, steps=3, startup_order=4))
 
 
 # --------------------------------------------------------------------------- #

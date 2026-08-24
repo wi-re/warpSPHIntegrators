@@ -58,16 +58,24 @@ are gone.
 - **Multistep and implicit** (§3) — the two entries in the README's "Known
   Limitations". Both are much cheaper here than for a general-purpose library, because
   the surrounding simulation does not resort particles, holds `dt` constant, and
-  carries its neighbour list through the state (§3.0). **Phase 0 (§3.5, S1-S5) and
-  Phase 2 (§3.6, the DIRK driver) are both done as of 2026-08-24**: four DIRK schemes
-  are now registered (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2; TR-BDF2
-  and ESDIRK3(2) deliberately deferred — see §3.6), each verified to reach its claimed
-  convergence order empirically. **Implicit midpoint's headline symplectic property
-  needs a caveat the original scoping missed**: at the shipped `FixedPointSolver`
-  default (2 fixed Picard iterations), its long-run energy behaviour measures
-  dissipative, not symplectic — the textbook bound only returns with a more-converged
-  solver (§3.6 has the full finding). Phase 1 (explicit multistep) is next in the
-  recommended order.
+  carries its neighbour list through the state (§3.0). **All three phases — 0 (§3.5),
+  2 (§3.6, DIRK), and 1 (§3.6, multistep) — are done as of 2026-08-24.** Eleven new
+  schemes are registered: four DIRK (Backward Euler, Implicit Midpoint, Trapezoidal,
+  SDIRK2; TR-BDF2 and ESDIRK3(2) deliberately deferred) and seven explicit multistep
+  (Adams-Bashforth 2-5, Adams-Bashforth-Moulton 2-4 PECE), every one verified to reach
+  its claimed convergence order empirically. **Implicit midpoint's headline symplectic
+  property needs a caveat the original scoping missed**: at the shipped
+  `FixedPointSolver` default (2 fixed Picard iterations), its long-run energy
+  behaviour measures dissipative, not symplectic — the textbook bound only returns
+  with a more-converged solver (§3.6 has the full finding). The multistep schemes
+  landed with zero comparable surprises — the "reuse `_weighted_update`, bootstrap
+  from Dormand-Prince, thread `StepHistory`" design didn't need new machinery that
+  could itself be wrong, and the full suite (1103 → 1380 passing tests) went green on
+  the first run after fixing one pre-existing test's exclusion criteria. What remains
+  open in this area — TR-BDF2, ESDIRK3(2), fully implicit RK, BDF, IMEX/ARK, a stiff
+  `NonlinearSolver` (JFNK), adaptive `dt` — is each individually scoped in §3.6/§3.4
+  and gated on a concrete downstream need, per the recommendation at the end of §3.8;
+  none of it is a groundwork gap the way Phase 0 was.
 - **A finding, not a defect:** Leap Frog, Velocity Verlet, PEFRL and VEFRL are only
   second/fourth order for a **separable** Hamiltonian, i.e. a force depending on
   position alone. With a velocity-dependent force — artificial viscosity, drag, any
@@ -566,23 +574,45 @@ step up in solver machinery, not more tableau data — and its dense/block Jacob
 the same scale trap as §3.4's caution, worse: an `s·N × s·N` system rather than
 `N × N`.
 
-#### Linear multistep
+#### Linear multistep — Adams-Bashforth/-Moulton shipped 2026-08-24
 
-| Scheme | Order | Evals/step | History | Implicit | Marginal effort |
+| Scheme | Order | Evals/step | History | Implicit | Status |
 |---|---|---|---|---|---|
-| **Adams–Bashforth 2–5** | k | **1** | k−1 updates | no | 1–2 d for the whole family |
-| **ABM predictor–corrector (PECE)** | k | 2 | k−1 updates | no (fixed corrections) | +1 d |
-| **Adams–Moulton 2–4** as a true corrector | k | solve | k−1 updates | yes | +1 d after the DIRK solver |
-| **BDF1–2** | 1, 2 | solve | k states | yes, A-stable | **2 d** — constant `dt` (§3.0) removes the variable-coefficient work entirely |
-| **BDF3–6** | 3–6 | solve | k states | yes, A(α)-stable only | +1 d; BDF7+ is not zero-stable, do not offer it |
-| **Störmer–Cowell / multistep Nyström** (`x'' = f(x)`) | k | 1 | k states | no | 3 d — fits `PositionUpdateSpec` well; Störmer–Verlet is its 2-step case |
-| **Gauss–Jackson** (8th-order Störmer–Cowell) | 8 | 1 | 8 | no | 1 wk — niche, orbital mechanics |
+| **Adams–Bashforth 2–5** | k | **1** | k−1 updates | no | **Done.** |
+| **ABM predictor–corrector (PECE)** | k | 2 | k−1 updates | no (fixed corrections) | **Done**, for orders 2-4. |
+| **Adams–Moulton 2–4** as a true corrector | k | solve | k−1 updates | yes | not done — needs the DIRK solver applied to a multistep stage, not attempted |
+| **BDF1–2** | 1, 2 | solve | k states | yes, A-stable | not done |
+| **BDF3–6** | 3–6 | solve | k states | yes, A(α)-stable only | not done |
+| **Störmer–Cowell / multistep Nyström** (`x'' = f(x)`) | k | 1 | k states | no | not done |
+| **Gauss–Jackson** (8th-order Störmer–Cowell) | 8 | 1 | 8 | no | not done — niche, orbital mechanics |
+
+**Implemented as `multistep.py`** (~215 lines): `y^{n+1} = y^n + dt·Σ_j β_j k^{n-j}` reuses
+`butcher._weighted_update` directly, exactly the free lunch this section predicted — `ks` doesn't care
+whether its entries came from this step's stages or past steps' `StepHistory` entries. Verified
+empirically for every order (`tests/test_multistep.py`): AB2-5 and ABM2-4 all reach their claimed order
+on `oscillator`/`forced`/`damped` to within 0.05. Bootstraps from Dormand-Prince 5(4) (order 5, at or
+above every one of these) for the first `order - 1` steps, taking `result.stages[0].update` — the
+FSAL-irrelevant fact that *every* explicit RK scheme's first stage sits at `f(t^n, y^n)` — as this
+step's history entry.
+
+**A design question this section didn't anticipate, resolved during implementation: what happens if a
+caller never threads `history=`?** Unlike every one-step scheme, where `history=`/`priorStep=` are pure
+opt-in bookkeeping, a multistep scheme's past derivatives exist *only* if the caller carries
+`IntegrationResult.history` forward. Resolved by making the fallback safe rather than merely
+documented: with insufficient history, these schemes keep re-running the Dormand-Prince starter
+forever — verified bit-for-bit identical to calling `DormandPrince` directly
+(`test_without_history_threading_falls_back_to_the_starter_exactly`). Since DP5 is higher order than
+any of these, a caller who forgets to thread history gets a *correct but more expensive* trajectory,
+never a silently wrong one — the same "safe but expensive" category as Item 3's DIRK stiff-Picard
+finding, not the "silently wrong" category the `history=`-auto-deriving-`priorStep` bug from Phase 0 was.
 
 AB's one evaluation per step is the real prize here: **one force evaluation per step
 at order 4**, against RK4's four, with fixed coefficients that are exactly correct
 under constant `dt` and a history that never expires under stable indexing (§3.0).
 Both of the things that normally make multistep painful are absent. Note that no
-linear multistep method is symplectic for a general Hamiltonian (Tang, 1993);
+linear multistep method is symplectic for a general Hamiltonian (Tang, 1993) —
+measured directly for all seven (`dissipation=True`, ~7-9x energy-error growth over
+an 8x-longer run, matching every other non-symplectic scheme registered here);
 symmetric LMMs applied to `x''=f(x)` do show good long-time energy behaviour, but they
 are subject to parasitic-root instability, so don't market them as symplectic.
 
@@ -612,9 +642,14 @@ under which the plan stops being valid.
    because the single AB1/Euler startup step contributes `O(dt²)` globally. With a
    Dormand–Prince starter for the first k−1 steps: AB3 → 2.97, AB4 → 3.99, ABM4 →
    4.03. So a high-order starter is not a refinement, it is the difference between
-   AB4 and AB2. The starter must be registered scheme metadata, not caller policy.
-   **This is now the only structural obstacle to multistep, and it is a solved
-   problem** — the FSAL pairs added in v0.5.0 are exactly the right starters.
+   AB4 and AB2. **Done 2026-08-24**: the starter (Dormand-Prince 5(4), unconditionally
+   -- order 5, at or above every shipped order) is hard-coded inside
+   `AdamsBashforth`/`AdamsBashforthMoulton`, deliberately *not* a `starter=` parameter
+   a caller could override, which is what "must be registered scheme metadata, not
+   caller policy" meant in practice: a caller-suppliable starter is exactly the
+   footgun this pain point describes, one call away (pick a lower-order one, or one
+   whose first stage isn't at `t^n`, and the whole run silently caps at the starter's
+   own order instead of this scheme's).
 2. **Backprop-through-time depth grows by `k`.** This is the one that bites the
    primary use case. History links step *n* to step *n−k* in the autograd graph, so a
    k-step method deepens BPTT by a factor of k on top of however many steps are already
@@ -682,7 +717,7 @@ Each phase is independently shippable and independently useful.
 |---|---|---|---|
 | **0** | S1–S5 + S2g groundwork (§3.5) — **done 2026-08-24** | 5–6 d | none — S1 also unblocks §2.3's adaptive `dt` |
 | **2** | DIRK driver + fixed-count `FixedPointSolver` + implicit midpoint, backward Euler, trapezoidal, SDIRK2 — **done 2026-08-24**; TR-BDF2, ESDIRK3(2) deferred (§3.6) | 4–5 d | Phase 0 |
-| **1** | Explicit multistep: AB2–5 + ABM PECE, FSAL starter, `dt`/`uid` guards | 2–3 d | Phase 0 |
+| **1** | Explicit multistep: AB2–5 + ABM PECE, DP5 starter, `dt`/`uid` guards — **done 2026-08-24** | 2–3 d | Phase 0 |
 | **3** | JFNK with FD matvecs + user `solve_linear` hook + particle masking | 1–1.5 wk | Phase 2, **and** a downstream that is actually stiff |
 | **4** | BDF1–6, fixed coefficients | 3–4 d | Phase 3 |
 | **5** | IMEX / ARK, split right-hand side | 1 wk | Phase 3 + a downstream with a split RHS |
@@ -693,7 +728,9 @@ Phases 1 and 2 are listed out of numeric order deliberately: Phase 1's old gate 
 but Phase 2 has the stronger standalone case, so it should land first.
 
 **Recommendation: Phase 0 → 2 → 1, ~2 weeks total, then stop and reassess.**
-**Phase 0 and Phase 2 are done as of 2026-08-24 (§3.5, §3.6); Phase 1 is next.**
+**All three are done as of 2026-08-24 (§3.5, §3.6). Stop and reassess, as planned:
+Phases 3-6 stay gated on a downstream that needs them (see below), none appeared this
+session, and nothing here was building a solver contract with no user in the meantime.**
 
 - **Phase 2 is the headline, with one caveat confirmed after implementing it.**
   Implicit midpoint is symplectic, A-stable, and holds order 2 for velocity-dependent
@@ -709,13 +746,16 @@ but Phase 2 has the stronger standalone case, so it should land first.
   tableaus landed (backward Euler, implicit midpoint, trapezoidal, SDIRK2); TR-BDF2
   and ESDIRK3(2) were deferred rather than risk unverified embedded-pair coefficients
   (§3.6).
-- **Phase 1 is now unconditionally worth doing**, where before it was gated on an
-  unmeasured number. AB4 at one force evaluation per step against RK4's four, with
-  exactly-correct fixed coefficients and a history that never expires. The one thing
-  to weigh first is pain point 2 in §3.7: k-step history deepens BPTT by k, so if
-  training memory is already the binding constraint, the win is smaller than the
-  evaluation count suggests. That is a question about the training setup, not about
-  this library, and it is worth answering before spending the 2–3 days.
+- **Phase 1 landed cleanly, with no comparable caveat.** AB4 at one force evaluation
+  per step against RK4's four, with exactly-correct fixed coefficients and a history
+  that never expires — verified for every order (AB2-5, ABM2-4) against
+  `oscillator`/`forced`/`damped`, and the full suite went from 1103 to 1380 passing
+  tests with only one pre-existing test needing its exclusion criteria widened (not a
+  bug in the new code). Pain point 2's BPTT-depth tradeoff (k-step history deepens
+  backprop-through-time by k) is still unmeasured and still a question about a
+  training setup this library doesn't have visibility into, not something resolved by
+  landing the schemes — weigh it before choosing a multistep scheme in a training loop
+  specifically, same as before.
 - **Phases 3–6 stay gated on a downstream that is actually stiff.** Nothing here needs
   them yet, and building a solver contract with no user is the same mistake §2.2 warns
   about for gradients. §3.4 records the design so the decision does not have to be

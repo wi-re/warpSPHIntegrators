@@ -227,10 +227,12 @@ def test_testing_run_threads_history_without_changing_the_trajectory():
 # S3 -- IntegrationScheme metadata                                            #
 # --------------------------------------------------------------------------- #
 
-def test_every_explicit_scheme_defaults_to_explicit_one_step_metadata():
-    """Written before any implicit scheme was registered; now scoped to explicit ones."""
+def test_every_explicit_one_step_scheme_defaults_to_that_metadata():
+    """Written before any implicit or multistep scheme was registered; now scoped to
+    the schemes that are actually still one-step and explicit (RK family, Euler,
+    Verlet family, ...)."""
     for s in IntegrationSchemes:
-        if s.implicit:
+        if s.implicit or s.steps > 1:
             continue
         assert s.implicit is False
         assert s.steps == 1

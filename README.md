@@ -19,7 +19,7 @@ blended with a reference state", and your system object decides what that means.
 
 ### Key Features
 
-- **Multiple Integration Schemes**: Runge-Kutta up to 5th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods
+- **Multiple Integration Schemes**: Runge-Kutta up to 5th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2) via a pluggable `NonlinearSolver`; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4)
 - **Flexible State Management**: Custom state objects with metadata-driven field behavior (integrated, constant, copied, ephemeral, custom)
 - **Type-Safe Protocol**: Structural typing for integration systems with clear separation of concerns
 - **Fully Differentiable**: All operations preserve gradient flow for end-to-end learning
@@ -295,6 +295,74 @@ order**. Symplectic Euler does not; it keeps second order either way.
 |--------|-------|-------|----------|
 | **TVD-RK2** | 2 | refused | Conservation laws with the TVD property |
 | **TVD-RK3** | 3 | refused | Shu–Osher form of SSP-RK3 |
+
+### Diagonally Implicit (DIRK) Methods
+
+Each stage's implicit diagonal term is closed with a `NonlinearSolver` — `FixedPointSolver`
+(fixed-count Picard) by default, `iterations=2` — rather than an iteration-to-tolerance solve, so
+these are differentiable in both backends by construction and CUDA-graph-capturable. None of
+these implement `priorStep` reuse yet. See [NOTES.md §3.6](NOTES.md#36-valid-schemes-and-what-each-costs)
+for the derivation and two findings worth reading before relying on the defaults:
+
+| Scheme | Order | Stability | Use Case |
+|--------|-------|-----------|----------|
+| **Backward Euler (implicit)** | 1 | L | Reference/fallback; heavily damping |
+| **Implicit Midpoint** | 2 | A, symplectic *only when solved to convergence* | See the note below — `dissipation=True` at the shipped default |
+| **Trapezoidal (Crank-Nicolson)** | 2 | A, not L | Classic pair with BDF2; symmetric |
+| **SDIRK2** | 2 | L | L-stability for real stiffness |
+
+**Implicit Midpoint's registered `dissipation=True` reflects measured behaviour at the shipped
+2-iteration default, not the exact method's textbook symplectic property.** At `iterations=2` its
+long-run energy error grows secularly (~9x over an 8x-longer run); the textbook bound (drift → machine
+precision, flat with `T`) returns once the solver is configured with enough iterations to actually
+converge:
+
+```python
+from warpSPHIntegrators import FixedPointSolver, getIntegrator
+
+scheme = getIntegrator('Implicit Midpoint')
+result = scheme(system, dt=dt, f=rhs, solver=FixedPointSolver(iterations=16))
+```
+
+The default is still the right choice for the common case — it reaches the claimed *convergence
+order* exactly, and the extra iterations only matter for a long run where the qualitative energy
+behaviour is what you are relying on.
+
+**A fixed-count Picard solve is not a stiff solver at any iteration count**: L-stability is a
+property of the exact method, not of a truncated iterate, and a stiff problem (`dt·ω ≳ 1`) makes a
+low-iteration Picard solve wrong, and more iterations of it explosively wrong, regardless of which
+tableau you picked. There is no stiff solver in this library yet — see NOTES.md §3.4's ladder.
+
+### Explicit Multistep (Adams-Bashforth / Adams-Bashforth-Moulton)
+
+**These require `history=` to be threaded across calls to get their claimed cost.** Unlike every
+other scheme here, where `history=`/`priorStep=` are opt-in bookkeeping, a multistep scheme's past
+derivatives only exist if you carry `IntegrationResult.history` forward yourself:
+
+```python
+from warpSPHIntegrators import getIntegrator, StepHistory
+
+scheme = getIntegrator('Adams-Bashforth 4')
+history = StepHistory(maxlen=3)   # order - 1
+for _ in range(n_steps):
+    result = scheme(system, dt=dt, f=rhs, history=history)
+    system, history = result.state, result.history
+```
+
+or, in the test harness, `testing.run(scheme, problem, dt, T, history=True)`. Forgetting `history=`
+does not silently corrupt the trajectory: with fewer than `order - 1` past derivatives available
+these schemes bootstrap by running Dormand–Prince 5(4) instead, which is *more* accurate than any of
+them, not less — so a caller who never threads `history=` transparently keeps paying Dormand–Prince's
+cost every step rather than getting a wrong answer.
+
+| Scheme | Order | Evaluations/step | History needed | Use Case |
+|--------|-------|-------------------|-----------------|----------|
+| **Adams-Bashforth 2–5** | 2–5 | **1** | order − 1 | One force evaluation per step regardless of order — the real prize of multistep |
+| **Adams-Bashforth-Moulton 2–4 (PECE)** | 2–4 | 2 | order − 1 | Predict-Evaluate-Correct-Evaluate; a fixed (uniterated) correction |
+
+No linear multistep method is symplectic for a general Hamiltonian (Tang, 1993); all seven measure
+`dissipation=True`. None implement `priorStep` reuse — that is a different, single-entry-lookback
+mechanism `history=`'s multi-entry `StepHistory` generalizes past, not an alternative spelling of it.
 
 ## First-stage reuse (`priorStep`)
 
@@ -614,18 +682,32 @@ method runs.
 
 ## Known Limitations
 
-- Implicit methods not yet implemented (only explicit schemes)
-- Adaptive step-size control not built-in (use external error estimators)
-- No multistep methods (BDF, Adams) yet
+- **Adaptive step-size control not built-in** (use external error estimators; the embedded pairs'
+  `IntegrationResult.error` gives you the estimate, the driving loop and step-rejection path are not
+  written yet — NOTES.md §2.3).
+- **No stiff solver.** The DIRK schemes' `FixedPointSolver` default is a fixed-count Picard iteration,
+  not a stiff solver at any iteration count — see the [Diagonally Implicit Methods](#diagonally-implicit-dirk-methods)
+  section above. JFNK (finite-difference Jacobian-vector products, no forward-mode AD needed) is
+  designed but not implemented — NOTES.md §3.4.
+- **Fully implicit RK and BDF are not implemented.** Both need a different solver shape (a coupled
+  `s·N`-unknown or multi-state solve) than the sequential single-stage DIRK/multistep drivers here
+  provide — scoped in [NOTES.md §3.6](NOTES.md#36-valid-schemes-and-what-each-costs).
+- **TR-BDF2 and ESDIRK3(2)4L[2]SA are not implemented**, despite being "tableau only" work on top of
+  the existing DIRK driver — deliberately deferred rather than risk transcribing an unverified embedded
+  pair's coefficients wrong in a way a smoke test wouldn't catch (NOTES.md §3.6).
+- **IMEX/additive RK is not implemented** — needs a split right-hand side (`f_explicit`, `f_implicit`),
+  a protocol change gated on a downstream that actually has the split (NOTES.md §3.6).
 
-The last two are scoped and costed in [NOTES.md §3](NOTES.md#3-multistep-and-implicit-methods),
-including which schemes are worth adding and what each one costs.
+Explicit multistep (Adams-Bashforth/-Moulton) and four DIRK schemes (Backward Euler, Implicit
+Midpoint, Trapezoidal, SDIRK2) *are* implemented — see the two sections above. Everything still open
+is scoped and costed in [NOTES.md §3](NOTES.md#3-multistep-and-implicit-methods), including which
+schemes are worth adding next and what each one costs.
 
 ## Contributing
 
 Contributions welcome! Areas of interest:
 
-- Implicit and multistep schemes
+- Remaining implicit schemes (TR-BDF2, ESDIRK3(2)4L[2]SA, fully implicit RK, BDF, IMEX/ARK) and a stiff (JFNK) `NonlinearSolver`
 - Adaptive time stepping
 - Better documentation and examples
 - Performance optimizations
