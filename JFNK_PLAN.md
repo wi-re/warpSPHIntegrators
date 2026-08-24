@@ -10,7 +10,7 @@ weak-compressibility accuracy rather than as a timestep tax. Target and validati
 scenario both resolved 2026-08-24 (see Phases B/C). Not started — no code changes
 have been made yet. Cross-repo: `warpSPHIntegrators` (the solver itself), `warpSPH`
 (the wave-equation bridge case and, later, the WCSPH integration), `warpSPHCore`
-(closing the JVP gap in Phase B).
+(closing the JVP gap in Phase C).
 
 ## Why
 
@@ -133,7 +133,65 @@ when nobody asked for it.
   SDIRK2 with `solver=JFNKSolver()` on the same problem — broadens coverage for
   free once A1-A5 exist.
 
-## Phase B — close the JVP gap for the acoustic subsystem
+## Phase B — rudimentary WCSPH acoustic core (no surface treatment, no dissipation)
+
+`warpSPH`. Added 2026-08-24, per your suggestion: a minimal weakly-compressible
+scheme — continuity + EOS + pressure force, *no* artificial or physical viscosity, no
+surface-aware pressure treatment, no gravity, no boundaries — as a second validation
+rung between the wave equation (Phase A, linear, one operator) and the real
+`deltaSPH_step` acoustic subsystem (Phase C, needs one new JVP derivation). This one
+needs **zero new derivation**, found while grounding this addition: swap
+`computePressureForceSurfaceAware` for `computePressureForceSymmetric`
+(`warpSPH/src/warpSPH/modules/pressure/symmetricForce.py`) and the pressure force
+*is already* `-warpOperation(..., WarpOperation.Gradient, gradientMode=
+GradientScheme.Symmetric, ...) / densities` — literally the wrapped `Gradient`
+operator, nothing custom. Continuity is already `Divergence` (Phase C's table); the
+EOS is already pointwise. So this rudimentary core is expressible *today*, entirely
+from the six-operator JVP-wrapped set, with no Phase C dependency — it can be built
+and validated in parallel with Phase C, or before it, without blocking on any new
+derivation landing first.
+
+**The hypothesis this phase tests, in your words: "it should theoretically be
+feasible, with an implicit solver of sufficient accuracy, to run the simulation
+without dissipation."** Explicit WCSPH schemes need artificial viscosity/diffusion
+for numerical stability in practice — the TGV case's own `MIN_STABLE_ALPHA=0.01`
+(Phase C) is exactly that floor. The question this phase asks directly: is that
+floor a property of *explicit* WCSPH specifically, or of weakly-compressible SPH in
+general? An L-stable implicit treatment of the acoustic part damps exactly the
+high-frequency modes artificial viscosity is usually patching over; if that's
+sufficient on its own, a well-converged (not the fixed-2-iteration Picard default —
+see the note on `FixedPointSolver`'s `tol=`/`norm=` path, §3.6) implicit solve should
+stay stable with every dissipation term at zero, where the explicit scheme provably
+would not.
+
+**Steps:**
+1. Build the rudimentary step function (new, small — not a config toggle on
+   `deltaSPH_step`, since it's meant to have no surface/mDBC/diffusion code paths to
+   reason about at all, not just zeroed coefficients): `dx/dt = v`, `drho/dt =
+   -rho·Divergence(v)`, `p = EOS(rho)`, `dv/dt = -pressureForce_warp(p, rho)` (or the
+   equivalent direct `Gradient` call), nothing else. Same protocol
+   `WaveSystemv3` already demonstrates satisfying — a state/system pair implementing
+   `BaseState`/`BaseIntegrationSystem` directly, no fluid-scheme machinery needed.
+2. A periodic, boundary-free initial condition — reuse `cases/tgvWeaklyCompressible.py`'s
+   sampling/domain setup (or a decaying-random field, your original suggestion) rather
+   than building sampling from scratch, but drive it through the new minimal step
+   function instead of `deltaSPH_step`.
+3. Run three ways at the same `c_s`/resolution: (a) explicit, zero dissipation — the
+   expected-to-fail control; (b) `getIntegrator('Backward Euler (implicit)')` +
+   `FixedPointSolver` (the Phase 2 default, 2 iterations) — tests whether Picard's own
+   accuracy is enough or whether this needs real convergence; (c) same DIRK scheme +
+   `JFNKSolver` with a tight tolerance — the actual hypothesis under test.
+4. Validation criterion is **stability, not decay-rate matching** — this is different
+   from Phase D's TGV check. Zero-viscosity 2D Euler TGV doesn't decay (the analytic
+   `KE(t)` solution Phase D compares against is a *viscous* result), so the bar here
+   is bounded energy over a long run (no blow-up, no secular drift) for (c), contrasted
+   against (a)'s expected blow-up — not agreement with any closed-form curve.
+5. Record the finding either way. If the hypothesis holds, it's a genuine result
+   worth carrying into Phase D's design (maybe dissipation-free WCSPH becomes a real
+   option, not just a stability nice-to-have); if it doesn't, that's equally useful to
+   know before Phase D spends effort on the full scheme.
+
+## Phase C — close the JVP gap for the acoustic subsystem
 
 `warpSPHCore` (derivation), `warpSPH` (wiring). **Target resolved 2026-08-24, per your
 call**: not "whichever WCSPH term," specifically the *acoustic* subsystem — continuity
@@ -195,13 +253,13 @@ implicit is an open empirical question this phase should answer, not assume eith
 way; the implicit treatment may itself supply enough numerical damping to relax it,
 or may not.
 
-## Phase C — JFNK over an actual WCSPH run
+## Phase D — JFNK over an actual WCSPH run
 
 `warpSPH`. **Validation scenario resolved 2026-08-24**: `cases/tgvWeaklyCompressible.py`
 already exists — periodic, boundary-free, 2D weakly-compressible Taylor-Green Vortex,
 no external forcing, no free surface, no mDBC, with an analytic decay solution
 (`KE(t)=KE(0)·exp(-4νk²t)`) already built into the case for comparison. This is
-exactly the "no special treatment needed" scenario asked for, already built — Phase C
+exactly the "no special treatment needed" scenario asked for, already built — Phase D
 does not need to construct a new case from scratch, only wire the implicit path into
 an existing one. (It is not currently exercised by `tests/test_physics.py`, which only
 runs the *incompressible* TGV case — adding a pytest fixture for the weakly-compressible
@@ -209,13 +267,13 @@ one is part of this phase, not a prerequisite blocking it.)
 
 Steps:
 1. Split `deltaSPH_step`'s RHS so the acoustic subsystem (continuity + EOS + pressure
-   force, Phase B) can be solved implicitly via a DIRK scheme
+   force, Phase C) can be solved implicitly via a DIRK scheme
    (`getIntegrator('Backward Euler (implicit)')` first, matching Phase A's proven
    pattern, before trying a higher-order tableau) with `solver=JFNKSolver()`, while
    whatever stays explicit (viscosity if `MIN_STABLE_ALPHA`'s floor turns out to still
-   apply, anything Phase B left out) continues on its current path. This is a real
+   apply, anything Phase C left out) continues on its current path. This is a real
    scheme-level change to how `deltaSPH_step` is called for the implicit path, not
-   just a new option flowing through unchanged — sized once Phase B is further along
+   just a new option flowing through unchanged — sized once Phase C is further along
    and the split's exact shape is clearer.
 2. Set `c_s` far higher than the explicit baseline's timestep-constrained value would
    allow (the entire motivation), and confirm `dt` can grow to the *advective* CFL
@@ -242,7 +300,7 @@ Steps:
   (`warpSPHCore`'s own tracking, item 5: both generic composition routes fail on a
   hard PyTorch limitation). Inexact Newton (matvec only, no Hessian) sidesteps
   needing this by construction; not a gap JFNK needs closed.
-- **Deriving JVP for every WCSPH operator up front.** Phase B is deliberately scoped
+- **Deriving JVP for every WCSPH operator up front.** Phase C is deliberately scoped
   to the acoustic subsystem's one gap (`computePressureForceSurfaceAware`), not
   density/velocity diffusion, surface detection, mDBC, or anything else
   `deltaSPH_step` touches that the acoustic-implicit path doesn't need.
@@ -257,6 +315,11 @@ Steps:
 - `pytest warpSPH/tests/test_implicitWaveEquation.py` (extended, not replaced) — the
   three-way agreement (hand-rolled CG, JFNK+FD-matvec, JFNK+JVP-matvec) and the
   Picard-fails/JFNK-succeeds case from A6.
-- Phase C, once reached: `warpSPH/tests/test_physics.py`'s existing suite stays green
+- Phase B's new test: the explicit/zero-dissipation rudimentary core measurably
+  destabilizes (bounded-energy check fails, or blows up outright) while the
+  well-converged-JFNK version stays bounded over the same run — both outcomes are
+  useful results, but the test should assert whichever one was actually found, not
+  the hoped-for one.
+- Phase D, once reached: `warpSPH/tests/test_physics.py`'s existing suite stays green
   with the new implicit path wired in, plus whatever new stability/cost comparison
   the chosen scenario needs.
