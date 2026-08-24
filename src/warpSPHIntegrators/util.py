@@ -171,6 +171,37 @@ class IntegrationScheme(NamedTuple):
     #: True when the tableau is FSAL, so reuse is exact rather than merely lossless.
     fsal: bool = False
 
+    # ------------------------------------------------------------------ #
+    # NOTES.md S3: metadata a driver needs to tell schemes apart without    #
+    # special-casing them by name. All default to the "plain explicit RK"  #
+    # answer, so every scheme registered before this landed is unaffected. #
+    # ------------------------------------------------------------------ #
+
+    #: True for a scheme whose stage equations require solving for an unknown that
+    #: appears on both sides (DIRK, fully implicit RK, BDF/Adams-Moulton). False for
+    #: every explicit scheme and for linear multistep predictors (Adams-Bashforth).
+    implicit: bool = False
+    #: How many past-step states/derivatives a step needs beyond the current one: 1
+    #: for every one-step method (RK, DIRK), k for a k-step linear multistep method.
+    steps: int = 1
+    #: True when the last stage IS the step (`a[-1] == b`), the implicit analogue of
+    #: FSAL (`reuse.tableau_reuse_analysis` already detects this for explicit
+    #: tableaus; this field is what lets an implicit driver ask the same question
+    #: without re-deriving it from `a`/`b` at call time).
+    stiffly_accurate: bool = False
+    #: Linear stability region, or None for a scheme with no useful one to name
+    #: (mixed-order embedded pairs, symplectic-but-not-A/L-stable methods). 'A':
+    #: stable for all Re(lambda*dt) <= 0. 'L': A-stable and additionally damps
+    #: infinitely stiff modes to zero in one step. 'A(alpha)': A-stable only within a
+    #: cone of half-angle alpha from the negative real axis (BDF3+).
+    stability: Optional[str] = None
+    #: Convergence order actually reached from a cold start (history length < steps),
+    #: or None for a one-step method, where the question does not apply. A k-step
+    #: multistep method needs k-1 prior derivatives it does not have yet at t=0;
+    #: self-starting with a lower-order method caps the *whole run* at this order
+    #: unless a separate high-order starter is used (NOTES.md S3.7 pain point 1).
+    startup_order: Optional[int] = None
+
     @property
     def supports_reuse(self) -> bool:
         """True iff `priorStep` reuse costs this scheme no convergence order."""

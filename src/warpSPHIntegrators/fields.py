@@ -1,6 +1,7 @@
 
 from dataclasses import MISSING, dataclass, field as dc_field
 import dataclasses
+import math
 from typing import Any, Callable, List, NamedTuple, Optional
 import torch
 
@@ -449,6 +450,83 @@ def copy_finalized_fields(final_system, last_stage_system):
         return final_system
     _state_finalize(_maybe_reference_state(final_system), _maybe_reference_state(last_stage_system))
     return final_system
+
+
+def _diff_dataclass(a, b):
+    """``a - b`` over ``integrated`` fields of one dataclass level. No nesting."""
+    kwargs = {}
+    for f in dataclasses.fields(a):
+        value_a = getattr(a, f.name)
+        if field_behavior(f) == 'integrated':
+            kwargs[f.name] = value_a - getattr(b, f.name)
+        else:
+            kwargs[f.name] = _op(value_a, False)
+    return type(a)(**kwargs)
+
+
+def state_difference(state_a, state_b):
+    """``a - b`` over ``integrated`` fields, as a new object of ``state_a``'s type.
+
+    Non-integrated fields are cloned from ``state_a`` unchanged, matching what
+    ``initializeNewState`` already does for them. This is the general primitive
+    behind ``butcher._error_estimate`` (the difference between an embedded pair's two
+    solutions) and behind a Newton/Picard stage residual (the difference between two
+    iterates) -- both are "subtract two same-shaped states", so it lives here once
+    rather than being hand-rolled per call site.
+
+    ``state_a``/``state_b`` may be raw states or systems that tag one with
+    ``reference_state``; either way the result has the *same shape as the input*
+    (a differenced system stays a system) so callers can keep using
+    ``get_reference_state`` on it, unlike a version that unwrapped down to the inner
+    state and lost the wrapper.
+    """
+    try:
+        ref_field = find_tagged_field(state_a, role='reference_state')
+    except (LookupError, TypeError):
+        return _diff_dataclass(state_a, state_b)
+
+    inner = _diff_dataclass(getattr(state_a, ref_field.name), getattr(state_b, ref_field.name))
+    kwargs = {}
+    for f in dataclasses.fields(state_a):
+        if f.name == ref_field.name:
+            kwargs[f.name] = inner
+        else:
+            kwargs[f.name] = _op(getattr(state_a, f.name), False)
+    return type(state_a)(**kwargs)
+
+
+def state_norm(state, rtol: float = 1e-3, atol: float = 1e-6, *, reference=None) -> float:
+    """Hairer-Wanner weighted RMS norm over ``state``'s ``integrated`` fields.
+
+    ``sqrt(mean((state_i / (atol + rtol*|reference_i|))**2))``, pooled over every
+    element of every integrated field. ``reference`` supplies the scale (``atol +
+    rtol*|reference|``) and defaults to ``state`` itself, which is the right choice
+    when ``state`` already *is* the quantity whose own magnitude should set the
+    scale (e.g. a Newton iterate); pass the base solution explicitly when ``state``
+    is a difference or residual instead (e.g. an embedded-pair error estimate, scaled
+    against the propagated solution rather than against its own, physically
+    meaningless magnitude).
+
+    Returns 0.0 for a state with no integrated tensor fields.
+    """
+    s = _maybe_reference_state(state)
+    ref = _maybe_reference_state(reference if reference is not None else state)
+    total_sq = 0.0
+    total_n = 0
+    for f in dataclasses.fields(s):
+        if field_behavior(f) != 'integrated':
+            continue
+        value = getattr(s, f.name)
+        if not isinstance(value, torch.Tensor):
+            continue
+        ref_value = getattr(ref, f.name)
+        scale = atol + rtol * ref_value.abs()
+        weighted = value / scale
+        total_sq += float((weighted ** 2).sum())
+        total_n += weighted.numel()
+    if total_n == 0:
+        return 0.0
+    return math.sqrt(total_sq / total_n)
 
 
 @dataclass

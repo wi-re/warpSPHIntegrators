@@ -58,10 +58,13 @@ are gone.
 - **Multistep and implicit** (§3) — the two entries in the README's "Known
   Limitations". Both are much cheaper here than for a general-purpose library, because
   the surrounding simulation does not resort particles, holds `dt` constant, and
-  carries its neighbour list through the state (§3.0). Recommended: ~2 weeks for
-  Phase 0 → 2 → 1, headlined by **implicit midpoint**, the symplectic second-order
-  scheme that — unlike everything currently registered — holds order 2 for
-  velocity-dependent forces.
+  carries its neighbour list through the state (§3.0). **Phase 0 groundwork (§3.5,
+  S1-S5) is done as of 2026-08-24** — `state_norm`/`state_difference`, `StepHistory`,
+  `IntegrationScheme` metadata, the `NonlinearSolver`/`FixedPointSolver` protocol —
+  with no registered scheme consuming any of it yet. Phase 2 (the DIRK driver +
+  implicit midpoint, ~4-5 d) is next in the recommended order; still headlined by
+  **implicit midpoint**, the symplectic second-order scheme that — unlike everything
+  currently registered — holds order 2 for velocity-dependent forces.
 - **A finding, not a defect:** Leap Frog, Velocity Verlet, PEFRL and VEFRL are only
   second/fourth order for a **separable** Hamiltonian, i.e. a force depending on
   position alone. With a velocity-dependent force — artificial viscosity, drag, any
@@ -406,25 +409,30 @@ function theorem adjoint only becomes worth its complexity when iterating to a
 tolerance, i.e. Phase 3 and later. Since IFT needs reverse mode, it works in both
 backends when it is needed.
 
-### 3.5 Shared groundwork (prerequisite for both)
+### 3.5 Shared groundwork (prerequisite for both) — DONE 2026-08-24
 
-| | Item | Where | Effort |
+| | Item | Where | Status |
 |---|---|---|---|
-| **S1** | `state_norm(state, rtol, atol)` — weighted RMS over integrated fields, Hairer–Wanner style, plus `state_difference`. `butcher._error_estimate` already builds a difference, so generalise rather than duplicate. Stable indexing (§3.0) means this is a plain elementwise reduction with no identity matching, which is also exactly what the ML bindings want. **Adaptive `dt` (§2.3) needs the identical primitive.** | `fields.py` | 1 d |
-| **S2** | `StepHistory` — an ordered container of `(t, dt, derivative projection)`, carried on `IntegrationResult` and accepted as a kwarg, exactly as `priorStep` is today. `priorStep` becomes the one-entry degenerate case; do **not** ship two overlapping reuse mechanisms. Store a *projection* onto the tagged derivative fields, not the whole user update object, which in a real SPH run carries far more than derivatives. | `specs.py`, all schemes | 1–2 d |
-| **S2g** | Two cheap history guards, replacing ~2 d of variable-step machinery. **(a)** record `dt` in each entry and restart if it changes — this is what makes fixed multistep coefficients honest under §3.0's "constant *for the most part*". **(b)** record the identity of the `uid` tensor (`data_ptr` + shape, or a generation counter) and restart if it moves. Both turn a silent wrong answer into an automatic, visible restart. | `specs.py` | 0.5 d |
-| **S3** | `IntegrationScheme` metadata: `implicit: bool`, `steps: int`, `stiffly_accurate: bool`, `stability: 'A'\|'L'\|'A(α)'\|None`, `startup_order: int`. `reuse.py` must not choke on schemes with no tableau *and* no `HANDROLLED_REUSE` entry — it currently returns `None` with a reason, which is right, but the multistep case wants its own answer. | `util.py`, `integration.py`, `reuse.py` | 1 d |
-| **S4** | `NonlinearSolver` protocol: `solve(residual, y0, norm, **opts) -> (y, converged, iterations)`. Ship `FixedPointSolver` with a **fixed iteration count** as the default (§3.1: 2 iterations for order 2). Pluggable from the start — rung 4 of the §3.4 ladder is the one that matters long-term. When rung 2 (JFNK) is built, keep its matvec a directional finite difference, never a dense Jacobian — see the caution in §3.4. | new `solvers.py` | 1–2 d |
-| **S5** | Generalise `testing.run` / `conftest.ALL_SCHEMES`. Both assume a stateless one-step callable `scheme(system, dt, f)`. A multistep scheme needs history threading and a starter, so every existing test breaks the day one is registered unless this lands first. | `testing.py`, `tests/conftest.py` | 1 d |
+| **S1** | `state_norm(state, rtol, atol)` — weighted RMS over integrated fields, Hairer–Wanner style, plus `state_difference`. `butcher._error_estimate` already builds a difference, so generalise rather than duplicate. | `fields.py` | **Done.** Both added; `_error_estimate` refactored to compute the embedded pair's two full solutions via the existing `_weighted_update` path and difference them with `state_difference`, rather than hand-linear-combining raw stage derivatives — equivalent for the additive update semantics every registered scheme uses (all 906 previously-passing tests still pass, including the embedded-pair suite), and correct for a nonlinear `apply_state_update` too, which the old approach silently assumed away. `state_difference` preserves a system wrapper (`get_reference_state` still works on its output) rather than unwrapping to the bare state. |
+| **S2** | `StepHistory` — an ordered container of `(t, dt, derivative projection)`, carried on `IntegrationResult` and accepted as a kwarg, exactly as `priorStep` is today. `priorStep` becomes the one-entry degenerate case; do **not** ship two overlapping reuse mechanisms. | new `history.py`, `specs.py`, `butcher.py` | **Done**, with one deliberate correction to the original sketch: `history=` is wired through `RungeKuttaB` as **pure bookkeeping** (it only populates `IntegrationResult.history`) and does **not** auto-derive `priorStep`. A first draft did auto-derive it, which silently turned on first-stage reuse — and its order cost (`reuse.py`) — for every caller that merely wanted history threaded, on non-FSAL tableaus too, with none of `integration._with_reuse_guard`'s warnings, since those only fire when `priorStep` itself is in `kwargs`. Caught by `test_testing_run_threads_history_without_changing_the_trajectory` (RK4 drifted by ~1e-4 with `history=True` alone). Reuse still opts in exactly as before: pass `priorStep=history.as_prior_step()` explicitly alongside `history=`. |
+| **S2g** | Two cheap history guards. **(a)** record `dt` in each entry and restart if it changes. **(b)** record the identity of the `uid` tensor (`data_ptr` + shape) and restart if it moves. | `history.py` | **Done**, inside `StepHistory.pushed`. |
+| **S3** | `IntegrationScheme` metadata: `implicit: bool`, `steps: int`, `stiffly_accurate: bool`, `stability: 'A'\|'L'\|'A(α)'\|None`, `startup_order: int`. | `util.py` | **Done** — five fields added, all defaulted so every existing positional registration in `integration.py` is untouched and every registered scheme reads back the plain-explicit-RK defaults (`implicit=False`, `steps=1`, ...). `reuse.py`'s "multistep wants its own answer" is **not yet done** — left for Phase 1, which is the first thing that will actually have a multistep tableau to answer for. |
+| **S4** | `NonlinearSolver` protocol: `solve(step, y0, norm, **opts) -> (y, converged, iterations)`. Ship `FixedPointSolver` with a **fixed iteration count** as the default (§3.1: 2 iterations for order 2). | new `solvers.py` | **Done**, with the callable renamed `step` (from the sketch's `residual`): what `FixedPointSolver` and every rung of the §3.4 ladder actually need is "the next iterate as a function of the current one" (`Y -> g(Y)`), not a signed residual, and naming it what it is avoids an `F(Y) = 0` framing nothing here uses yet. `converged=True` with no `tol` means "completed its fixed schedule", the only claim fixed-count Picard makes; `tol`+`norm` gives an early-exit variant using `state_norm`/`state_difference` from S1. |
+| **S5** | Generalise `testing.run` / `conftest.ALL_SCHEMES`. Both assume a stateless one-step callable `scheme(system, dt, f)`. | `testing.py` | **Partially done.** `testing.run` grew an opt-in `history=` kwarg that threads a `StepHistory` alongside (or instead of) `priorStep`-based reuse, verified inert for every currently-registered scheme (`test_history_kwarg_is_inert_for_schemes_that_do_not_use_it`, parametrized over all 27). `conftest.ALL_SCHEMES`/`order_of` untouched — they still assume one-step, no-starter schemes, which is still true of everything registered; that generalisation is Phase 1's own prerequisite once a multistep scheme exists to register, not groundwork with no consumer yet. |
 
-**~5–6 engineer-days** for someone with this codebase in context. The `preprocess`
-caching policy that a general-purpose implicit driver would normally need as a
-blocker is **not needed** here — the simulation already carries and revalidates
-adjacency through the state (§3.0), by a better mechanism than a library-level cache
-would be. The one thing to check is that the *implicit driver* reuses a single stage
-buffer across iterations rather than calling `initializeNewState` per iteration as the
-probe does, so the adjacency is carried once rather than re-cloned each time. That is
-also what §2.1's buffer pooling wants, so it is aligned work, not a detour.
+Verified 2026-08-24: full suite green, `954 passed, 54 skipped` (was `906 passed, 54 skipped`
+at the top of this session — no regressions, 48 new tests in `tests/test_groundwork.py`).
+`__init__.py` exports the new public surface (`state_difference`, `state_norm`,
+`HistoryEntry`, `StepHistory`, `NonlinearSolver`, `FixedPointSolver`, `SolveResult`).
+
+The `preprocess` caching policy that a general-purpose implicit driver would normally
+need as a blocker is **not needed** here — the simulation already carries and
+revalidates adjacency through the state (§3.0), by a better mechanism than a
+library-level cache would be. The one thing to check when Phase 2 lands is that the
+*implicit driver* reuses a single stage buffer across iterations rather than calling
+`initializeNewState` per iteration as the probe does, so the adjacency is carried once
+rather than re-cloned each time. That is also what §2.1's buffer pooling wants, so it
+is aligned work, not a detour.
 
 ### 3.6 Valid schemes and what each costs
 
@@ -580,7 +588,7 @@ Each phase is independently shippable and independently useful.
 
 | Phase | Content | Effort | Gate |
 |---|---|---|---|
-| **0** | S1–S5 + S2g groundwork (§3.5) | 5–6 d | none — S1 also unblocks §2.3's adaptive `dt` |
+| **0** | S1–S5 + S2g groundwork (§3.5) — **done 2026-08-24** | 5–6 d | none — S1 also unblocks §2.3's adaptive `dt` |
 | **2** | DIRK driver + fixed-count `FixedPointSolver` + implicit midpoint, backward Euler, trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2) | 4–5 d | Phase 0 |
 | **1** | Explicit multistep: AB2–5 + ABM PECE, FSAL starter, `dt`/`uid` guards | 2–3 d | Phase 0 |
 | **3** | JFNK with FD matvecs + user `solve_linear` hook + particle masking | 1–1.5 wk | Phase 2, **and** a downstream that is actually stiff |

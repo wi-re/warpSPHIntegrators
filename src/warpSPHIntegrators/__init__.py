@@ -37,7 +37,11 @@ from .fields import (
     move_value,
     register_clone_handler,
     CloneHandler,
+    state_difference,
+    state_norm,
 )
+from .history import HistoryEntry, StepHistory
+from .solvers import NonlinearSolver, FixedPointSolver, SolveResult
 
 from .util import IntegrationSchemeType
 
@@ -72,6 +76,13 @@ __all__ = [
     "move_value",
     "register_clone_handler",
     "CloneHandler",
+    "state_difference",
+    "state_norm",
+    "HistoryEntry",
+    "StepHistory",
+    "NonlinearSolver",
+    "FixedPointSolver",
+    "SolveResult",
     "StateBlend",
     "ComponentUpdateSpec",
     "PositionUpdateSpec",

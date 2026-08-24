@@ -30,6 +30,7 @@ from typing import Callable, List, NamedTuple, Optional, Sequence
 import torch
 
 from .fields import BaseState, constant, integrated, get_reference_state, reference_state, tagged, update_component, update_position
+from .history import StepHistory
 from .protocol import BaseIntegrationSystem
 from .specs import ComponentUpdateSpec, PositionUpdateSpec
 
@@ -229,20 +230,41 @@ PROBLEMS = {
 # Measurement                                                                  #
 # --------------------------------------------------------------------------- #
 
-def run(scheme, problem: Problem, dt: float, T: float, *, reuse: bool = False) -> ParticleSystem:
-    """Integrate ``problem`` from t=0 to t=T in fixed steps of ``dt``."""
+def run(scheme, problem: Problem, dt: float, T: float, *,
+        reuse: bool = False, history: bool = False, history_length: int = 4) -> ParticleSystem:
+    """Integrate ``problem`` from t=0 to t=T in fixed steps of ``dt``.
+
+    ``history=True`` threads a ``StepHistory`` through the run instead of (or, if
+    ``reuse`` is also set, alongside) the single-entry ``priorStep``. A one-step
+    scheme ignores a ``history`` kwarg it doesn't recognise -- ``RungeKuttaB`` pops it
+    like ``priorStep`` and only acts on it if given one -- so this is safe to pass for
+    every registered scheme today; it exists so a multistep scheme (NOTES.md S3
+    Phase 1) or a step-reuse test that wants more than one entry of lookback can
+    exercise this without every other test's ``run`` call changing shape first
+    (NOTES.md S5).
+    """
     system = problem.initial()
     prior = None
+    step_history = StepHistory(maxlen=history_length) if history else None
     for _ in range(int(round(T / dt))):
-        result = scheme(system, dt=dt, f=problem.rhs, priorStep=prior)
+        kwargs = {}
+        if reuse:
+            kwargs['priorStep'] = prior
+        if history:
+            kwargs['history'] = step_history
+        result = scheme(system, dt=dt, f=problem.rhs, **kwargs)
         system = result.state
-        prior = result.stages[-1] if reuse else None
+        if reuse:
+            prior = result.stages[-1]
+        if history and result.history is not None:
+            step_history = result.history
     return system
 
 
-def final_error(scheme, problem: Problem, dt: float, T: float, *, reuse: bool = False) -> float:
+def final_error(scheme, problem: Problem, dt: float, T: float, *,
+                reuse: bool = False, history: bool = False) -> float:
     """L1 error in (x, u) at time T against the analytic solution."""
-    system = run(scheme, problem, dt, T, reuse=reuse)
+    system = run(scheme, problem, dt, T, reuse=reuse, history=history)
     s = get_reference_state(system)
     ex, eu = problem.exact(T)
     return (sum(abs(a - b) for a, b in zip(s.x.tolist(), ex))

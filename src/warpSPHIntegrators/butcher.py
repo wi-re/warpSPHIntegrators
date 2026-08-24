@@ -1,6 +1,5 @@
 from typing import Union, Tuple, NamedTuple
 from .util import (
-    applyStateUpdate,
     finalizeSystem,
     initializeSystem,
     unpack_prior_step,
@@ -8,7 +7,9 @@ from .util import (
     updateStep,
 )
 import numpy as np
-from .specs import IntegrationResult, StageResult, blend_state, explicit_step
+from .fields import state_difference
+from .history import HistoryEntry
+from .specs import IntegrationResult, StageResult
 from torch.profiler import record_function
 
 
@@ -22,11 +23,21 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
     verbose = True if 'verbose' in kwargs and kwargs['verbose'] else False
 
     with record_function("[Integration] Butcher"):
+        history = kwargs.pop('history', None)
         priorStep = kwargs.pop('priorStep', None)
+        # `history=` is bookkeeping only: it records stages for the *next* call and is
+        # returned on `IntegrationResult.history`, but it must never silently seed
+        # `priorStep` here. Reuse costs order for every non-FSAL tableau (`reuse.py`),
+        # and `integration._with_reuse_guard` only warns about that cost when
+        # `priorStep` itself is in `kwargs` -- if this function derived `priorStep`
+        # from `history` internally, reuse would switch on with no warning at all for
+        # any caller that merely wanted history threaded, not reuse. A caller that
+        # wants reuse asks for it the same way as always: pass
+        # `priorStep=history.as_prior_step()` explicitly.
         if verbose:
             print(f"[Integrator] Running Runge-Kutta with dt={dt:.4f} and scheme={butcherTableau}")
         initializeSystem(initialState, dt, *args, **kwargs)
-        
+
         if verbose:
             print(f"[Integrator] Butcher: Starting with initial state at t={initialState.t:.4f}")
         currentState = initialState.initializeNewState(*args, **kwargs)
@@ -73,6 +84,12 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
         with record_function("[Integration] Butcher: Update"):
             stages = [StageResult(aux=r, update=k) for r, k in zip(rs, ks)]
 
+            def _next_history(new_state):
+                if history is None:
+                    return None
+                entry = HistoryEntry(t=float(initialState.t), dt=dt, update=ks[-1], aux=rs[-1])
+                return history.pushed(entry)
+
             if not isinstance(butcherTableau.b, tuple):
                 if verbose:
                     print(f"[Integrator] Updating state with b={butcherTableau.b} and dt={dt:.4f}")
@@ -82,7 +99,7 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
                     print(f"[Integrator] Finalizing state at t={new_state.t:.4f} with b={butcherTableau.b} and dt={dt:.4f}")
                 finalizeSystem(new_state, initialState, dt, rs, ks, butcherTableau.b,
                                *args, lastStageSystem=lastStageState, **kwargs)
-                return IntegrationResult(state=new_state, stages=stages)
+                return IntegrationResult(state=new_state, stages=stages, history=_next_history(new_state))
 
             # Embedded pair: b[0] is the propagated solution, b[1] the lower-order
             # estimate. Only b[0] is finalized and returned as `state`; the pair is
@@ -95,7 +112,7 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
             error = _error_estimate(initialState, ks, b_main, b_embedded, dt, *args, **kwargs)
             finalizeSystem(new_state, initialState, dt, rs, ks, b_main,
                            *args, lastStageSystem=lastStageState, **kwargs)
-            return IntegrationResult(state=new_state, stages=stages, error=error)
+            return IntegrationResult(state=new_state, stages=stages, error=error, history=_next_history(new_state))
 
 
 def _weighted_update(initialState, ks, weights, dt, *args, **kwargs):
@@ -119,24 +136,18 @@ def _weighted_update(initialState, ks, weights, dt, *args, **kwargs):
 def _error_estimate(initialState, ks, b_main, b_embedded, dt, *args, **kwargs):
     """Difference between the two solutions of an embedded pair, as a state.
 
-    Returns a state of the same type as the integrated one whose integrated fields
-    hold ``y_main - y_embedded = dt * sum_i (b_main[i] - b_embedded[i]) * k_i``.
-    The initial state cancels out, so it is scaled away with ``self_scale=0`` on the
-    first contribution rather than being subtracted afterwards.
+    Computes ``y_main`` and ``y_embedded`` in full, the same way the propagated state
+    itself is computed, then differences them field-by-field with
+    ``fields.state_difference`` (NOTES.md S1) -- equivalent to the old hand-rolled
+    linear combination of raw stage derivatives ``dt * sum_i (b_main[i] -
+    b_embedded[i]) * k_i`` for the additive update semantics every system here uses,
+    and correct even for a system whose ``apply_state_update`` is not purely linear,
+    since both solutions go through it properly before being compared.
     """
-    db = np.asarray(b_main, dtype=float) - np.asarray(b_embedded, dtype=float)
-    error = initialState.initializeNewState(*args, **kwargs)
+    y_main = _weighted_update(initialState, ks, b_main, dt, *args, **kwargs)
+    y_embedded = _weighted_update(initialState, ks, b_embedded, dt, *args, **kwargs)
+    error = state_difference(y_main, y_embedded)
     error.t = float(initialState.t + dt)
-    zeroed = False
-    for i, d in enumerate(db):
-        if d == 0:
-            continue
-        blend = blend_state(self_scale=0.0) if not zeroed else None
-        applyStateUpdate(error, ks[i], explicit_step(float(d) * dt, blend=blend), **kwargs)
-        zeroed = True
-    if not zeroed:
-        # The two weight vectors agree; the estimate is identically zero.
-        applyStateUpdate(error, ks[0], explicit_step(0.0, blend=blend_state(self_scale=0.0)), **kwargs)
     return error
 
 

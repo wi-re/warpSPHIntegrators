@@ -61,7 +61,7 @@ class StepEvaluation:
 @dataclass(frozen=True)
 class IntegrationResult:
     """Result from a full integration step.
-    
+
     Attributes:
         state: The final integrated state after the step.
         stages: List of StageResult, one per RK stage. Each contains the auxiliary
@@ -72,10 +72,14 @@ class IntegrationResult:
                 propagated solution and the lower-order embedded one. Drives step
                 size control; the initial state cancels, so this is a pure
                 difference, not a state you can continue integrating from.
+        history: Set only by schemes that were passed a ``history=`` kwarg (see
+                `warpSPHIntegrators.history.StepHistory`); `None` otherwise. Feed it
+                back in as `history=` on the next step to keep the run threaded.
     """
     state: Any
     stages: List[StageResult] = field(default_factory=list)
     error: Optional[Any] = None
+    history: Optional[Any] = None
 
 
 def blend_state(
