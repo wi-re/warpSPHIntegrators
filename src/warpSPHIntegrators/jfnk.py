@@ -40,17 +40,26 @@ __all__ = ['fd_matvec', 'jvp_matvec', 'gmres', 'JFNKSolver']
 # A2: generic finite-difference matvec                                        #
 # --------------------------------------------------------------------------- #
 
-def _fd_epsilon(y: torch.Tensor, v: torch.Tensor) -> float:
+def _fd_epsilon(y_norm: float, v: torch.Tensor) -> float:
     """Knoll-Keyes' scaled forward-difference step: ``sqrt(eps_machine)``, scaled
     by the current iterate's own magnitude and normalized by the direction's, so
     the same formula gives a sensible ``eps`` whether ``v`` is a unit Krylov basis
     vector or something larger.
+
+    ``y_norm`` is the caller's already-computed ``float(torch.linalg.norm(y_flat))``
+    -- ``y_flat`` (the Newton iterate this whole matvec belongs to) is identical
+    across every Krylov iteration of the GMRES loop, so its norm is computed once
+    by ``fd_matvec`` below rather than recomputed (with a fresh GPU->CPU sync)
+    on every single matvec call, the JFNK-driver-level analogue of
+    ``warpSPHCore``'s own hasLiveTangent sync-batching fix
+    (``JFNK_DRIVER_OVERHEAD_NOTES.md`` item 2) -- ``v_norm`` below is genuinely
+    call-varying (``v`` is a fresh Krylov basis vector each call) and still
+    computed fresh every time.
     """
-    eps_machine = torch.finfo(y.dtype).eps
+    eps_machine = torch.finfo(v.dtype).eps
     v_norm = float(torch.linalg.norm(v))
     if v_norm == 0.0:
         return math.sqrt(eps_machine)
-    y_norm = float(torch.linalg.norm(y))
     return math.sqrt(eps_machine) * (1.0 + y_norm) / v_norm
 
 
@@ -65,8 +74,10 @@ def fd_matvec(step: Callable, Y, y_flat: torch.Tensor, G_y: torch.Tensor,
     evaluation per Krylov iteration, not one per unknown"), not recomputed here.
     Works for any ``step``, no capability gate; this is the default matvec.
     """
+    y_norm = None if eps is not None else float(torch.linalg.norm(y_flat))
+
     def matvec(v: torch.Tensor) -> torch.Tensor:
-        h = eps if eps is not None else _fd_epsilon(y_flat, v)
+        h = eps if eps is not None else _fd_epsilon(y_norm, v)
         Y_pert = unflatten_integrated(y_flat + h * v, Y)
         G_pert = (y_flat + h * v) - flatten_integrated(step(Y_pert))
         return (G_pert - G_y) / h
@@ -99,30 +110,43 @@ def jvp_matvec(step: Callable, Y) -> Callable[[torch.Tensor], torch.Tensor]:
     def matvec(v: torch.Tensor) -> torch.Tensor:
         with fwAD.dual_level():
             s = _maybe_reference_state(Y)
-            replacements = {}
+            values, tangents = [], []
             offset = 0
             for name in names:
                 value = getattr(s, name)
                 n = value.numel()
-                tangent = v[offset:offset + n].reshape(value.shape)
+                tangents.append(v[offset:offset + n].reshape(value.shape))
+                values.append(value)
                 offset += n
-                # A tangent slice that is exactly zero contributes nothing to the
-                # JVP by linearity, so skip `make_dual` for it and leave the field
-                # primal, rather than always wrapping every integrated field.
-                # This isn't only an optimization: warpSPHCore's forward-mode
-                # bridge trips an internal PyTorch assertion
-                # ("expected both tensor and its forward grad to be floating
-                # point or complex") when a live dual tensor and an
-                # all-zero-tangent dual tensor reach the same operator launch
-                # together in one `dual_level()` -- confirmed directly against
-                # an isolated `warpOperation` call. This is exactly the shape
-                # of the wave-equation validation case (`v(0) = 0`): at the
-                # first Newton iterate, `du/dt = v = 0` identically, so
-                # `G(y0)`'s `u`-block is exact zero while its `v`-block is not,
-                # and the naive "wrap every field" version crashes on that
-                # residual's very first Krylov vector.
-                if bool(tangent.abs().max() > 0):
-                    replacements[name] = fwAD.make_dual(value, tangent)
+
+            # A tangent slice that is exactly zero contributes nothing to the
+            # JVP by linearity, so skip `make_dual` for it and leave the field
+            # primal, rather than always wrapping every integrated field.
+            # This isn't only an optimization: warpSPHCore's forward-mode
+            # bridge trips an internal PyTorch assertion
+            # ("expected both tensor and its forward grad to be floating
+            # point or complex") when a live dual tensor and an
+            # all-zero-tangent dual tensor reach the same operator launch
+            # together in one `dual_level()` -- confirmed directly against
+            # an isolated `warpOperation` call. This is exactly the shape
+            # of the wave-equation validation case (`v(0) = 0`): at the
+            # first Newton iterate, `du/dt = v = 0` identically, so
+            # `G(y0)`'s `u`-block is exact zero while its `v`-block is not,
+            # and the naive "wrap every field" version crashes on that
+            # residual's very first Krylov vector.
+            #
+            # Checked once, batched, for every field here (one GPU->CPU sync
+            # for the whole call via one `.tolist()`) instead of one
+            # `bool(...)`/sync per field -- this repo's own version of the
+            # anti-pattern warpSPHCore's Fix 2 batched away inside the bridge
+            # (see JFNK_DRIVER_OVERHEAD_NOTES.md item 3); same "> 0" test,
+            # same per-field result, just not one sync per field.
+            live = (torch.stack([t.abs().max() for t in tangents]) > 0).tolist() if tangents else []
+            replacements = {
+                name: fwAD.make_dual(value, tangent)
+                for name, value, tangent, isLive in zip(names, values, tangents, live)
+                if isLive
+            }
             Y_dual = replace_integrated_fields(Y, replacements)
 
             result = step(Y_dual)
