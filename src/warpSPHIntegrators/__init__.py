@@ -39,9 +39,14 @@ from .fields import (
     CloneHandler,
     state_difference,
     state_norm,
+    integrated_field_names,
+    flatten_integrated,
+    unflatten_integrated,
+    replace_integrated_fields,
 )
 from .history import HistoryEntry, StepHistory
 from .solvers import NonlinearSolver, FixedPointSolver, SolveResult
+from .jfnk import JFNKSolver, fd_matvec, jvp_matvec, gmres
 
 from .util import IntegrationSchemeType
 
@@ -78,11 +83,19 @@ __all__ = [
     "CloneHandler",
     "state_difference",
     "state_norm",
+    "integrated_field_names",
+    "flatten_integrated",
+    "unflatten_integrated",
+    "replace_integrated_fields",
     "HistoryEntry",
     "StepHistory",
     "NonlinearSolver",
     "FixedPointSolver",
     "SolveResult",
+    "JFNKSolver",
+    "fd_matvec",
+    "jvp_matvec",
+    "gmres",
     "StateBlend",
     "ComponentUpdateSpec",
     "PositionUpdateSpec",

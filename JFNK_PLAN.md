@@ -7,10 +7,11 @@ derivations, then used on a real consumer: making WCSPH's acoustic subsystem
 (continuity + EOS + pressure force) implicit so `dt` is set by the advective CFL
 instead of the acoustic one, letting the sound speed be chosen purely for
 weak-compressibility accuracy rather than as a timestep tax. Target and validation
-scenario both resolved 2026-08-24 (see Phases B/C). Not started — no code changes
-have been made yet. Cross-repo: `warpSPHIntegrators` (the solver itself), `warpSPH`
-(the wave-equation bridge case and, later, the WCSPH integration), `warpSPHCore`
-(closing the JVP gap in Phase C).
+scenario both resolved 2026-08-24 (see Phases B/C). **Phase A done, 2026-08-24**
+(A1-A6, see that section) — the JFNK core exists and is validated against the wave
+equation; Phases B-D not started. Cross-repo: `warpSPHIntegrators` (the solver
+itself), `warpSPH` (the wave-equation bridge case and, later, the WCSPH
+integration), `warpSPHCore` (closing the JVP gap in Phase C).
 
 ## Why
 
@@ -59,79 +60,104 @@ the wave-equation *demo* into a registered, CLI-runnable `Case`. Unrelated to th
 and not a dependency either direction; `test_implicitWaveEquation.py` already runs
 standalone via `pytest`.)
 
-## Phase A — JFNK core + wave-equation validation
+## Phase A — JFNK core + wave-equation validation — **DONE 2026-08-24**
 
 `warpSPHIntegrators` (new solver machinery) + `warpSPH` (validation tests only, no
-production code changes).
+production code changes). All six steps landed as originally scoped, plus one
+real finding along the way (see A3). `warpSPHIntegrators/tests/` gained
+`test_jfnk.py` (19 tests: flatten/unflatten, GMRES on hand-built operators, FD/JVP
+agreement, JFNK-through-DIRK on the stiff oscillator, generic-driver coverage on
+other tableaus); full suite verified at **1399 passed, 114 skipped** (was 1380/114
+at the top of this phase — 19 new, zero regressions, zero changes to anything
+registered before this phase). `warpSPH/tests/test_implicitWaveEquation.py` gained
+6 more tests (12 total in that file); full `warpSPH` suite verified green
+(exit 0, no failures) alongside it.
 
-**A1. Flatten/unflatten bijection over `integrated`-tagged fields.** New primitive
-(likely `fields.py`, alongside `state_norm`/`state_difference`): a state's integrated
-fields, concatenated into one flat tensor and back. Purely mechanical — the field
-metadata (`integrated()`) already names everything needed; no new tagging. This is
-what GMRES's basis vectors, dot products, and linear combinations operate on.
+**A1. Flatten/unflatten bijection over `integrated`-tagged fields.** **Done** —
+`fields.py`: `integrated_field_names`, `flatten_integrated`, `unflatten_integrated`,
+plus the shared primitive both that and A3's dual-seeding need,
+`replace_integrated_fields(template, replacements)` ("swap in new tensors for the
+named `integrated` fields, clone everything else unchanged" — the same shape as
+`unflatten_integrated`'s flat-slice replacements and A3's dual-tensor replacements,
+so it's one function instead of two near-duplicates). Field order is whatever
+`dataclasses.fields` returns, which is stable per-class, so flatten/unflatten always
+agree on it without recording names anywhere.
 
-**A2. Generic FD matvec.** `Jv ≈ (G(Y+εv) - G(Y)) / ε` where `G(Y) = Y - step_fn(Y)`
-is exactly the residual shape `NonlinearSolver.solve`'s `step_fn` already produces —
-no new abstraction, this composes directly with what Phase 0/2 built. Works for *any*
-`f`, no capability gate; ships as the default matvec. Never form the dense Jacobian
-(NOTES.md's own caution, still correct) — one extra `step_fn` evaluation per Krylov
-iteration, not one per unknown.
+**A2. Generic FD matvec.** **Done** — `jfnk.py`'s `fd_matvec(step, Y, y_flat, G_y,
+eps=None)`, closed over an already-computed `y_flat`/`G_y` so the outer Newton loop
+pays for exactly one extra `step` evaluation per Krylov iteration, matching NOTES.md
+S3.4's own accounting. `eps` defaults to the standard Knoll-Keyes scaled step
+(`sqrt(eps_machine) * (1+‖y‖)/‖v‖`).
 
-**A3. Generic exact-JVP matvec.** A `dual_jvp(step_fn, Y, v)` primitive: opens
-`torch.autograd.forward_ad.dual_level()`, seeds `v` (unflattened back onto `Y`'s
-integrated fields) as the tangent, runs `step_fn(Y)` once, reads the tangent off the
-result. **Must not wrap the call in a try/except that would swallow
-`NotImplementedError`** — confirmed (this session's research) that
-`StateAwareWarpFunction.jvp` already raises exactly that, loudly, the moment a dual
-tensor reaches an operator with no registered `JVPSpec` (`operator_spec.py`'s own
-docstring: "a dual-tensor argument reaching this kernel's launch raises a clear error
-rather than silently returning a tangent-free dual output"). This is the safety
-property asked for — it is already guaranteed by `warpSPHCore`'s existing design, not
-something this rung needs to build; the only way to lose it is to add code here that
-catches the exception and falls back silently. Don't.
+**A3. Generic exact-JVP matvec.** **Done, with one real finding** — `jfnk.py`'s
+`jvp_matvec(step, Y)`, exactly as planned (`dual_level()`, seed `v` onto `Y`'s
+integrated fields via `make_dual`, run `step` once, read tangents back off the
+result via `unpack_dual`). Does **not** catch `NotImplementedError`, confirmed by
+using it successfully end-to-end (the wave equation's `f` is entirely the wrapped
+Laplacian, so this never fires here, but nothing here would swallow it if it did).
 
-**A4. GMRES.** No symmetry assumption — matches NOTES.md's original rung-2 choice,
-and the wave-equation module's own docstring notes its stage operator is symmetric
-*only* for constant `c`/zero `damping`, so CG isn't a safe generic default the way it
-is for that one restricted case. New, self-contained implementation operating on the
-flat vectors from A1 — `warpSPH/modules/incompressible/krylov.py` already has a GMRES,
-but at a different abstraction level (SPH pressure fields directly, not an arbitrary
-tagged state); worth reading for a correctness cross-check, not importing.
+**The finding**: the naive "wrap every `integrated` field as dual, unconditionally"
+version crashes — not on anything conceptually wrong, but on a real
+`torch.autograd.forward_ad` incompatibility in `warpSPHCore`'s bridge, confirmed by
+isolating a single `warpOperation(Laplacian, ...)` call: when **one** dual tensor
+reaching `StateAwareWarpFunction.apply()` has an all-zero tangent while **another**
+dual tensor in the *same* call has a live one, PyTorch's own internal bookkeeping
+trips `RuntimeError: ... INTERNAL ASSERT FAILED ... expected both tensor and its
+forward grad to be floating point or complex` — before `.jvp()` is even reached, so
+it isn't `warpSPHCore`'s `hasLiveTangent` convention failing to apply, it's PyTorch
+itself. This is not a rare edge case: it is exactly what happens on the wave
+equation's own validation initial condition (`v(0) = 0`), because `du/dt = v = 0`
+identically at the very first Newton iterate, so `G(y0)`'s `u`-block is exact zero
+while its `v`-block isn't — the first real Krylov vector GMRES ever builds already
+has this shape. Fixed at the right layer, not worked around: `jvp_matvec` now skips
+`make_dual` for any field whose tangent slice is identically zero and leaves that
+field primal instead — exact by linearity (a zero tangent contributes zero to the
+JVP either way), not an approximation, and it composes correctly with fields that
+*do* stay dual (e.g. `u`'s output still correctly picks up a nonzero tangent from a
+live `v`, via the `du/dt = v` coupling, even though `u` itself wasn't wrapped).
+Separately, `gmres` (A4) also never calls `matvec` on the literal zero vector
+(`x0 = 0`'s implied first residual) — a legitimate GMRES shortcut in its own right
+(`matvec(0) == 0` exactly, `matvec` always being a Jacobian-vector product), which
+happens to sidestep the *whole-vector* version of the same underlying bug too.
 
-**A5. `JFNKSolver`.** Implements the `NonlinearSolver` protocol (S4) —
-`solve(step_fn, y0, norm, **opts)`. An outer inexact-Newton loop; for an exactly
-linear `f` like the wave equation it converges in one outer iteration (Newton on a
-linear residual is exact), same shape it will need for a genuinely nonlinear `f`
-later. `opts` selects the matvec (`'fd'` default, `'jvp'` opt-in) and GMRES tolerance/
-iteration cap. **Opt-in only** (resolved 2026-08-24, per your call): `FixedPointSolver`
-stays the registry default for every DIRK scheme; `JFNKSolver` is a `solver=`
-override a caller reaches for deliberately, never something the registry picks
-automatically. It's real machinery (flatten/unflatten, GMRES, a matvec choice) for a
-problem `FixedPointSolver` already handles well in the non-stiff regime — no reason
-to pay for it, or to reconsider any scheme's `dissipation`/`stability` registration,
-when nobody asked for it.
+**A4. GMRES.** **Done** — `jfnk.py`'s `gmres(matvec, b, x0=None, tol=1e-8,
+maxiter=None, restart=30)`. Restarted GMRES(m), Arnoldi + Givens rotations (Saad's
+formulation), operating on flat vectors from A1. Cross-checked against
+`warpSPH/modules/incompressible/krylov.py`'s GMRES conceptually, not imported, per
+the original plan.
 
-**A6. Validation** (extends `test_implicitWaveEquation.py`, doesn't replace it):
-- `getIntegrator('Backward Euler (implicit)')(system, dt=dt, f=f_wave_equation, solver=JFNKSolver())`
-  must reproduce `implicitBackwardEulerStep`'s existing CG answer to solver
-  tolerance, for both matvec modes. Note this is a genuinely different linear system
-  under the hood than the CG reference solves — CG solves the hand-eliminated
-  `N`-dimensional equation for `u` alone; going through the generic DIRK driver
-  solves the full `2N`-dimensional coupled `(u, v)` stage system, since a generic
-  solver has no way to know the problem-specific algebraic elimination is available.
-  Both are solving for the same fixed point, so they should agree to tolerance — that
-  agreement is itself most of the point of this check.
-- JFNK must succeed somewhere Picard measurably fails — mirror
-  `tests/test_dirk.py::test_picard_diverges_on_a_stiff_problem_regardless_of_tableau_stability`
-  with a `dt`/resolution combo chosen so the wave equation's own stiffness (`dt·ω`
-  scaling with resolution here, not a tunable `k` like the oscillator probe) pushes
-  Picard into its measured failure mode.
-- Exact-JVP vs FD matvec: should agree to FD's own truncation tolerance; the concrete
-  case for rung 3 existing at all is fewer GMRES iterations and no `ε` to tune for
-  the same accuracy — measure both, don't just assert agreement.
-- Cheap bonus, since the driver is generic: also exercise Implicit Midpoint and
-  SDIRK2 with `solver=JFNKSolver()` on the same problem — broadens coverage for
-  free once A1-A5 exist.
+**A5. `JFNKSolver`.** **Done** — `jfnk.py`. Each outer iteration: evaluate
+`step(Y)` once, check `norm(Y, step(Y)) < tol` (defaulting to a plain flat relative
+norm, `_default_flat_norm`, when the caller supplies none — `state_norm`'s
+Hairer-Wanner convention, what `dirk.py` passes, is a different scale, so
+`JFNKSolver`'s own default has to stand on its own), else take one Newton
+correction via GMRES and loop. Verified converging in one correction (plus one
+verifying `step` call) for the wave equation's exactly-linear stage system, both
+matvec modes. `matvec=`/`tol=`/`max_iterations=`/`gmres_tol=`/`gmres_maxiter=`/
+`gmres_restart=`/`fd_eps=` all settable at construction or per-call via `**opts`,
+matching `FixedPointSolver`'s `opts.get(..., self.x)` pattern. Opt-in only, exactly
+as resolved 2026-08-24: not registered anywhere, `FixedPointSolver` is still every
+DIRK scheme's default.
+
+**A6. Validation.** **Done** — `test_implicitWaveEquation.py` extended (not
+replaced) with:
+- `test_jfnkThroughGenericDIRKAgreesWithHandRolledCG[fd/jvp]`:
+  `getIntegrator('Backward Euler (implicit)')(...) solver=JFNKSolver(matvec=...)`
+  reproduces `implicitBackwardEulerStep`'s CG answer to `rtol=1e-4, atol=1e-5` for
+  both matvec modes — confirming the generic `2N`-dimensional coupled `(u,v)` solve
+  and the hand-eliminated `N`-dimensional CG solve land on the same fixed point,
+  which was most of the point of this check.
+- `test_picardDivergesWhereJFNKStaysBoundedOnAStiffStep`: at `dt=2.0` (vs. the
+  case's own CFL-scaled `dt≈0.006` at `nx=32`), Picard(20) blows up past `1e10`
+  while JFNK (both matvecs) lands below `1.0` (well under the initial amplitude of
+  1, consistent with L-stable damping) — the wave equation's own stiffness doing
+  the same job `k=1e6` does for the oscillator probe in `test_dirk.py`.
+- `test_exactJVPMatvecAgreesWithFDAndUsesNoMoreGMRESIterations`: agreement to FD's
+  own truncation tolerance (`rtol=1e-3, atol=1e-4`) **and** a direct GMRES
+  iteration-count comparison (`iters_jvp <= iters_fd`) — measuring the concrete
+  payoff, not just asserting agreement.
+- `test_jfnkWorksWithOtherDIRKTableausOnTheWaveEquation[Implicit Midpoint/SDIRK2 x
+  fd/jvp]`: the cheap bonus, confirmed — same driver, same solver, no new code.
 
 ## Phase B — rudimentary WCSPH acoustic core (no surface treatment, no dissipation)
 

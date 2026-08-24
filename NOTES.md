@@ -431,11 +431,13 @@ factor.
    rather than backprop through this solve, needs neither.
 2. **JFNK with FD matvecs.** Stiff, backend-agnostic, no capability gate — works for
    *any* `f`. Needs the flatten/unflatten bijection over integrated fields
-   (mechanical — the field metadata already names them) plus GMRES. **Not built —
-   see `JFNK_PLAN.md` for the phased plan to build it, starting from the
-   implicit wave-equation example specifically because it needs nothing outside the
-   six wrapped operators (§3.4's correction), making it the bridge case rather than
-   the hardest one.**
+   (mechanical — the field metadata already names them) plus GMRES. **Built
+   2026-08-24 — `JFNK_PLAN.md` Phase A, `JFNKSolver` in `jfnk.py`.** Opt-in only
+   (`solver=JFNKSolver()`), validated against the implicit wave-equation example:
+   reproduces the hand-rolled CG reference to solver tolerance through the generic
+   DIRK driver, and succeeds (bounded, correctly L-stably damped) at a stiffness
+   (`dt=2.0` vs. the case's own CFL-scaled `dt≈0.006`) where Picard(20) blows up
+   past `1e10` — the same signature `test_dirk.py`'s oscillator probe measures.
 3. **Exact-JVP matvecs.** `torch.func.jvp` for torch states (a torch-only fast path,
    as originally scoped); `warpSPHCore`'s dual-tensor composition for warp-native
    states, but **only** when `f` is built entirely from the six wrapped operators +
@@ -447,7 +449,19 @@ factor.
    skip/zero-fill, or a caller composing a not-yet-wrapped op into `f` would get a
    matvec that is quietly wrong (some terms present, some silently dropped) instead
    of a matvec that fails to build at all. A speed/robustness optimisation over rung
-   2 for the `f`s that qualify, never a substitute for it.
+   2 for the `f`s that qualify, never a substitute for it. **Built 2026-08-24
+   alongside rung 2 — `jvp_matvec` in `jfnk.py`**, opt-in via
+   `JFNKSolver(matvec='jvp')`. One finding along the way, not anticipated by this
+   section: seeding *every* `integrated` field as a dual tensor unconditionally hits
+   a real `torch.autograd.forward_ad` internal-assertion bug in `warpSPHCore`'s
+   bridge whenever one field's tangent is exactly zero while another's isn't in the
+   *same* `dual_level()` call — not a rare edge case, it's exactly the shape of the
+   wave equation's own `v(0)=0` initial condition (`du/dt=v=0` identically at the
+   first Newton iterate). Fixed at the JVP-seeding layer: skip `make_dual` for a
+   field whose tangent slice is identically zero and leave it primal, which is exact
+   by linearity (not an approximation) and still lets a live field's tangent
+   propagate correctly to every output, including one for a field that was itself
+   left primal. See `JFNK_PLAN.md` Phase A3 for the full account.
 4. **User-supplied `solve_linear`.** An ISPH code already owns a pressure-projection
    solve and will always beat a generic Krylov method. This should be the contract;
    1–3 are the fallbacks.

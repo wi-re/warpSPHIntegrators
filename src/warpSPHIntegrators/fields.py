@@ -529,6 +529,100 @@ def state_norm(state, rtol: float = 1e-3, atol: float = 1e-6, *, reference=None)
     return math.sqrt(total_sq / total_n)
 
 
+def integrated_field_names(state) -> List[str]:
+    """Names of ``state``'s ``integrated`` tensor fields, in declaration order.
+
+    The order ``flatten_integrated``/``unflatten_integrated`` (JFNK_PLAN.md A1)
+    agree on -- both call this on states of the same dataclass type, so
+    ``dataclasses.fields``'s stable declaration order is what keeps flattening and
+    unflattening in sync without either side needing to record field names
+    explicitly.
+    """
+    s = _maybe_reference_state(state)
+    return [f.name for f in dataclasses.fields(s)
+            if field_behavior(f) == 'integrated' and isinstance(getattr(s, f.name), torch.Tensor)]
+
+
+def flatten_integrated(state) -> torch.Tensor:
+    """Every ``integrated`` tensor field of ``state``, concatenated into one 1-D tensor.
+
+    The primitive JFNK's GMRES operates on (JFNK_PLAN.md A1): Krylov basis vectors,
+    dot products, and linear combinations all live in this flat space.
+    ``unflatten_integrated`` is the inverse, turning a flat vector back into a real
+    state so a scheme's ``step_fn`` can be called on it.
+    """
+    names = integrated_field_names(state)
+    if not names:
+        return torch.empty(0)
+    s = _maybe_reference_state(state)
+    return torch.cat([getattr(s, name).reshape(-1) for name in names])
+
+
+def replace_integrated_fields(template, replacements: dict):
+    """``template`` with each named ``integrated`` field swapped for ``replacements[name]``.
+
+    Every other field -- ``integrated`` fields not named in ``replacements``, and
+    every ``constant``/``copied``/``ephemeral`` field -- is cloned from ``template``
+    unchanged, the same "leave everything else alone" contract ``state_difference``
+    uses. This is the shared machinery behind ``unflatten_integrated`` (whose
+    replacements are flat-vector slices) and JFNK's exact-JVP matvec (whose
+    replacements are dual tensors seeded via
+    ``torch.autograd.forward_ad.make_dual``, in ``jfnk.py``) -- both need "swap in
+    new tensors for the solved-for fields, keep the rest," just with different
+    replacement values.
+    """
+    try:
+        ref_field = find_tagged_field(template, role='reference_state')
+    except (LookupError, TypeError):
+        return _replace_dataclass_fields(template, replacements)
+
+    inner = _replace_dataclass_fields(getattr(template, ref_field.name), replacements)
+    kwargs = {}
+    for f in dataclasses.fields(template):
+        if f.name == ref_field.name:
+            kwargs[f.name] = inner
+        else:
+            kwargs[f.name] = _op(getattr(template, f.name), False)
+    return type(template)(**kwargs)
+
+
+def _replace_dataclass_fields(state, replacements):
+    kwargs = {}
+    for f in dataclasses.fields(state):
+        if f.name in replacements:
+            kwargs[f.name] = replacements[f.name]
+        else:
+            kwargs[f.name] = _op(getattr(state, f.name), False)
+    return type(state)(**kwargs)
+
+
+def unflatten_integrated(flat: torch.Tensor, template):
+    """The inverse of ``flatten_integrated``: ``template`` with its ``integrated``
+    tensor fields overwritten from ``flat``'s values, in ``integrated_field_names``'s
+    order (JFNK_PLAN.md A1).
+
+    ``template`` supplies everything ``flat`` does not carry on its own: field
+    shapes (to know how to slice ``flat`` back apart) and every non-integrated
+    field (cloned unchanged, via ``replace_integrated_fields``).
+    """
+    s = _maybe_reference_state(template)
+    names = integrated_field_names(template)
+    sizes = [getattr(s, name).numel() for name in names]
+    total = sum(sizes)
+    if flat.numel() != total:
+        raise ValueError(
+            f'unflatten_integrated: flat vector has {flat.numel()} elements, '
+            f'template needs {total} across {names}'
+        )
+    replacements = {}
+    offset = 0
+    for name, n in zip(names, sizes):
+        value = getattr(s, name)
+        replacements[name] = flat[offset:offset + n].reshape(value.shape)
+        offset += n
+    return replace_integrated_fields(template, replacements)
+
+
 @dataclass
 class BaseState:
     def initializeNewState(self, **kwargs):
