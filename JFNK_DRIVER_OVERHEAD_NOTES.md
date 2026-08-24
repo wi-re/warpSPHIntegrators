@@ -14,6 +14,9 @@ Not a phased implementation plan yet — findings and a prioritized punch list, 
 which of these (if any) are worth acting on. GMRES/Newton numerics are correctness-sensitive; none
 of this has been changed.
 
+**Update (same day, second follow-on): the major Newton-convergence finding below is fixed.** See
+"Fix landed" at the end of this doc.
+
 ## Measurement
 
 `torch.profiler` around 10 timed real steps of each scheme (`nx=128`, `warp` conda env, same case
@@ -189,3 +192,53 @@ Whichever shape, this changes the *number of Newton iterations `sdirk2_jfnk_*` s
 run* — i.e. a real behavior change to a shipped, tested integration scheme, not a transparent perf
 cleanup, and worth a deliberate decision (and a fresh `bench_accuracy.py` comparison once decided)
 rather than a same-session drive-by fix.
+
+## Fix landed (same day, second follow-on): shape 2 — decoupled Newton's own tolerance
+
+Per explicit direction ("no consumer depends on the current convergence behavior, fixing it now is
+the best spot"): implemented the second option above. `JFNKSolver` gained a `newton_tol` parameter
+(constructor + `solve`'s `**opts`), independent of `tol` (which stays GMRES's own inner linear-solve
+tolerance — unchanged, still `1e-6`-style values, unrelated to whatever `norm` convention a caller
+uses). Both convergence checks (`for` loop's early exit, and the final post-budget check) now
+compare against `newton_tol` instead of `tol`. `newton_tol` defaults to `None` → falls back to
+`tol` when unset, so `JFNKSolver` used standalone with no custom `norm` (`_default_flat_norm`'s own
+convention, which `tol` was already tuned for — e.g. `test_jfnk_solver_converges_on_a_trivial_
+linear_fixed_point`) is completely unaffected.
+
+`dirk.py` (the only caller supplying a mismatched-convention `norm`) now defaults
+`solver_opts['newton_tol']` — `solver_opts = {'newton_tol': 1e-3, **kwargs.get('solver_opts', {})}`,
+a caller's own explicit value still wins. **`1e-3`, not `1.0`**: `1.0` (the WRMS norm's own literal
+"converged" threshold) was tried first and empirically too loose — it broke a convergence-order
+regression test (measured order went *negative*, i.e. error *growing* as `dt` shrinks) and an
+exact-stage-solution comparison test, both because Newton's own error, uncontrolled below 1.0,
+started contaminating the DIRK scheme's achieved order at the smaller `dt` values those tests
+exercise. `0.01` fixed the order tests but still missed the tightest exact-comparison test's
+`rel=1e-4` requirement by about 1.5x. `1e-3` passes everything — found empirically, by bisecting
+against the existing test suite (which encodes the actual required accuracy, not by reasoning about
+IEEE-754 error propagation from first principles), so it's a validated, not merely plausible, choice.
+
+**Validated**: `warpSPHIntegrators` full suite — 1399 passed, 114 skipped, no regressions
+(including `test_jfnk_reproduces_exact_backward_euler_where_picard_diverges` and the
+convergence-order sweep across all three shipped DIRK tableaus, both of which failed at
+`newton_tol=1.0`/`0.01` before landing on `1e-3`). `warpSPH`'s `test_implicitWaveEquation.py` (12
+passed) and `test_bench_wave.py` (11 passed) — the only two `warpSPH` test files touching JFNK/DIRK.
+`bench_accuracy.py` on the real wave-equation case: **errors bit-for-bit identical** to before this
+fix at every `dt` tested (`sdirk2_jfnk_jvp_1e-6`/`sdirk2_jfnk_fd_1e-6`), confirming zero accuracy
+cost — only the iteration count changed.
+
+**Real-world effect, `bench_performance.py` (nx=32..256, `--device cuda:0`)**:
+
+| nx  | jvp ms/step before | jvp ms/step after | jvp f/step before | jvp f/step after | fd ms/step before | fd ms/step after | fd f/step before | fd f/step after |
+|-----|---:|---:|---:|---:|---:|---:|---:|---:|
+| 32  | 113.0 | **29.4** | 82.3  | **18.3** | 66.6 | **22.9** | 87.9  | **27.1** |
+| 64  | 155.5 | **32.6** | 98.9  | **19.5** | 83.8 | **24.5** | 103.7 | **27.5** |
+| 128 | 160.6 | **37.9** | 102.0 | **21.6** | 87.4 | **27.3** | 106.9 | **30.5** |
+| 256 | 163.4 | **34.5** | 104.3 | **26.5** | 90.8 | **27.4** | 111.0 | **37.8** |
+
+**~4-4.6x real wall-clock speedup for `sdirk2_jfnk_jvp_1e-6`, ~2.9-3.6x for `sdirk2_jfnk_fd_1e-6`**,
+at every resolution tested, with bit-for-bit identical accuracy — by a wide margin the largest win
+across this entire investigation (this doc's items 2/3, the reverted item 1, and everything in
+`warpSPHCore`'s `warpier_jvp_dual_argument_pruning_plan.md` combined moved the needle a few percent;
+this moved it 3-4.6x). jvp benefits more than fd in relative terms because jvp's per-eval cost was
+already higher (see the sibling plan doc's "Correction" section) — cutting 80-90% of the eval
+*count* pays off proportionally more for the more-expensive-per-eval scheme.

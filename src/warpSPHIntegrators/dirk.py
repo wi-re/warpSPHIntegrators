@@ -81,12 +81,24 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
     used when `solver_opts={'tol': ...}` requests early exit -- the default fixed
     2-iteration schedule ignores them), and `solver_opts={}` (forwarded to
     `NonlinearSolver.solve` as `**opts`) are all optional.
+
+    `norm` (below) is always this module's own Hairer-Wanner weighted-RMS
+    (`fields.state_norm`, `_default_norm`) -- its own documented convention is
+    "< 1.0 means converged", *not* whatever a given solver's own `tol` default
+    means (`FixedPointSolver`'s `tol` is unset by default, opt-in only, so
+    this never mattered for it; `JFNKSolver`'s `tol` is its GMRES linear-solve
+    tolerance, always set, and a *different* convention -- see `jfnk.py`'s
+    `JFNKSolver.solve` docstring on `newton_tol`). `newton_tol=1.0` is
+    defaulted into `solver_opts` here, matching this norm's own scale, so a
+    solver that reads `newton_tol` (`JFNKSolver`) gets a correctly-paired
+    threshold without every caller needing to know this norm's convention;
+    a caller's own explicit `solver_opts['newton_tol']` still wins.
     """
     verbose = bool(kwargs.get('verbose', False))
     solver = solver or FixedPointSolver(iterations=2)
     history = kwargs.pop('history', None)
     reject_prior_step(name, kwargs.pop('priorStep', None))
-    solver_opts = kwargs.get('solver_opts', {})
+    solver_opts = {'newton_tol': 1e-3, **kwargs.get('solver_opts', {})}
     norm = _default_norm(kwargs.get('rtol', 1e-3), kwargs.get('atol', 1e-6))
 
     with record_function("[Integration] DIRK"):

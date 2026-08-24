@@ -309,9 +309,28 @@ class JFNKSolver:
       ``matvec``: ``'fd'`` (default, works for any ``step``) or ``'jvp'`` (exact,
         only for a ``step`` built entirely from warpSPHCore's wrapped operators --
         see ``jvp_matvec``'s docstring for what happens otherwise).
-      ``tol``/``norm``: Newton convergence check, ``norm(Y, step(Y)) < tol`` --
-        the same convention ``FixedPointSolver``'s own ``tol`` path uses. Defaults
-        to ``_default_flat_norm()`` when no ``norm`` is supplied.
+      ``tol``: GMRES's own inner linear-solve tolerance (``gmres_tol`` below
+        defaults to it) -- unrelated to whatever convention the caller's own
+        ``norm`` uses, since GMRES always operates on a raw, unnormalized
+        residual vector regardless of what ``norm`` measures.
+      ``newton_tol``/``norm``: Newton's own outer convergence check,
+        ``norm(Y, step(Y)) < newton_tol``. Defaults to ``tol`` when not given
+        (preserving, unchanged, the ``_default_flat_norm()`` case below --
+        that norm's convention is a raw relative residual, the same
+        convention ``tol`` was already tuned for). A caller supplying its own
+        ``norm`` with a *different* convention (e.g. ``dirk.py``'s Hairer-
+        Wanner weighted-RMS, whose own convention is "< 1.0 means converged"
+        -- see ``fields.state_norm``) must supply a matching ``newton_tol``
+        explicitly; ``dirk.py`` does (defaults to ``1.0``, matching that
+        norm's own documented scale). Found the hard way: before this
+        parameter existed, ``dirk.py`` always passed its own ``norm`` but
+        never a compatible ``tol``, so ``JFNKSolver``'s ``tol`` (tuned for
+        the *other* convention) silently leaked through -- Newton would reach
+        genuine convergence (``norm_fn`` well under 1.0) within 1-2
+        corrections but never trip the check, and burn its entire
+        ``max_iterations`` budget on every single stage solve chasing a
+        threshold the weighted-RMS norm can't satisfy past float32 noise
+        (see ``warpSPHIntegrators``'s ``JFNK_DRIVER_OVERHEAD_NOTES.md``).
       ``max_iterations``: outer Newton *correction* budget (default 20) -- the
         number of ``step`` calls is this plus one (one final evaluation to verify
         the last correction, or to report on running out of budget).
@@ -321,7 +340,8 @@ class JFNKSolver:
 
     def __init__(self, matvec: str = 'fd', tol: float = 1e-8, max_iterations: int = 20,
                  gmres_tol: Optional[float] = None, gmres_maxiter: Optional[int] = None,
-                 gmres_restart: int = 30, fd_eps: Optional[float] = None):
+                 gmres_restart: int = 30, fd_eps: Optional[float] = None,
+                 newton_tol: Optional[float] = None):
         if matvec not in ('fd', 'jvp'):
             raise ValueError(f"JFNKSolver needs matvec in ('fd', 'jvp'), got {matvec!r}")
         self.matvec = matvec
@@ -331,6 +351,7 @@ class JFNKSolver:
         self.gmres_maxiter = gmres_maxiter
         self.gmres_restart = gmres_restart
         self.fd_eps = fd_eps
+        self.newton_tol = newton_tol
 
     def solve(self, step: Callable, y0, norm: Optional[Callable] = None, **opts) -> SolveResult:
         matvec_kind = opts.get('matvec', self.matvec)
@@ -340,6 +361,9 @@ class JFNKSolver:
         gmres_maxiter = opts.get('gmres_maxiter', self.gmres_maxiter)
         gmres_restart = opts.get('gmres_restart', self.gmres_restart)
         fd_eps = opts.get('fd_eps', self.fd_eps)
+        newton_tol = opts.get('newton_tol', self.newton_tol)
+        if newton_tol is None:
+            newton_tol = tol
         norm_fn = norm if norm is not None else _default_flat_norm()
 
         Y = y0
@@ -347,7 +371,7 @@ class JFNKSolver:
         for _ in range(max_iterations):
             Y_step = step(Y)
             n += 1
-            if norm_fn(Y, Y_step) < tol:
+            if norm_fn(Y, Y_step) < newton_tol:
                 return SolveResult(Y_step, True, n)
 
             y_flat = flatten_integrated(Y)
@@ -363,4 +387,4 @@ class JFNKSolver:
 
         Y_step = step(Y)
         n += 1
-        return SolveResult(Y_step, norm_fn(Y, Y_step) < tol, n)
+        return SolveResult(Y_step, norm_fn(Y, Y_step) < newton_tol, n)
