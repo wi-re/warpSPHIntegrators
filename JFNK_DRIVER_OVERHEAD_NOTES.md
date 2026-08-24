@@ -111,15 +111,81 @@ paid by fd and jvp.
   matvec call for both schemes too — not separately profiled yet, worth a pass if items 1-4 don't
   close the remaining gap on their own.
 
-## Suggested priority (not yet actioned, pending direction)
+## Suggested priority (updated 2026-08-24, same-day follow-on)
 
-1. Item 2 (`_fd_epsilon`'s redundant sync) — smallest, safest, clearly-scoped fix; only touches
-   `fd_matvec`, no numerics change, cheap to validate against the existing implicit-wave-equation
-   test suite.
-2. Item 3 (`jvp_matvec`'s per-field sync) — same shape, only touches `jvp_matvec`, cheap.
-3. Item 4 — needs one read of `fields.py`'s `copyState` implementation before it's actionable at
-   all; may turn out to already be minimal.
-4. Item 1 (GMRES batching) — biggest potential win by far (it's the largest single cost center in
-   both profiles), but the riskiest: touches core Krylov-solver numerics, needs a real
-   accuracy/convergence check (`tests/` in this repo, plus `bench_accuracy.py` in `warpSPH`) before
-   landing, not just a perf number.
+1. **Items 2/3 (the two redundant syncs) — done, committed (`c0db835`).** Full test suite green
+   (1399 passed). Benchmark effect is within noise at this scale, as expected for fixes this small
+   — real, correctness-preserving, but not the dominant cost.
+2. **Item 1 (GMRES batching) — attempted, reverted, wrong premise.** Implemented CGS2 (classical
+   Gram-Schmidt + one reorthogonalization pass, replacing the sequential modified-Gram-Schmidt
+   inner loop with two matmuls against the stacked Krylov basis) plus `torch.where`-based sync
+   elimination for the two scalar edge-case branches. Validated *correct* — full test suite green,
+   and `bench_accuracy.py` errors bit-for-bit identical before/after on the real wave-equation case
+   — but **measured slower** on the real benchmark (e.g. nx=128 jvp: 1.574→1.602 ms/RHS, fd:
+   0.818→0.859 ms/RHS). Root cause, traced directly: this benchmark's GMRES calls almost never use
+   more than 2-3 Krylov iterations (traced 300 real calls: mean `total_iters`=2.34, max 6) — the
+   O(k²) sequential-loop cost this item targeted never actually gets large enough to matter, so
+   CGS2's own overhead (`torch.stack` rebuilding the growing basis matrix every iteration, plus 4
+   matmuls) is pure loss here. CGS2 may still be worth it for a problem that genuinely needs deep
+   Krylov subspaces (large `restart`, ill-conditioned Jacobian) — this benchmark just isn't that
+   problem. **Reverted** to the original sequential MGS loop; not landed.
+3. **Item 4 (`updateStateEuler` copyState cost)** — still open, not investigated further this pass.
+
+## Major finding (same-day follow-on, unplanned): Newton never converges early — it always burns its full iteration budget
+
+While instrumenting *why* GMRES's own iteration count stays so low (looking for item 1's
+regression), traced `JFNKSolver.solve`'s outer Newton loop directly on a real
+`sdirk2_jfnk_jvp_1e-6` run (`nx=128`): **every single stage-solve used all 15 Newton corrections +
+1 final check = 16 `step()` evaluations, with zero early exits, across 20 traced solves.** This
+alone accounts for the great majority of this scheme's ~100 evals/step (16 outer evals + ~15×2.3
+GMRES-driven evals ≈ 50/solve × 2 DIRK stages ≈ 100 — matches `bench_performance.py`'s own
+`fEvalsPerStep` almost exactly).
+
+**Root cause, confirmed by printing every iteration's `norm_fn` value against `tol`:**
+
+```
+newton iter 0: norm_fn=159.14,     tol=1e-06, converged=False
+newton iter 1: norm_fn=0.1278,     tol=1e-06, converged=False   <- already WRMS-converged (< 1.0)!
+newton iter 2: norm_fn=0.003356,   tol=1e-06, converged=False
+newton iter 3: norm_fn=0.0001528,  tol=1e-06, converged=False   <- at float32's noise floor
+newton iter 4: norm_fn=0.0001502,  tol=1e-06, converged=False
+newton iter 5: norm_fn=5.972e-06,  tol=1e-06, converged=False   <- oscillating at the noise floor
+...  (11 more iterations, all still oscillating in the 1e-4 to 6e-6 band, never < 1e-6 for long)
+```
+
+`dirk.py`'s `_default_norm` (`fields.py`'s `state_norm`, the Hairer-Wanner weighted-RMS norm every
+DIRK call always supplies to `solver.solve`) is designed so that **`< 1.0` means converged** — it's
+already normalized by `atol + rtol*|reference|`. `JFNKSolver`'s own `tol` (`1e-6` for this scheme,
+from the registry key's name) is designed for `JFNKSolver`'s *own* default norm
+(`_default_flat_norm`, a raw `||diff|| / max(||y||, 1)` relative-residual with no `atol`/`rtol`
+scaling baked in) — a completely different convention, where `1e-6` is a sensible "tight" threshold.
+Because `dirk.py` *always* supplies its own `norm` (overriding `JFNKSolver`'s default) but *never*
+supplies a matching `tol` in `solver_opts`, the two mismatched conventions get compared directly:
+`state_norm(...) < 1e-6` is asking for six-decimal-digit convergence *in an already-normalized
+[0,1]-ish quantity* — past float32's noise floor for this problem, so it's essentially never
+satisfied, and Newton exhausts its budget chasing an unreachable threshold on *every single solve*
+even though the state was physically converged (WRMS < 1, even < 0.01) after 1-2 corrections.
+
+**This means roughly 85-90% of the `step()` evaluations this whole investigation (this doc, and
+`warpSPHCore`'s `warpier_jvp_dual_argument_pruning_plan.md`) has been trying to make individually
+cheaper are, on this evidence, unnecessary** — a correct fix here plausibly dwarfs every
+micro-optimization above combined (order-of-magnitude fewer evals/step, not a percentage
+improvement). **Not fixed this pass** — deliberately left alone rather than unilaterally changed,
+because the correct fix is a real judgment call with several shapes, not a clear-cut bug patch:
+
+- Have `dirk.py` pass a `tol` in `solver_opts` compatible with its own WRMS norm's convention
+  (something near `1.0`, e.g. matching `FixedPointSolver`'s implicit "no norm-based early exit
+  unless caller opts in" posture) instead of leaving `JFNKSolver.tol` (tuned for a different norm)
+  to leak through unchanged.
+- Or decouple Newton's own convergence tolerance from `JFNKSolver.tol` entirely (today `gmres_tol`
+  already defaults to `tol`, i.e. GMRES's *inner* linear-solve tolerance and Newton's *outer*
+  convergence tolerance are the same number by default, even though they're conceptually different
+  and, per this finding, need different scaling when a WRMS-style caller norm is in play).
+- Or leave `JFNKSolver`'s contract as-is and have every *caller* that supplies a WRMS-convention
+  norm supply a correspondingly-scaled `tol` explicitly, documenting the pairing requirement rather
+  than changing solver code at all.
+
+Whichever shape, this changes the *number of Newton iterations `sdirk2_jfnk_*` schemes actually
+run* — i.e. a real behavior change to a shipped, tested integration scheme, not a transparent perf
+cleanup, and worth a deliberate decision (and a fresh `bench_accuracy.py` comparison once decided)
+rather than a same-session drive-by fix.
