@@ -34,3 +34,8 @@ class IntegrationSchemeType(Enum):
     bogackiShampine = 23
     dormandPrince = 24
     cashKarp = 25
+    # Diagonally implicit (NOTES.md S3.6 Phase 2). None implement first-stage reuse.
+    backwardEuler = 26
+    implicitMidpoint = 27
+    trapezoidal = 28
+    sdirk2 = 29

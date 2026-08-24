@@ -114,10 +114,16 @@ def _stage_times(scheme, dt, steps, t0=0.0):
     return per_step
 
 
-#: PEFRL opens with a position drift *before* its first force evaluation, so its first
-#: stage legitimately sits at t^n + xi*dt rather than at t^n. Every other scheme
-#: evaluates f at the start of the step.
-DRIFT_BEFORE_FIRST_EVALUATION = {'PEFRL'}
+#: Schemes whose first evaluation legitimately does not sit at t^n. PEFRL opens with a
+#: position drift *before* its first force evaluation. The DIRK schemes with a nonzero
+#: diagonal on their first stage (`tableau.a[0, 0] != 0`, i.e. `tableau.c[0] != 0`) are
+#: implicit *at* that first stage, so it is solved at t^n + c[0]*dt, not at t^n -- true
+#: by construction for backward Euler (c[0]=1), implicit midpoint (c[0]=1/2) and SDIRK2
+#: (c[0]=gamma); trapezoidal's first stage has a[0,0]=0 (explicit) so it is exempt from
+#: this set, same as every explicit RK scheme.
+DRIFT_BEFORE_FIRST_EVALUATION = {
+    'PEFRL', 'Backward Euler (implicit)', 'Implicit Midpoint', 'SDIRK2',
+}
 
 
 def test_stage_times_shift_by_dt_between_steps(scheme):

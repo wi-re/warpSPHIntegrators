@@ -227,8 +227,11 @@ def test_testing_run_threads_history_without_changing_the_trajectory():
 # S3 -- IntegrationScheme metadata                                            #
 # --------------------------------------------------------------------------- #
 
-def test_every_registered_scheme_defaults_to_explicit_one_step_metadata():
+def test_every_explicit_scheme_defaults_to_explicit_one_step_metadata():
+    """Written before any implicit scheme was registered; now scoped to explicit ones."""
     for s in IntegrationSchemes:
+        if s.implicit:
+            continue
         assert s.implicit is False
         assert s.steps == 1
         assert s.stiffly_accurate is False

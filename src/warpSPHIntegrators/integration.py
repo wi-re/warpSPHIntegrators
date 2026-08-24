@@ -39,6 +39,7 @@ from .butcher import (
 from .verlet import leapFrog, symplecticEuler, velocityVerlet
 from .tvd import TVDRK3, TVDRK2
 from .ruth import PEFRL, VEFRL
+from .dirk import backwardEuler as implicitBackwardEuler, implicitMidpoint, trapezoidal, SDIRK2
 from .reuse import step_reuse_analysis, step_reuse_order, supports_step_reuse, is_fsal
 
 semiImplicitEuler = lambda state, dt, f, *args, **kwargs: integrateSemiImplicitEuler(state, dt, f, *args, **kwargs)
@@ -90,6 +91,33 @@ IntegrationSchemes.append(IntegrationScheme(TVDRK2, 'TVD RK2', IntegrationScheme
 # evaluation per step, and measures 1.0 (see NOTES.md 2.13).
 IntegrationSchemes.append(IntegrationScheme(semiImplicitEuler, 'Semi-Implicit Euler', IntegrationSchemeType.semiImplicitEuler, 1, False, False))
 IntegrationSchemes.append(IntegrationScheme(explicitEuler, 'Explicit Euler', IntegrationSchemeType.explicitEuler, 1, True, True))
+
+# ---- Diagonally implicit (NOTES.md S3.6 Phase 2) -------------------------- #
+# `dissipation` describes measured behaviour under the *shipped* default
+# (FixedPointSolver, 2 fixed Picard iterations -- see NOTES.md S3.1), not the
+# mathematical property of the exact method. Implicit midpoint IS the textbook
+# symplectic Gauss-Legendre s=1 method when its stage equation is solved to
+# convergence, but 2 fixed Picard iterations leave a real, uncorrected residual, and
+# `test_hamiltonian.py::test_dissipation_flag_predicts_energy_behaviour` measures that
+# residual growing secularly (energy error ~9x over an 8x-longer run at the shipped
+# default), the same signature as every other non-symplectic scheme here -- confirmed
+# by a separate check that the *bound* recovers (drift -> ~1e-15, stays flat with T)
+# once the solver is configured with enough iterations (~16) to actually converge.
+# So this is registered True, honestly reflecting what a caller gets by default; pass
+# a more-converged `solver=FixedPointSolver(iterations=...)` to recover the textbook
+# symplectic behaviour for a long run, at the cost of more force evaluations per step.
+IntegrationSchemes.append(IntegrationScheme(
+    implicitBackwardEuler, 'Backward Euler (implicit)', IntegrationSchemeType.backwardEuler, 1, True, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    implicitMidpoint, 'Implicit Midpoint', IntegrationSchemeType.implicitMidpoint, 2, True, True,
+    implicit=True, steps=1, stiffly_accurate=False, stability='A'))
+IntegrationSchemes.append(IntegrationScheme(
+    trapezoidal, 'Trapezoidal (Crank-Nicolson)', IntegrationSchemeType.trapezoidal, 2, True, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='A'))
+IntegrationSchemes.append(IntegrationScheme(
+    SDIRK2, 'SDIRK2', IntegrationSchemeType.sdirk2, 2, True, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
 
 
 # --------------------------------------------------------------------------- #

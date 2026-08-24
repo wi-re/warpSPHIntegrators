@@ -58,13 +58,16 @@ are gone.
 - **Multistep and implicit** (§3) — the two entries in the README's "Known
   Limitations". Both are much cheaper here than for a general-purpose library, because
   the surrounding simulation does not resort particles, holds `dt` constant, and
-  carries its neighbour list through the state (§3.0). **Phase 0 groundwork (§3.5,
-  S1-S5) is done as of 2026-08-24** — `state_norm`/`state_difference`, `StepHistory`,
-  `IntegrationScheme` metadata, the `NonlinearSolver`/`FixedPointSolver` protocol —
-  with no registered scheme consuming any of it yet. Phase 2 (the DIRK driver +
-  implicit midpoint, ~4-5 d) is next in the recommended order; still headlined by
-  **implicit midpoint**, the symplectic second-order scheme that — unlike everything
-  currently registered — holds order 2 for velocity-dependent forces.
+  carries its neighbour list through the state (§3.0). **Phase 0 (§3.5, S1-S5) and
+  Phase 2 (§3.6, the DIRK driver) are both done as of 2026-08-24**: four DIRK schemes
+  are now registered (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2; TR-BDF2
+  and ESDIRK3(2) deliberately deferred — see §3.6), each verified to reach its claimed
+  convergence order empirically. **Implicit midpoint's headline symplectic property
+  needs a caveat the original scoping missed**: at the shipped `FixedPointSolver`
+  default (2 fixed Picard iterations), its long-run energy behaviour measures
+  dissipative, not symplectic — the textbook bound only returns with a more-converged
+  solver (§3.6 has the full finding). Phase 1 (explicit multistep) is next in the
+  recommended order.
 - **A finding, not a defect:** Leap Frog, Velocity Verlet, PEFRL and VEFRL are only
   second/fourth order for a **separable** Hamiltonian, i.e. a force depending on
   position alone. With a velocity-dependent force — artificial viscosity, drag, any
@@ -440,25 +443,114 @@ Effort is *marginal*, on top of the groundwork and the driver its group needs.
 "tableau only" means the scheme is a data entry in `getButcherTableau` plus a
 registry line — the same one-line cost that adding Dormand–Prince was.
 
-#### Diagonally implicit RK (sequential 1-stage solves)
+#### Diagonally implicit RK (sequential 1-stage solves) — four of seven shipped 2026-08-24
 
 The probe driver is ~60 lines; budget ~150 for a registered one with the solver
-protocol, verbose output and scheme metadata wired in.
+protocol, verbose output and scheme metadata wired in. **Landed as `dirk.py`
+(~215 lines) + four registry entries**, reusing `butcher.py`'s `_weighted_update`,
+`_error_estimate` and `finalizeSystem` machinery directly rather than duplicating it,
+per the design sketched here.
 
-| Scheme | Order | Stages | Stability | Symplectic | Marginal effort | Worth it? |
-|---|---|---|---|---|---|---|
-| **Implicit midpoint** (Gauss–Legendre s=1) | 2 | 1 | A | **yes** | tableau only | **yes — §3.3** |
-| **Backward Euler** | 1 | 1 | L | no | tableau only | yes, as the reference/fallback |
-| **Trapezoidal / Crank–Nicolson** (Lobatto IIIA-2) | 2 | 2 | A, not L | symmetric | tableau only | yes — cheap, and the classic pair with BDF2 |
-| **SDIRK2** (Ellsiepen, γ=1−√2/2) | 2 | 2 | L | no | tableau only | yes — L-stability matters for real stiffness |
-| **TR-BDF2** | 2(3) | 3 | L | no | tableau only | yes — stiffly accurate, embedded estimate, and the embedded path already works |
-| **ESDIRK3(2)4L[2]SA** (Kennedy–Carpenter) | 3(2) | 4 | L | no | tableau only | yes — explicit first stage is FSAL-shaped, so `reuse.py` handles it |
-| **ESDIRK4(3)6L[2]SA** | 4(3) | 6 | L | no | tableau only | later — same driver, more coefficients |
+| Scheme | Order | Stages | Stability | Symplectic | Status |
+|---|---|---|---|---|---|
+| **Implicit midpoint** (Gauss–Legendre s=1) | 2 | 1 | A | **yes, exactly-solved** | **Done.** Registered `dissipation=True` — see the finding below. |
+| **Backward Euler** | 1 | 1 | L | no | **Done.** |
+| **Trapezoidal / Crank–Nicolson** (Lobatto IIIA-2) | 2 | 2 | A, not L | symmetric | **Done.** Explicit first stage (`a11=0`) exercises the driver's non-Picard branch. |
+| **SDIRK2** (Ellsiepen, γ=1−√2/2) | 2 | 2 | L | no | **Done.** |
+| **TR-BDF2** | 2(3) | 3 | L | no | **Deliberately deferred** — see below. |
+| **ESDIRK3(2)4L[2]SA** (Kennedy–Carpenter) | 3(2) | 4 | L | no | **Deliberately deferred** — see below. |
+| **ESDIRK4(3)6L[2]SA** | 4(3) | 6 | L | no | later — same driver, more coefficients |
 
-The `a` matrix stops being strictly lower triangular. `reuse.py`'s
-`tableau_reuse_analysis` reads `a[-1]` and `c[-1]` and will need to understand
-"stiffly accurate" (`a[-1] == b`) as the implicit analogue of FSAL — a small, natural
-extension of code that already exists.
+**TR-BDF2 and ESDIRK3(2)4L[2]SA were not implemented.** Both are embedded,
+higher-stage tableaus whose published coefficients are easy to transcribe wrong in a
+way a smoke test would not obviously catch — an order-2/3 convergence measurement
+looks the same whether the low-order embedded weights are exactly right or merely
+close, since only the *high-order* weights drive the propagated solution. The four
+tableaus that shipped were each verified two ways: by hand against their own order
+conditions before writing any code, and empirically via `testing.convergence` after
+(all four reach their claimed order to within 0.01 on `oscillator`/`forced`/`damped` —
+`tests/test_dirk.py`). Landing four verified tableaus beats landing six where two are
+unverified; add the other three when a concrete need for their extra stability
+margin or embedded error estimate shows up.
+
+**`reuse.py` was deliberately *not* touched, and the DIRK schemes deliberately do not
+expose `.butcherTableau`.** That attribute is what `reuse._tableau_of` looks for to
+run the explicit-scheme substitution analysis, whose reasoning assumes a stage is a
+plain function of already-known states — not true for an implicit stage, whose value
+depends on `dt` through the very solve reuse would try to skip. Leaving the attribute
+off makes `step_reuse_analysis` correctly fall through to "no tableau, no recorded
+reuse behaviour" rather than silently misapplying the explicit-tableau formula to an
+implicit one. DIRK does not implement first-stage reuse at all yet; `priorStep` is
+rejected with the same warning every other non-reuse scheme in this library gives.
+
+**A finding significant enough to change a registration flag, not just an
+implementation detail:** implicit midpoint is the textbook symplectic Gauss-Legendre
+s=1 method *only when its stage equation is solved to convergence*. The shipped
+default — `FixedPointSolver(iterations=2)`, per this section's own "2 iterations
+reach full order" measurement — leaves a real, uncorrected residual in the stage
+equation, and that residual's effect on long-run energy conservation is not the same
+question as its effect on local convergence order. Measured directly
+(`tests/test_dirk.py::test_implicit_midpoint_energy_drift_bound_recovers_with_more_iterations`):
+at the shipped default, max relative energy error grows secularly, ~9x over an
+8x-longer run (`oscillator`, `dt=0.05`) — the same signature `test_hamiltonian.py`
+uses to detect a *dissipative* scheme, not a symplectic one. Configuring the solver
+with enough iterations to actually converge (~16, confirmed by a Cauchy check on the
+iterate sequence) recovers the textbook bound: drift → ~1e-15, flat with `T`, matching
+this section's own originally-cited numbers almost exactly. **Both things are true at
+once and were conflated in this section's first draft**: "implicit midpoint is
+symplectic" (a property of the exact method) and "the shipped 2-iteration default
+gives you that property for free" (false — it gives you the *convergence order* for
+free, not the *qualitative long-run energy behaviour*, which is arguably the scheme's
+main selling point per §3.3). Registered `dissipation=True` to describe measured
+default behaviour honestly; a caller who wants the textbook property back passes
+`solver=FixedPointSolver(iterations=...)` explicitly, at the cost of more force
+evaluations per step. This same distinction likely also affects the L-stable
+tableaus' *stability* claims under Picard specifically — see the stiff-divergence
+finding two paragraphs down — though stability (staying bounded) turned out to be a
+smaller casualty here than symplecticity (staying bounded *and* non-dissipative) was.
+
+**A second finding, matching an existing §3.2 claim exactly rather than contradicting
+it:** L-stability is a property of the *exact* method, not of a truncated Picard
+solve — already stated in §3.2 for backward Euler specifically, and now confirmed for
+the registered DIRK path directly (`test_picard_diverges_on_a_stiff_problem...`,
+oscillator at `k=1e6`, `dt·ω=100`): the fixed 2-iteration default returns a finite but
+badly wrong answer (`x≈-9999`, not the ~0 an L-stable method should give), and running
+more Picard iterations at the same stiffness makes the divergence explicit and
+exponential (`10^4` at 2 iterations → `10^39` at 20), matching this section's own
+`3.7e+239`-at-`dt·ω=10` figure in shape. This is not a new problem Phase 2 introduced;
+it is the reason the ladder in §3.4 treats Picard as strictly the non-stiff rung and
+gates JFNK on "a downstream that is actually stiff" rather than on "a downstream that
+uses an L-stable tableau" — the tableau's stability class only pays off once the stage
+equation is actually being solved, which Picard alone does not guarantee.
+
+**One implementation bug caught by the existing test suite, not a design gap:** the
+Picard loop's `step_fn` returns a *fresh clone* as the next iterate (via
+`updateStateEuler(..., copyState=True)`), so the object that actually ran
+`preprocess()` — and therefore carries `copied`-behaviour fields like a summation
+density — was being discarded rather than passed to `finalizeSystem` as
+`lastStageSystem`. `tests/test_copied_fields.py`'s existing parametrized suite (12
+tests, extended for free the moment the four DIRK schemes joined the `scheme`
+fixture) caught this immediately: `density` arrived as `None`, the exact `copied`→
+`ephemeral` regression that section originally guarded against for the explicit path.
+Fixed by capturing the actual evaluated stage buffer in `step_fn`'s closure instead of
+using the solver's returned iterate for anything but the stage's own derivative.
+
+**A third, narrower finding, in the pre-existing test suite rather than the new
+code:** `test_hamiltonian.py`'s growth-ratio heuristic ("dissipative ⟹ energy error
+grows >2x over an 8x-longer run") assumed every dissipative scheme dissipates
+*slowly enough to keep growing* — true for the six RK schemes it was written against,
+false for an L-stable scheme fast enough to hit its own floor (all initial energy
+gone) before the short horizon even ends. Backward Euler saturates near 100% relative
+energy loss well inside `T_SHORT`, so its growth ratio reads ≈1.0 — "bounded", the
+same signature a symplectic scheme gives, for the opposite reason. Added a
+`SATURATES_EARLY` exclusion (mirroring the file's existing `UNSTABLE` one) rather than
+weakening the heuristic itself, since the heuristic is still correct for every scheme
+slow enough for it to apply to.
+
+`reuse.py`'s `tableau_reuse_analysis` was **not** extended to understand "stiffly
+accurate" (`a[-1] == b`) as an implicit FSAL analogue — correctly so, since DIRK reuse
+was not implemented at all this round (see above), so there is nothing yet for that
+extension to serve.
 
 #### Fully implicit RK (needs a *coupled* s·N-unknown solve — a different solver shape)
 
@@ -589,7 +681,7 @@ Each phase is independently shippable and independently useful.
 | Phase | Content | Effort | Gate |
 |---|---|---|---|
 | **0** | S1–S5 + S2g groundwork (§3.5) — **done 2026-08-24** | 5–6 d | none — S1 also unblocks §2.3's adaptive `dt` |
-| **2** | DIRK driver + fixed-count `FixedPointSolver` + implicit midpoint, backward Euler, trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2) | 4–5 d | Phase 0 |
+| **2** | DIRK driver + fixed-count `FixedPointSolver` + implicit midpoint, backward Euler, trapezoidal, SDIRK2 — **done 2026-08-24**; TR-BDF2, ESDIRK3(2) deferred (§3.6) | 4–5 d | Phase 0 |
 | **1** | Explicit multistep: AB2–5 + ABM PECE, FSAL starter, `dt`/`uid` guards | 2–3 d | Phase 0 |
 | **3** | JFNK with FD matvecs + user `solve_linear` hook + particle masking | 1–1.5 wk | Phase 2, **and** a downstream that is actually stiff |
 | **4** | BDF1–6, fixed coefficients | 3–4 d | Phase 3 |
@@ -601,13 +693,22 @@ Phases 1 and 2 are listed out of numeric order deliberately: Phase 1's old gate 
 but Phase 2 has the stronger standalone case, so it should land first.
 
 **Recommendation: Phase 0 → 2 → 1, ~2 weeks total, then stop and reassess.**
+**Phase 0 and Phase 2 are done as of 2026-08-24 (§3.5, §3.6); Phase 1 is next.**
 
-- **Phase 2 is the headline.** Implicit midpoint is symplectic, A-stable, and holds
-  order 2 for velocity-dependent forces — which nothing currently registered does
-  (§3.3). At a fixed 2 Picard iterations it needs no norm, no Jacobian, no branching,
-  and unrolls to a fixed-depth graph, so it is differentiable in both backends by
-  construction and CUDA-graph-capturable. Five more tableaus come along for one
-  registry line each.
+- **Phase 2 is the headline, with one caveat confirmed after implementing it.**
+  Implicit midpoint is symplectic, A-stable, and holds order 2 for velocity-dependent
+  forces — which nothing else registered does (§3.3) — *when its stage equation is
+  solved to convergence*. At the fixed 2-Picard-iteration default this section
+  recommends (no norm, no Jacobian, no branching, a fixed-depth graph that is
+  differentiable in both backends by construction and CUDA-graph-capturable), that
+  headline property does not actually hold: measured energy drift grows secularly,
+  the signature of a dissipative scheme, not a symplectic one (§3.6 has the numbers).
+  The order-2 accuracy claim is unaffected and was verified to hold exactly at the
+  2-iteration default; only the *qualitative long-run energy behaviour* needs more
+  iterations than the "ship 2" recommendation to recover. Four of six planned
+  tableaus landed (backward Euler, implicit midpoint, trapezoidal, SDIRK2); TR-BDF2
+  and ESDIRK3(2) were deferred rather than risk unverified embedded-pair coefficients
+  (§3.6).
 - **Phase 1 is now unconditionally worth doing**, where before it was gated on an
   unmeasured number. AB4 at one force evaluation per step against RK4's four, with
   exactly-correct fixed coefficients and a history that never expires. The one thing

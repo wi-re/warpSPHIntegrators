@@ -24,11 +24,24 @@ T_SHORT, T_LONG, DT = 10.0, 80.0, 0.1
 #: Blows up on a Hamiltonian problem at any step size; nothing to measure.
 UNSTABLE = {'Forward Euler', 'Explicit Euler'}
 
+#: L-stable schemes damp so hard that the *relative* energy error saturates near its
+#: ceiling (all of the initial energy gone) well inside T_SHORT, at which point it
+#: cannot grow any further -- the growth ratio reads "bounded", the same signature a
+#: symplectic scheme gives, for the opposite reason. Backward Euler measures
+#: short=0.98, long=1.00 on `oscillator` (already fully damped by T_SHORT=10) and a
+#: flat 1.0 on `kepler`. The dissipative *direction* is not in question -- L-stability
+#: is what backward Euler is for -- only this particular growth-ratio test doesn't fit
+#: a scheme fast enough to hit its own floor.
+SATURATES_EARLY = {'Backward Euler (implicit)'}
+
 
 @pytest.mark.parametrize('problem_name', ['oscillator', 'kepler'])
 def test_dissipation_flag_predicts_energy_behaviour(scheme, problem_name):
     if scheme.name in UNSTABLE:
         pytest.skip(f'{scheme.name} is unstable on an oscillatory problem')
+    if scheme.name in SATURATES_EARLY:
+        pytest.skip(f'{scheme.name} saturates near total dissipation before T_SHORT; '
+                    f'growth ratio cannot distinguish that from "bounded"')
 
     problem = testing.PROBLEMS[problem_name]()
     short = testing.max_energy_drift(scheme, problem, DT, T_SHORT)
