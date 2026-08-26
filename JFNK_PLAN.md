@@ -946,6 +946,31 @@ and applies its shift via a separate, already-live code path (confirmed
 working in E1.9's own cross-validation against the compressible core), not
 `IncompressibleSystem`'s `solveIncompressible`-based one this fix touches.
 
+**E1.9's probe script promoted to a first-class `Case`, 2026-08-26**: the
+one-off `probe_kolmogorovIncompressible.py` (CLI/`Case`-machinery-free by
+design, matching every other probe in this plan) is not the same thing as
+this codebase's normal way of running a scenario — no registry entry, no
+`warpsph-run` CLI access, no snapshot/continuation support for further
+sweeps. `warpSPH/src/warpSPH/cases/kolmogorovIncompressible.py` (new,
+registered in `cases/__init__.py`'s `CASE_MODULES`) is the proper
+`Case`, built the way `tgv` (scheme mechanics, mass normalisation) and
+`kolmogorov` (the forcing/Perlin-noise symmetry-breaking physics, reused
+verbatim rather than the probe's jitter-only shortcut) already are — not a
+rename of the probe. One genuinely new piece it needed that neither
+reference case has: `DFSPH` has no acoustic term, but this flow's velocity
+scale changes by roughly an order of magnitude between its quiescent start
+and saturated turbulent state, so a fixed `dt` (`kolmogorov`'s own
+convention, safe there because `deltaSPH`'s acoustic-CFL `dt` doesn't
+depend on the flow state) would be wrong here — `kolmogorovIncompressibleTimestep`,
+a `case.timestep` hook mirroring the probe's own validated advective+viscous-CFL
+`pickDt` formula, fills that gap. Validated end-to-end through the real
+protocol, not just import-tested: `test_runner.py`/`test_physics.py`
+(78 tests total) unaffected; a programmatic `run(...)` and the actual
+`warpsph-run kolmogorovIncompressible` CLI entry point both produce sane,
+adaptively-timestepped trajectories at `nx=24` and `nx=128` (dt growing
+from `0.001` to `0.06-0.1` as the flow spins up, matching the mechanism's
+own justification above).
+
 ### E2 — mDBC (bounded domain) — **scoped, not started**
 
 Sized by reading `modules/mdbc/velocity.py` and `modules/mdbc/density2025.py`
