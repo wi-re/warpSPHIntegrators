@@ -9,9 +9,33 @@ instead of the acoustic one, letting the sound speed be chosen purely for
 weak-compressibility accuracy rather than as a timestep tax. Target and validation
 scenario both resolved 2026-08-24 (see Phases B/C). **Phase A done, 2026-08-24**
 (A1-A6, see that section) — the JFNK core exists and is validated against the wave
-equation; Phases B-D not started. Cross-repo: `warpSPHIntegrators` (the solver
-itself), `warpSPH` (the wave-equation bridge case and, later, the WCSPH
-integration), `warpSPHCore` (closing the JVP gap in Phase C).
+equation. **Phase B done, 2026-08-25** (steps 1-5, see that section) — the rudimentary
+zero-dissipation WCSPH acoustic core exists, and its own hypothesis test found the
+positive result: JFNK stays bounded at `20×` the acoustic CFL with zero dissipation
+where explicit `RK4` and the registry's own Picard(2) default both diverge. **Phase
+E1 (forcing/Kolmogorov) done, 2026-08-25** (see that section) — a genuinely different
+finding: the forced flow's own shear instability eventually beats every solver at
+zero dissipation, JFNK included, though it measurably outlasts explicit/Picard at
+the same `dt`. **E1.8/E1.9 done, 2026-08-26**: refreshing the neighbor list inside
+the implicit solve does not raise E1.6's turbulent-flow `dt`-multiplier ceiling (a
+clean negative result — that ceiling is a genuine Newton/GMRES accuracy limit, not
+neighbor staleness); and the codebase's existing incompressible solver (DFSPH)
+removes the acoustic-CFL constraint too, for free, but does not obviously dodge the
+Kolmogorov instability's practical consequences at production scale — it fails
+differently (particle disorder, not viscous blow-up) and pays a substantial,
+non-adaptive inner-solve cost rather than JFNK's converged, state-dependent one.
+**E1.10 done, 2026-08-26**: E1.9's own production-scale DFSPH divergence was a real,
+fixable bug, not a fundamental limit — `IncompressibleSystem.finalize`
+(`warpSPH/src/warpSPH/systems/incompressible.py`) computed but silently discarded
+the velocity correction its own implicit particle-shifting mechanism needs to stay
+kinematically consistent; enabling it (one line) turns the step-720 divergence into
+a run that survives 1600+ steps tolerating deeper density disorder than the one
+that used to kill it, with no regression to the existing incompressible-TGV test.
+Phase E2 (mDBC) and E3 (free surface) scoped but not started, sized
+honestly in that section rather than guessed. Phases C-D not started. Cross-repo:
+`warpSPHIntegrators` (the solver itself), `warpSPH`
+(the wave-equation bridge case, the Phase B acoustic core, and, later, the full
+WCSPH integration), `warpSPHCore` (closing the JVP gap in Phase C).
 
 ## Why
 
@@ -198,24 +222,797 @@ would not.
    equivalent direct `Gradient` call), nothing else. Same protocol
    `WaveSystemv3` already demonstrates satisfying — a state/system pair implementing
    `BaseState`/`BaseIntegrationSystem` directly, no fluid-scheme machinery needed.
+   **Done, 2026-08-25.** `warpSPH`: `configurations/acousticCoreConfig.py`
+   (`AcousticCoreConfig` — kernel/supportMode plus the two `GradientScheme`s
+   actually needed, `continuityGradientMode=Difference` matching
+   `computeMomentum` and `pressureGradientMode=Symmetric` matching
+   `computePressureForceSymmetric`, and the isothermal-EOS constants
+   `restDensity`/`soundSpeed`), `systems/acousticCore.py` (`AcousticCoreState`/
+   `AcousticCoreSystemUpdate`/`AcousticCoreSystem`, field-for-field the same
+   shape as `WaveSystemv3` but with `positions`/`velocities`/`densities` all
+   `integrated` — matching `WeaklyCompressibleState`'s three physical fields
+   with every surface/mDBC/shifting field it also carries dropped, since this
+   core has no code paths for any of them), `schemes/acousticCore.py`
+   (`f_acoustic_core` — continuity via `warpOperation(..., Divergence, ...)`,
+   the EOS via `isoThermalEOS` reused directly from
+   `modules/eos/weaklyCompressible.py` (pointwise, no warpSPHCore operator per
+   the plan's own Phase C table), pressure force via
+   `warpOperation(..., Gradient, gradientMode=Symmetric, ...) / densities`,
+   adapted from `computePressureForceSymmetric` to call the operator directly
+   since that function is typed against `CompressibleState`). Registered in
+   `configurations/__init__.py`/`systems/__init__.py`; deliberately **not**
+   registered in `schemes/__init__.py`/`schemes/builder.py` — that module's own
+   docstring says nothing there should be called by name without going through
+   `buildScheme`'s `SchemeBundle` registry, and this core has no `Case`/CLI
+   consumer (yet) to justify one, so `f_acoustic_core` is imported directly from
+   its submodule, exactly how the wave-equation implicit test already imports
+   `f_wave_equation`.
+
+   `tests/test_acousticCore.py` (5 tests, all green, full `warpSPH` suite still
+   exit 0 alongside them) validates the foundation itself, not yet the Phase B
+   hypothesis: finite/bounded derivatives; `dx/dt == v` exactly; the symmetric
+   pressure force conserves momentum to `~1e-4` relative
+   (`sum_i m_i dv_i/dt ≈ 0` on the periodic domain, a real check on the
+   operator wiring, not just "it runs"); the continuity sign convention is
+   correct (verified against a genuinely periodic `sin(kx)`/`sin(ky)` velocity
+   field, after an initial version of this check used a field linear in
+   absolute position that was discontinuous across the periodic seam and
+   produced the wrong local sign — fixed by switching the probe field, not the
+   scheme); and — the actual point of building this on `warpSPHIntegrators`'
+   protocol at all — one backward-Euler step through
+   `getIntegrator('Backward Euler (implicit)')` converges to a finite,
+   positive-density state with both `JFNKSolver` and `FixedPointSolver`,
+   confirming `AcousticCoreState`/`AcousticCoreSystem` actually satisfy the
+   generic DIRK driver's protocol rather than merely resembling it.
+
 2. A periodic, boundary-free initial condition — reuse `cases/tgvWeaklyCompressible.py`'s
    sampling/domain setup (or a decaying-random field, your original suggestion) rather
    than building sampling from scratch, but drive it through the new minimal step
-   function instead of `deltaSPH_step`.
+   function instead of `deltaSPH_step`. **Done, 2026-08-25** — `warpSPH`:
+   `sample/acousticCore.py`'s `buildPeriodicVortexAcousticCoreSystem(nx, dim, L, uMag,
+   rho0, soundSpeed, cflFactor, device, dtype)`, a rotational (Taylor-Green-family)
+   periodic vortex on uniform density, built from `sampleParticles` on a periodic
+   `DomainDescription` — the same primitives `cases/tgvWeaklyCompressible.py` uses,
+   without that case's `Case`/shuffle/`RunContext` machinery. Not a `Case` itself (no
+   `Case`/CLI consumer exists for this core, matching step 1's own reasoning) — lives
+   in `sample/` rather than `systems/`, mirroring `sample/waveSystem.py`'s "last stage
+   of the pipeline, not an entry point" framing; callers (tests, the notebook below)
+   import it directly. Both `tests/test_acousticCore.py` and
+   `tests/test_acousticCoreStability.py` build on this one helper rather than each
+   duplicating sampling/domain setup.
 3. Run three ways at the same `c_s`/resolution: (a) explicit, zero dissipation — the
    expected-to-fail control; (b) `getIntegrator('Backward Euler (implicit)')` +
    `FixedPointSolver` (the Phase 2 default, 2 iterations) — tests whether Picard's own
    accuracy is enough or whether this needs real convergence; (c) same DIRK scheme +
    `JFNKSolver` with a tight tolerance — the actual hypothesis under test.
+   **Done, 2026-08-25** — `tests/test_acousticCoreStability.py`, `nx=24`, `dt = 20×`
+   the acoustic CFL (`0.2·h/c_s`, i.e. `4·h/c_s`, well past the `C·h/c_s` term
+   `modules/timestep/weaklyCompressible.py` uses to floor `dt` today).
 4. Validation criterion is **stability, not decay-rate matching** — this is different
    from Phase D's TGV check. Zero-viscosity 2D Euler TGV doesn't decay (the analytic
    `KE(t)` solution Phase D compares against is a *viscous* result), so the bar here
    is bounded energy over a long run (no blow-up, no secular drift) for (c), contrasted
-   against (a)'s expected blow-up — not agreement with any closed-form curve.
+   against (a)'s expected blow-up — not agreement with any closed-form curve. **Done,
+   2026-08-25** — the three tests assert exactly this: (a)/(b) assert `diverged=True`
+   within a bounded step budget (non-finite state, or density past `100×` rest density
+   — added after finding Picard's own blow-up timing is not bit-exact run to run,
+   GPU reduction order, so waiting on literal `inf`/`nan` alone was flaky; see the
+   test's own docstring); (c) asserts `diverged=False` over `40` steps — `4×` the
+   budget the other two need to fail — plus `max|rho| < 1.1·rho0`, `std(rho) < 0.01`
+   (no clumping/pairing runaway), `vMax < 1.0` (order the initial vortex amplitude,
+   not growing).
 5. Record the finding either way. If the hypothesis holds, it's a genuine result
    worth carrying into Phase D's design (maybe dissipation-free WCSPH becomes a real
    option, not just a stability nice-to-have); if it doesn't, that's equally useful to
-   know before Phase D spends effort on the full scheme.
+   know before Phase D spends effort on the full scheme. **Done, 2026-08-25 — the
+   hypothesis holds, on this probe.** At `dt = 20×` the acoustic CFL, zero
+   dissipation, `nx=24`: explicit `RK4` overflows to `nan` within `10` steps (`rhoMax`
+   already at `~1e34` by step 9 in the exploratory run this test is drawn from) and
+   `FixedPointSolver` (Picard(2), the registry's own shipped default for every
+   implicit DIRK scheme) independently diverges too — same qualitative failure, just
+   slower and less numerically clean (`rhoMax` past `1e30` by step ~27 rather than
+   overflowing outright, run-to-run-variable in exactly which step, per point 4 above)
+   — while `JFNKSolver` (`matvec='fd'`, `tol=1e-6`) stays bounded for at least `150`
+   steps in the exploratory run (`rho` within `0.3%` of `rho0` throughout, `std(rho)`
+   fluctuating in a `~7e-6`–`~7e-4` band with no secular growth after an initial
+   settling by step ~40, `vMax` gently decaying `0.049→0.031` — consistent with
+   L-stable damping of the fastest modes, not drift). So on this periodic-vortex
+   probe, the acoustic-CFL/stability tax explicit (and under-converged-Picard) WCSPH
+   pays is decoupled from whether artificial dissipation is present, once the
+   acoustic part is actually solved to convergence rather than integrated explicitly
+   or Picard-iterated a fixed couple of times — carried into Phase D's design per
+   this point's own framing. **Caveat, stated plainly**: this is one probe (one
+   resolution, one `dt` multiplier, `150` steps ≈ several vortex periods at this
+   `dt`, one initial condition) on the *rudimentary* core (no shifting, no surface
+   treatment) — it demonstrates the acoustic-stiffness half of the hypothesis
+   cleanly, not a proof that zero-dissipation WCSPH never destabilizes at any
+   resolution/duration/IC, and it says nothing about the tensile/pairing instability
+   particle shifting (not built here) normally guards against, which is a spatial
+   discretization concern the *time*-integration scheme doesn't touch either way.
+   `examples/weaklyCompressible/acousticCore_implicit_vs_explicit.ipynb` (new) walks
+   through this comparison interactively, plots included, mirroring
+   `examples/wave/waveCase_implicit_vs_explicit.ipynb`'s structure (no numbered-`Case`
+   prefix, since — like `naca.ipynb` in the same directory — this isn't a registered
+   `Case`).
+
+## Phase E — scope-extension ladder for the rudimentary core
+
+`warpSPH`. Added 2026-08-25, per your instruction while you're away from approvals:
+grow Phase B's rudimentary acoustic core's own feature set incrementally, each rung
+fully validated with JFNK before adding the next, rather than jumping straight to
+`deltaSPH_step`. **Complementary to, not a dependency of, Phases C/D** — those close
+the JVP gap and integrate JFNK with the *real* scheme; this phase keeps testing JFNK
+against progressively richer physics on the small, fully-controlled core Phase B
+already validated, in the order you gave: **forcing (Kolmogorov) → mDBC (bounded
+domain) → free surface (a lot more work)**. Each step below is sized from actually
+reading the relevant `warpSPH` modules, not guessed.
+
+### E1 — forcing (Kolmogorov flow) — **Done, 2026-08-25**
+
+The cheap one: a steady sinusoidal body acceleration, no new state fields, no new
+`warpSPHCore` operator. `configurations/acousticCoreConfig.py`: `AcousticCoreConfig`
+gained `forcingAmplitude`/`forcingWavenumber` (default `0.0`/`4.0` — opt-in, `0.0`
+recovers Phase B exactly). `schemes/acousticCore.py`: `f_acoustic_core` gained
+`dv_x/dt += forcingAmplitude * sin(forcingWavenumber * pi * y)` on `y` wrapped via
+`getPeriodicPositions` (`cases/kolmogorov.py`'s own convention), omitting that case's
+`BoundaryCondition`/`forcingFunctions` indirection (`forcing / mass` there, a direct
+acceleration here — same net physics, no machinery to route through) and its
+symmetry-breaking `y`-noise term (not needed to test JFNK's Newton iteration against
+a *driven* flow, which is this rung's whole point). `sample/acousticCore.py`:
+`buildPeriodicVortexAcousticCoreSystem` threads both params straight through; pass
+`uMag=0.0` alongside a nonzero `forcingAmplitude` for a quiescent-start,
+purely-forcing-driven system.
+
+**The finding, recorded in `tests/test_acousticCoreForcing.py`'s own module
+docstring (3 tests, confirmed non-flaky over 3 repeated runs)**: this is a
+genuinely *different* answer from Phase B's, not a repeat of it. Phase B's
+periodic vortex is a smooth rotational flow with no instability mechanism, so a
+well-converged JFNK solve stayed bounded *indefinitely* at `20×` the acoustic CFL
+with zero dissipation. The Kolmogorov base flow `v_x = xi·sin(k·pi·y)` is instead a
+textbook **linearly unstable shear flow** (the Meshalkin-Sinai/Kolmogorov-flow
+instability) — with zero dissipation, nothing damps the exponentially growing
+perturbation mode, so **every** solver tested eventually diverges once that mode
+reaches nonlinear/numerical blow-up. Confirmed *not* an artifact of the fixed
+acoustic-CFL-scaled `dt` becoming advectively invalid as the forced flow
+accelerates: a velocity-tracking adaptive `dt` (`min(dt_acoustic, C·h/vMax)`,
+recomputed every step) was tried and diverged at essentially the same step count
+regardless. `JFNKSolver` does not prevent this — it isn't supposed to; the growing
+mode is a real hydrodynamic instability, orthogonal to the acoustic stiffness JFNK
+actually addresses — but it measurably **delays** it: at `dt = 20×` the acoustic
+CFL, `RK4` and `FixedPointSolver` (Picard(2), the registry default) both diverge by
+step 5-6, `JFNKSolver` by step ~13, identically across 3 repeated runs (unlike Phase
+B's own Picard(2) comparison, this timing is *not* GPU-reduction-order-flaky). This
+is exactly consistent with why real `cases/kolmogorov.py` both seeds
+symmetry-breaking noise on purpose (to trigger transition deliberately) and relies
+on δ-SPH's artificial/physical viscosity to keep the resulting turbulent cascade
+numerically bounded — dissipation is physically load-bearing against a real
+instability here, a different concern from Phase B's acoustic-stiffness story. The
+two findings are complementary: JFNK's acoustic-`dt` payoff is real, but it is not a
+general substitute for dissipation on every flow, only on ones (like Phase B's
+vortex) with no other instability mechanism at zero dissipation.
+
+### E1.5 — dissipation operators in JVP format — **done, 2026-08-25**
+
+Direct response to E1's own finding: dissipation is physically load-bearing
+against the Kolmogorov shear instability, so the natural next step is giving
+`f_acoustic_core` real density/velocity dissipation that JFNK's exact-JVP
+matvec can still differentiate through, rather than only ever falling back to
+FD. `warpSPH`: `configurations/acousticCoreConfig.py` gained
+`densityDiffusionCoefficient`/`velocityDiffusionCoefficient` (both `0.0`,
+opt-in, matching `forcingAmplitude`'s own pattern) plus `laplacianMode`/
+`laplacianGradientMode`; `schemes/acousticCore.py`'s `f_acoustic_core` gained
+two terms, each a single `warpOperation(..., WarpOperation.Laplacian, ...)`
+call — `densityDiffusionCoefficient * h * soundSpeed * Laplacian(densities)`
+on `drho/dt` (a plain Fickian form, the same prefactor shape
+`modules/deltaSPH/densityDiffusion.py` uses for the real scheme's own
+delta-SPH term, minus its flux/renormalization machinery) and
+`velocityDiffusionCoefficient * Laplacian(velocities)` on `dv/dt` (the
+classic Brookshaw/Morris SPH-viscosity Laplacian — confirmed
+`modules/deltaSPH/velocityDissipation.py`'s own docstring: the real scheme's
+velocity term already *is* "a Laplacian operation over
+`currentState.velocities`", just wrapped in a custom kernel with an
+artificial/physical-viscosity coefficient switch this rudimentary core
+doesn't need). Zero new `warpSPHCore` derivation either way — `Laplacian` is
+already one of the six value+geometry JVP-wrapped operators.
+`sample/acousticCore.py`'s `buildPeriodicVortexAcousticCoreSystem` threads
+both coefficients through, matching `forcingAmplitude`'s own precedent.
+
+**The finding, found building this, not guessed, and fixed at the root
+rather than routed around**: the exact-JVP path crashed with a
+kernel-argument dtype mismatch (`computeSPHLaplacianBrookshawJVP_Kernel
+argument 'queryValues' type mismatch: expected array(ndim=1,
+dtype=float32), got array(ndim=1, dtype=vec2f)`) under the obvious first
+choice, `laplacianMode=LaplacianScheme.Brookshaw` (`OperationProperties`'
+own default). Root cause, confirmed by reading `wp_laplacianJVP.py`'s own
+docstring: the Laplacian geometry-JVP's `Brookshaw`/`Naive` schemes were
+scalar-field-only (fixed `scalar_t` kernel arguments), so neither could
+differentiate `Laplacian(velocities)`, a vector field — only `Dot`/`Default`
+were generically `Any`-typed over scalar or vector fields. First fix
+attempt was a workaround (default to `Default`); **superseded same day** by
+fixing `warpSPHCore` itself, per your instruction that the real fix should
+be "fairly straightforward in logic": `q_ij = (fj-fi)*B_ij` and every
+downstream op in both schemes are elementwise scalar-times-field regardless
+of whether the field is scalar or vector, so generalizing
+`computeSPHLaplacianBrookshawJVP_*`/`computeSPHLaplacianNaiveJVP_*`
+(`_Func_i`/`_Func_Adjacency`/`_Kernel`) from `scalar_t` to `Any`-typed
+arguments/arrays — plus the public wrapper's zero-tangent-default/
+`outputDtype` plumbing (`torch.zeros_like(queryValues)`/
+`castTorchToWarpAsBuiltins(queryValues).dtype` in place of the old
+scalar-shaped `zerosScalar(n)`/hardcoded `scalar_t`) — needed no formula
+change, only relaxed type annotations, exactly the `Any`-typing Dot/Default
+already used. Verified with new gradcheck-style tests
+(`warpSPHCore/tests/operations/test_forward_mode_geometry_jvp_laplacian_
+brookshaw.py`/`..._naive.py`, `*_matches_jacobian_reference_vectorField_2d`,
+16 new tests total): both schemes now match a reverse-mode-Jacobian
+reference on a genuine `(n, dim)` vector field, not just scalar fields as
+before. Full `warpSPHCore` suite re-run clean (419 passed, 1 pre-existing
+unrelated failure in `test_field_abstraction.py` confirmed present before
+this change too, 1 skipped). `AcousticCoreConfig.laplacianMode` now defaults
+back to the eponymous `Brookshaw` (`OperationProperties`' own library-wide
+default), not the `Default`-scheme workaround. Verified end-to-end: a
+one-step `getIntegrator('Backward Euler (implicit)')` +
+`JFNKSolver(matvec=...)` run with both dissipation coefficients and
+`forcingAmplitude` all nonzero converges to a finite, positive-density state
+for **both** `matvec='fd'` and `matvec='jvp'` with `Brookshaw` live. Existing
+`test_acousticCore*.py` suite (11 tests) still green, dissipation off by
+default.
+
+**Both follow-ups now done, 2026-08-25 — `warpSPH/tests/test_acousticCoreDissipation.py`
+(4 tests):**
+
+- **The dissipation-vs-Kolmogorov hypothesis, resolved with a genuinely
+  different answer from E1's own finding.** E1 measured JFNK *delaying* the
+  Kolmogorov shear instability's divergence at zero dissipation but never
+  avoiding it. An exploratory sweep of `velocityDiffusionCoefficient`
+  (`nx=24`, `dt=20x` the acoustic CFL, `JFNKSolver(matvec='fd')`, 80-step
+  budget) found a real stability **threshold**, not just a continuation of
+  the delay trend: `nu<=1e-2` all diverge by step 13-16 (E1's own order),
+  `nu=0.015/0.02/0.025` push divergence later but still fail within budget
+  (steps 20/25/27), and `nu>=0.03` **never diverges** in 80 steps -- confirmed
+  not a budget artifact (still bounded at 200 steps) and not GPU-reduction-
+  order flakiness (3 repeated 80-step runs at `nu=0.03` all stayed bounded).
+  Consistent with the real physics: Kolmogorov flow has a genuine viscous
+  stability threshold (a critical Reynolds number below which the linear
+  instability is fully damped, not merely slowed), and `nu=0.03` is past it
+  for this probe. `densityDiffusionCoefficient` alone (swept at
+  `0.05`/`0.1`/`0.2`, no velocity diffusion) stayed in the same "still
+  diverges" band with no monotonic trend -- expected, since the shear
+  instability is a velocity/vorticity mechanism the density-diffusion term
+  doesn't directly damp. `test_smallVelocityDiffusionStillDivergesLikeE1`/
+  `test_sufficientVelocityDiffusionAvoidsTheKolmogorovDivergence` assert the
+  two sides of this threshold.
+
+- **The FD-vs-JVP numerical-agreement check, attempted and immediately
+  finding a real, pre-existing issue unrelated to dissipation.** The first
+  attempt mirrored Phase A's `test_exactJVPMatvecAgreesWithFDAndUsesNoMoreGMRESIterations`
+  verbatim (`assert_close(jv_fd, jv_jvp, rtol=1e-3, atol=1e-4)` on the whole
+  flattened backward-Euler stage matvec) and failed: `17%` of the flattened
+  vector mismatched, `~0.0047` max absolute difference (`nx=24`, `dt=1e-3`).
+  Isolated by disabling dissipation entirely (down to Phase B's own already-
+  validated quiescent, unforced, zero-dissipation core) -- **the disagreement
+  reproduces at the same order with dissipation off**, so it is not a
+  Laplacian/dissipation bug: a pre-existing characteristic of `fd_matvec`'s
+  single global Knoll-Keyes step size `h` applied to this multi-field,
+  multi-scale nonlinear stage system (positions ~O(1), velocities ~O(0.05),
+  densities ~O(1), `soundSpeed=10`, all sharing one flat vector and one `h`),
+  concentrated in the velocity slice specifically. Confirmed directly:
+  dissipation-on vs. dissipation-off at an otherwise-identical particle
+  configuration and probe vector gives essentially unchanged disagreement
+  (`615` bad entries / `0.0047453` max diff without dissipation vs. `609` /
+  `0.00475144` with). Re-scoped the test to what's actually meaningful given
+  this finding: `test_dissipationDoesNotDegradeFDvsJVPAgreementRelativeToBaseline`
+  checks the *differential* claim (dissipation doesn't make agreement worse
+  than the pre-existing baseline), not an absolute tolerance neither matvec
+  mode was ever shown to meet on this scheme. The exact-JVP path's own
+  correctness is what `warpSPHCore`'s operator-level gradcheck tests already
+  establish (`torch.autograd.functional.jacobian` ground truth, not a coarse
+  fixed-`h` FD probe); `test_jfnkThroughGenericDIRKConvergesWithBothDissipationTermsLive`
+  separately confirms both matvec modes still reach a consistent, physically
+  sane converged fixed point despite FD's per-entry noise. **Not chased
+  further this pass**: whether `fd_matvec` should use a per-field (rather
+  than global) step size is a generic `warpSPHIntegrators` question, not
+  specific to this scheme or to dissipation, and out of scope here.
+
+### E1.6 — spin-up + snapshot probe at "normal" velocity scale — **done, 2026-08-25**
+
+Direct follow-up to your own question: does E1.5's `nu=0.03` stability
+threshold (found on a toy sweep driven from rest, saturating at only
+`vMax~0.3-0.5`, `Ma~0.03-0.05`) say anything about the "normal" `v~1`,
+`Ma=0.1` operating regime real WCSPH targets? Answered by the method you
+specified rather than by extrapolating: spin up from rest at *realistic*
+parameters (`cases/kolmogorov.py`'s own `xi=1.0`/`k=4`/`alpha=0.01`, `nx=128`
+matching its own resolution) using a small, acoustic-CFL-respecting `dt`
+(`RK4`, not the earlier `20x` stress-test `dt` -- explicit can't survive
+that regardless of physics) until the flow is genuinely turbulent, snapshot
+it, then branch into continued-forcing vs. decaying, comparing `JFNKSolver`
+at a large `dt` against the same small-`dt` `RK4` as a reference. New
+scripts: `warpSPH/scripts/probe_kolmogorovSpinup.py` (spin-up + periodic
+`.pt` snapshots) and `probe_kolmogorovContinuation.py` (load a snapshot,
+run both branches at both matvec modes, compare against the reference).
+
+**Finding 1 -- the real turbulent velocity is *higher* than the naive
+estimate, not lower.** Spin-up (`nx=128`, `dt=0.001875`, `4266` steps for
+`t=8s`, `24.6s` wall time -- cheap) shows textbook Kolmogorov transition:
+laminar linear growth to `t~1.3s` (`rhoStd~1e-5`), instability onset and a
+transient overshoot peaking at `KE~5.0`/`vMax~3.3` (`t~3s`), then relaxation
+into a statistically-steady turbulent state by `t~4.5-8s`
+(`KE~2.65-2.8`, **`vMax` fluctuating `2.1-2.9`**, `rhoStd~0.008-0.012`).
+At `soundSpeed=10`, that is **`Ma~0.21-0.29`** -- already past the `Ma=0.1`
+rule of thumb, not below it. `xi=1.0` is a forcing *amplitude*, not the
+flow's own characteristic velocity; the turbulent cascade amplifies well
+past it. So this probe already covers (and exceeds) the "normal" regime the
+question asked about, using the real case's own parameters, not a
+rescaled toy.
+
+**Finding 2 -- JFNK's large-`dt` margin shrinks sharply once the flow is
+actually turbulent, and the mechanism is forcing-specific, not generic
+advective CFL.** Loaded the settled snapshot at `t=6.0s`
+(`snap_nx128_003200.pt`, `KE~2.71`, `vMax~2.2-2.3`) and swept
+`dt`-multiplier (relative to the acoustic CFL) for both branches:
+
+| multiplier | RK4 (reference dt) | JFNK `matvec='fd'` | JFNK `matvec='jvp'` |
+|---|---|---|---|
+| 1-3 | tracks fine | tracks fine (both branches) | tracks fine (both branches) |
+| 5 | **explodes** (`KE~3447` by step 3) | forced branch drifts (`vMax` 2.23->3.18 by step 2); decaying branch fine | **tracks fine, both branches, 5 steps** (`vMax` stays `~2.2-2.25`) |
+| 10 | diverges outright by step 2 | forced: `vMax` jumps to `5.03` in **1 step**; decaying: fine to `vMax~2.2` at 2 steps | both branches eventually diverge by step 3-4 (forced: `vMax`->14 by step 3; decaying: `vMax`->190 by step 3) |
+
+Reproduced deterministically (bit-identical across reruns -- not GPU-
+reduction-order flakiness). Reading the table: **multiplier `<=3` is safe
+for either matvec mode; `mult=5` is where `matvec='jvp'` earns its keep**
+(stays accurate where FD has already started drifting, and where plain
+`RK4` has already caught fire); **`mult=10` is past what either matvec mode
+can reliably hold** in this fully-developed turbulent state. This is a
+*much* smaller safe margin than the `~20x` seen in E1/E1.5's quiescent,
+low-velocity sweep -- the earlier finding does not transfer to genuinely
+turbulent flow.
+
+Also notable: at `mult=5`/FD, the **forced** branch degrades while the
+**decaying** branch (identical state, identical `dt`, `forcingAmplitude=0`)
+stays accurate -- forcing an already-chaotic state is evidently harder for
+Newton to track at a given `dt` than letting it relax, consistent with decay
+being a monotonically-smoothing process while sustained forcing keeps
+re-injecting energy into whatever locally-marginal configuration the
+turbulence has produced. This gap closes with the exact JVP (both branches
+hold to `mult=5`), suggesting FD's own single-global-step-size inaccuracy
+(this plan's own E1.5 finding) is a real contributor to the forced branch's
+earlier failure, not a fundamental forcing-vs-JFNK incompatibility --
+though `mult=10` shows even the exact JVP is not immune once `dt` is pushed
+far enough into this state's chaotic sensitivity.
+
+**Bottom line, answering the original question directly**: at genuinely
+"normal" operating conditions (`v~2-3`, `Ma~0.2-0.3`, the real turbulent
+velocity this probe measured, not the naive `v~1` guess), JFNK still beats
+explicit `RK4` by a real, useful margin (`RK4` already destroys itself by
+`mult=5`; JFNK with the exact JVP matvec is still tracking the reference
+cleanly there) -- but the payoff is a `~5x` `dt` multiplier here, not the
+`~20x` the quiescent low-velocity sweep suggested. The dissipation
+coefficient itself (`alpha=0.01`, the real case's own default) was not the
+limiting factor in this probe at all -- both branches stayed numerically
+healthy (`rhoStd` bounded, no clustering) up to `mult=5`; what limits `dt`
+at production velocity scale is Newton/GMRES's own accuracy against a
+genuinely chaotic, multi-scale nonlinear state, not the dissipation
+threshold E1.5 characterized on the toy sweep.
+
+**Caveats, stated plainly**: one realization, one snapshot time, no
+explicit symmetry-breaking noise (unlike `cases/kolmogorov.py`'s own Perlin
+`noiseLevel=0.01` term -- this core's own instability presumably seeds from
+floating-point asymmetry alone, since it visibly transitions regardless);
+a genuinely chaotic system means precise multiplier thresholds are
+indicative of this state/parameters, not universal constants; only
+`nx=128` at this domain/wavenumber was probed, not a resolution sweep.
+Scripts are left in `warpSPH/scripts/` for reuse against other snapshots,
+durations, or multipliers.
+
+### E1.7 — does a genuinely weakly-compressible (`Ma~0.1`) regime restore JFNK's margin? — **done, 2026-08-25**
+
+Direct follow-up to your own instruction: spin up `xi=0.5` (half `cases/
+kolmogorov.py`'s own forcing) to see if that lands closer to `Ma=0.1`, and
+separately re-run `xi=1.0` at half the timestep as a convergence check on
+E1.6's own saturated-velocity measurement. All snapshots kept (`session
+scratchpad/kolmogorovSpinup/`, not `/tmp` directly, so they survive):
+`snap_nx128_xi1.0_*.pt` (original, `dtFactor=1`), `snap_nx128_xi0.5_*.pt`
+(new), `snap_nx128_xi1.0_*.pt` dt-halved (`dtFactor=0.5`, distinct filenames
+by run).
+
+**`dt`-convergence check, `xi=1.0`**: halving `dt` (`0.000937` vs.
+`0.001875`) reproduces E1.6's own transition and saturated state closely --
+peak `KE~4.5-4.9` at `t~3.0-3.4s` (both runs), settled `KE~2.3-2.4`/
+`vMax~2.0-2.5` by `t~6-8s` (vs. the original's `KE~2.65-2.8`/`vMax~2.1-2.9`,
+same band within run-to-run chaotic variability). **E1.6's saturated
+velocity was not a timestep artifact.**
+
+**`xi=0.5` does *not* halve the saturated velocity.** Settled state
+(`t~6.5-8.5s`) sits at `vMax~1.7-2.0` -- only `~15-25%` lower than `xi=1.0`'s
+`~2.1-2.9`, not the `~50%` a linear force-balance estimate
+(`xi_eq = A/(nu k^2)`, laminar-equilibrium reasoning) would predict. The
+saturated turbulent velocity is a genuinely nonlinear property of this
+flow, only weakly sensitive to the forcing amplitude -- halving the forcing
+does not get you to `Ma=0.1` here; it takes you to `Ma~0.17-0.20`, still
+above the rule of thumb. (The `xi=0.5` run also showed visible
+intermittency -- `vMax` dipping to `~1.5` around `t~6.5s` then climbing back
+past `2.4` by `t~9.5s` -- 2D Kolmogorov flow's own known bursting behavior,
+not a settling artifact; the snapshot used below (`t=6.75s`, `vMax=1.88`)
+sits in a comparatively quiet window, not necessarily *the* equilibrium.)
+
+**But that modest velocity reduction is enough to fully restore JFNK's
+large-`dt` margin.** Repeating E1.6's exact `dt`-multiplier sweep on the
+`xi=0.5` snapshot (`vMax=1.88`, `Ma=0.19`), `matvec='fd'` (no need to even
+reach for the exact JVP this time):
+
+| multiplier | RK4 (reference `dt`) | JFNK `matvec='fd'` |
+|---|---|---|
+| 3 | fine | fine, both branches |
+| 5 | `rhoStd` growing (`1.7e-2`, early warning) | **fine, both branches** |
+| 10 | diverges by step 2 | **fine, both branches** |
+| 20 | diverges by step 1 | **fine, both branches** |
+
+No degradation at all through `mult=20`, forced or decaying, plain FD --
+matching E1's own quiescent-state margin, not E1.6's degraded `~3-5x` one.
+`RK4` still fails exactly where the acoustic-CFL argument predicts
+(velocity-independent, as expected -- it's a wave-stability constraint, not
+an advective one), so JFNK's payoff over explicit is, if anything, *larger*
+here than in E1.6's higher-velocity case.
+
+**Reading the two findings together**: E1.6's `mult<=5` ceiling was real but
+narrower than it might have looked -- it is specifically tied to *how
+intense* the turbulence is at the instant JFNK takes its large step, not to
+turbulence being present at all. A `~20%` reduction in the local velocity
+scale (`vMax` `2.2` -> `1.9`) was enough to erase the degradation entirely
+in this probe. This cuts both ways for practical guidance: a run that stays
+in a genuinely weakly-compressible band (`Ma` closer to `0.1-0.15` than
+`0.2-0.3`) can likely keep something much closer to E1's original `~20x`
+margin; a run that runs hotter (`Ma~0.2-0.3`, which is what this core's own
+`xi=1.0`/`k=4` naturally saturates to, not a contrived extreme) should
+expect the smaller `~3-5x` margin E1.6 found, and reach for the exact JVP
+matvec there specifically since that is where it was shown to earn its
+keep. Neither number is universal -- both are this probe's own
+domain/wavenumber/resolution, not a general law -- but the *mechanism*
+(Newton/GMRES's per-step accuracy budget shrinking as local velocity/
+nonlinearity grows, independent of the acoustic subsystem JFNK was built to
+fix) is the transferable finding.
+
+**Not done**: pinning down xi=0.5's own intermittent bursting (is the
+`vMax` dip around `t~6.5s` a recurring cycle or a one-off relaxation?) and
+finding the actual `xi` needed to land the saturated state at `Ma=0.1`
+specifically (would need a proper sweep, not two points) -- neither was
+asked for here and both are follow-up work if wanted.
+
+### E1.8 — does refreshing adjacency inside the implicit solve raise E1.6's `dt`-multiplier ceiling? — **done, 2026-08-26**
+
+Direct follow-up to E1.6's own open question: within one real DIRK/JFNK
+step, every stage, every outer Newton iteration, and every inner GMRES
+matvec (`fd` and `jvp` alike) reuses the *same* `AdjacencyList`, confirmed
+by tracing `f_acoustic_core`'s own docstring plus
+`AcousticCoreSystem.initializeNewState`/`finalize` — adjacency is rebuilt
+once, by the test/script driver, only *after* a full real step completes
+(`test_acousticCoreStability.py`'s `_runSteps`,
+`probe_kolmogorovSpinup.py`'s per-step loop). The real production scheme,
+`deltaSPH_step`, instead calls `buildVerletList(..., priorNeighborhood=
+adjacency, ...)` at the top of *every* RHS evaluation. At `mult=5-10`
+(E1.6's regime), particles can move a non-trivial fraction of `h` within
+one implicit step — so is E1.6's `mult<=5` turbulent-flow ceiling partly a
+neighbor-staleness artifact, or purely a Newton/GMRES accuracy limit?
+
+**Answer: purely a Newton/GMRES accuracy limit — a clean negative result,
+and rebuilding is mildly counterproductive where it would need to help
+most.** New sibling function `f_acoustic_core_rebuildAdjacency`
+(`schemes/acousticCore.py`, `f_acoustic_core` itself **unmodified**) calls
+`buildVerletList` at the top of every invocation, mirroring
+`deltaSPH_step`'s exact call shape, then runs the identical physics on the
+fresh adjacency. Re-ran E1.6's own `dt`-multiplier sweep
+(`snap_nx128_003200.pt`, `t=6.0s`, `vMax~2.2`, both branches, both matvec
+modes) baseline (frozen) vs. this variant (rebuild):
+
+| mult | branch/matvec | baseline (frozen) | rebuild (per-call) |
+|---|---|---|---|
+| 1-3 | either branch, either matvec | fine | indistinguishable from baseline |
+| 5 | forced, `fd` | drifts: `vMax` 2.23→3.18→177.5→diverges step 5 | **worse**: `vMax` 2.23→34.0→11362→diverges step 4 |
+| 5 | decaying, `fd` | fine, all 5 steps | indistinguishable |
+| 5 | forced, `jvp` | fine, all 5 steps | indistinguishable |
+| 10 | forced, either matvec | diverges by step 3-4 | diverges **one step earlier, harder** (e.g. `fd`: peak 77707 vs. baseline's 304) |
+| 10 | decaying, `fd` | drifts late, fine to step 3 | diverges by step 4 |
+
+Bit-identical on a repeat of the sharpest cell — not GPU-reduction-order
+noise. Everywhere the frozen baseline already held, rebuilding changed
+nothing material; everywhere the baseline was already marginal or failing,
+rebuilding made it fail faster and harder, never better. **A plausible but
+unverified mechanism**: once different Newton iterates within one implicit
+step correspond to meaningfully different particle configurations, letting
+the discrete adjacency itself change *between* those iterates adds a second
+source of inconsistency (the linearization target discretely shifting
+underneath Newton, on top of an already-thin accuracy margin) rather than
+correcting for staleness — offered with appropriate uncertainty, not
+independently confirmed by a separate diagnostic.
+
+Checked directly, not assumed: `buildVerletList` does **not** crash on
+forward-mode dual-wrapped positions (`matvec='jvp'`) — `warp`'s
+`wp.from_torch()` bridge reads through to the primal buffer regardless, so
+no scoping to `matvec='fd'`-only was needed, contrary to this ablation's
+own starting expectation (kept the explicit `unpack_dual(...).primal`
+extraction anyway as the semantically-correct thing to do). Cost: 150-400
+extra `buildVerletList` calls per real step (Newton iterations x (1 +
+GMRES iterations), no stage multiplier since Backward Euler is 1-stage),
+1.1x-2.4x wall-clock overhead — most of each call is the cheap
+"still-valid" check, not a full rebuild, so the multiplier is smaller than
+the raw call-count ratio suggests. Given zero stability upside anywhere
+tested and a real cost plus a mild downside exactly where it would need to
+help, **the guidance from E1.6/E1.7 stands unchanged**: reach for the exact
+JVP matvec and/or a lower-`Ma` operating point to buy back margin at large
+`dt`, not a within-step adjacency refresh. New script:
+`warpSPH/scripts/probe_kolmogorovAdjacencyRebuild.py`. Existing
+`test_acousticCore*.py` (15 tests) re-verified green — no regression to
+`f_acoustic_core`. One snapshot/resolution/realization, 5-step short-horizon
+comparisons only — same scope limits as E1.6/E1.7.
+
+### E1.9 — does the codebase's existing incompressible solver (DFSPH) already deliver this for free? — **done, 2026-08-26**
+
+A comparison the plan owner asked for directly, and a fair question given
+E1-E1.8's whole throughline: incompressible SPH has no acoustic mode and no
+acoustic CFL *by construction*, using existing, already-registered code
+(`scheme='divergenceFree'`, `schemes/dfsph.py`, exercised today only by the
+incompressible `cases/tgv.py`/`test_physics.py`). Does it already deliver
+some or all of what this JFNK effort is chasing on the same forced-
+Kolmogorov shear-instability problem, no new solver required? `kolmogorov.py`
+is hardcoded to `scheme='deltaSPH'`, so this combination had never been run —
+genuine troubleshooting, not a rerun of an existing path. New standalone
+script (bypassing `Case`/CLI machinery, matching `sample/acousticCore.py`'s
+own precedent, `cases/kolmogorov.py`/`cases/tgv.py` **not modified**):
+`warpSPH/scripts/probe_kolmogorovIncompressible.py`. Full writeup:
+`scratch_dfsph_kolmogorov_findings.md` (this session's scratchpad); key
+findings folded in below.
+
+**Troubleshooting, found running this, not guessed**: (a) a domain-builder
+default (`device='cpu'`) silently defeated by passing `device=None`
+explicitly rather than omitting it — fixed, ~10x steady-state speedup once
+actually on GPU; (b) a real, verifiable **latent bug in existing, untouched
+production code** found while trying to read solver iteration counts back
+out of a step result: `IncompressibleSystem.finalize`
+(`systems/incompressible.py`) reassigns `returnValues[-1] = (...)` trying to
+surface its own (second) pressure solve's iteration count, but `returnValues`
+elsewhere is `[r1]` and this rebinds the list slot, not the tuple `r1`
+already referenced by `StageResult.aux` — that solve's iteration count is
+silently unreachable except via a `verbose=True` print. Noted for awareness,
+not fixed (out of scope, cosmetic — introspection only, not physics); worked
+around in the probe by parsing the verbose print instead of touching
+production code.
+
+**Finding 1 — DFSPH does *not* need explicit dissipation for the Kolmogorov
+instability to saturate rather than blow up, unlike the compressible core
+(E1.5's `nu>=0.03` threshold).** `nx=24`, `xi=1.0`, `k=4`, natural CFL-
+respecting `dt`: **every** `nu` tested, including exactly `0.0`, stayed
+bounded and statistically steady — the `nu=0` run was extended to 900 steps
+(`t~81s` simulated, ~9x E1.5's own longest nu-sweep run) specifically to
+rule out "hasn't diverged yet," with the expected physical trend still
+visible (higher `nu` → lower saturated KE/`vMax`/`rhoStd`). **This changes
+what "zero dissipation" means for this scheme, not the underlying physics**:
+DFSPH's default `integrateRho=False` recomputes density from a plain SPH
+summation every step rather than integrating a stiff continuity equation —
+a hypothesis (not independently ablated) for a strong built-in numerical
+regularizer the acoustic core's `f_acoustic_core` was deliberately built
+without, on top of whatever damping the relaxed-Jacobi projection itself
+contributes.
+
+**Finding 2 — DFSPH is not timestep-constraint-free; it swaps the acoustic
+term for an advective one that still needs a ceiling.** Structurally
+confirmed no acoustic term exists in `dfsph_step`'s actual physics at all
+(`soundspeeds`/`fixedSoundSpeed`/`dt_acousticConstraint` are present on the
+shared state/config shape but never read). But removing the safety `maxDt`
+ceiling and driving `dt` from a pure `vMax`-based advective-CFL formula
+reproduces the same *kind* of explicit blow-up the acoustic-CFL argument
+predicts on the compressible side, for a different reason: at `t=0` the
+flow is at rest, so a `vMax`-based formula is degenerate (wants `dt→∞`) —
+`cflFactor` multipliers of `3x/5x/10x` over the safe baseline all diverged
+to NaN within 3-9 steps at `nx=24`. Every existing case in this codebase
+sidesteps this with a fixed or tightly-ceilinged `dt`, never deriving it
+from `vMax` alone.
+
+**Finding 3 — at production scale (`nx=128`, E1.6/E1.7's own parameters), a
+genuinely cross-validating result plus a genuinely surprising one.** The
+zero-viscosity run's saturated `vMax~2.2-2.6`/`KE~2.57-2.65` lands right in
+the band E1.6 measured for the *compressible* core at the same resolution/
+forcing (`vMax~2.1-2.9`/`KE~2.65-2.8`) — two unrelated formulations
+(EOS+pressure-gradient vs. divergence-free projection) landing on
+essentially the same saturated turbulent velocity scale, a good physics
+cross-check. But the run *with* the case's own default physical viscosity
+(`alpha=0.01`) **diverged at step 720** while the zero-viscosity run stayed
+bounded for the full 1000-step budget — the opposite of the compressible
+story, where more viscosity strictly helped. Both runs show real localized
+density excursions (`rhoMin` down to `0.70`-`0.87`, 13-30% below rest
+density) before failing, pointing tentatively at particle-disorder/
+density-void formation rather than a viscous-shear mechanism — **stated as
+a hypothesis, not proven**; no controlled ablation (shifting on/off, a
+repeat with a different seed) isolated the cause, and this is the single
+finding in this rung most worth an independent rerun given how directly it
+contradicts the naive "more viscosity = more stable" prior. **Root-caused
+and fixed, 2026-08-26 — see E1.10.**
+
+**Cost**: the shipped default relaxed-Jacobi solvers (`maxIterations=32`
+divergence-free, `64` constant-density) pinned at their *caps* on every
+single sampled step at both resolutions in every run — i.e. never actually
+converged to their own tolerance on this flow, always paying the full fixed
+96-sweep-per-step budget, a different cost character than JFNK/GMRES's
+state-dependent iteration count. Wall-clock, stated with caveats (cross-
+codepath, cross-session, single run each, not a controlled benchmark):
+`nx=128` DFSPH reached `t=7.92s` simulated in `186s` wall time (1000 steps,
+`dt` shrinking `0.1→~0.006-0.008` as the flow saturates) vs. the
+compressible core's own plain-explicit `RK4` spin-up reaching `t=8s` at the
+same resolution in `24.6s` (E1.6, 4266 fixed-`dt=0.001875` steps) — ~4.3x
+fewer steps, but ~7.5x more wall-clock, i.e. **higher** net cost than plain
+explicit `RK4` on this probe, before JFNK's own Newton/GMRES cost on top of
+that `RK4` baseline is even counted. No absolute JFNK-branch wall-clock
+number exists yet in E1.6/E1.7 to compare against directly (they report
+iteration-count/multiplier findings, not wall time) — a real comparison this
+rung couldn't complete, not a result showing JFNK loses on cost.
+
+**Reading E1.8 and E1.9 together, answering the motivating question
+plainly**: the *acoustic*-stiffness half of this plan's premise is real but
+not unique to JFNK — DFSPH removes that specific constraint too, for free,
+with already-registered code, for anyone able to accept an incompressible
+formulation. What DFSPH does *not* obviously do is dodge the Kolmogorov
+flow's physical consequences at production scale — it fails differently
+(particle disorder, not viscous blow-up; more viscosity can hurt, not help)
+and its own inner-solve cost is a substantial, non-adaptive, always-at-cap
+tax rather than a converged, state-dependent one. Neither solver is a free
+lunch on this problem; they trade different constraints for different
+failure modes and different cost profiles, which is itself the honest
+answer — not evidence either approach is simply superior.
+
+**Caveats, stated plainly**: one probe, one machine, one resolution pair
+(`nx=24`/`128`), one domain/wavenumber/forcing amplitude, one jitter seed —
+same scope limits E1.6/E1.7 already carry. No `dt`-multiplier sweep (the
+E1.6-style forced-vs-decaying, large-vs-small-`dt`-reference structure) was
+run for DFSPH at `nx=128`, only the `maxDt`-removal stress test at `nx=24`.
+Particle shifting was off throughout (matching `cases/tgv.py`'s own
+default) — finding 3's density-void divergence was root-caused and fixed
+without it; see E1.10.
+
+### E1.10 — root-causing and fixing E1.9's finding-3 divergence — **done, 2026-08-26**
+
+Direct follow-on to E1.9's own most-uncertain result: at `nx=128`, the run
+*with* physical viscosity diverged (step 720) while zero-viscosity stayed
+bounded, with density excursions pointing tentatively at particle disorder.
+The project owner's own prior experience with this codebase supplied the
+lead directly: this incompressible scheme's pressure-projection pipeline is
+*supposed* to act as an implicit particle-shifting mechanism (restoring
+uniform density is what a shifting technique does) — so instability
+traceable to particle disorder suggests that mechanism isn't doing its job
+correctly, not that it's insufficient by nature. Reading
+`warpSPH/src/warpSPH/systems/incompressible.py`'s `IncompressibleSystem.
+finalize` turned up a concrete candidate, found by direct code reading:
+
+```python
+dx = dt**2 * dvdt_incomp                            # position correction (live)
+proj_vel = torch.einsum('nij, ni -> nj', gradVel, dx)  # Taylor velocity correction
+self.state.positions += dx
+# self.state.velocities -= proj_vel                 # <- commented out
+```
+
+`solveIncompressible`'s constant-density pressure solve returns an
+acceleration (`dvdt_incomp`) applied every step as a **position** shift —
+the standard "IISPH shifting via extra pressure solve" trick. `gradVel` and
+`proj_vel = ∇V·Δx` (the standard first-order correction any shifting
+technique needs to keep a particle's carried velocity consistent with its
+new location) were already computed, unconditionally, every step — and then
+silently discarded. This is distinct from, and unconditionally active
+regardless of, the separate `schemeConfig.shiftProperties.active`-gated
+block earlier in the same function — confirmed to be inert dead debug
+scaffolding from an earlier session's own experiment (a `dx` variable
+reused/overwritten before ever being applied), left untouched per the
+project owner's explicit instruction, since the incompressible scheme isn't
+expected to need that *explicit* WCSPH-style shift in the first place.
+
+**Tested before touching production code**: a runtime monkeypatch
+(`inspect.getsource` + text-patch + re-`exec` + class-attribute rebind, new
+script `warpSPH/scripts/probe_kolmogorovIncompressibleVelCorrection.py`,
+reusing E1.9's own `probe_kolmogorovIncompressible.py` directly) enabled the
+correction without editing the file, confirmed live via a smoke test, then
+compared on the exact `nx=128`/`alpha=0.01` case:
+
+| run | steps | outcome | worst `rhoMin` before/at failure |
+|---|---|---|---|
+| baseline (unpatched) | 720/1000 | **diverges to NaN at step 720** (reproduces E1.9 exactly, same seed) | 0.843 |
+| patched (correction live) | 1000/1000 | **survives full budget** | 0.709 (recovers, no cascade) |
+| patched, extended | 1600/1600 | **still survives**, deeper excursions than baseline ever saw | 0.439 (recovers) |
+
+Not just a delayed failure: the patched run tolerates *more severe* density
+disorder than the excursions that killed the baseline, and recovers from
+them rather than cascading to NaN.
+
+**Applied to production, one line**: `systems/incompressible.py`,
+`IncompressibleSystem.finalize` — uncommented `self.state.velocities -=
+proj_vel`. Confirmed via `git diff` this is the only change; the
+`shiftProperties.active`-gated block is untouched. **Validated, and
+independently re-verified this session** (not just trusted from the
+agent's own report): `pytest tests/test_physics.py -k tgv` → 3 passed (the
+existing incompressible-TGV regression test, the same scheme this fix
+touches); full `tests/test_physics.py` → 60 passed; full `warpSPH` suite →
+clean, `EXIT=0`. The `nx=128`/`nu=0` case that already worked before the
+fix still works after it (1000/1000 steps, no divergence) — no regression
+to the case E1.9 already validated.
+
+**Caveats, stated plainly**: one seed, one machine, one resolution actually
+compared before/after (`nx=128` — `nx=48`/`nx=64` never reproduced the
+failure in the first place, so there was nothing to fix there). The
+1600-step extension is one additional data point, not a systematic
+long-horizon sweep (5000+ steps untested). *Why* the correction matters as
+much as it does was not independently instrumented (e.g. no direct
+measurement of `proj_vel`'s magnitude relative to the velocity field) — the
+kinematic-inconsistency-compounding-under-shear reading is the natural one
+given the code and consistent with the result, not proven beyond that.
+Whether this same class of bug affects `WeaklyCompressibleSystem` (the
+`deltaSPH`/compressible scheme `cases/kolmogorov.py` actually runs in
+production) was not checked — that class has its own, different `finalize`
+and applies its shift via a separate, already-live code path (confirmed
+working in E1.9's own cross-validation against the compressible core), not
+`IncompressibleSystem`'s `solveIncompressible`-based one this fix touches.
+
+### E2 — mDBC (bounded domain) — **scoped, not started**
+
+Sized by reading `modules/mdbc/velocity.py` and `modules/mdbc/density2025.py`
+directly, not assumed. Two genuinely different pieces hide under one name:
+
+- **Boundary-particle velocity** (`computeBoundaryVelocities`): dispatches per
+  boundary material to `zero`/`constant`/`noSlip`/`freeSlip`/`extended` policies.
+  The first four are built entirely from `warpOperation(..., Interpolate,
+  operationMode=OperationDirection.FluidToGhost)` (a directional Shepard-normalized
+  gather) plus elementwise vector algebra (mirror/reflect across the ghost normal)
+  — and `Interpolate` is one of the six JVP-wrapped operators. Checked directly in
+  `wp_interpolateJVP.py`: the JVP kernel applies `checkDirectionality_j` generically
+  for any `operationMode` other than `TrueAllToToAll`, the same mechanism
+  `FluidToGhost` would use — so these four policies look JVP-differentiable in
+  principle, not just FD-only, though nothing has verified that empirically yet
+  (no `gradcheck` run against this specific direction/mode combination).
+- **Boundary-particle density** (`computeMdbcDensity`, the "modified" in mDBC):
+  genuinely harder. Uses `interpolateLiuLiu`, a moving-least-squares reconstruction
+  that is **not** one of the six wrapped operators and has no JVP path at all today
+  — FD matvec only, or a new, nontrivial derivation (MLS involves a per-point small
+  linear solve, not a single kernel-weighted sum the way the six Tier-1 operators
+  are). Also gravity-aware (a hydrostatic pressure correction along the ghost
+  normal) and gated by neighbor-count thresholds with multiple fallback tiers
+  (plain Shepard density, then rest density) — real physics, not a simplification
+  opportunity.
+- Both need **ghost-particle geometry that doesn't exist yet** for this core:
+  boundary/ghost `kinds`/`materials`, `ghostIndices`/`ghostOffsets`, and a region/SDF
+  or rigid-body-based generation step (`rigidBody/ghostParticles.py` in the real
+  scheme). `AcousticCoreState` has none of this — Phase B deliberately kept it to
+  the three physical fields.
+- The real modules are typed against `WeaklyCompressibleSPHConfig`/
+  `SimulationConfig` (`schemeConfig.fluid.restDensity`, `.gravityConfig`, ...), not
+  `AcousticCoreConfig` — reusing them verbatim needs either conforming this core's
+  config to that shape (defeats Phase B's "as small as `WaveEquationConfig`" design)
+  or a thin adapter layer.
+
+**Why not started this session**: this is new state-layout work plus a real
+uncertain derivation (MLS JVP), not a same-shape extension of what Phase B/E1
+already validated — rushing it without a chance for you to review the design would
+risk leaving a half-working boundary treatment in a codebase you can't currently
+check on. **Suggested minimal first cut, when picked up**: a single flat wall
+(simplest case, one `RegionType.Boundary` with `BCType.zero`, no gravity, no
+`extended`/MLS policy) rather than the full ghost-particle system at once — that
+alone would validate the new state fields and the `Interpolate`-`FluidToGhost` JVP
+claim above empirically, before touching `computeMdbcDensity`'s harder MLS path.
+
+### E3 — free surface — **scoped, not started, "a lot more work" per your own framing**
+
+The biggest lift of the three, and not just because of the JVP gap. `Phase C`'s own
+table already found the one piece tied to JFNK directly: `computePressureForceSymmetric`
+(what Phase B/C use) ignores the free-surface mask entirely, but the real
+`computePressureForceSurfaceAware`'s `Antuono` branch reads it — so free-surface
+support here means either extending Phase C's pressure-force JVP derivation to cover
+that branch too (messier: the Antuono correction is a per-particle case split on
+surface/non-surface status, not a single linear formula), or accepting FD-matvec-only
+runs whenever free-surface treatment is active. Separately, and larger: surface
+*detection* itself is substantial existing machinery this core has none of --
+`modules/surfaceDetection/` alone has at least three detection schemes (color-field,
+Maronne, Barecasco — `colorFieldDetection.py`/`maronneDetection.py`/
+`barecascoDetection.py`), normal computation, and a dilation/expansion pass
+(`wp_dilate.py`), configured via `SurfaceDetectionConfig`
+(`configurations/moduleConfigurations/surfaceDetection.py`). A `scripts/
+gradcheck_surfaceDetection.py` already exists, suggesting at least partial gradient
+support was checked for this machinery at some point — worth reading before assuming
+a JVP derivation has to start from zero, but not read yet this session. No sizing
+beyond this pointer attempted here; scoping this properly is its own session's work,
+not a paragraph.
 
 ## Phase C — close the JVP gap for the acoustic subsystem
 
@@ -341,11 +1138,20 @@ Steps:
 - `pytest warpSPH/tests/test_implicitWaveEquation.py` (extended, not replaced) — the
   three-way agreement (hand-rolled CG, JFNK+FD-matvec, JFNK+JVP-matvec) and the
   Picard-fails/JFNK-succeeds case from A6.
-- Phase B's new test: the explicit/zero-dissipation rudimentary core measurably
-  destabilizes (bounded-energy check fails, or blows up outright) while the
-  well-converged-JFNK version stays bounded over the same run — both outcomes are
-  useful results, but the test should assert whichever one was actually found, not
-  the hoped-for one.
+- Phase B's new tests (`warpSPH/tests/test_acousticCore.py`,
+  `test_acousticCoreStability.py`, **done 2026-08-25**): the foundation checks
+  (finite/bounded derivatives, momentum conservation, continuity sign, DIRK/JFNK
+  wiring) plus the actual hypothesis test, which found — and asserts — that the
+  explicit/zero-dissipation rudimentary core measurably destabilizes (`RK4` and
+  Picard(2) both diverge) while the well-converged-JFNK version stays bounded over
+  a `4×`-longer run at the same `dt`, zero dissipation. Full `warpSPH` suite stays
+  exit 0 alongside them, run 3× to confirm the diverge-detection thresholds aren't
+  flaky under GPU reduction-order nondeterminism.
+- Phase E1's new test (`warpSPH/tests/test_acousticCoreForcing.py`, **done
+  2026-08-25**, 3 tests, confirmed non-flaky over 3 repeated full-file runs): forcing
+  sanity (correlation check), smooth finite growth at small `dt`, and the comparative
+  finding that `JFNKSolver` outlasts (but does not avoid) divergence relative to
+  `RK4`/Picard(2) under sustained zero-dissipation forcing at `20×` the acoustic CFL.
 - Phase D, once reached: `warpSPH/tests/test_physics.py`'s existing suite stays green
   with the new implicit path wired in, plus whatever new stability/cost comparison
   the chosen scenario needs.
