@@ -9,10 +9,12 @@ instead of the acoustic one, letting the sound speed be chosen purely for
 weak-compressibility accuracy rather than as a timestep tax. Target and validation
 scenario both resolved 2026-08-24 (see Phases B/C). **Phase A done, 2026-08-24**
 (A1-A6, see that section) — the JFNK core exists and is validated against the wave
-equation. **Phase B done, 2026-08-25** (steps 1-5, see that section) — the rudimentary
-zero-dissipation WCSPH acoustic core exists, and its own hypothesis test found the
-positive result: JFNK stays bounded at `20×` the acoustic CFL with zero dissipation
-where explicit `RK4` and the registry's own Picard(2) default both diverge. **Phase
+equation. **Phase B done, 2026-08-25, cost sweep added 2026-09-04** (steps 1-6, see
+that section) — the rudimentary zero-dissipation WCSPH acoustic core exists, and its
+own hypothesis test found the positive result: JFNK stays bounded at `20×` the
+acoustic CFL with zero dissipation where explicit `RK4` and the registry's own
+Picard(2) default both diverge — at a real cost, `~762` ms/step there versus `RK4`'s
+own `2.87` ms/step at its native `1×` (step 6). **Phase
 E1 (forcing/Kolmogorov) done, 2026-08-25** (see that section) — a genuinely different
 finding: the forced flow's own shear instability eventually beats every solver at
 zero dissipation, JFNK included, though it measurably outlasts explicit/Picard at
@@ -334,6 +336,48 @@ would not.
    `examples/wave/waveCase_implicit_vs_explicit.ipynb`'s structure (no numbered-`Case`
    prefix, since — like `naca.ipynb` in the same directory — this isn't a registered
    `Case`).
+6. Measure what the implicit solve actually costs. Stability alone doesn't say
+   whether pushing `dt` this far is a net win — a JFNK stage solve that needs several
+   Newton corrections, each several GMRES iterations of RHS evaluations, could easily
+   cost more per unit of *simulated* time than several small `RK4` steps would. **Done,
+   2026-09-04** — the notebook gained a `dt`-multiplier cost sweep: `nx=24`, the same
+   `FixedPointSolver(iterations=2)` / `JFNKSolver(matvec='fd', tol=1e-6,
+   max_iterations=20, gmres_maxiter=60)` configs steps 3–5 use, but only 2 warmup + 8
+   timed steps per point rather than the stability run's 40–150 — steady-state
+   per-step cost is visible in a handful of steps, and the expensive end of this
+   sweep (large `dt`, many Newton/GMRES iterations per step) is exactly where a long
+   run would cost the most wall-clock for the least new information. Per-step cost,
+   CUDA-event-timed, warmup excluded:
+
+   | `dt` multiplier | `Picard(2)` ms/step | `JFNK` ms/step | `JFNK` mean Newton iters |
+   |---:|---:|---:|---:|
+   | 1× | 1.58 | 13.75 | 3.1 |
+   | 2× | 1.54 | 23.93 | 4.7 |
+   | 5× | diverges (step 7) | 80.34 | 8.1 |
+   | 10× | — | 279.32 | 6.9 |
+   | 20× | — | 762.09 | 8.3 |
+   | 30× | — | 1218.69 | 11.6 |
+   | 50× | — | diverges (step 7) | 3.4 |
+
+   (`RK4` at its own native `1×`: `2.87` ms/step, for reference.) `Picard(2)`'s cost
+   is flat and cheap — a fixed 2 RHS evals/step regardless of `dt` — right up to where
+   it destabilizes on this probe (`5×`, well short of step 5's `20×`, meaning step 5's
+   own Picard baseline was already past Picard's own cost-viable range, not just its
+   correctness range). `JFNK`'s `ms/step` climbs with `dt` as the mean Newton-iteration
+   count grows (`3.1→11.6` from `1×` to `30×`), then it too destabilizes at `50×` (the
+   apparent cost *drop* there is an artifact of the run stopping early on divergence,
+   not cheaper convergence). Normalized to cost per unit of *simulated* time (ms/step ÷
+   multiplier), `JFNK` is roughly flat through `10×` (`~12–28` ms per `dt`-unit) and
+   climbs further by `20–30×` (`~38–41` ms per `dt`-unit) — `4×`–`14×` `RK4`'s own
+   `2.87` ms per `dt`-unit at its native, stable `1×`. So step 5's `20×` finding sits
+   well inside `JFNK`'s still-climbing cost regime: real, and the only stable option at
+   that `dt` on this probe, but not a wall-clock win over `RK4` running at its native
+   step size, only over `RK4` (or Picard) *at that same large `dt`*, where both simply
+   fail. **Caveat**: one resolution (`nx=24`), one solver-budget choice held fixed
+   across the whole sweep — GMRES's own cost per iteration grows with problem size, so
+   this curve shouldn't be assumed to hold at higher resolution; extending
+   `bench_performance.py`'s `nx`-sweep pattern (already built for the wave equation) to
+   `f_acoustic_core` is the natural next step for that question.
 
 ## Phase E — scope-extension ladder for the rudimentary core
 
