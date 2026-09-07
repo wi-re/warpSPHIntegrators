@@ -1,3 +1,4 @@
+import inspect
 from typing import Union, Tuple, NamedTuple
 from .util import (
     finalizeSystem,
@@ -34,6 +35,24 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
         # any caller that merely wanted history threaded, not reuse. A caller that
         # wants reuse asks for it the same way as always: pass
         # `priorStep=history.as_prior_step()` explicitly.
+        # Optional stage-index injection, opt-in only: `f` (the scheme's RHS)
+        # receives `stageIndex=0, 1, 2, ...` ONLY if its signature explicitly
+        # declares a `stageIndex` parameter -- e.g. `schemes/deltaSPH.py`'s
+        # frozen-diffusion support (Sun et al. 2017 Sec. 2), which needs to
+        # know "is this the first stage of this real step" to decide whether
+        # to recompute or reuse its cached diffusive terms. Every other
+        # scheme's step function is completely unaffected: nothing is added
+        # to `kwargs` unless `f` asks for it, so no existing caller's
+        # signature or behaviour changes.
+        try:
+            _fParams = inspect.signature(f).parameters
+        except (TypeError, ValueError):
+            _fParams = {}
+        _wantsStageIndex = 'stageIndex' in _fParams
+
+        def _stageKwargs(stageIndex):
+            return {**kwargs, 'stageIndex': stageIndex} if _wantsStageIndex else kwargs
+
         if verbose:
             print(f"[Integrator] Running Runge-Kutta with dt={dt:.4f} and scheme={butcherTableau}")
         initializeSystem(initialState, dt, *args, **kwargs)
@@ -51,7 +70,7 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
             else:
                 print(f"[Integrator] Running first step to compute k0")
         if priorStep is None:
-            k0, r0 = updateStep(initialState, currentState, dt, f, *args, **kwargs)
+            k0, r0 = updateStep(initialState, currentState, dt, f, *args, **_stageKwargs(0))
         else:
             k0, r0 = unpack_prior_step(priorStep, verbose)
         ks = [k0]
@@ -73,7 +92,7 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
             with record_function(f"[Integration] Butcher: k{ic+1}"):
                 if verbose:
                     print(f"[Integrator] Computing k{ic+1} with c={c:.4f} and a={current_as}")
-                k, r = updateStep(initialState, currentState, dt, f, *args, **kwargs)
+                k, r = updateStep(initialState, currentState, dt, f, *args, **_stageKwargs(ic + 1))
                 ks.append(k)
                 rs.append(r)
         
