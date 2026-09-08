@@ -62,7 +62,9 @@ def IMEXEuler(initial_state, dt, f, *args, solver: Optional[NonlinearSolver] = N
     aux = (explicit_aux, implicit_aux)
     finalizeSystem(new_state, initial_state, dt, aux, implicit_update,
                    lastStageSystem=last_stage, **kwargs)
-    return IntegrationResult(state=new_state, stages=[StageResult(aux=aux, update=implicit_update)])
+    return IntegrationResult(
+        state=new_state, stages=[StageResult(aux=aux, update=implicit_update)],
+        solver_diagnostics=solve_result.diagnostics)
 
 
 IMEXEuler.__name__ = 'IMEXEuler'

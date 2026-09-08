@@ -31,7 +31,7 @@ from .fields import (
     replace_integrated_fields,
     unflatten_integrated,
 )
-from .solvers import SolveResult
+from .solvers import SolveDiagnostics, SolveResult
 
 __all__ = ['fd_matvec', 'jvp_matvec', 'gmres', 'JFNKSolver']
 
@@ -363,6 +363,20 @@ class JFNKSolver:
                  newton_stagnation_patience: int = 2):
         if matvec not in ('fd', 'jvp'):
             raise ValueError(f"JFNKSolver needs matvec in ('fd', 'jvp'), got {matvec!r}")
+        if tol <= 0.0:
+            raise ValueError(f'JFNKSolver needs tol > 0, got {tol}')
+        if max_iterations < 1:
+            raise ValueError(f'JFNKSolver needs max_iterations >= 1, got {max_iterations}')
+        if not 0.0 < newton_stagnation_ratio <= 1.0:
+            raise ValueError(
+                'JFNKSolver needs newton_stagnation_ratio in (0, 1], '
+                f'got {newton_stagnation_ratio}'
+            )
+        if newton_stagnation_patience < 1:
+            raise ValueError(
+                'JFNKSolver needs newton_stagnation_patience >= 1, '
+                f'got {newton_stagnation_patience}'
+            )
         self.matvec = matvec
         self.tol = tol
         self.max_iterations = max_iterations
@@ -391,14 +405,21 @@ class JFNKSolver:
 
         Y = y0
         n = 0
+        total_gmres_iterations = 0
         best_norm = None
         stagnant_count = 0
         for _ in range(max_iterations):
             Y_step = step(Y)
             n += 1
             nv = norm_fn(Y, Y_step)
+            if not math.isfinite(nv):
+                return SolveResult(Y, False, n, SolveDiagnostics(
+                    residual=nv, gmres_iterations=total_gmres_iterations,
+                    rhs_evaluations=n, termination='invalid_residual'))
             if nv < newton_tol:
-                return SolveResult(Y_step, True, n)
+                return SolveResult(Y_step, True, n, SolveDiagnostics(
+                    residual=nv, gmres_iterations=total_gmres_iterations,
+                    rhs_evaluations=n, termination='tolerance'))
 
             if best_norm is not None:
                 if nv >= best_norm * stagnation_ratio:
@@ -408,7 +429,9 @@ class JFNKSolver:
                         # (resolution- and precision-dependent) floor, and
                         # nv is already the best correction reached; further
                         # iterations only re-measure the same noise.
-                        return SolveResult(Y_step, True, n)
+                        return SolveResult(Y_step, True, n, SolveDiagnostics(
+                            residual=nv, gmres_iterations=total_gmres_iterations,
+                            rhs_evaluations=n, termination='stagnation'))
                 else:
                     stagnant_count = 0
                 best_norm = min(best_norm, nv)
@@ -424,8 +447,12 @@ class JFNKSolver:
                 maxiter=gmres_maxiter if gmres_maxiter is not None else y_flat.numel(),
                 restart=gmres_restart,
             )
+            total_gmres_iterations += _gmres_iters
             Y = unflatten_integrated(y_flat + delta, Y)
 
         Y_step = step(Y)
         n += 1
-        return SolveResult(Y_step, norm_fn(Y, Y_step) < newton_tol, n)
+        residual = norm_fn(Y, Y_step)
+        return SolveResult(Y_step, residual < newton_tol, n, SolveDiagnostics(
+            residual=residual, gmres_iterations=total_gmres_iterations,
+            rhs_evaluations=n, termination='tolerance' if residual < newton_tol else 'max_iterations'))

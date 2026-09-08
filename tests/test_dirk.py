@@ -16,7 +16,10 @@ import torch
 from warpSPHIntegrators import FixedPointSolver, get_reference_state, getIntegrator, testing
 from warpSPHIntegrators.dirk import DIRK, getDIRKTableau
 
-DIRK_SCHEMES = ['Backward Euler (implicit)', 'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)', 'SDIRK2']
+DIRK_SCHEMES = [
+    'Backward Euler (implicit)', 'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)',
+    'SDIRK2', 'TR-BDF2',
+]
 
 
 def test_newmark_reaches_second_order_on_the_oscillator():
@@ -45,7 +48,7 @@ def test_newmark_rejects_invalid_beta_or_gamma(kwargs):
 # Tableau consistency (mirrors test_embedded.py's check for the explicit ones) #
 # --------------------------------------------------------------------------- #
 
-@pytest.mark.parametrize('name', ['backwardEuler', 'implicitMidpoint', 'trapezoidal', 'SDIRK2'])
+@pytest.mark.parametrize('name', ['backwardEuler', 'implicitMidpoint', 'trapezoidal', 'SDIRK2', 'TRBDF2'])
 def test_dirk_tableau_row_sums_match_c(name):
     tab = getDIRKTableau(name)
     for row, c in zip(tab.a, tab.c):
@@ -58,6 +61,12 @@ def test_sdirk2_is_l_stable_by_construction():
     tab = getDIRKTableau('SDIRK2')
     gamma = tab.a[0, 0]
     assert gamma ** 2 - 2 * gamma + 0.5 == pytest.approx(0.0, abs=1e-13)
+
+
+def test_trbdf2_satisfies_the_second_order_condition_and_is_stiffly_accurate():
+    tab = getDIRKTableau('TRBDF2')
+    assert tab.b @ tab.c == pytest.approx(0.5, abs=1e-13)
+    assert tab.a[-1] == pytest.approx(tab.b, abs=1e-13)
 
 
 def test_trapezoidal_first_stage_is_explicit():
@@ -188,6 +197,7 @@ def test_dirk_defaults_to_jfnk_on_a_stiff_backward_euler_stage():
     result = DIRK(prob.initial(), dt=dt, f=prob.rhs, tableau=getDIRKTableau('backwardEuler'))
     expected = 1.0 / (1.0 + dt ** 2 * k)
     assert float(get_reference_state(result.state).x[0]) == pytest.approx(expected, rel=1e-4)
+    assert result.solver_diagnostics[0].termination in {'tolerance', 'stagnation'}
 
 
 # --------------------------------------------------------------------------- #

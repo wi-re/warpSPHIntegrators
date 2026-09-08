@@ -302,3 +302,5 @@ def test_relaxed_fixed_point_solver_converges_on_a_state_contraction():
 
     result = solver.solve(step, initial)
     assert result.y.x.tolist() == pytest.approx([2.0], abs=1e-8)
+    assert result.diagnostics.termination == 'fixed_iterations'
+    assert result.diagnostics.gmres_iterations == 0

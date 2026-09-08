@@ -58,6 +58,23 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
             b=np.array([1.0 - gamma, gamma]),
             c=np.array([gamma, 1.0]),
         )
+    elif scheme == 'TRBDF2':
+        # TR-BDF2: a trapezoidal substep at gamma = 2-sqrt(2), followed by a
+        # variable-step BDF2 endpoint solve. Written as an SDIRK tableau, both
+        # implicit diagonals equal (1-gamma)/(2-gamma), making it L-stable and
+        # stiffly accurate. sum(b*c) = 1/2 verifies the order-2 condition.
+        gamma = 2.0 - np.sqrt(2.0)
+        diagonal = (1.0 - gamma) / (2.0 - gamma)
+        first_weight = 1.0 / (2.0 * (2.0 - gamma))
+        return butcherTableau(
+            a=np.array([
+                [0.0, 0.0, 0.0],
+                [gamma / 2.0, gamma / 2.0, 0.0],
+                [first_weight, first_weight, diagonal],
+            ]),
+            b=np.array([first_weight, first_weight, diagonal]),
+            c=np.array([0.0, gamma, 1.0]),
+        )
     else:
         raise ValueError(f"Unknown DIRK scheme {scheme}")
 
@@ -105,6 +122,7 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
     with record_function("[Integration] DIRK"):
         initializeSystem(initialState, dt, *args, **kwargs)
         ks, rs = [], []
+        solver_diagnostics = []
         stage_state = None
 
         for i, c_i in enumerate(tableau.c):
@@ -124,6 +142,7 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
                     # trapezoidal's first stage): no solve needed, k_i = f(t_i, base).
                     k_i, r_i = updateStep(initialState, base_state, dt, f, *args, **kwargs)
                     stage_state = base_state
+                    solver_diagnostics.append(None)
                 else:
                     box = {}
 
@@ -144,6 +163,7 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
                     if verbose:
                         print(f"[Integrator] DIRK stage {i}: solving Y = base + {a_ii:.4f}*dt*f(Y) at t={t_i:.4f}")
                     solve_result = solver.solve(step_fn, y0, norm, **solver_opts)
+                    solver_diagnostics.append(solve_result.diagnostics)
                     # `box['Y']`/`box['k']` come from the *last* `step_fn` call, i.e. the
                     # last RHS evaluation of this stage -- the same "buffer the last
                     # evaluation ran on" convention `butcher.RungeKuttaB` uses for its
@@ -184,7 +204,9 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
                 new_state.t = float(initialState.t + dt)
                 finalizeSystem(new_state, initialState, dt, rs, ks, tableau.b,
                                *args, lastStageSystem=lastStageState, **kwargs)
-                return IntegrationResult(state=new_state, stages=stages, history=_next_history())
+                return IntegrationResult(
+                    state=new_state, stages=stages, history=_next_history(),
+                    solver_diagnostics=solver_diagnostics)
 
             b_main, b_embedded = tableau.b
             new_state = _weighted_update(initialState, ks, b_main, dt, *args, **kwargs)
@@ -192,7 +214,9 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
             error = _error_estimate(initialState, ks, b_main, b_embedded, dt, *args, **kwargs)
             finalizeSystem(new_state, initialState, dt, rs, ks, b_main,
                            *args, lastStageSystem=lastStageState, **kwargs)
-            return IntegrationResult(state=new_state, stages=stages, error=error, history=_next_history())
+            return IntegrationResult(
+                state=new_state, stages=stages, error=error, history=_next_history(),
+                solver_diagnostics=solver_diagnostics)
 
 
 def dirkScheme(tableau_name: str, **tableau_kwargs):
@@ -221,3 +245,4 @@ backwardEuler = dirkScheme('backwardEuler')
 implicitMidpoint = dirkScheme('implicitMidpoint')
 trapezoidal = dirkScheme('trapezoidal')
 SDIRK2 = dirkScheme('SDIRK2')
+TRBDF2 = dirkScheme('TRBDF2')

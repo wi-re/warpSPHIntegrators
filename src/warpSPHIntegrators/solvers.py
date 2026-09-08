@@ -9,9 +9,20 @@ is written once against the protocol and gets a solver swapped under it without 
 rewrite -- that pluggability, not any one solver, is the point of landing this now.
 """
 
+from dataclasses import dataclass
 from typing import Any, Callable, NamedTuple, Optional, Protocol, runtime_checkable
 
 from .fields import flatten_integrated, unflatten_integrated
+
+
+@dataclass(frozen=True)
+class SolveDiagnostics:
+    """Observable outcome of one nonlinear solve."""
+
+    residual: Optional[float] = None
+    gmres_iterations: int = 0
+    rhs_evaluations: int = 0
+    termination: str = 'fixed_iterations'
 
 
 class SolveResult(NamedTuple):
@@ -22,6 +33,7 @@ class SolveResult(NamedTuple):
     #: with no `tol` reports "completed its schedule", not "met a tolerance".
     converged: bool
     iterations: int
+    diagnostics: Optional[SolveDiagnostics] = None
 
 
 @runtime_checkable
@@ -78,14 +90,20 @@ class FixedPointSolver:
         for _ in range(iterations):
             y_new = step(y)
             n += 1
-            if tol is not None and norm is not None and norm(y_new, y) < tol:
-                return SolveResult(y_new, True, n)
+            residual = norm(y_new, y) if norm is not None else None
+            if tol is not None and residual is not None and residual < tol:
+                return SolveResult(y_new, True, n, SolveDiagnostics(
+                    residual=residual, rhs_evaluations=n, termination='tolerance'))
             y = y_new
         # No `tol`: running to a fixed count *is* the contract, not a convergence
         # failure, so `converged=True` here means "completed its fixed schedule" --
         # the only claim this mode makes (NOTES.md S3.4 rung 1). With `tol` set but
         # never reached within `iterations`, it genuinely did not converge.
-        return SolveResult(y, tol is None, n)
+        return SolveResult(y, tol is None, n, SolveDiagnostics(
+            residual=residual if norm is not None else None,
+            rhs_evaluations=n,
+            termination='fixed_iterations' if tol is None else 'max_iterations',
+        ))
 
 
 class RelaxedFixedPointSolver(FixedPointSolver):
@@ -118,7 +136,13 @@ class RelaxedFixedPointSolver(FixedPointSolver):
             y_new = unflatten_integrated(
                 y_flat + relaxation * (flatten_integrated(y_step) - y_flat), y_step
             )
-            if tol is not None and norm is not None and norm(y_new, y) < tol:
-                return SolveResult(y_new, True, n)
+            residual = norm(y_new, y) if norm is not None else None
+            if tol is not None and residual is not None and residual < tol:
+                return SolveResult(y_new, True, n, SolveDiagnostics(
+                    residual=residual, rhs_evaluations=n, termination='tolerance'))
             y = y_new
-        return SolveResult(y, tol is None, iterations)
+        return SolveResult(y, tol is None, iterations, SolveDiagnostics(
+            residual=residual if norm is not None else None,
+            rhs_evaluations=iterations,
+            termination='fixed_iterations' if tol is None else 'max_iterations',
+        ))

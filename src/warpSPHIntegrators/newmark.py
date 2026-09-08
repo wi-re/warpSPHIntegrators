@@ -150,6 +150,7 @@ def newmark(state, dt, f, *args,
         state=new_state,
         stages=[StageResult(aux=last_r, update=last_update)],
         history=history,
+        solver_diagnostics=result.diagnostics,
     )
 
 

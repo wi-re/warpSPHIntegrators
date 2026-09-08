@@ -39,10 +39,10 @@ from .butcher import (
 from .verlet import leapFrog, symplecticEuler, velocityVerlet
 from .tvd import TVDRK3, TVDRK2
 from .ruth import PEFRL, VEFRL
-from .dirk import backwardEuler as implicitBackwardEuler, implicitMidpoint, trapezoidal, SDIRK2
+from .dirk import backwardEuler as implicitBackwardEuler, implicitMidpoint, trapezoidal, SDIRK2, TRBDF2
 from .newmark import newmark
 from .multistep import AB2, AB3, AB4, AB5, ABM2, ABM3, ABM4
-from .bdf import BDF1, BDF2
+from .bdf import BDF1, BDF2, BDF3
 from .imex import IMEXEuler
 from .reuse import step_reuse_analysis, step_reuse_order, supports_step_reuse, is_fsal
 
@@ -114,6 +114,9 @@ IntegrationSchemes.append(IntegrationScheme(
     SDIRK2, 'SDIRK2', IntegrationSchemeType.sdirk2, 2, True, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
 IntegrationSchemes.append(IntegrationScheme(
+    TRBDF2, 'TR-BDF2', IntegrationSchemeType.trbdf2, 2, True, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
     newmark, 'Newmark', IntegrationSchemeType.newmark, 2, True, True,
     implicit=True, steps=1, stiffly_accurate=False, stability='A'))
 IntegrationSchemes.append(IntegrationScheme(
@@ -122,6 +125,9 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     BDF2, 'BDF2', IntegrationSchemeType.bdf2, 2, True, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='A', startup_order=1))
+IntegrationSchemes.append(IntegrationScheme(
+    BDF3, 'BDF3', IntegrationSchemeType.bdf3, 3, True, True,
+    implicit=True, steps=2, stiffly_accurate=True, stability='A(alpha)', startup_order=3))
 IntegrationSchemes.append(IntegrationScheme(
     IMEXEuler, 'IMEX Euler', IntegrationSchemeType.imexEuler, 1, True, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='A'))

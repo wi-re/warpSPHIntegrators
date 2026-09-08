@@ -203,6 +203,33 @@ def test_jfnk_solver_converges_on_a_trivial_linear_fixed_point():
     assert isinstance(result, SolveResult)
     assert result.converged is True
     assert float(get_reference_state(result.y).x[0]) == pytest.approx(2.0, abs=1e-8)
+    assert result.diagnostics.termination == 'tolerance'
+    assert result.diagnostics.gmres_iterations > 0
+
+
+def test_jfnk_reports_a_nonfinite_residual_without_entering_gmres():
+    system = testing.PROBLEMS['oscillator']().initial()
+
+    def step(state):
+        out = state.initializeNewState()
+        get_reference_state(out).x.fill_(float('nan'))
+        return out
+
+    result = JFNKSolver().solve(step, system)
+    assert result.converged is False
+    assert result.diagnostics.termination == 'invalid_residual'
+    assert result.diagnostics.gmres_iterations == 0
+
+
+@pytest.mark.parametrize('kwargs', [
+    {'tol': 0.0},
+    {'max_iterations': 0},
+    {'newton_stagnation_ratio': 0.0},
+    {'newton_stagnation_patience': 0},
+])
+def test_jfnk_rejects_invalid_solver_configuration(kwargs):
+    with pytest.raises(ValueError):
+        JFNKSolver(**kwargs)
 
 
 # --------------------------------------------------------------------------- #

@@ -33,6 +33,7 @@ def _copy_integrated(destination, source):
 
 def _linear_combination(template, terms):
     """Return an initialized state whose integrated fields are ``sum(a_i * y_i)``."""
+    terms = tuple(terms)
     out = template.initializeNewState()
     out_ref = get_reference_state(out)
     names = integrated_field_names(template)
@@ -45,14 +46,27 @@ def _linear_combination(template, terms):
     return out
 
 
+def getBDFCoefficients(order: int):
+    """Return ``(state_weights, derivative_weight)`` newest state first."""
+    coefficients = {
+        1: ((1.0,), 1.0),
+        2: ((4.0 / 3.0, -1.0 / 3.0), 2.0 / 3.0),
+        3: ((18.0 / 11.0, -9.0 / 11.0, 2.0 / 11.0), 6.0 / 11.0),
+    }
+    try:
+        return coefficients[order]
+    except KeyError as exc:
+        raise ValueError(f'Only BDF1 through BDF3 are implemented, got order={order}') from exc
+
+
 def BDF(initial_state, dt, f, order: int, *args, history: Optional[StepHistory] = None,
         solver: Optional[NonlinearSolver] = None, **kwargs):
-    """One BDF1 or BDF2 step, using BDF1 until BDF2 has a previous state."""
-    if order not in (1, 2):
-        raise ValueError(f'Only BDF1 and BDF2 are implemented, got order={order}')
+    """One BDF1-BDF3 step, using a high-order starter until history is ready."""
+    state_weights, coefficient = getBDFCoefficients(order)
     reject_prior_step(f'BDF{order}', kwargs.pop('priorStep', None))
-    history = history if history is not None else StepHistory(maxlen=1)
-    if order == 2 and history.latest is None:
+    needed = order - 1
+    history = history if history is not None else StepHistory(maxlen=max(1, needed))
+    if len(history) < needed:
         starter_result = DormandPrince(initial_state, dt, f, *args, **kwargs)
         first_stage = starter_result.stages[0]
         starter_history = history.pushed(HistoryEntry(
@@ -66,14 +80,8 @@ def BDF(initial_state, dt, f, order: int, *args, history: Optional[StepHistory] 
         )
     initializeSystem(initial_state, dt, *args, **kwargs)
 
-    previous = history.latest.state if order == 2 and history.latest is not None else None
-    effective_order = 2 if previous is not None else 1
-    if effective_order == 1:
-        base_state = initial_state.initializeNewState(*args, **kwargs)
-        coefficient = 1.0
-    else:
-        base_state = _linear_combination(initial_state, ((4.0 / 3.0, initial_state), (-1.0 / 3.0, previous)))
-        coefficient = 2.0 / 3.0
+    previous_states = [entry.state for entry in reversed(history.entries)][:needed]
+    base_state = _linear_combination(initial_state, zip(state_weights, [initial_state, *previous_states]))
     base_state.t = float(initial_state.t + dt)
 
     def step(stage):
@@ -101,6 +109,7 @@ def BDF(initial_state, dt, f, order: int, *args, history: Optional[StepHistory] 
         state=new_state,
         stages=[StageResult(aux=last_aux, update=last_update)],
         history=new_history,
+        solver_diagnostics=solve_result.diagnostics,
     )
 
 
@@ -113,3 +122,4 @@ def bdfScheme(order: int):
 
 BDF1 = bdfScheme(1)
 BDF2 = bdfScheme(2)
+BDF3 = bdfScheme(3)

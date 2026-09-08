@@ -14,22 +14,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
+from warpSPHIntegrators.stability import bdf_is_stable, rk_is_stable
 from warpSPHIntegrators.integration import IntegrationSchemes
-
-
-def rk_stability_function(tableau, z):
-    identity = np.eye(len(tableau.c), dtype=complex)
-    ones = np.ones(len(tableau.c), dtype=complex)
-    weights = tableau.b[0] if isinstance(tableau.b, tuple) else tableau.b
-    return 1.0 + z * np.asarray(weights, dtype=complex) @ np.linalg.solve(identity - z * tableau.a, ones)
-
-
-def bdf_stable(order, z):
-    if order == 1:
-        roots = np.array([1.0 / (1.0 - z)])
-    else:
-        roots = np.roots([3.0 - 2.0 * z, -4.0, 1.0])
-    return np.max(np.abs(roots)) <= 1.0 + 1e-12
 
 
 def main():
@@ -49,7 +35,7 @@ def main():
         tableau = getattr(scheme.function, 'butcherTableau', getattr(scheme.function, 'dirkTableau', None))
         stable = np.empty(grid.shape, dtype=bool)
         for index, z in np.ndenumerate(grid):
-            stable[index] = abs(rk_stability_function(tableau, z)) <= 1.0
+            stable[index] = rk_is_stable(tableau, z)
         axis.contourf(real, imag, stable, levels=[-0.5, 0.5, 1.5], colors=['white', '#5b8f5a'])
         axis.contour(real, imag, stable, levels=[0.5], colors='#1d4d2d', linewidths=0.8)
         axis.axhline(0, color='black', linewidth=0.4)
@@ -63,9 +49,9 @@ def main():
     fig.savefig('images/dahlquist_stability_tableau_methods.png', dpi=200)
     plt.close(fig)
 
-    fig, axes = plt.subplots(1, 2, figsize=(10, 4.5))
-    for axis, order in zip(axes, (1, 2)):
-        stable = np.vectorize(lambda z: bdf_stable(order, z))(grid)
+    fig, axes = plt.subplots(1, 3, figsize=(14, 4.5))
+    for axis, order in zip(axes, (1, 2, 3)):
+        stable = np.vectorize(lambda z: bdf_is_stable(order, z))(grid)
         axis.contourf(real, imag, stable, levels=[-0.5, 0.5, 1.5], colors=['white', '#c68142'])
         axis.contour(real, imag, stable, levels=[0.5], colors='#7a3c09', linewidths=1.0)
         axis.axhline(0, color='black', linewidth=0.4)

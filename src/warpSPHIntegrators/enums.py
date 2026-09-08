@@ -52,3 +52,5 @@ class IntegrationSchemeType(Enum):
     bdf1 = 38
     bdf2 = 39
     imexEuler = 40
+    trbdf2 = 41
+    bdf3 = 42

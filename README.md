@@ -412,6 +412,60 @@ No linear multistep method is symplectic for a general Hamiltonian (Tang, 1993);
 `dissipation=True`. None implement `priorStep` reuse — that is a different, single-entry-lookback
 mechanism `history=`'s multi-entry `StepHistory` generalizes past, not an alternative spelling of it.
 
+## Supported Integrators
+
+This registry-aligned table is the short reference for every available scheme. Stability is the
+scalar Dahlquist classification when it applies. `yes` means the direct nonlinear Kepler
+symplectic-form test passes; `linear only` means the linear oscillator map preserves phase area,
+but the scheme is not generally symplectic. A `conditional` result assumes a separable,
+position-only Hamiltonian.
+
+| Scheme | Order | Kind | General Property | Symplectic |
+|---|---:|---|---|---|
+| Forward Euler | 1 | Explicit Euler | Baseline; bounded on $[-2,0]$ | no |
+| Explicit Euler | 1 | Explicit Euler | Baseline alias | no |
+| Midpoint | 2 | Explicit RK | General second-order RK | no |
+| Heun's Method (2nd order) | 2 | Explicit RK | General second-order RK | no |
+| Ralston's Method (2nd order) | 2 | Explicit RK | Low local-error constant | no |
+| RK3 | 3 | Explicit RK | General third-order RK | no |
+| Heun's Method (3rd order) | 3 | Explicit RK | General third-order RK | no |
+| Ralston's Method (3rd order) | 3 | Explicit RK | General third-order RK | no |
+| Wray's Method (3rd order) | 3 | Explicit RK | General third-order RK | no |
+| SSP RK3 | 3 | Explicit SSP RK | Strong-stability-preserving | no |
+| RK4 | 4 | Explicit RK | Classical fourth-order RK | no |
+| RK4 (alternative) | 4 | Explicit RK | 3/8-rule fourth-order RK | no |
+| Nystrom 5th order | 5 | Explicit RK | Fifth-order reference method | no |
+| Bogacki-Shampine 3(2) | 3 | Embedded explicit RK | Error estimate; FSAL | no |
+| Dormand-Prince 5(4) | 5 | Embedded explicit RK | Error estimate; FSAL | no |
+| Cash-Karp 5(4) | 5 | Embedded explicit RK | Error estimate | no |
+| Semi-Implicit Euler | 1 | Symplectic Euler | Lowest-cost geometric method | yes |
+| Symplectic Euler | 2 | Symplectic splitting | Second-order kick-drift-kick | yes |
+| Leap Frog | 2 | Symplectic splitting | $dt\omega\le2$; conditional | yes, conditional |
+| Velocity Verlet | 2 | Symplectic splitting | $dt\omega\le2$; conditional | yes, conditional |
+| PEFRL | 4 | Symplectic splitting | Forest-Ruth variant; conditional | yes, conditional |
+| VEFRL | 4 | Symplectic splitting | Forest-Ruth variant; conditional | yes, conditional |
+| EPEC | 2 | Explicit RK | Midpoint-style PECE | no |
+| EPEC Modified | 2 | Explicit RK | Heun-style PECE | no |
+| TVD RK2 | 2 | Explicit TVD RK | Conservative/TVD form | no |
+| TVD RK3 | 3 | Explicit TVD RK | Shu-Osher SSP form | no |
+| Backward Euler (implicit) | 1 | DIRK | L-stable | no |
+| Implicit Midpoint | 2 | DIRK | A-stable; strict solve for geometry | yes |
+| Trapezoidal (Crank-Nicolson) | 2 | DIRK | A-stable and symmetric | linear only |
+| SDIRK2 | 2 | DIRK | L-stable | no |
+| TR-BDF2 | 2 | DIRK | L-stable and stiffly accurate | no |
+| Newmark | 2 | Implicit second-order | Average acceleration is oscillator-unconditionally stable | linear only |
+| BDF1 | 1 | Implicit multistep | L-stable | no |
+| BDF2 | 2 | Implicit multistep | A-stable | no |
+| BDF3 | 3 | Implicit multistep | Sectorial A(alpha) stability | no |
+| IMEX Euler | 1 | IMEX | Explicit/implicit split, JFNK implicit side | no |
+| Adams-Bashforth 2 | 2 | Explicit multistep | One RHS evaluation after startup | no |
+| Adams-Bashforth 3 | 3 | Explicit multistep | One RHS evaluation after startup | no |
+| Adams-Bashforth 4 | 4 | Explicit multistep | One RHS evaluation after startup | no |
+| Adams-Bashforth 5 | 5 | Explicit multistep | One RHS evaluation after startup | no |
+| Adams-Bashforth-Moulton 2 (PECE) | 2 | Predictor-corrector | Two RHS evaluations after startup | no |
+| Adams-Bashforth-Moulton 3 (PECE) | 3 | Predictor-corrector | Two RHS evaluations after startup | no |
+| Adams-Bashforth-Moulton 4 (PECE) | 4 | Predictor-corrector | Two RHS evaluations after startup | no |
+
 ## First-stage reuse (`priorStep`)
 
 Passing `priorStep=result.stages[-1]` feeds the last stage of step *n* in as the first
@@ -494,7 +548,7 @@ tableaus and BDF coefficients.
 
 ![Dahlquist stability regions for implemented explicit and diagonally implicit tableau methods](images/dahlquist_stability_tableau_methods.png)
 
-![Dahlquist stability regions for BDF1 and BDF2](images/dahlquist_stability_bdf_methods.png)
+![Dahlquist stability regions for BDF1 through BDF3](images/dahlquist_stability_bdf_methods.png)
 
 Run `conda run -n warp python scripts/stability_gallery.py` to regenerate these
 figures. Newmark and the Verlet family are second-order oscillator methods, so their
@@ -502,6 +556,29 @@ relevant stability domain is parameterized by $dt^2\omega^2$, not scalar Dahlqui
 $z$. IMEX methods likewise have a two-parameter region $z_{explicit}, z_{implicit}$
 that depends on the caller's chosen split; plotting either as a one-parameter region
 would be misleading.
+
+![Undamped oscillator amplification stability for Newmark and Verlet-family methods](images/oscillator_stability_newmark_verlet.png)
+
+The plot uses the spectral radius of the linear oscillator amplification matrix in
+the dimensionless variable $dt\omega$. Leap Frog, Velocity Verlet, and Symplectic
+Euler are bounded through $dt\omega=2$; average-acceleration Newmark is unconditionally
+bounded for this undamped linear problem, while linear-acceleration Newmark is bounded
+through $dt\omega=\sqrt{12}$. Run `conda run -n warp python
+scripts/oscillator_stability_gallery.py` to regenerate it.
+
+## Symplecticity Validation
+
+The test suite checks symplecticity directly, not only through energy drift. On the
+one-degree-of-freedom oscillator it finite-differences every registered one-step map
+and asserts $\det(D\Phi_h)=1$ for the expected area-preserving methods. It additionally
+checks $D\Phi_h^T\Omega D\Phi_h=\Omega$ on nonlinear Kepler dynamics for Leap Frog,
+Velocity Verlet, Symplectic Euler, PEFRL, VEFRL, Semi-Implicit Euler, and implicit
+midpoint. Crank-Nicolson and average-acceleration Newmark preserve oscillator phase
+area but are deliberately excluded from the nonlinear symplectic set: that linear
+property does not establish general Hamiltonian symplecticity. The implicit checks
+use a strict JFNK tolerance; an intentionally truncated Picard solve or loose Newton
+termination approximates the map and cannot be expected to preserve its exact
+geometric invariants.
 
 ## API Reference
 
@@ -768,14 +845,15 @@ method runs.
 - **JFNK is matrix-free but not fixed-cost.** The default DIRK/Newmark Newton solve uses residual
     evaluations and GMRES iterations, so it is not CUDA-graph-capturable in the way explicit Picard is.
     `FixedPointSolver` and `RelaxedFixedPointSolver` remain opt-in alternatives for a fixed schedule.
-- **Fully implicit RK and BDF are not implemented.** Both need a different solver shape (a coupled
-  `s·N`-unknown or multi-state solve) than the sequential single-stage DIRK/multistep drivers here
-  provide — scoped in [NOTES.md §3.6](NOTES.md#36-valid-schemes-and-what-each-costs).
+- **Fully implicit RK is not implemented.** Gauss, Radau, and Lobatto methods need a coupled
+    `s·N`-unknown solve rather than the sequential DIRK solve. BDF1 and BDF2 are available; higher-order
+    BDF methods remain planned — scoped in [NOTES.md §3.6](NOTES.md#36-valid-schemes-and-what-each-costs).
 - **TR-BDF2 and ESDIRK3(2)4L[2]SA are not implemented**, despite being "tableau only" work on top of
   the existing DIRK driver — deliberately deferred rather than risk transcribing an unverified embedded
   pair's coefficients wrong in a way a smoke test wouldn't catch (NOTES.md §3.6).
-- **IMEX/additive RK is not implemented** — needs a split right-hand side (`f_explicit`, `f_implicit`),
-  a protocol change gated on a downstream that actually has the split (NOTES.md §3.6).
+- **High-order IMEX/additive RK is not implemented.** `IMEX Euler` is available through the explicit
+    `IMEXRHS(explicit=..., implicit=...)` callback bundle; ARK3/ARK4 schemes and their embedded error
+    estimators remain planned (NOTES.md §3.6).
 
 Explicit multistep (Adams-Bashforth/-Moulton) and four DIRK schemes (Backward Euler, Implicit
 Midpoint, Trapezoidal, SDIRK2) *are* implemented — see the two sections above. Everything still open

@@ -13,8 +13,9 @@ O(dt^p) band however long you integrate, while a dissipative one accumulates.
 """
 
 import pytest
+import torch
 
-from warpSPHIntegrators import getIntegrator, testing
+from warpSPHIntegrators import JFNKSolver, getIntegrator, get_reference_state, testing
 from warpSPHIntegrators.integration import IntegrationSchemes
 
 #: Short and long horizons over the same problem. The long one is 8x the short one,
@@ -33,7 +34,7 @@ UNSTABLE = {'Forward Euler', 'Explicit Euler'}
 #: flat 1.0 on `kepler`. The dissipative *direction* is not in question -- L-stability
 #: is what backward Euler is for -- only this particular growth-ratio test doesn't fit
 #: a scheme fast enough to hit its own floor.
-SATURATES_EARLY = {'Backward Euler (implicit)', 'BDF1', 'BDF2', 'IMEX Euler'}
+SATURATES_EARLY = {'Backward Euler (implicit)', 'BDF1', 'BDF2', 'IMEX Euler', 'TR-BDF2'}
 
 
 @pytest.mark.parametrize('problem_name', ['oscillator', 'kepler'])
@@ -85,3 +86,100 @@ def test_energy_band_narrows_with_the_step_size(name):
         f'{name}: halving dt took the energy band from {coarse:.3e} to {fine:.3e}, '
         f'which is not the O(dt^{s.order}) expected for an order-{s.order} scheme'
     )
+
+
+# In one degree of freedom, preserving dq wedge dp is exactly det(D Phi_h) = 1.
+# This is a direct property check rather than the indirect long-run energy proxy
+# above. A larger step separates high-order but non-symplectic RK methods from the
+# exactly area-preserving methods without pushing the explicit schemes unstable.
+LINEARLY_SYMPLECTIC = {
+    'Leap Frog', 'Symplectic Euler', 'Velocity Verlet', 'PEFRL', 'VEFRL',
+    'Semi-Implicit Euler', 'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)',
+    'Newmark',
+}
+NONLINEARLY_SYMPLECTIC = LINEARLY_SYMPLECTIC - {'Newmark', 'Trapezoidal (Crank-Nicolson)'}
+
+
+def _phase_map(scheme, problem, phase, dt, solver=None):
+    system = problem.initial()
+    state = get_reference_state(system)
+    state.x = torch.tensor([phase[0]], dtype=state.x.dtype)
+    state.u = torch.tensor([phase[1]], dtype=state.u.dtype)
+    result = scheme(system, dt=dt, f=problem.rhs, solver=solver) if solver else scheme(system, dt=dt, f=problem.rhs)
+    final = get_reference_state(result.state)
+    return torch.stack((final.x[0], final.u[0]))
+
+
+def _phase_jacobian(scheme, problem, phase=(0.7, -0.4), dt=0.5, epsilon=1e-4, solver=None):
+    columns = []
+    for index in range(2):
+        plus = list(phase)
+        minus = list(phase)
+        plus[index] += epsilon
+        minus[index] -= epsilon
+        columns.append((_phase_map(scheme, problem, plus, dt, solver) -
+                _phase_map(scheme, problem, minus, dt, solver)) / (2 * epsilon))
+    return torch.stack(columns, dim=1)
+
+
+@pytest.mark.parametrize('scheme', IntegrationSchemes, ids=lambda scheme: scheme.name)
+def test_every_scheme_has_the_expected_linear_oscillator_area_property(scheme):
+    solver = None
+    if scheme.name in {'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)', 'Newmark'}:
+        solver = JFNKSolver(tol=1e-12, gmres_tol=1e-12, newton_tol=1e-12, fd_eps=1e-6)
+    determinant = float(torch.linalg.det(_phase_jacobian(
+        scheme, testing.PROBLEMS['oscillator'](), solver=solver)))
+    defect = abs(determinant - 1.0)
+    if scheme.name in LINEARLY_SYMPLECTIC:
+        assert defect < 1e-7, (
+            f'{scheme.name} is expected to preserve oscillator phase area, '
+            f'but det(D Phi)={determinant:.9f}'
+        )
+    else:
+        assert defect > 1e-7, (
+            f'{scheme.name} unexpectedly looks symplectic on the oscillator; '
+            f'det(D Phi)={determinant:.9f}. Reclassify it deliberately if this is intended.'
+        )
+
+
+@pytest.mark.parametrize('name', ['Implicit Midpoint', 'Newmark'])
+def test_strict_jfnk_restores_linear_symplecticity(name):
+    solver = JFNKSolver(tol=1e-12, gmres_tol=1e-12, newton_tol=1e-12, fd_eps=1e-6)
+    determinant = float(torch.linalg.det(_phase_jacobian(
+        getIntegrator(name), testing.PROBLEMS['oscillator'](), solver=solver)))
+    assert abs(determinant - 1.0) < 1e-7
+
+
+def _kepler_map(scheme, phase, dt, epsilon=None):
+    problem = testing.PROBLEMS['kepler']()
+    system = problem.initial()
+    state = get_reference_state(system)
+    state.x = torch.tensor(phase[:2], dtype=state.x.dtype)
+    state.u = torch.tensor(phase[2:], dtype=state.u.dtype)
+    result = scheme(system, dt=dt, f=problem.rhs)
+    final = get_reference_state(result.state)
+    return torch.cat((final.x, final.u))
+
+
+def _kepler_symplectic_defect(scheme, dt=0.1, epsilon=1e-6):
+    phase = (1.0, 0.1, -0.1, 0.95)
+    columns = []
+    for index in range(4):
+        plus = list(phase)
+        minus = list(phase)
+        plus[index] += epsilon
+        minus[index] -= epsilon
+        columns.append((_kepler_map(scheme, plus, dt) - _kepler_map(scheme, minus, dt)) /
+                       (2 * epsilon))
+    jacobian = torch.stack(columns, dim=1)
+    zero = torch.zeros((2, 2), dtype=jacobian.dtype)
+    identity = torch.eye(2, dtype=jacobian.dtype)
+    omega = torch.cat((torch.cat((zero, identity), dim=1),
+                       torch.cat((-identity, zero), dim=1)), dim=0)
+    return float(torch.linalg.norm(jacobian.T @ omega @ jacobian - omega, ord=float('inf')))
+
+
+@pytest.mark.parametrize('name', sorted(NONLINEARLY_SYMPLECTIC))
+def test_symplectic_schemes_preserve_the_kepler_symplectic_form(name):
+    defect = _kepler_symplectic_defect(getIntegrator(name))
+    assert defect < 2e-6, f'{name}: ||D Phi^T Omega D Phi - Omega||_inf={defect:.3e}'

@@ -92,6 +92,8 @@ class IntegrationResult:
     stages: List[StageResult] = field(default_factory=list)
     error: Optional[Any] = None
     history: Optional[Any] = None
+    #: One diagnostics object per nonlinear stage, or one for a single-stage method.
+    solver_diagnostics: Optional[Any] = None
 
 
 def blend_state(

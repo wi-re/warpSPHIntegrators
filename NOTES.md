@@ -55,7 +55,7 @@ are gone.
 - **Packaging** (§2.4) — **done in `e327d8a`.** The top-level package is now
   `warpSPHIntegrators`, matching the distribution name; nothing is left open here
   beyond the version bump that should accompany the break.
-- **Multistep and implicit** (§3) — the two entries in the README's "Known
+- **Multistep and implicit** (§3) — the remaining entries in the README's "Known
   Limitations". Both are much cheaper here than for a general-purpose library, because
   the surrounding simulation does not resort particles, holds `dt` constant, and
   carries its neighbour list through the state (§3.0). **All three phases — 0 (§3.5),
@@ -72,8 +72,8 @@ are gone.
   from Dormand-Prince, thread `StepHistory`" design didn't need new machinery that
   could itself be wrong, and the full suite (1103 → 1380 passing tests) went green on
   the first run after fixing one pre-existing test's exclusion criteria. What remains
-  open in this area — TR-BDF2, ESDIRK3(2), fully implicit RK, BDF, IMEX/ARK, a stiff
-  `NonlinearSolver` (JFNK), adaptive `dt` — is each individually scoped in §3.6/§3.4
+  open in this area — TR-BDF2, ESDIRK3(2), fully implicit RK, BDF3-6, high-order
+  IMEX/ARK, and adaptive `dt` — is each individually scoped in §3.6/§3.4
   and gated on a concrete downstream need, per the recommendation at the end of §3.8;
   none of it is a groundwork gap the way Phase 0 was.
 - **A finding, not a defect:** Leap Frog, Velocity Verlet, PEFRL and VEFRL are only

@@ -2,18 +2,21 @@ import pytest
 
 from warpSPHIntegrators import getIntegrator, testing
 from warpSPHIntegrators.history import StepHistory
+from warpSPHIntegrators.bdf import getBDFCoefficients
 
 
 def _run(scheme, problem, dt, T):
     system = problem.initial()
-    history = StepHistory(maxlen=1)
+    history = StepHistory(maxlen=max(1, scheme.steps))
     for _ in range(int(round(T / dt))):
         result = scheme(system, dt=dt, f=problem.rhs, history=history)
         system, history = result.state, result.history
     return system
 
 
-@pytest.mark.parametrize(('name', 'expected_order'), [('BDF1', 1), ('BDF2', 2)])
+@pytest.mark.parametrize(('name', 'expected_order'), [
+    ('BDF1', 1), ('BDF2', 2), ('BDF3', 3),
+])
 @pytest.mark.parametrize('problem_name', ['oscillator', 'forced'])
 def test_bdf_reaches_its_claimed_order_with_threaded_history(name, expected_order, problem_name):
     scheme = getIntegrator(name)
@@ -27,6 +30,14 @@ def test_bdf_reaches_its_claimed_order_with_threaded_history(name, expected_orde
         errors.append(sum(abs(a - b) for a, b in zip(ref.x.tolist(), exact_x)) +
                       sum(abs(a - b) for a, b in zip(ref.u.tolist(), exact_u)))
     assert testing.measured_order(errors, dts) == pytest.approx(expected_order, abs=0.15)
+
+
+@pytest.mark.parametrize('order', [1, 2, 3])
+def test_bdf_coefficients_are_consistent(order):
+    state_weights, derivative_weight = getBDFCoefficients(order)
+    assert len(state_weights) == order
+    assert sum(state_weights) == pytest.approx(1.0)
+    assert sum((index + 1) * weight for index, weight in enumerate(state_weights)) == pytest.approx(derivative_weight)
 
 
 def test_bdf2_without_history_uses_a_safe_high_order_startup():
