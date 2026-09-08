@@ -45,8 +45,11 @@ from .fields import (
     replace_integrated_fields,
 )
 from .history import HistoryEntry, StepHistory
-from .solvers import NonlinearSolver, FixedPointSolver, SolveResult
+from .solvers import NonlinearSolver, FixedPointSolver, RelaxedFixedPointSolver, SolveResult
 from .jfnk import JFNKSolver, fd_matvec, jvp_matvec, gmres
+from .bdf import BDF1, BDF2
+from .imex import IMEXEuler
+from .newmark import newmark, newmark_average_acceleration, newmark_linear_acceleration
 
 from .util import IntegrationSchemeType
 
@@ -91,16 +94,24 @@ __all__ = [
     "StepHistory",
     "NonlinearSolver",
     "FixedPointSolver",
+    "RelaxedFixedPointSolver",
     "SolveResult",
     "JFNKSolver",
     "fd_matvec",
     "jvp_matvec",
     "gmres",
+    "BDF1",
+    "BDF2",
+    "IMEXEuler",
+    "newmark",
+    "newmark_average_acceleration",
+    "newmark_linear_acceleration",
     "StateBlend",
     "ComponentUpdateSpec",
     "PositionUpdateSpec",
     "StageResult",
     "StepEvaluation",
+    "IMEXRHS",
     "IntegrationResult",
     "blend_state",
     "explicit_step",

@@ -5,9 +5,9 @@ change: accumulating a stage's explicit contribution `sum_{j<i} a_ij k_j`
 (`updateStateEuler`, the same helper the explicit path uses), the final b-weighted
 update and finalize (`_weighted_update`, `finalizeSystem`), and embedded-pair error
 estimation (`_error_estimate`). The only new piece is closing each stage's diagonal
-term through a `NonlinearSolver` (`FixedPointSolver` by default, per NOTES.md S3.1's
-own measurement that two fixed Picard iterations reach full order for a second-order
-tableau): a DIRK stage equation `Y_i = y^n + dt*sum_{j<=i} a_ij k_j(Y_j)`, with
+term through a `NonlinearSolver` (`JFNKSolver` by default, with fixed-count Picard
+available as an explicit low-overhead override): a DIRK stage equation
+`Y_i = y^n + dt*sum_{j<=i} a_ij k_j(Y_j)`, with
 `k_i = f(t_i, Y_i)`, is exactly the fixed-point form `NonlinearSolver.solve` expects
 once the explicit part is folded into a `base_state` and the diagonal term is
 expressed as a function of the still-unknown `Y_i`.
@@ -27,8 +27,9 @@ import numpy as np
 from torch.profiler import record_function
 
 from .butcher import _error_estimate, _weighted_update, butcherTableau
-from .fields import state_difference, state_norm
+from .fields import get_reference_state, integrated_field_names, state_difference, state_norm
 from .history import HistoryEntry
+from .jfnk import JFNKSolver
 from .solvers import FixedPointSolver, NonlinearSolver
 from .specs import IntegrationResult, StageResult
 from .util import finalizeSystem, initializeSystem, reject_prior_step, updateStateEuler, updateStep
@@ -95,10 +96,10 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
     a caller's own explicit `solver_opts['newton_tol']` still wins.
     """
     verbose = bool(kwargs.get('verbose', False))
-    solver = solver or FixedPointSolver(iterations=2)
+    solver = solver or JFNKSolver()
     history = kwargs.pop('history', None)
     reject_prior_step(name, kwargs.pop('priorStep', None))
-    solver_opts = {'newton_tol': 1e-3, **kwargs.get('solver_opts', {})}
+    solver_opts = kwargs.get('solver_opts', {})
     norm = _default_norm(kwargs.get('rtol', 1e-3), kwargs.get('atol', 1e-6))
 
     with record_function("[Integration] DIRK"):
@@ -142,7 +143,7 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
                     y0.t = t_i
                     if verbose:
                         print(f"[Integrator] DIRK stage {i}: solving Y = base + {a_ii:.4f}*dt*f(Y) at t={t_i:.4f}")
-                    solver.solve(step_fn, y0, norm, **solver_opts)
+                    solve_result = solver.solve(step_fn, y0, norm, **solver_opts)
                     # `box['Y']`/`box['k']` come from the *last* `step_fn` call, i.e. the
                     # last RHS evaluation of this stage -- the same "buffer the last
                     # evaluation ran on" convention `butcher.RungeKuttaB` uses for its
@@ -150,8 +151,20 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
                     # construction (that is what `step_fn` just returned), so `(k_i,
                     # box['Y'])` satisfy the stage equation the way a converged Picard
                     # iterate is supposed to, not an approximation one iteration behind.
-                    k_i, r_i = box['k'], box['r']
-                    stage_state = box['Y']
+                    if isinstance(solver, JFNKSolver):
+                        # Finite-difference Krylov probes use isolated cloned states,
+                        # so re-evaluate the converged stage on this driver's buffer.
+                        # That gives copied fields their standard last-stage lifecycle.
+                        stage_state = base_state
+                        solved_ref = get_reference_state(solve_result.y)
+                        stage_ref = get_reference_state(stage_state)
+                        for field_name in integrated_field_names(solve_result.y):
+                            setattr(stage_ref, field_name, getattr(solved_ref, field_name))
+                        stage_state.t = t_i
+                        k_i, r_i = updateStep(initialState, stage_state, dt, f, *args, **kwargs)
+                    else:
+                        k_i, r_i = box['k'], box['r']
+                        stage_state = box['Y']
 
                 ks.append(k_i)
                 rs.append(r_i)

@@ -18,12 +18,13 @@ from .specs import StageResult
 
 
 class HistoryEntry(NamedTuple):
-    """One remembered stage: the derivative ``update`` (and its ``aux``) at ``t``."""
+    """One remembered stage, with an optional prior-state snapshot for BDF methods."""
 
     t: float
     dt: float
     update: Any
     aux: Any = None
+    state: Any = None
 
     def as_prior_step(self) -> StageResult:
         """The ``priorStep=`` shape schemes already accept."""

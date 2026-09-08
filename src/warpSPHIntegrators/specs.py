@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, List, Optional, Union, NamedTuple
+from typing import Any, Callable, List, Optional, Union, NamedTuple
 
 
 StepSize = Union[float, List[float]]
@@ -56,6 +56,18 @@ class StageResult(NamedTuple):
 class StepEvaluation:
     update: Any
     aux: Any = None
+
+
+@dataclass(frozen=True)
+class IMEXRHS:
+    """Explicit and implicit right-hand-side callables for IMEX schemes.
+
+    A regular callable remains a fully implicit RHS, preserving the universal
+    ``f(state, dt) -> update[, aux]`` convention used by all other schemes.
+    """
+
+    explicit: Callable
+    implicit: Callable
 
 
 @dataclass(frozen=True)

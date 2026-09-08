@@ -40,7 +40,10 @@ from .verlet import leapFrog, symplecticEuler, velocityVerlet
 from .tvd import TVDRK3, TVDRK2
 from .ruth import PEFRL, VEFRL
 from .dirk import backwardEuler as implicitBackwardEuler, implicitMidpoint, trapezoidal, SDIRK2
+from .newmark import newmark
 from .multistep import AB2, AB3, AB4, AB5, ABM2, ABM3, ABM4
+from .bdf import BDF1, BDF2
+from .imex import IMEXEuler
 from .reuse import step_reuse_analysis, step_reuse_order, supports_step_reuse, is_fsal
 
 semiImplicitEuler = lambda state, dt, f, *args, **kwargs: integrateSemiImplicitEuler(state, dt, f, *args, **kwargs)
@@ -94,24 +97,15 @@ IntegrationSchemes.append(IntegrationScheme(semiImplicitEuler, 'Semi-Implicit Eu
 IntegrationSchemes.append(IntegrationScheme(explicitEuler, 'Explicit Euler', IntegrationSchemeType.explicitEuler, 1, True, True))
 
 # ---- Diagonally implicit (NOTES.md S3.6 Phase 2) -------------------------- #
-# `dissipation` describes measured behaviour under the *shipped* default
-# (FixedPointSolver, 2 fixed Picard iterations -- see NOTES.md S3.1), not the
-# mathematical property of the exact method. Implicit midpoint IS the textbook
-# symplectic Gauss-Legendre s=1 method when its stage equation is solved to
-# convergence, but 2 fixed Picard iterations leave a real, uncorrected residual, and
-# `test_hamiltonian.py::test_dissipation_flag_predicts_energy_behaviour` measures that
-# residual growing secularly (energy error ~9x over an 8x-longer run at the shipped
-# default), the same signature as every other non-symplectic scheme here -- confirmed
-# by a separate check that the *bound* recovers (drift -> ~1e-15, stays flat with T)
-# once the solver is configured with enough iterations (~16) to actually converge.
-# So this is registered True, honestly reflecting what a caller gets by default; pass
-# a more-converged `solver=FixedPointSolver(iterations=...)` to recover the textbook
-# symplectic behaviour for a long run, at the cost of more force evaluations per step.
+# JFNK is the default nonlinear solve, so these flags describe the converged method
+# rather than an uncorrected fixed-count Picard iterate. Implicit midpoint is the
+# symplectic Gauss-Legendre s=1 method once its stage equation is solved; the other
+# implicit schemes retain their ordinary dissipative classifications.
 IntegrationSchemes.append(IntegrationScheme(
     implicitBackwardEuler, 'Backward Euler (implicit)', IntegrationSchemeType.backwardEuler, 1, True, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
 IntegrationSchemes.append(IntegrationScheme(
-    implicitMidpoint, 'Implicit Midpoint', IntegrationSchemeType.implicitMidpoint, 2, True, True,
+    implicitMidpoint, 'Implicit Midpoint', IntegrationSchemeType.implicitMidpoint, 2, False, False,
     implicit=True, steps=1, stiffly_accurate=False, stability='A'))
 IntegrationSchemes.append(IntegrationScheme(
     trapezoidal, 'Trapezoidal (Crank-Nicolson)', IntegrationSchemeType.trapezoidal, 2, True, True,
@@ -119,6 +113,18 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     SDIRK2, 'SDIRK2', IntegrationSchemeType.sdirk2, 2, True, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    newmark, 'Newmark', IntegrationSchemeType.newmark, 2, True, True,
+    implicit=True, steps=1, stiffly_accurate=False, stability='A'))
+IntegrationSchemes.append(IntegrationScheme(
+    BDF1, 'BDF1', IntegrationSchemeType.bdf1, 1, True, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L', startup_order=1))
+IntegrationSchemes.append(IntegrationScheme(
+    BDF2, 'BDF2', IntegrationSchemeType.bdf2, 2, True, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='A', startup_order=1))
+IntegrationSchemes.append(IntegrationScheme(
+    IMEXEuler, 'IMEX Euler', IntegrationSchemeType.imexEuler, 1, True, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='A'))
 
 # ---- Explicit linear multistep (NOTES.md S3.6 Phase 1) -------------------- #
 # `dissipation=True` for all seven, measured directly (max relative energy error on

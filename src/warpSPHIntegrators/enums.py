@@ -48,3 +48,7 @@ class IntegrationSchemeType(Enum):
     abm2 = 34
     abm3 = 35
     abm4 = 36
+    newmark = 37
+    bdf1 = 38
+    bdf2 = 39
+    imexEuler = 40

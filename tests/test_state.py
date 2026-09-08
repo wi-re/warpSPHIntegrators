@@ -122,7 +122,8 @@ def _stage_times(scheme, dt, steps, t0=0.0):
 #: (c[0]=gamma); trapezoidal's first stage has a[0,0]=0 (explicit) so it is exempt from
 #: this set, same as every explicit RK scheme.
 DRIFT_BEFORE_FIRST_EVALUATION = {
-    'PEFRL', 'Backward Euler (implicit)', 'Implicit Midpoint', 'SDIRK2',
+    'PEFRL', 'Backward Euler (implicit)', 'Implicit Midpoint', 'SDIRK2', 'BDF1',
+    'IMEX Euler',
 }
 
 

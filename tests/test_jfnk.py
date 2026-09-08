@@ -223,6 +223,7 @@ def test_jfnk_reproduces_exact_backward_euler_where_picard_diverges():
     tab = getDIRKTableau('backwardEuler')
 
     result_picard = DIRK(prob.initial(), dt=dt, f=prob.rhs, tableau=tab,
+                         solver=FixedPointSolver(),
                          solver_opts={'iterations': 20})
     x_picard = abs(float(get_reference_state(result_picard.state).x[0]))
     assert x_picard > 1e30, f'expected Picard(20) to still be astronomically wrong here, got {x_picard:.3e}'

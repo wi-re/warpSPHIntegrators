@@ -298,24 +298,32 @@ order**. Symplectic Euler does not; it keeps second order either way.
 
 ### Diagonally Implicit (DIRK) Methods
 
-Each stage's implicit diagonal term is closed with a `NonlinearSolver` — `FixedPointSolver`
-(fixed-count Picard) by default, `iterations=2` — rather than an iteration-to-tolerance solve, so
-these are differentiable in both backends by construction and CUDA-graph-capturable. None of
-these implement `priorStep` reuse yet. See [NOTES.md §3.6](NOTES.md#36-valid-schemes-and-what-each-costs)
-for the derivation and two findings worth reading before relying on the defaults:
+Each stage's implicit diagonal term is closed with a `NonlinearSolver`. The default is
+`JFNKSolver`, which uses an inexact Newton solve with matrix-free GMRES and finite-difference
+Jacobian-vector products, so it can converge where Picard iteration diverges. For a fixed-depth,
+CUDA-graph-capturable non-stiff solve, explicitly pass `FixedPointSolver(iterations=...)` or the
+damped `RelaxedFixedPointSolver(relaxation=..., iterations=...)`. None of these implement
+`priorStep` reuse yet. See [NOTES.md §3.6](NOTES.md#36-valid-schemes-and-what-each-costs) for
+the derivation and the remaining scheme work:
 
 | Scheme | Order | Stability | Use Case |
 |--------|-------|-----------|----------|
 | **Backward Euler (implicit)** | 1 | L | Reference/fallback; heavily damping |
-| **Implicit Midpoint** | 2 | A, symplectic *only when solved to convergence* | See the note below — `dissipation=True` at the shipped default |
+| **Implicit Midpoint** | 2 | A, symplectic | JFNK converges the stage equation by default |
 | **Trapezoidal (Crank-Nicolson)** | 2 | A, not L | Classic pair with BDF2; symmetric |
 | **SDIRK2** | 2 | L | L-stability for real stiffness |
+| **Newmark** | 2 | A | Second-order structural dynamics update; JFNK closure through the repo's implicit solver API |
 
-**Implicit Midpoint's registered `dissipation=True` reflects measured behaviour at the shipped
-2-iteration default, not the exact method's textbook symplectic property.** At `iterations=2` its
-long-run energy error grows secularly (~9x over an 8x-longer run); the textbook bound (drift → machine
-precision, flat with `T`) returns once the solver is configured with enough iterations to actually
-converge:
+```python
+from warpSPHIntegrators import getIntegrator
+
+scheme = getIntegrator('Newmark')
+result = scheme(system, dt=dt, f=rhs, beta=0.25, gamma=0.5)
+```
+
+**Implicit Midpoint is registered as non-dissipative because JFNK converges its stage equation by
+default.** Its textbook symplectic energy bound (drift near machine precision and flat with `T`)
+depends on that nonlinear convergence. An explicit low-cost Picard override is still available:
 
 ```python
 from warpSPHIntegrators import FixedPointSolver, getIntegrator
@@ -324,14 +332,14 @@ scheme = getIntegrator('Implicit Midpoint')
 result = scheme(system, dt=dt, f=rhs, solver=FixedPointSolver(iterations=16))
 ```
 
-The default is still the right choice for the common case — it reaches the claimed *convergence
-order* exactly, and the extra iterations only matter for a long run where the qualitative energy
-behaviour is what you are relying on.
+Use this override only when its fixed cost matters more than the converged method's qualitative
+energy behaviour.
 
 **A fixed-count Picard solve is not a stiff solver at any iteration count**: L-stability is a
-property of the exact method, not of a truncated iterate, and a stiff problem (`dt·ω ≳ 1`) makes a
-low-iteration Picard solve wrong, and more iterations of it explosively wrong, regardless of which
-tableau you picked. There is no stiff solver in this library yet — see NOTES.md §3.4's ladder.
+property of the exact method, not of a truncated iterate, and a stiff problem (`dt·omega ≳ 1`) makes
+a low-iteration Picard solve wrong, and more iterations of it explosively wrong, regardless of which
+tableau you picked. The default JFNK path resolves this with a matrix-free Newton correction; relaxed
+Picard can only improve the non-stiff regime, not replace Newton for stiff systems.
 
 ### Explicit Multistep (Adams-Bashforth / Adams-Bashforth-Moulton)
 
@@ -358,6 +366,46 @@ cost every step rather than getting a wrong answer.
 | Scheme | Order | Evaluations/step | History needed | Use Case |
 |--------|-------|-------------------|-----------------|----------|
 | **Adams-Bashforth 2–5** | 2–5 | **1** | order − 1 | One force evaluation per step regardless of order — the real prize of multistep |
+
+### Implicit Multistep (BDF)
+
+`BDF1` and `BDF2` use the same matrix-free JFNK closure as the DIRK methods. BDF2
+needs a previous-state snapshot, so thread `IntegrationResult.history` between steps;
+without it, it safely uses the repository's Dormand-Prince 5(4) starter rather than
+silently dropping to first order.
+
+```python
+from warpSPHIntegrators import StepHistory, getIntegrator
+
+scheme = getIntegrator('BDF2')
+history = StepHistory(maxlen=1)
+for _ in range(n_steps):
+    result = scheme(system, dt=dt, f=rhs, history=history)
+    system, history = result.state, result.history
+```
+
+| Scheme | Order | Stability | Use Case |
+|--------|-------|-----------|----------|
+| **BDF1** | 1 | L | Backward-Euler form for strongly damped stiff modes |
+| **BDF2** | 2 | A | General stiff integration when a one-step history is acceptable |
+
+### IMEX Euler
+
+`IMEX Euler` is the first split explicit-implicit scheme. It accepts an ordinary
+RHS exactly like every other implicit method and treats that complete update as
+implicit. To split terms, pass an `IMEXRHS` bundle; this avoids overloading the
+existing `(update, aux)` RHS return convention.
+
+```python
+from warpSPHIntegrators import IMEXRHS, getIntegrator
+
+scheme = getIntegrator('IMEX Euler')
+rhs = IMEXRHS(explicit=transport_rhs, implicit=diffusion_rhs)
+result = scheme(system, dt=dt, f=rhs)
+```
+
+The explicit callback is evaluated from the known state once per step. Only the
+implicit callback is evaluated inside the JFNK nonlinear solve.
 | **Adams-Bashforth-Moulton 2–4 (PECE)** | 2–4 | 2 | order − 1 | Predict-Evaluate-Correct-Evaluate; a fixed (uniterated) correction |
 
 No linear multistep method is symplectic for a general Hamiltonian (Tang, 1993); all seven measure
@@ -422,6 +470,38 @@ The visualization shows:
 | 3 | ![Modified harmonic oscillator: order 3 integrators](images/modified_harmonic_oscillator_order_3_integrators.png) | ![Integrator comparison for order 3](images/integrator_comparison_order_3.png) |
 | 4 | ![Modified harmonic oscillator: order 4 integrators](images/modified_harmonic_oscillator_order_4_integrators.png) | ![Integrator comparison for order 4](images/integrator_comparison_order_4.png) |
 | 5 | ![Modified harmonic oscillator: order 5 integrators](images/modified_harmonic_oscillator_order_5_integrators.png) | ![Integrator comparison for order 5](images/integrator_comparison_order_5.png) |
+
+### Newmark demo figures for the default oscillator case
+
+These match the gallery style used for the drift / phase plots of the other schemes, but specifically highlight the second-order Newmark family on the repo’s default oscillator demo.
+
+| Plot | Figure |
+|------|--------|
+| Modified oscillator with the second-order family | ![Newmark family on the default oscillator demo](images/newmark_modified_harmonic_oscillator_order_2_integrators.png) |
+| Difference from the reference 5th-order solver | ![Newmark difference plot against the reference Nystrom 5th-order scheme](images/newmark_integrator_comparison_order_2.png) |
+
+### All implicit schemes on the default oscillator case
+
+![Phase, position, hidden-energy, and reference-energy comparison for every implicit scheme](images/all_implicit_schemes_default_demo.png)
+
+## Stability Regions and Stiff Problems
+
+For the Dahlquist test equation $y' = \lambda y$, a stability region is the set of
+$z = dt\lambda$ for which the numerical solution stays bounded. The green region in
+the tableau plot and the orange region in the BDF plot are the computed regions for
+the methods' propagated solutions; they serve as a regression check on the registered
+tableaus and BDF coefficients.
+
+![Dahlquist stability regions for implemented explicit and diagonally implicit tableau methods](images/dahlquist_stability_tableau_methods.png)
+
+![Dahlquist stability regions for BDF1 and BDF2](images/dahlquist_stability_bdf_methods.png)
+
+Run `conda run -n warp python scripts/stability_gallery.py` to regenerate these
+figures. Newmark and the Verlet family are second-order oscillator methods, so their
+relevant stability domain is parameterized by $dt^2\omega^2$, not scalar Dahlquist
+$z$. IMEX methods likewise have a two-parameter region $z_{explicit}, z_{implicit}$
+that depends on the caller's chosen split; plotting either as a one-parameter region
+would be misleading.
 
 ## API Reference
 
@@ -685,10 +765,9 @@ method runs.
 - **Adaptive step-size control not built-in** (use external error estimators; the embedded pairs'
   `IntegrationResult.error` gives you the estimate, the driving loop and step-rejection path are not
   written yet — NOTES.md §2.3).
-- **No stiff solver.** The DIRK schemes' `FixedPointSolver` default is a fixed-count Picard iteration,
-  not a stiff solver at any iteration count — see the [Diagonally Implicit Methods](#diagonally-implicit-dirk-methods)
-  section above. JFNK (finite-difference Jacobian-vector products, no forward-mode AD needed) is
-  designed but not implemented — NOTES.md §3.4.
+- **JFNK is matrix-free but not fixed-cost.** The default DIRK/Newmark Newton solve uses residual
+    evaluations and GMRES iterations, so it is not CUDA-graph-capturable in the way explicit Picard is.
+    `FixedPointSolver` and `RelaxedFixedPointSolver` remain opt-in alternatives for a fixed schedule.
 - **Fully implicit RK and BDF are not implemented.** Both need a different solver shape (a coupled
   `s·N`-unknown or multi-state solve) than the sequential single-stage DIRK/multistep drivers here
   provide — scoped in [NOTES.md §3.6](NOTES.md#36-valid-schemes-and-what-each-costs).

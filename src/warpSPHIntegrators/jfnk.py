@@ -13,9 +13,9 @@ differences (``fd_matvec``, A2, works for any ``step``) or, when ``step`` is bui
 entirely from warpSPHCore's six JVP-wrapped operators, by an exact forward-mode
 directional derivative (``jvp_matvec``, A3).
 
-Opt-in only (JFNK_PLAN.md A5, resolved 2026-08-24): ``FixedPointSolver`` stays the
-registry default for every DIRK scheme; pass ``solver=JFNKSolver()`` to a driver
-call explicitly to use this instead.
+``JFNKSolver`` is the default nonlinear solver for registered DIRK and Newmark
+schemes. Callers who need a fixed-depth, CUDA-graph-capturable solve can explicitly
+select ``FixedPointSolver`` or ``RelaxedFixedPointSolver`` instead.
 """
 
 import math
@@ -292,11 +292,9 @@ class JFNKSolver:
     (NOTES.md S4) so a DIRK driver can swap it in for ``FixedPointSolver`` with no
     other change (JFNK_PLAN.md A5).
 
-    Opt-in only, never a registry default (JFNK_PLAN.md A5's own resolution,
-    2026-08-24): ``FixedPointSolver`` already handles the non-stiff regime well
-    for free (no norm, no Jacobian, no branching, CUDA-graph-capturable); this is
-    for the stiff regime ``FixedPointSolver``'s own docstring says needs a
-    Newton-based solver instead of more Picard iterations.
+    The default solver for registered DIRK and Newmark schemes. ``FixedPointSolver``
+    remains available for a fixed-depth, CUDA-graph-capturable non-stiff solve, but
+    this Newton-based path is required once the Picard map is no longer contractive.
 
     Each outer iteration evaluates ``step(Y)`` once, checks convergence, and (if
     not yet converged) computes one Newton correction via GMRES against a

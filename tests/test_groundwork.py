@@ -14,6 +14,7 @@ import torch
 from warpSPHIntegrators import (
     BaseState,
     FixedPointSolver,
+    RelaxedFixedPointSolver,
     HistoryEntry,
     IntegrationScheme,
     StepHistory,
@@ -288,3 +289,16 @@ def test_fixed_point_solver_reports_not_converged_when_tol_is_never_met():
         lambda y: 0.5 * y + 1.0, y0=0.0, norm=norm, tol=1e-300)
     assert result.converged is False
     assert result.iterations == 2
+
+
+def test_relaxed_fixed_point_solver_converges_on_a_state_contraction():
+    solver = RelaxedFixedPointSolver(relaxation=0.5, iterations=80)
+    initial = _mixed([0.0])
+
+    def step(state):
+        out = state.initializeNewState()
+        out.x = 0.5 * state.x + 1.0
+        return out
+
+    result = solver.solve(step, initial)
+    assert result.y.x.tolist() == pytest.approx([2.0], abs=1e-8)

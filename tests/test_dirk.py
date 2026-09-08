@@ -19,6 +19,28 @@ from warpSPHIntegrators.dirk import DIRK, getDIRKTableau
 DIRK_SCHEMES = ['Backward Euler (implicit)', 'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)', 'SDIRK2']
 
 
+def test_newmark_reaches_second_order_on_the_oscillator():
+    s = getIntegrator('Newmark')
+    prob = testing.PROBLEMS['oscillator']()
+    dts = testing.default_step_sizes(0.1, 5)
+    order, errors = testing.convergence(s, prob, dts, T=2.0)
+    assert order == pytest.approx(2.0, abs=0.15), (
+        f'Newmark on oscillator: measured order {order:.3f}, expected 2. errors={errors}'
+    )
+
+
+@pytest.mark.parametrize('kwargs', [
+    {'beta': -0.1},
+    {'gamma': -0.1},
+    {'beta': 1.1},
+    {'gamma': 1.1},
+])
+def test_newmark_rejects_invalid_beta_or_gamma(kwargs):
+    prob = testing.PROBLEMS['oscillator']()
+    with pytest.raises(ValueError, match='beta|gamma'):
+        getIntegrator('Newmark')(prob.initial(), dt=0.1, f=prob.rhs, **kwargs)
+
+
 # --------------------------------------------------------------------------- #
 # Tableau consistency (mirrors test_embedded.py's check for the explicit ones) #
 # --------------------------------------------------------------------------- #
@@ -86,6 +108,7 @@ def test_picard_diverges_on_a_stiff_problem_regardless_of_tableau_stability():
     xs = []
     for iters in [2, 5, 10, 20]:
         result = DIRK(prob.initial(), dt=0.1, f=prob.rhs, tableau=tab,
+                      solver=FixedPointSolver(),
                       solver_opts={'iterations': iters})
         xs.append(abs(float(get_reference_state(result.state).x[0])))
 
@@ -144,16 +167,27 @@ def test_implicit_midpoint_energy_drift_bound_recovers_with_more_iterations():
 
 
 def test_fixed_point_iteration_count_is_configurable_per_call():
-    """solver_opts={'iterations': N} overrides the driver's own solver default."""
+    """solver_opts={'iterations': N} overrides an explicitly selected Picard solver."""
     prob = testing.PROBLEMS['oscillator']()
     tab = getDIRKTableau('implicitMidpoint')
-    r_default = DIRK(prob.initial(), dt=0.1, f=prob.rhs, tableau=tab)
-    r_more = DIRK(prob.initial(), dt=0.1, f=prob.rhs, tableau=tab, solver_opts={'iterations': 20})
+    r_default = DIRK(prob.initial(), dt=0.1, f=prob.rhs, tableau=tab, solver=FixedPointSolver())
+    r_more = DIRK(prob.initial(), dt=0.1, f=prob.rhs, tableau=tab,
+                  solver=FixedPointSolver(), solver_opts={'iterations': 20})
     x_default = float(get_reference_state(r_default.state).x[0])
     x_more = float(get_reference_state(r_more.state).x[0])
     assert x_default != pytest.approx(x_more, abs=1e-12), (
         'expected more Picard iterations to change the (non-stiff but nonzero-residual) answer'
     )
+
+
+def test_dirk_defaults_to_jfnk_on_a_stiff_backward_euler_stage():
+    """The registered default must solve the stage that fixed-count Picard cannot."""
+    k = 1e6
+    dt = 0.1
+    prob = testing.PROBLEMS['oscillator'](k=k)
+    result = DIRK(prob.initial(), dt=dt, f=prob.rhs, tableau=getDIRKTableau('backwardEuler'))
+    expected = 1.0 / (1.0 + dt ** 2 * k)
+    assert float(get_reference_state(result.state).x[0]) == pytest.approx(expected, rel=1e-4)
 
 
 # --------------------------------------------------------------------------- #

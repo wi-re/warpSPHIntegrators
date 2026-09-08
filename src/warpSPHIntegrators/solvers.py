@@ -11,6 +11,8 @@ rewrite -- that pluggability, not any one solver, is the point of landing this n
 
 from typing import Any, Callable, NamedTuple, Optional, Protocol, runtime_checkable
 
+from .fields import flatten_integrated, unflatten_integrated
+
 
 class SolveResult(NamedTuple):
     """What a `NonlinearSolver.solve` call produced."""
@@ -84,3 +86,39 @@ class FixedPointSolver:
         # the only claim this mode makes (NOTES.md S3.4 rung 1). With `tol` set but
         # never reached within `iterations`, it genuinely did not converge.
         return SolveResult(y, tol is None, n)
+
+
+class RelaxedFixedPointSolver(FixedPointSolver):
+    """Damped Picard iteration: ``y <- y + relaxation * (step(y) - y)``.
+
+    Relaxation can improve a non-stiff Picard solve whose fixed-point map is too
+    aggressive, but it does not make Picard a stiff solver. Use ``JFNKSolver`` for
+    a genuinely stiff system.
+    """
+
+    def __init__(self, relaxation: float = 0.5, iterations: int = 2):
+        super().__init__(iterations=iterations)
+        if not 0.0 < relaxation <= 1.0:
+            raise ValueError(
+                f'RelaxedFixedPointSolver needs relaxation in (0, 1], got {relaxation}'
+            )
+        self.relaxation = relaxation
+
+    def solve(self, step, y0, norm=None, **opts) -> SolveResult:
+        iterations = opts.get('iterations', self.iterations)
+        relaxation = opts.get('relaxation', self.relaxation)
+        tol = opts.get('tol')
+        if not 0.0 < relaxation <= 1.0:
+            raise ValueError(f'relaxation must lie in (0, 1], got {relaxation}')
+
+        y = y0
+        for n in range(1, iterations + 1):
+            y_step = step(y)
+            y_flat = flatten_integrated(y)
+            y_new = unflatten_integrated(
+                y_flat + relaxation * (flatten_integrated(y_step) - y_flat), y_step
+            )
+            if tol is not None and norm is not None and norm(y_new, y) < tol:
+                return SolveResult(y_new, True, n)
+            y = y_new
+        return SolveResult(y, tol is None, iterations)

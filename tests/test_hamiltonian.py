@@ -20,6 +20,7 @@ from warpSPHIntegrators.integration import IntegrationSchemes
 #: Short and long horizons over the same problem. The long one is 8x the short one,
 #: so a scheme with secular drift shows a ratio near 8 and a symplectic one near 1.
 T_SHORT, T_LONG, DT = 10.0, 80.0, 0.1
+ENERGY_NOISE_FLOOR = 1e-8
 
 #: Blows up on a Hamiltonian problem at any step size; nothing to measure.
 UNSTABLE = {'Forward Euler', 'Explicit Euler'}
@@ -32,7 +33,7 @@ UNSTABLE = {'Forward Euler', 'Explicit Euler'}
 #: flat 1.0 on `kepler`. The dissipative *direction* is not in question -- L-stability
 #: is what backward Euler is for -- only this particular growth-ratio test doesn't fit
 #: a scheme fast enough to hit its own floor.
-SATURATES_EARLY = {'Backward Euler (implicit)'}
+SATURATES_EARLY = {'Backward Euler (implicit)', 'BDF1', 'BDF2', 'IMEX Euler'}
 
 
 @pytest.mark.parametrize('problem_name', ['oscillator', 'kepler'])
@@ -46,6 +47,8 @@ def test_dissipation_flag_predicts_energy_behaviour(scheme, problem_name):
     problem = testing.PROBLEMS[problem_name]()
     short = testing.max_energy_drift(scheme, problem, DT, T_SHORT)
     long = testing.max_energy_drift(scheme, problem, DT, T_LONG)
+    if max(short, long) < ENERGY_NOISE_FLOOR:
+        return
     growth = long / short
 
     if scheme.dissipation:
@@ -62,12 +65,12 @@ def test_dissipation_flag_predicts_energy_behaviour(scheme, problem_name):
         )
 
 
-def test_symplectic_schemes_are_exactly_the_expected_set():
+def test_bounded_energy_schemes_are_exactly_the_expected_set():
     """A named list, so that adding a scheme forces a deliberate choice of flag."""
-    symplectic = {s.name for s in IntegrationSchemes if not s.dissipation}
-    assert symplectic == {
+    bounded_energy = {s.name for s in IntegrationSchemes if not s.dissipation}
+    assert bounded_energy == {
         'Leap Frog', 'Symplectic Euler', 'Velocity Verlet',
-        'PEFRL', 'VEFRL', 'Semi-Implicit Euler',
+        'PEFRL', 'VEFRL', 'Semi-Implicit Euler', 'Implicit Midpoint',
     }
 
 
