@@ -73,14 +73,17 @@ are gone.
   from Dormand-Prince, thread `StepHistory`" design didn't need new machinery that
   could itself be wrong, and the full suite (1103 → 1380 passing tests) went green on
   the first run after fixing one pre-existing test's exclusion criteria. What remains
-  open in this area — fully implicit RK, BDF4-6, and adaptive `dt` — is each
+  open in this area — fully implicit RK, BDF6, and adaptive `dt` — is each
   individually scoped in §3.6/§3.4
   and gated on a concrete downstream need, per the recommendation at the end of §3.8;
   none of it is a groundwork gap the way Phase 0 was. (High-order IMEX/ARK landed as
   Phase 5 on 2026-09-09 — `ark.py`, see §3.6. Preconditioned JFNK landed as Phase 2
   on 2026-09-09 — left/right-preconditioned `gmres`, the 3-arg
   `preconditioner(v, state, context)` hook on `JFNKSolver`, identity/diagonal
-  examples, and the size-sweep benchmark; see §3.4.)
+  examples, and the size-sweep benchmark; see §3.4. Higher-order BDF and true
+  Adams-Moulton landed as IMPLICIT_ROADMAP Phase 4 on 2026-09-09 — BDF4/BDF5
+  (A(α) 73.35°/51.84°, state-snapshot history) and the JFNK-corrected
+  Adams-Moulton AM2-AM4 (derivative history, optional AB predictor), see §3.6.)
 - **A finding, not a defect:** Leap Frog, Velocity Verlet, PEFRL and VEFRL are only
   second/fourth order for a **separable** Hamiltonian, i.e. a force depending on
   position alone. With a velocity-dependent force — artificial viscosity, drag, any
@@ -763,9 +766,10 @@ the same scale trap as §3.4's caution, worse: an `s·N × s·N` system rather t
 |---|---|---|---|---|---|
 | **Adams–Bashforth 2–5** | k | **1** | k−1 updates | no | **Done.** |
 | **ABM predictor–corrector (PECE)** | k | 2 | k−1 updates | no (fixed corrections) | **Done**, for orders 2-4. |
-| **Adams–Moulton 2–4** as a true corrector | k | solve | k−1 updates | yes | not done — needs the DIRK solver applied to a multistep stage, not attempted |
-| **BDF1–2** | 1, 2 | solve | k states | yes, A-stable | not done |
-| **BDF3–6** | 3–6 | solve | k states | yes, A(α)-stable only | not done |
+| **Adams–Moulton 2–4** as a true corrector | k | solve | k−1 updates | yes | **Done 2026-09-09** (IMPLICIT_ROADMAP Phase 4): `multistep.AdamsMoulton` — the DIRK/JFNK solver applied to the multistep residual exactly as feared, with an optional matching-AB predictor; AM2 = trapezoidal (A-stable), AM3/4 bounded region; beats same-order PECE by ~10x on the stiff nonlinear relaxation (`tests/test_am.py`). |
+| **BDF1–2** | 1, 2 | solve | k states | yes, A-stable | **Done** (`bdf.py`, JFNK-closed; BDF1 = backward Euler). |
+| **BDF3–5** | 3–5 | solve | k states | yes, A(α)-stable only (86.03° / 73.35° / 51.84°) | **Done 2026-09-09** (BDF3 with the JFNK work; BDF4/5 in IMPLICIT_ROADMAP Phase 4 — coefficients from the exact order conditions, zero-stability and the A(α) cone angles measured in `tests/test_bdf.py`; history carries state snapshots, `f` only at the new grid time, so full order on non-autonomous problems). |
+| **BDF6** | 6 | solve | 6 states | yes, A(α)-stable only, smaller cone than BDF5 | not done — the A(α) cone keeps shrinking with order, so the stiffness payoff keeps getting worse; gated on a downstream that actually needs order 6 |
 | **Störmer–Cowell / multistep Nyström** (`x'' = f(x)`) | k | 1 | k states | no | not done |
 | **Gauss–Jackson** (8th-order Störmer–Cowell) | 8 | 1 | 8 | no | not done — niche, orbital mechanics |
 
@@ -946,7 +950,7 @@ Each phase is independently shippable and independently useful.
 | **2** | DIRK driver + fixed-count `FixedPointSolver` + all seven DIRK tableaus — **done** (four 2026-08-24; TR-BDF2 + both ESDIRKs 2026-09-09, §3.6) | 4–5 d | Phase 0 |
 | **1** | Explicit multistep: AB2–5 + ABM PECE, DP5 starter, `dt`/`uid` guards — **done 2026-08-24** | 2–3 d | Phase 0 |
 | **3** | JFNK with FD matvecs + user `solve_linear` hook + particle masking | 1–1.5 wk | Phase 2, **and** a downstream that is actually stiff |
-| **4** | BDF1–6, fixed coefficients | 3–4 d | Phase 3 |
+| **4** | BDF1–6 + true Adams-Moulton 2–4 (IMPLICIT_ROADMAP Phase 4) — **BDF4–5 and AM2–4 done 2026-09-09** (BDF1–3 already landed with the JFNK driver); BDF6 stays gated | 3–4 d | Phase 3 |
 | **5** | IMEX / ARK, split right-hand side — **done 2026-09-09** (`ark.py`, ARK3(2)4L[2]SA + ARK4(3)6L[2]SA from SUNDIALS ARKODE v7.9.0, §3.6) | 1 wk | Phase 3 + a downstream with a split RHS |
 | **6** | Fully implicit: Gauss–Legendre, Radau IIA | 1–1.5 wk | demand-driven; symplectic order 4 is the draw |
 

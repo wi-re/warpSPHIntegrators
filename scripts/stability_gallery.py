@@ -106,11 +106,27 @@ def main():
     fig.savefig('images/dahlquist_stability_tableau_methods.png', dpi=200)
     plt.close(fig)
 
-    fig, axes = plt.subplots(1, 3, figsize=(14, 4.5))
-    for axis, order in zip(axes, (1, 2, 3)):
-        stable = np.vectorize(lambda z: bdf_is_stable(order, z))(grid)
-        axis.contourf(real, imag, stable, levels=[-0.5, 0.5, 1.5], colors=['white', '#c68142'])
-        axis.contour(real, imag, stable, levels=[0.5], colors='#7a3c09', linewidths=1.0)
+    # BDF4/5 regions extend far along the positive real axis (to ~10.7 and ~17.1),
+    # so each order gets a window wide enough for its own lobe; BDF1-3 keep the
+    # original window.
+    bdf_windows = {
+        1: (-8.0, 3.0, -6.0, 6.0),
+        2: (-8.0, 3.0, -6.0, 6.0),
+        3: (-8.0, 3.0, -6.0, 6.0),
+        4: (-8.0, 11.5, -7.5, 7.5),
+        5: (-8.0, 18.0, -9.0, 9.0),
+    }
+    fig, axes = plt.subplots(1, 5, figsize=(20, 4.5))
+    for axis, order in zip(axes, (1, 2, 3, 4, 5)):
+        lo, hi, ilo, ihi = bdf_windows[order]
+        panel_real = np.linspace(lo, hi, 401)
+        panel_imag = np.linspace(ilo, ihi, 401)
+        panel_grid = panel_real[None, :] + 1j * panel_imag[:, None]
+        stable = np.vectorize(lambda z: bdf_is_stable(order, z))(panel_grid)
+        axis.contourf(panel_real, panel_imag, stable, levels=[-0.5, 0.5, 1.5],
+                      colors=['white', '#c68142'])
+        axis.contour(panel_real, panel_imag, stable, levels=[0.5], colors='#7a3c09',
+                     linewidths=1.0)
         axis.axhline(0, color='black', linewidth=0.4)
         axis.axvline(0, color='black', linewidth=0.4)
         axis.set_title(f'BDF{order}')

@@ -1,9 +1,16 @@
 """Implicit backward differentiation formulas with JFNK stage closure.
 
-BDF1 is backward Euler. BDF2 stores one prior-state snapshot in ``StepHistory`` and
-solves its full multistep residual using the same matrix-free Newton interface as
-DIRK. Cold BDF2 calls use Dormand-Prince 5(4), matching the existing multistep
-family's safe high-order fallback until the caller threads a history object.
+BDF1 is backward Euler. BDF2-BDF5 store one prior-state snapshot per past step in
+``StepHistory`` and solve the full multistep residual using the same matrix-free
+Newton interface as DIRK: the history enters only as state values, the right-hand
+side is evaluated once, at the new grid time, so the standard BDF formula keeps its
+claimed order on non-autonomous problems. Cold calls (history shorter than
+``order - 1``) use Dormand-Prince 5(4), matching the existing multistep family's
+safe high-order fallback until the caller threads a history object.
+
+The coefficients are derived from the BDF order conditions (verified in
+``tests/test_bdf.py``); BDF1/2 are A-stable, BDF3-BDF5 are A(alpha)-stable with
+cone half-angles 86.03 deg / 73.35 deg / 51.84 deg.
 """
 
 from typing import Optional
@@ -47,21 +54,31 @@ def _linear_combination(template, terms):
 
 
 def getBDFCoefficients(order: int):
-    """Return ``(state_weights, derivative_weight)`` newest state first."""
+    """Return ``(state_weights, derivative_weight)`` newest state first.
+
+    ``y^n = sum_j c_j y^{n-j} + beta * dt * f(t^n, y^n)``; the weights are the
+    unique solution of the BDF order conditions (``tests/test_bdf.py`` re-derives
+    and cross-checks them), so the standard formula -- history as state values, the
+    right-hand side only at the new grid time -- is order ``order`` for
+    non-autonomous problems as well.
+    """
     coefficients = {
         1: ((1.0,), 1.0),
         2: ((4.0 / 3.0, -1.0 / 3.0), 2.0 / 3.0),
         3: ((18.0 / 11.0, -9.0 / 11.0, 2.0 / 11.0), 6.0 / 11.0),
+        4: ((48.0 / 25.0, -36.0 / 25.0, 16.0 / 25.0, -3.0 / 25.0), 12.0 / 25.0),
+        5: ((300.0 / 137.0, -300.0 / 137.0, 200.0 / 137.0,
+             -75.0 / 137.0, 12.0 / 137.0), 60.0 / 137.0),
     }
     try:
         return coefficients[order]
     except KeyError as exc:
-        raise ValueError(f'Only BDF1 through BDF3 are implemented, got order={order}') from exc
+        raise ValueError(f'Only BDF1 through BDF5 are implemented, got order={order}') from exc
 
 
 def BDF(initial_state, dt, f, order: int, *args, history: Optional[StepHistory] = None,
         solver: Optional[NonlinearSolver] = None, **kwargs):
-    """One BDF1-BDF3 step, using a high-order starter until history is ready."""
+    """One BDF1-BDF5 step, using a high-order starter until history is ready."""
     state_weights, coefficient = getBDFCoefficients(order)
     reject_prior_step(f'BDF{order}', kwargs.pop('priorStep', None))
     needed = order - 1
@@ -123,3 +140,5 @@ def bdfScheme(order: int):
 BDF1 = bdfScheme(1)
 BDF2 = bdfScheme(2)
 BDF3 = bdfScheme(3)
+BDF4 = bdfScheme(4)
+BDF5 = bdfScheme(5)

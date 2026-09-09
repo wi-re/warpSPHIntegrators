@@ -54,6 +54,33 @@ def test_implicit_state_space_schemes_remain_bounded_on_nonlinear_stiff_relaxati
     assert abs(x - math.tanh(1.0)) < 0.2
 
 
+@pytest.mark.parametrize('scheme_name', ['BDF3', 'BDF4', 'BDF5'])
+def test_higher_order_bdf_with_threaded_history_tracks_stiff_relaxation(scheme_name):
+    """BDF3-5 at a rate their *explicit* Dormand-Prince startup can absorb.
+
+    rate=10 (stiff scale z = 1): the startup steps are stable and the threaded
+    history drives the full BDF formula. rate=100 (like the test above) is out of
+    reach for a different reason: the startup is explicit, so it needs `order - 1`
+    consecutive stable *explicit* steps at dt=0.1 (DP5 amplifies the stiff
+    transient by ~1e3 per step at z = -10), and BDF3-5's own A(alpha) damping
+    along the negative real axis (|R(-10)| ~= 0.2-0.3 per step) cannot recover
+    from two or more compounded startup steps (BDF2's single startup step can:
+    |R_BDF2(-10)| ~= 0.21 damps it away). That is a
+    property of the shared DP5 startup design (NOTES.md S3.7), not of the BDF
+    formulas -- which is why this test threads history with maxlen = scheme.steps
+    instead of the maxlen=1 the one-step schemes above use.
+    """
+    scheme = getIntegrator(scheme_name)
+    system = testing.PROBLEMS['oscillator']().initial()
+    history = StepHistory(maxlen=max(1, scheme.steps))
+    for _ in range(10):
+        result = scheme(system, dt=0.1, f=_stiff_relaxation_rhs(rate=10.0), history=history)
+        system, history = result.state, result.history
+    x = float(get_reference_state(system).x[0])
+    assert math.isfinite(x)
+    assert abs(x - math.tanh(1.0)) < 0.2
+
+
 def test_every_tableau_is_consistent_at_the_dahlquist_origin():
     for scheme in IntegrationSchemes:
         tableau = getattr(scheme.function, 'butcherTableau', getattr(scheme.function, 'dirkTableau', None))

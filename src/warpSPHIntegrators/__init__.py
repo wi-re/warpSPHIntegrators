@@ -49,7 +49,8 @@ from .solvers import (NonlinearSolver, FixedPointSolver, RelaxedFixedPointSolver
                      SolveDiagnostics, SolveResult, SolverOptions)
 from .jfnk import (JFNKSolver, fd_matvec, jvp_matvec, gmres,
                   identity_preconditioner, diagonal_preconditioner)
-from .bdf import BDF1, BDF2, BDF3
+from .bdf import BDF1, BDF2, BDF3, BDF4, BDF5
+from .multistep import AM2, AM3, AM4
 from .imex import IMEXEuler
 from .newmark import newmark, newmark_average_acceleration, newmark_linear_acceleration
 from .dirk import TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA
@@ -111,7 +112,12 @@ __all__ = [
     "BDF1",
     "BDF2",
     "BDF3",
+    "BDF4",
+    "BDF5",
     "IMEXEuler",
+    "AM2",
+    "AM3",
+    "AM4",
     "newmark",
     "newmark_average_acceleration",
     "newmark_linear_acceleration",

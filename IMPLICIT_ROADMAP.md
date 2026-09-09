@@ -7,12 +7,13 @@ This roadmap covers the remaining implicit, stiff, IMEX, stability, and nonlinea
 ## Current Baseline
 
 - [x] Nonlinear-solver protocol with fixed Picard, relaxed Picard, and matrix-free JFNK.
-- [x] JFNK is the default nonlinear closure for DIRK, Newmark, BDF, and IMEX Euler.
+- [x] JFNK is the default nonlinear closure for DIRK, Newmark, BDF, implicit Adams-Moulton, and IMEX Euler.
 - [x] DIRK: Backward Euler, implicit midpoint, trapezoidal / Crank-Nicolson, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, and ESDIRK4(3)6L[2]SA.
 - [x] Newmark average-acceleration and linear-acceleration variants.
-- [x] BDF1-BDF3 with state-bearing `StepHistory` and a safe Dormand-Prince cold start.
+- [x] BDF1-BDF5 with state-bearing `StepHistory` and a safe Dormand-Prince cold start.
+- [x] Fully implicit (iterated) Adams-Moulton AM2-AM4 with derivative-bearing `StepHistory` and an optional Adams-Bashforth predictor.
 - [x] IMEX Euler with explicit `IMEXRHS(explicit=..., implicit=...)` callbacks; an ordinary RHS remains fully implicit.
-- [x] Dahlquist stability-region plots and numerical boundary checks for tableau methods and BDF1-BDF3.
+- [x] Dahlquist stability-region plots and numerical boundary checks for tableau methods and BDF1-BDF5.
 - [x] Nonlinear Kepler convergence coverage and nonlinear stiff relaxation coverage.
 
 ## Phase 0: Keep the Public Story Accurate
@@ -89,25 +90,25 @@ Validation gate:
 
 ### BDF3-BDF5
 
-- [>] Generalize `bdf.py` to coefficient tables for orders 1-5. BDF3 is registered and verified; BDF4/5 need non-autonomous convergence work before registration.
-- [ ] Extend `StepHistory` requirements and preserve state snapshots for all required previous states.
-- [ ] Keep the safe high-order starter when history is insufficient or invalidated by timestep / particle identity changes.
-- [>] Register BDF3-BDF5 with correct A(alpha) metadata, not A-stable metadata. BDF3 is registered as A(alpha).
-- [ ] Add root-condition and numerical stability-boundary tests.
-- [ ] Test order on oscillator, forced, damped, Kepler, and nonlinear stiff relaxation.
+- [x] Generalize `bdf.py` to coefficient tables for orders 1-5. BDF4/5 coefficients derived from the exact BDF order conditions and verified empirically on the non-autonomous `forced` problem (the standard formula evaluates `f` only at the new grid time, so it keeps its order there — measured 4th/5th order).
+- [x] Extend `StepHistory` requirements and preserve state snapshots for all required previous states. (The history machinery already stored one state snapshot per entry; BDF4/5 need `maxlen` 3/4, driven by the scheme's `steps` metadata — no `history.py` change.)
+- [x] Keep the safe high-order starter when history is insufficient or invalidated by timestep / particle identity changes. (Unchanged Dormand-Prince cold start; the `StepHistory.pushed` dt/uid invalidation guards are shared with BDF1-3 and now exercised at scheme level by `test_bdf4_history_reset_on_dt_change_stays_correct`.)
+- [x] Register BDF3-BDF5 with correct A(alpha) metadata, not A-stable metadata. (BDF4 `stability='A(alpha)'` 73.35 deg, BDF5 51.84 deg — cone half-angles measured from the stability-region boundary curve, the same machinery that reproduces the literature 86.03 deg for BDF3.)
+- [x] Add root-condition and numerical stability-boundary tests. (`tests/test_bdf.py`: Dahlquist root condition for orders 4/5, negative-real-axis retention to z = -1000, non-A-stability point, and a 55-deg cone point that separates BDF4 (inside) from BDF5 (outside).)
+- [x] Test order on oscillator, forced, damped, Kepler, and nonlinear stiff relaxation. (Order runs use the exact JVP matvec + tight tolerance so the linear-solver noise floor cannot mask the finest-grid truncation error; stiff relaxation in `tests/test_stiff.py` at a rate the explicit startup can absorb — see the test docstring for why rate=100 is out of reach for BDF3-5.)
 
 ### True implicit Adams-Moulton 2-4
 
-- [ ] Add a JFNK residual using known history derivatives plus the unknown endpoint derivative.
-- [ ] Keep existing ABM PECE methods separate: predictor-corrector and fully implicit Adams-Moulton are different contracts.
-- [ ] Add an optional predictor using the matching Adams-Bashforth formula.
-- [ ] Register and test AM2-AM4 with explicit history requirements and startup behavior.
+- [x] Add a JFNK residual using known history derivatives plus the unknown endpoint derivative. (`multistep.AdamsMoulton`: fixed point `y = known_part + gamma[0]*dt*f(t^{n+1}, y)`; history stores the `update` of each past step, `needed = order - 1`.)
+- [x] Keep existing ABM PECE methods separate: predictor-corrector and fully implicit Adams-Moulton are different contracts. (ABM2-4 unchanged; the implicit family is registered under distinct names/identifiers `Adams-Moulton N (implicit)` / `amN`.)
+- [x] Add an optional predictor using the matching Adams-Bashforth formula. (`predictor=True` default; `predictor=False` starts from the known part — `test_predictor_only_changes_the_initial_guess` pins both on the same fixed point.)
+- [x] Register and test AM2-AM4 with explicit history requirements and startup behavior. (AM2 `stability='A'` — it is the trapezoidal rule; AM3/4 have only a bounded region, `stability=None`; Dormand-Prince cold start until history is full, bit-for-bit pinned in `tests/test_am.py`.)
 
 Validation gate:
 
-- [ ] BDF3-BDF5 achieve their claimed order with threaded history.
-- [ ] History resets safely on `dt` or particle-set changes.
-- [ ] AM methods converge their nonlinear corrector and outperform or match PECE on a stiff nonlinear case.
+- [x] BDF3-BDF5 achieve their claimed order with threaded history. (Measured 3.98-4.97 across the four reference problems, `tests/test_bdf.py`.)
+- [x] History resets safely on `dt` or particle-set changes. (Scheme-level restart tests for BDF4 and AM3; the shared `StepHistory` dt/uid guards were already covered by the Phase 0 state tests.)
+- [x] AM methods converge their nonlinear corrector and outperform or match PECE on a stiff nonlinear case. (Prothero-Robinson rate=10, dt=0.1: corrector residuals reach ~1e-7; AM2/3/4 errors 6.0e-5 / 7.6e-5 / 2.3e-5 vs PECE 8.3e-4 / 4.0e-4 / 3.1e-3 — `tests/test_am.py::test_am_corrector_beats_pece_on_stiff_nonlinear_case`.)
 
 ## Phase 5: Higher-Order IMEX / Additive RK
 
@@ -189,7 +190,7 @@ Validation gate:
 3. [x] Phase 3 TR-BDF2, then ESDIRK3. (Landed 2026-09-09: TR-BDF2 with SUNDIALS ARKODE's published (2, 3) embedded pair; ESDIRK3(2)4L[2]SA and ESDIRK4(3)6L[2]SA from the same source.)
 4. [x] Phase 5 ARK3 IMEX after the existing `IMEXRHS` API is stress-tested. (Landed 2026-09-09: `ark.py` additive driver with ARK3(2)4L[2]SA and ARK4(3)6L[2]SA from SUNDIALS ARKODE v7.9.0; two-parameter IMEX stability function + slice figure; split and pure-limit convergence verified in `tests/test_ark.py`.)
 5. [x] Phase 2 preconditioning using the first real SPH diffusion/acoustic downstream. (Landed 2026-09-09: left/right preconditioned GMRES + 3-arg `preconditioner(v, state, context)` hook on JFNKSolver, identity/diagonal helpers, size-sweep benchmark figure; validated on the wave equation via the block-lower-triangular Laplacian preconditioner — operator-based, no dense Jacobian.)
-6. [ ] Phase 4 BDF3-BDF5 and true Adams-Moulton.
+6. [x] Phase 4 BDF3-BDF5 and true Adams-Moulton. (Landed 2026-09-09: BDF4/BDF5 from the exact order conditions with measured A(α) cones 73.35°/51.84°, zero-stability + stability-boundary tests; JFNK-corrected Adams-Moulton AM2-AM4 with derivative history and an optional AB predictor; the iterated corrector beats same-order PECE by ~10x on the stiff nonlinear relaxation.)
 7. [ ] Phase 8 broadened nonlinear/stiff benchmark and stability suite throughout.
 8. [ ] Phase 6 coupled implicit RK only when a high-order symplectic or Radau use case justifies the block solver.
 9. [ ] Phase 7 Rosenbrock/exponential methods only when their downstream structure makes them competitive.

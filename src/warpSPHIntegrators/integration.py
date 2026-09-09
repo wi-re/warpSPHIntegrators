@@ -43,8 +43,8 @@ from .dirk import (backwardEuler as implicitBackwardEuler, implicitMidpoint, tra
                    SDIRK2, TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA)
 from .ark import ARK324L2SA, ARK436L2SA
 from .newmark import newmark
-from .multistep import AB2, AB3, AB4, AB5, ABM2, ABM3, ABM4
-from .bdf import BDF1, BDF2, BDF3
+from .multistep import AB2, AB3, AB4, AB5, ABM2, ABM3, ABM4, AM2, AM3, AM4
+from .bdf import BDF1, BDF2, BDF3, BDF4, BDF5
 from .imex import IMEXEuler
 from .reuse import step_reuse_analysis, step_reuse_order, supports_step_reuse, is_fsal
 
@@ -147,6 +147,16 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     BDF3, 'BDF3', IntegrationSchemeType.bdf3, 3, True, True,
     implicit=True, steps=2, stiffly_accurate=True, stability='A(alpha)', startup_order=3))
+# BDF4/5: same JFNK-closed multistep residual, one state snapshot per past step.
+# A(alpha), not A-stable -- the stability region is a lobe whose closest approach
+# to the negative real axis is 73.35 deg (BDF4) and 51.84 deg (BDF5) from it, so
+# stiff oscillatory modes outside those cones are not damped (tests/test_bdf.py).
+IntegrationSchemes.append(IntegrationScheme(
+    BDF4, 'BDF4', IntegrationSchemeType.bdf4, 4, True, True,
+    implicit=True, steps=3, stiffly_accurate=True, stability='A(alpha)', startup_order=4))
+IntegrationSchemes.append(IntegrationScheme(
+    BDF5, 'BDF5', IntegrationSchemeType.bdf5, 5, True, True,
+    implicit=True, steps=4, stiffly_accurate=True, stability='A(alpha)', startup_order=5))
 IntegrationSchemes.append(IntegrationScheme(
     IMEXEuler, 'IMEX Euler', IntegrationSchemeType.imexEuler, 1, True, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='A'))
@@ -182,6 +192,23 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     ABM4, 'Adams-Bashforth-Moulton 4 (PECE)', IntegrationSchemeType.abm4, 4, True, True,
     implicit=False, steps=3, startup_order=4))
+
+# ---- Fully implicit Adams-Moulton (NOTES.md S3.8 Phase 4) ------------------ #
+# The AM corrector formula solved to convergence with JFNK, as distinct from the
+# uniterated PECE corrector above. AM2 is the trapezoidal rule, so it inherits
+# A-stability; AM3/AM4 have only a bounded stability region around the origin
+# (no named class to advertise). History carries the past *derivatives* (the
+# `update` of each entry); a matching Adams-Bashforth predictor is the default
+# initial guess (`predictor=False` starts the solve from the known part).
+IntegrationSchemes.append(IntegrationScheme(
+    AM2, 'Adams-Moulton 2 (implicit)', IntegrationSchemeType.am2, 2, True, True,
+    implicit=True, steps=1, stiffly_accurate=False, stability='A', startup_order=2))
+IntegrationSchemes.append(IntegrationScheme(
+    AM3, 'Adams-Moulton 3 (implicit)', IntegrationSchemeType.am3, 3, True, True,
+    implicit=True, steps=2, stiffly_accurate=False, startup_order=3))
+IntegrationSchemes.append(IntegrationScheme(
+    AM4, 'Adams-Moulton 4 (implicit)', IntegrationSchemeType.am4, 4, True, True,
+    implicit=True, steps=3, stiffly_accurate=False, startup_order=4))
 
 
 # --------------------------------------------------------------------------- #

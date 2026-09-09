@@ -1,5 +1,5 @@
-"""Explicit linear multistep: Adams-Bashforth and Adams-Bashforth-Moulton (NOTES.md
-S3.6 Phase 1).
+"""Linear multistep: Adams-Bashforth, Adams-Bashforth-Moulton (PECE), and the
+fully implicit (iterated) Adams-Moulton corrector (NOTES.md S3.6 Phase 1, Phase 4).
 
 `y^{n+1} = y^n + dt * sum_j beta_j * f^{n-j}` is exactly the shape
 `butcher._weighted_update` already builds for a Runge-Kutta `b`-weight accumulation --
@@ -29,10 +29,14 @@ from typing import Optional
 import numpy as np
 from torch.profiler import record_function
 
+from .bdf import _copy_integrated
 from .butcher import DormandPrince, _weighted_update
+from .fields import state_difference, state_norm
 from .history import HistoryEntry, StepHistory
+from .jfnk import JFNKSolver
+from .solvers import NonlinearSolver
 from .specs import IntegrationResult, StageResult
-from .util import finalizeSystem, initializeSystem, reject_prior_step, updateStep
+from .util import finalizeSystem, initializeSystem, reject_prior_step, updateStateEuler, updateStep
 
 
 def getABCoefficients(order: int) -> np.ndarray:
@@ -188,6 +192,110 @@ def AdamsBashforthMoulton(initialState, dt, f, order: int, *args,
         return IntegrationResult(state=new_state, stages=[StageResult(aux=r_n, update=k_n)], history=new_history)
 
 
+def AdamsMoulton(initialState, dt, f, order: int, *args,
+                 history: Optional[StepHistory] = None,
+                 solver: Optional[NonlinearSolver] = None,
+                 predictor: bool = True, **kwargs):
+    """One fully implicit Adams-Moulton step of the given `order` (2-4).
+
+    The AM corrector formula
+
+        y^{n+1} = y^n + dt * (gamma[0] * f^{n+1} + gamma[1] * f^n + ... + gamma[-1] * f^{n-order+2})
+
+    is solved *to convergence* for the unknown endpoint derivative
+    ``f^{n+1} = f(t^{n+1}, y^{n+1})`` with the same matrix-free JFNK interface the
+    DIRK/BDF drivers use -- unlike `AdamsBashforthMoulton` (PECE), which applies the
+    corrector once with the predictor's endpoint evaluation. The two are different
+    contracts and remain separate schemes: PECE is two explicit evaluations per step
+    and only corrector-order accurate on stiff problems, the implicit AM corrector
+    is one implicit solve per step and keeps its full order there.
+
+    The known part of the formula (the ``gamma[1:]`` terms) uses the current
+    evaluation ``f^n`` plus ``order - 2`` history *derivatives*; the history
+    therefore stores `update`s, not state snapshots (BDF's need is the other half
+    of ``HistoryEntry``). `needed = order - 1` entries are required so that the
+    optional matching Adams-Bashforth predictor (`predictor=True`, the default)
+    also has its full history; with `predictor=False` the solve starts from the
+    known part instead. Cold calls bootstrap from Dormand-Prince 5(4) exactly like
+    the explicit family -- see `AdamsBashforth`'s docstring for why the starter is
+    not a caller-configurable parameter.
+    """
+    reject_prior_step(f'AM{order}', kwargs.pop('priorStep', None))
+    starter = DormandPrince
+    needed = order - 1
+    history = history if history is not None else StepHistory(maxlen=max(1, needed))
+
+    with record_function(f"[Integration] AM{order}"):
+        if len(history) < needed:
+            return _bootstrap(initialState, dt, f, history, starter, *args, **kwargs)
+
+        initializeSystem(initialState, dt, *args, **kwargs)
+        gamma = getAMCoefficients(order)
+
+        currentState = initialState.initializeNewState(*args, **kwargs)
+        currentState.t = float(initialState.t)
+        k_n, r_n = updateStep(initialState, currentState, dt, f, *args, **kwargs)
+
+        hist_ks = [e.update for e in reversed(history.entries)][:needed]
+
+        with record_function(f"[Integration] AM{order}: Known part"):
+            # order-1 known points: f^n (fresh) then order-2 older history
+            # derivatives, weighted by gamma[1:].
+            known_part = _weighted_update(
+                initialState, [k_n] + hist_ks[:order - 2], gamma[1:], dt, *args, **kwargs)
+            known_part.t = float(initialState.t + dt)
+
+        if predictor:
+            # Matching AB predictor: the same fresh f^n plus the full order-1
+            # history, weighted by the AB coefficients of this order.
+            initial_guess = _weighted_update(
+                initialState, [k_n] + hist_ks, getABCoefficients(order), dt, *args, **kwargs)
+            initial_guess.t = float(initialState.t + dt)
+        else:
+            # Not aliased with the step's fixed-point base: JFNK hands the
+            # initial guess back as the first stage and lifecycle hooks may
+            # write copied fields into it.
+            initial_guess = known_part.initializeNewState(*args, **kwargs)
+            _copy_integrated(initial_guess, known_part)
+
+        def step(stage):
+            stage.t = float(initialState.t + dt)
+            update, _ = updateStep(initialState, stage, dt, f, *args, **kwargs)
+            return updateStateEuler(known_part, update, gamma[0] * dt, copyState=True, **kwargs)
+
+        def norm(y_new, y_old):
+            return state_norm(state_difference(y_new, y_old), 1e-3, 1e-6, reference=y_old)
+
+        with record_function(f"[Integration] AM{order}: Correct"):
+            solve_result = (solver or JFNKSolver()).solve(
+                step, initial_guess, norm, **kwargs.get('solver_opts', {}))
+
+        stage_state = known_part.initializeNewState(*args, **kwargs)
+        _copy_integrated(stage_state, solve_result.y)
+        stage_state.t = float(initialState.t + dt)
+        last_update, last_aux = updateStep(initialState, stage_state, dt, f, *args, **kwargs)
+
+        new_state = solve_result.y
+        new_state.t = float(initialState.t + dt)
+        finalizeSystem(new_state, initialState, dt, last_aux, last_update,
+                       *args, lastStageSystem=stage_state, **kwargs)
+
+        new_history = history.pushed(HistoryEntry(t=float(initialState.t), dt=dt, update=k_n, aux=r_n))
+        return IntegrationResult(
+            state=new_state,
+            stages=[StageResult(aux=last_aux, update=last_update)],
+            history=new_history,
+            solver_diagnostics=solve_result.diagnostics,
+        )
+
+
+def adamsMoultonScheme(order: int):
+    def scheme(state, dt, f, *args, **kwargs):
+        return AdamsMoulton(state, dt, f, order, *args, **kwargs)
+    scheme.__name__ = f'AM{order}'
+    return scheme
+
+
 def adamsBashforthScheme(order: int):
     def scheme(state, dt, f, *args, **kwargs):
         return AdamsBashforth(state, dt, f, order, *args, **kwargs)
@@ -209,3 +317,6 @@ AB5 = adamsBashforthScheme(5)
 ABM2 = adamsBashforthMoultonScheme(2)
 ABM3 = adamsBashforthMoultonScheme(3)
 ABM4 = adamsBashforthMoultonScheme(4)
+AM2 = adamsMoultonScheme(2)
+AM3 = adamsMoultonScheme(3)
+AM4 = adamsMoultonScheme(4)

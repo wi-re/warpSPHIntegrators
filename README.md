@@ -19,7 +19,7 @@ blended with a reference state", and your system object decides what that means.
 
 ### Key Features
 
-- **Multiple Integration Schemes**: Runge-Kutta up to 5th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA, Newmark) via a pluggable `NonlinearSolver`; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4); implicit multistep (BDF1–BDF3); additive (IMEX) RK (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA) and IMEX Euler, both through an explicit/implicit RHS split
+- **Multiple Integration Schemes**: Runge-Kutta up to 5th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA, Newmark) via a pluggable `NonlinearSolver`; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4); implicit multistep (BDF1–BDF5, fully implicit Adams-Moulton 2–4); additive (IMEX) RK (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA) and IMEX Euler, both through an explicit/implicit RHS split
 - **Flexible State Management**: Custom state objects with metadata-driven field behavior (integrated, constant, copied, ephemeral, custom)
 - **Type-Safe Protocol**: Structural typing for integration systems with clear separation of concerns
 - **Fully Differentiable**: All operations preserve gradient flow for end-to-end learning
@@ -395,16 +395,19 @@ cost every step rather than getting a wrong answer.
 
 ### Implicit Multistep (BDF)
 
-`BDF1`–`BDF3` use the same matrix-free JFNK closure as the DIRK methods. BDF2 and
-BDF3 need previous-state snapshots, so thread `IntegrationResult.history` between
+`BDF1`–`BDF5` use the same matrix-free JFNK closure as the DIRK methods. BDF2 and
+above need previous-state snapshots, so thread `IntegrationResult.history` between
 steps (`maxlen=order - 1`); without enough history they safely use the repository's
-Dormand-Prince 5(4) starter rather than silently dropping to first order.
+Dormand-Prince 5(4) starter rather than silently dropping to first order. The
+standard BDF formula evaluates the right-hand side only at the new grid time (the
+history carries state values), so it keeps its full order on non-autonomous
+problems.
 
 ```python
 from warpSPHIntegrators import StepHistory, getIntegrator
 
-scheme = getIntegrator('BDF3')
-history = StepHistory(maxlen=2)
+scheme = getIntegrator('BDF4')
+history = StepHistory(maxlen=3)
 for _ in range(n_steps):
     result = scheme(system, dt=dt, f=rhs, history=history)
     system, history = result.state, result.history
@@ -414,7 +417,39 @@ for _ in range(n_steps):
 |--------|-------|-----------|----------|
 | **BDF1** | 1 | L | Backward-Euler form for strongly damped stiff modes |
 | **BDF2** | 2 | A | General stiff integration when a one-step history is acceptable |
-| **BDF3** | 3 | A(α) | Third-order stiff integration; sectorial (not full A-) stability |
+| **BDF3** | 3 | A(α) 86.03° | Third-order stiff integration; sectorial (not full A-) stability |
+| **BDF4** | 4 | A(α) 73.35° | Fourth-order stiff integration; the whole negative real axis stays in the region |
+| **BDF5** | 5 | A(α) 51.84° | Highest-order stiff integration here; stiff *oscillatory* modes outside its 51.84° cone are not damped |
+
+### Fully Implicit Adams-Moulton
+
+`Adams-Moulton 2 (implicit)`–`Adams-Moulton 4 (implicit)` are the Adams-Moulton
+corrector formulas solved *to convergence* for the unknown endpoint derivative with
+the same JFNK interface — as distinct from the Adams-Bashforth-Moulton (PECE)
+schemes above, which apply one uniterated correction. The history carries the past
+*derivatives* (the `update` of each entry) instead of BDF's state snapshots;
+`maxlen=order - 1`. A matching Adams-Bashforth prediction is the default initial
+guess (`predictor=False` starts the solve from the known part instead). On a stiff
+nonlinear relaxation the iterated corrector beats the same-order PECE scheme by an
+order of magnitude (`tests/test_am.py`). AM2 is the trapezoidal rule and inherits
+its A-stability; AM3/AM4 have only a bounded stability region, so a stiff problem
+should be checked against it (or use a BDF scheme).
+
+```python
+from warpSPHIntegrators import StepHistory, getIntegrator
+
+scheme = getIntegrator('Adams-Moulton 3 (implicit)')
+history = StepHistory(maxlen=2)
+for _ in range(n_steps):
+    result = scheme(system, dt=dt, f=rhs, history=history)
+    system, history = result.state, result.history
+```
+
+| Scheme | Order | Stability | Use Case |
+|--------|-------|-----------|----------|
+| **Adams-Moulton 2 (implicit)** | 2 | A | Implicit trapezoidal rule; A-stable (bounded for any stiff scale, but weakly damped) |
+| **Adams-Moulton 3 (implicit)** | 3 | bounded | Third-order implicit multistep at one nonlinear solve per step |
+| **Adams-Moulton 4 (implicit)** | 4 | bounded | Fourth-order implicit multistep at one nonlinear solve per step |
 
 ### IMEX Euler
 
@@ -512,6 +547,8 @@ position-only Hamiltonian.
 | BDF1 | 1 | Implicit multistep | L-stable | no |
 | BDF2 | 2 | Implicit multistep | A-stable | no |
 | BDF3 | 3 | Implicit multistep | Sectorial A(alpha) stability | no |
+| BDF4 | 4 | Implicit multistep | A(alpha), 73.35 deg cone | no |
+| BDF5 | 5 | Implicit multistep | A(alpha), 51.84 deg cone | no |
 | IMEX Euler | 1 | IMEX | Explicit/implicit split, JFNK implicit side | no |
 | ARK3(2)4L[2]SA | 3 | Additive IMEX RK | L[2]-stable split (ERK + ESDIRK half); embedded (3, 2); not FSAL | no |
 | ARK4(3)6L[2]SA | 4 | Additive IMEX RK | L[2]-stable split (ERK + ESDIRK half); embedded (4, 3); not FSAL | no |
@@ -522,6 +559,9 @@ position-only Hamiltonian.
 | Adams-Bashforth-Moulton 2 (PECE) | 2 | Predictor-corrector | Two RHS evaluations after startup | no |
 | Adams-Bashforth-Moulton 3 (PECE) | 3 | Predictor-corrector | Two RHS evaluations after startup | no |
 | Adams-Bashforth-Moulton 4 (PECE) | 4 | Predictor-corrector | Two RHS evaluations after startup | no |
+| Adams-Moulton 2 (implicit) | 2 | Implicit multistep | JFNK-corrected trapezoidal rule; A-stable | no |
+| Adams-Moulton 3 (implicit) | 3 | Implicit multistep | JFNK-corrected AM3; bounded stability region | no |
+| Adams-Moulton 4 (implicit) | 4 | Implicit multistep | JFNK-corrected AM4; bounded stability region | no |
 
 ## First-stage reuse (`priorStep`)
 
@@ -605,7 +645,7 @@ tableaus and BDF coefficients.
 
 ![Dahlquist stability regions for implemented explicit and diagonally implicit tableau methods](images/dahlquist_stability_tableau_methods.png)
 
-![Dahlquist stability regions for BDF1 through BDF3](images/dahlquist_stability_bdf_methods.png)
+![Dahlquist stability regions for BDF1 through BDF5](images/dahlquist_stability_bdf_methods.png)
 
 Run `conda run -n warp python scripts/stability_gallery.py` to regenerate these
 figures. Newmark and the Verlet family are second-order oscillator methods, so their
@@ -908,14 +948,16 @@ method runs.
     at particle scale a problem-specific operator-based preconditioner (the
     `JFNKSolver(preconditioner=...)` hook, DIRK section above) is what keeps the Krylov count flat.
 - **Fully implicit RK is not implemented.** Gauss, Radau, and Lobatto methods need a coupled
-    `s·N`-unknown solve rather than the sequential DIRK solve. BDF1–BDF3 are available; BDF4 and above
-    remain planned — scoped in [NOTES.md §3.6](NOTES.md#36-valid-schemes-and-what-each-costs).
+    `s·N`-unknown solve rather than the sequential DIRK solve. BDF1–BDF5 and the fully implicit
+    Adams-Moulton correctors AM2–AM4 are available; the coupled-RK family remains planned — scoped in
+    [NOTES.md §3.6](NOTES.md#36-valid-schemes-and-what-each-costs).
 - **Only two additive (IMEX) pairs are shipped.** The Kennedy–Carpenter
     ARK3(2)4L[2]SA and ARK4(3)6L[2]SA are implemented (with embedded estimators and the
     `IMEXRHS` split); other additive families (higher-stage ARK, Radau-type, Rosenbrock)
     remain planned (NOTES.md §3.6).
 
-Explicit multistep (Adams-Bashforth/-Moulton), seven DIRK schemes (Backward Euler, Implicit
+Explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4), implicit multistep
+(BDF1–BDF5, fully implicit Adams-Moulton 2–4), seven DIRK schemes (Backward Euler, Implicit
 Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA), and two
 additive IMEX pairs (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA) *are* implemented — see the sections
 above. Everything still open
@@ -926,7 +968,7 @@ schemes are worth adding next and what each one costs.
 
 Contributions welcome! Areas of interest:
 
-- Remaining implicit schemes (fully implicit RK, BDF4+) and a stiff (JFNK) `NonlinearSolver`
+- Remaining implicit schemes (fully implicit RK: Gauss, Radau, Lobatto; BDF6+; Rosenbrock/W)
 - Adaptive time stepping
 - Better documentation and examples
 - Performance optimizations

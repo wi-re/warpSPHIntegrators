@@ -61,3 +61,12 @@ class IntegrationSchemeType(Enum):
     # implements first-stage reuse.
     ark324l2sa = 45
     ark436l2sa = 46
+    # Higher-order BDF (NOTES.md S3.8 Phase 4). BDF1/2 are A-stable; BDF3-BDF5 are
+    # A(alpha)-stable (cone half-angles 86.03 / 73.35 / 51.84 deg).
+    bdf4 = 47
+    bdf5 = 48
+    # Fully implicit (iterated) Adams-Moulton correctors (NOTES.md S3.8 Phase 4),
+    # distinct from the ABM PECE predictor-correctors above.
+    am2 = 49
+    am3 = 50
+    am4 = 51
