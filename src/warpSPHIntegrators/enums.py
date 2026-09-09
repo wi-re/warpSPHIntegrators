@@ -54,3 +54,10 @@ class IntegrationSchemeType(Enum):
     imexEuler = 40
     trbdf2 = 41
     bdf3 = 42
+    esdirk324l2sa = 43
+    esdirk436l2sa = 44
+    # Additive (IMEX) Kennedy-Carpenter ARK pairs (NOTES.md S3.9 Phase 5). Each is an
+    # explicit + implicit half pair; the combined method is not FSAL, so neither
+    # implements first-stage reuse.
+    ark324l2sa = 45
+    ark436l2sa = 46

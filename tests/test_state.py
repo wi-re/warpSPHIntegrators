@@ -161,11 +161,15 @@ def test_first_evaluation_is_at_the_start_of_the_step(scheme):
 def test_stage_times_stay_within_the_step(scheme):
     """No stage may be evaluated outside [t^n, t^{n+1}] beyond the tableau's own nodes.
 
-    PEFRL and VEFRL have coefficients outside [0, 1] by construction, so they are
-    allowed a wider window; everything else must stay inside the step.
+    PEFRL and VEFRL have coefficients outside [0, 1] by construction, as do
+    RK3/RK4 (alternative), and ESDIRK4(3)6L[2]SA's c4 = 26/25 (a Kennedy-Carpenter
+    node deliberately placed just past the endpoint), so these are allowed a wider
+    window; everything else must stay inside the step.
     """
     dt = 0.1
-    slack = 1.5 if scheme.name in ('PEFRL', 'VEFRL', 'RK3', 'RK4 (alternative)') else 0.0
+    slack = 1.5 if scheme.name in (
+        'PEFRL', 'VEFRL', 'RK3', 'RK4 (alternative)', 'ESDIRK4(3)6L[2]SA',
+    ) else 0.0
     for step, stage_times in enumerate(_stage_times(scheme, dt, steps=2, t0=1.0)):
         lo, hi = 1.0 + step * dt, 1.0 + (step + 1) * dt
         for t in stage_times:

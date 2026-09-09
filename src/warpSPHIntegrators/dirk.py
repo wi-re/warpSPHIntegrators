@@ -12,13 +12,16 @@ available as an explicit low-overhead override): a DIRK stage equation
 once the explicit part is folded into a `base_state` and the diagonal term is
 expressed as a function of the still-unknown `Y_i`.
 
-Only the four tableaus below are shipped. NOTES.md S3.6 also lists TR-BDF2 and
-ESDIRK3(2)4L[2]SA as "tableau only" work, but both are embedded, higher-stage
-tableaus whose published coefficients are easy to transcribe wrong in a way a smoke
-test would not obviously catch (an order-2 measurement looks the same whether the
-low-order embedded weights are exactly right or merely close) -- landing four
-tableaus verified by hand against their order conditions beats landing six where two
-are unverified.
+The tableaus below are all verified against their order conditions (symbolic
+Taylor-model expansion of one step against the exact Taylor solution) and, for
+the L-stable ones, their stability functions, not just smoke-tested: an embedded
+pair's low-order weights are easy to transcribe wrong in a way an order
+measurement would not obviously catch. The ESDIRK324/ESDIRK436 tableaus and
+TR-BDF2's embedded pair are the Kennedy-Carpenter coefficients as published in
+SUNDIALS ARKODE v7.9.0 (`src/arkode/arkode_butcher_dirk.def`); TR-BDF2's `a`/`b`
+match that entry exactly, and its embedded `d` is the entry's published
+third-order pair, so the estimate is O(dt^3) -- the propagated branch's own true
+local error.
 """
 
 from typing import Optional
@@ -63,17 +66,105 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # variable-step BDF2 endpoint solve. Written as an SDIRK tableau, both
         # implicit diagonals equal (1-gamma)/(2-gamma), making it L-stable and
         # stiffly accurate. sum(b*c) = 1/2 verifies the order-2 condition.
+        # The embedded pair is SUNDIALS ARKODE's ARKODE_TRBDF2_3_3_2 published
+        # (2, 3) pair (the entry's `d` vector): the estimate is O(dt^3), i.e.
+        # the propagated branch's own true local error, and it satisfies
+        # sum(d) = 1, d.c = 1/2, d.c^2 = 1/3 exactly.
         gamma = 2.0 - np.sqrt(2.0)
         diagonal = (1.0 - gamma) / (2.0 - gamma)
         first_weight = 1.0 / (2.0 * (2.0 - gamma))
+        b_embed = np.array([
+            (1.0 - np.sqrt(2.0) / 4.0) / 3.0,
+            (1.0 + 3.0 * np.sqrt(2.0) / 4.0) / 3.0,
+            gamma / 6.0,
+        ])
         return butcherTableau(
             a=np.array([
                 [0.0, 0.0, 0.0],
                 [gamma / 2.0, gamma / 2.0, 0.0],
                 [first_weight, first_weight, diagonal],
             ]),
-            b=np.array([first_weight, first_weight, diagonal]),
+            b=(np.array([first_weight, first_weight, diagonal]), b_embed),
             c=np.array([0.0, gamma, 1.0]),
+        )
+    elif scheme == 'ESDIRK324L2SA':
+        # Kennedy-Carpenter 4-stage ESDIRK3(2)4L[2]SA (order 3 / embedded 2,
+        # A- and L-stable, stiffly accurate), as published in SUNDIALS ARKODE
+        # v7.9.0, `src/arkode/arkode_butcher_dirk.def` (ARKODE_ESDIRK324L2SA).
+        # Explicit first stage (a11 = 0, c1 = 0). Order, embedded order, and
+        # A/L stability verified by symbolic Taylor expansion, numeric
+        # local-error rates, and exact stability-function sweeps (NOTES.md S3.6).
+        g = 0.4358665215084589994160194511935568425293
+        return butcherTableau(
+            a=np.array([
+                [0.0, 0.0, 0.0, 0.0],
+                [g, g, 0.0, 0.0],
+                [0.2576482460664272457999960162840797092643,
+                 -0.09351476757488624521601546747763655179361,
+                 g, 0.0],
+                [0.1876410243467238251612921441668043913795,
+                 -0.5952974735769549480478230275858851737782,
+                 0.9717899277217721234705114322255239398694,
+                 g],
+            ]),
+            b=(np.array([0.1876410243467238251612921441668043913795,
+                         -0.5952974735769549480478230275858851737782,
+                         0.9717899277217721234705114322255239398694,
+                         g]),
+               np.array([0.1088966176158644541561307380704960821824,
+                         -0.9153258118707127534816380978168183454991,
+                         1.271273597302152167844715894135642876535,
+                         0.5351555969526961314807914656106793867813])),
+            c=np.array([0.0,
+                        0.8717330430169179988320389023871136850586,
+                        0.6,
+                        1.0]),
+        )
+    elif scheme == 'ESDIRK436L2SA':
+        # Kennedy-Carpenter 6-stage ESDIRK4(3)6L[2]SA (order 4 / embedded 3,
+        # A- and L-stable, stiffly accurate), as published in SUNDIALS ARKODE
+        # v7.9.0, `src/arkode/arkode_butcher_dirk.def` (ARKODE_ESDIRK436L2SA),
+        # in its exact radical/rational form. Explicit first stage. The
+        # off-diagonal A[i][0] entries are derived exactly as in that file:
+        # A[i][0] = c[i] - sum_{j>=1} A[i][j]. Order, embedded order, and
+        # A/L stability verified as for ESDIRK324L2SA (NOTES.md S3.6).
+        sqrt2 = np.sqrt(2.0)
+        b0 = (1181.0 - 987.0 * sqrt2) / 13782.0
+        b2 = 47.0 * (-267.0 + 1783.0 * sqrt2) / 273343.0
+        b3 = -16.0 * (-22922.0 + 3525.0 * sqrt2) / 571953.0
+        b4 = -15625.0 * (97.0 + 376.0 * sqrt2) / 90749876.0
+        b5 = 1.0 / 4.0
+        b_main = np.array([b0, b0, b2, b3, b4, b5])
+        b_embed = np.array([
+            -480923228411.0 / 4982971448372.0,
+            -480923228411.0 / 4982971448372.0,
+            6709447293961.0 / 12833189095359.0,
+            3513175791894.0 / 6748737351361.0,
+            -498863281070.0 / 6042575550617.0,
+            2077005547802.0 / 8945017530137.0,
+        ])
+        A11 = 1.0 / 4.0
+        A21 = (1.0 - sqrt2) / 8.0
+        A22 = 1.0 / 4.0
+        A31 = (5.0 - 7.0 * sqrt2) / 64.0
+        A32 = 7.0 * (1.0 + sqrt2) / 32.0
+        A33 = 1.0 / 4.0
+        A41 = -(13796.0 + 54539.0 * sqrt2) / 125000.0
+        A42 = (506605.0 + 132109.0 * sqrt2) / 437500.0
+        A43 = 166.0 * (-97.0 + 376.0 * sqrt2) / 109375.0
+        A44 = 1.0 / 4.0
+        c = np.array([0.0, 0.5, (2.0 - sqrt2) / 4.0, 5.0 / 8.0, 26.0 / 25.0, 1.0])
+        return butcherTableau(
+            a=np.array([
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [c[1] - A11, A11, 0.0, 0.0, 0.0, 0.0],
+                [c[2] - A21 - A22, A21, A22, 0.0, 0.0, 0.0],
+                [c[3] - A31 - A32 - A33, A31, A32, A33, 0.0, 0.0],
+                [c[4] - A41 - A42 - A43 - A44, A41, A42, A43, A44, 0.0],
+                [b_main[0], b_main[1], b_main[2], b_main[3], b_main[4], b_main[5]],
+            ]),
+            b=(b_main, b_embed),
+            c=c,
         )
     else:
         raise ValueError(f"Unknown DIRK scheme {scheme}")
@@ -246,3 +337,5 @@ implicitMidpoint = dirkScheme('implicitMidpoint')
 trapezoidal = dirkScheme('trapezoidal')
 SDIRK2 = dirkScheme('SDIRK2')
 TRBDF2 = dirkScheme('TRBDF2')
+ESDIRK324L2SA = dirkScheme('ESDIRK324L2SA')
+ESDIRK436L2SA = dirkScheme('ESDIRK436L2SA')

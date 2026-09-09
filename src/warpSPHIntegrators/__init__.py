@@ -45,12 +45,15 @@ from .fields import (
     replace_integrated_fields,
 )
 from .history import HistoryEntry, StepHistory
-from .solvers import NonlinearSolver, FixedPointSolver, RelaxedFixedPointSolver, SolveDiagnostics, SolveResult
-from .jfnk import JFNKSolver, fd_matvec, jvp_matvec, gmres
+from .solvers import (NonlinearSolver, FixedPointSolver, RelaxedFixedPointSolver,
+                     SolveDiagnostics, SolveResult, SolverOptions)
+from .jfnk import (JFNKSolver, fd_matvec, jvp_matvec, gmres,
+                  identity_preconditioner, diagonal_preconditioner)
 from .bdf import BDF1, BDF2, BDF3
 from .imex import IMEXEuler
 from .newmark import newmark, newmark_average_acceleration, newmark_linear_acceleration
-from .dirk import TRBDF2
+from .dirk import TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA
+from .ark import ARK324L2SA, ARK436L2SA
 
 from .util import IntegrationSchemeType
 
@@ -98,10 +101,13 @@ __all__ = [
     "RelaxedFixedPointSolver",
     "SolveDiagnostics",
     "SolveResult",
+    "SolverOptions",
     "JFNKSolver",
     "fd_matvec",
     "jvp_matvec",
     "gmres",
+    "identity_preconditioner",
+    "diagonal_preconditioner",
     "BDF1",
     "BDF2",
     "BDF3",
@@ -110,6 +116,10 @@ __all__ = [
     "newmark_average_acceleration",
     "newmark_linear_acceleration",
     "TRBDF2",
+    "ESDIRK324L2SA",
+    "ESDIRK436L2SA",
+    "ARK324L2SA",
+    "ARK436L2SA",
     "StateBlend",
     "ComponentUpdateSpec",
     "PositionUpdateSpec",

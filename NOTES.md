@@ -59,11 +59,12 @@ are gone.
   Limitations". Both are much cheaper here than for a general-purpose library, because
   the surrounding simulation does not resort particles, holds `dt` constant, and
   carries its neighbour list through the state (§3.0). **All three phases — 0 (§3.5),
-  2 (§3.6, DIRK), and 1 (§3.6, multistep) — are done as of 2026-08-24.** Eleven new
-  schemes are registered: four DIRK (Backward Euler, Implicit Midpoint, Trapezoidal,
-  SDIRK2; TR-BDF2 and ESDIRK3(2) deliberately deferred) and seven explicit multistep
-  (Adams-Bashforth 2-5, Adams-Bashforth-Moulton 2-4 PECE), every one verified to reach
-  its claimed convergence order empirically. **Implicit midpoint's headline symplectic
+  2 (§3.6, DIRK), and 1 (§3.6, multistep) — are done as of 2026-08-24.** Fourteen new
+  schemes are registered: seven DIRK (Backward Euler, Implicit Midpoint, Trapezoidal,
+  SDIRK2, landed 2026-08-24; TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA landed
+  2026-09-09 with SUNDIALS ARKODE's published coefficients) and seven explicit
+  multistep (Adams-Bashforth 2-5, Adams-Bashforth-Moulton 2-4 PECE), every one
+  verified to reach its claimed convergence order empirically. **Implicit midpoint's headline symplectic
   property needs a caveat the original scoping missed**: at the shipped
   `FixedPointSolver` default (2 fixed Picard iterations), its long-run energy
   behaviour measures dissipative, not symplectic — the textbook bound only returns
@@ -72,10 +73,14 @@ are gone.
   from Dormand-Prince, thread `StepHistory`" design didn't need new machinery that
   could itself be wrong, and the full suite (1103 → 1380 passing tests) went green on
   the first run after fixing one pre-existing test's exclusion criteria. What remains
-  open in this area — TR-BDF2, ESDIRK3(2), fully implicit RK, BDF3-6, high-order
-  IMEX/ARK, and adaptive `dt` — is each individually scoped in §3.6/§3.4
+  open in this area — fully implicit RK, BDF4-6, and adaptive `dt` — is each
+  individually scoped in §3.6/§3.4
   and gated on a concrete downstream need, per the recommendation at the end of §3.8;
-  none of it is a groundwork gap the way Phase 0 was.
+  none of it is a groundwork gap the way Phase 0 was. (High-order IMEX/ARK landed as
+  Phase 5 on 2026-09-09 — `ark.py`, see §3.6. Preconditioned JFNK landed as Phase 2
+  on 2026-09-09 — left/right-preconditioned `gmres`, the 3-arg
+  `preconditioner(v, state, context)` hook on `JFNKSolver`, identity/diagonal
+  examples, and the size-sweep benchmark; see §3.4.)
 - **A finding, not a defect:** Leap Frog, Velocity Verlet, PEFRL and VEFRL are only
   second/fourth order for a **separable** Hamiltonian, i.e. a force depending on
   position alone. With a velocity-dependent force — artificial viscosity, drag, any
@@ -466,6 +471,82 @@ factor.
    solve and will always beat a generic Krylov method. This should be the contract;
    1–3 are the fallbacks.
 
+**The JFNK cost model, per stage (2026-09-08).** One `JFNKSolver.solve` call costs,
+in right-hand-side evaluations:
+
+- **Residual evaluations.** One per outer Newton iteration plus one final
+  evaluation that verifies the last correction. That count is what
+  `SolveDiagnostics.rhs_evaluations` reports. A converged solve typically spends a
+  few of the default 20-correction budget on smooth stage systems; the count grows
+  with the stage system's nonlinearity and with `dt` past the non-stiff regime
+  (measured: mean corrections `3.1 → 11.6` as the `dt` multiplier over the
+  acoustic CFL goes `1× → 30×` on `JFNK_PLAN.md` Phase B step 6's acoustic core).
+- **GMRES matvecs.** Each correction solves one linear system with restarted GMRES
+  (default restart 30), one matvec per Krylov iteration; the total across all
+  corrections is `SolveDiagnostics.gmres_iterations`. **Each matvec is itself one
+  extra `step` evaluation** — the perturbed state in `matvec='fd'` mode, the
+  dual-level state in `matvec='jvp'` mode — so the total number of `step`
+  evaluations a stage solve actually performs is
+  `rhs_evaluations + gmres_iterations`, not `rhs_evaluations` alone. The base
+  residual `G(Y)` is shared across every Krylov iteration of one correction
+  (that is the whole point of the `y_flat`/`G_y` arguments to `fd_matvec`), which
+  is what keeps a matvec at one evaluation rather than two.
+- **FD versus exact-JVP matvec.** Same asymptotic cost (one `step` evaluation
+  each); the difference is accuracy, not count. The FD step is Knoll-Keyes scaled
+  and carries its own truncation noise, concentrated in small-magnitude fields of a
+  multi-scale flat vector (E1.5's finding); the exact JVP is exact by linearity
+  for the qualifying `f`s and measurably uses no more GMRES iterations
+  (`test_jfnk.py`'s `iters_jvp <= iters_fd` check). On the turbulent-flow probe
+  (`JFNK_PLAN.md` E1.6) that accuracy difference is the thing that keeps the
+  large-`dt` forced branch tracking the reference where the FD matvec starts
+  drifting — reach for `matvec='jvp'` there, when the `f` qualifies.
+- **Measured scale** (acoustic core, `nx=24`, Backward Euler,
+  `JFNK_PLAN.md` Phase B step 6): wall clock `13.75 → 1218.69` ms/step from
+  `1×` to `30×` the acoustic CFL, against plain explicit RK4's `2.87` ms/step at
+  its native `1×`. JFNK is not a wall-clock win at a `dt` where explicit is still
+  stable; it is the only bounded option past explicit's own limit, and it stays
+  roughly flat per unit of simulated time (ms per `dt`-unit) through `10×`.
+
+**Why a preconditioner is the scale risk (roadmap Phase 2) — landed 2026-09-09.** Everything above
+holds at the resolutions measured; the part that does not obviously hold at
+particle scale is the *unpreconditioned* GMRES iteration count. The stage operator
+`I − dt·a_ii·J` of a diffusion-like term has eigenvalue spread that grows with
+resolution (wavenumber content up to `~h^{-2}`), and GMRES without a
+preconditioner needs iteration counts that grow with that spread; the FD matvec's
+noise floor rises with particle count for the same reason (more summed round-off
+per evaluation's reductions — `JFNKSolver`'s stagnation tracking exists because
+the float32 floor is resolution-dependent, ~1.5e-4 at 16K particles,
+~2.3e-3–2.8e-3 at 1M, per its own docstring). A diagonal or block-diagonal
+preconditioner — classically, the explicit-Euler step of the same stage operator
+applied inside GMRES — is what should make the Krylov count stop growing with
+`N`. That hook now exists (roadmap Phase 2, landed 2026-09-09):
+`gmres(..., preconditioner=, preconditioning='right'|'left')` and
+`JFNKSolver(preconditioner=, preconditioning=, preconditioner_context=)`, with
+the caller-facing contract `preconditioner(v, state, context) -> vector` —
+`state` is the current Newton iterate and `context` merges
+`preconditioner_context` under `{'state': Y}`, so a preconditioner that
+approximates `J_G(Y)^{-1}` can read the iterate's own fields. `identity_` and
+`diagonal_preconditioner` are the shipped examples (`tests/test_preconditioner.py`);
+the no-preconditioner path is untouched and a supplied identity is *bitwise*
+identical to none in both modes. Two measured findings from landing it: (a) a
+*scalar* diagonal does not help a uniform-coefficient operator — it only rescales
+the spectrum, leaving the condition number unchanged (1D Laplacian, `dt=50`:
+147 → 146 right) — while a *per-DOF* diagonal is a strong preconditioner exactly
+when the stiffness varies by particle, which is the realistic SPH case (per-
+particle `c`/damping): on `A = I + dt·(diag(K) + εL)` with `K ∈ [1, 100]`,
+`n=200`, GMRES drops 76 → 32 (right) / 6 (left); the size sweep in
+`scripts/jfnk_preconditioner_benchmark.py` holds 9–13 iterations preconditioned
+against 104–173 unpreconditioned through `n=1024` (`images/jfnk_preconditioner_`
+`benchmark.png`, 9–12× total stage-map evaluations). (b) On the real SPH operator
+(`warpSPH`'s wave equation, backward-Euler 2N stage), the block-lower-triangular
+factor of the stage Jacobian — `L^{-1}b = [b_u, (b_v + dt·c²·Lap(b_u))/(1+dt·damping)]`,
+one `warpOperationJVP` apply, no dense matrix — cuts the stage solve 41 → 17
+(`matvec='fd'`) and 33 → 7 (`matvec='jvp'`) at `nx=32`, with the preconditioned
+solve agreeing with the unpreconditioned one and the hand-eliminated CG reference
+(`warpSPH/tests/test_implicitWaveEquation.py`, Step 7). The unpreconditioned path
+remains the default, and the per-step numbers above stay the baseline a new
+resolution should be compared against.
+
 **Caution: the probe's Jacobian does not scale, and this matters a lot for SPH.**
 `newton_probe.py` (§3.9) builds a *dense* Jacobian one column at a time — one extra
 RHS evaluation per unknown — which is fine for the probe's 3–6-variable oscillator and
@@ -524,11 +605,12 @@ Effort is *marginal*, on top of the groundwork and the driver its group needs.
 "tableau only" means the scheme is a data entry in `getButcherTableau` plus a
 registry line — the same one-line cost that adding Dormand–Prince was.
 
-#### Diagonally implicit RK (sequential 1-stage solves) — four of seven shipped 2026-08-24
+#### Diagonally implicit RK (sequential 1-stage solves) — all seven shipped (four 2026-08-24, the rest 2026-09-09)
 
 The probe driver is ~60 lines; budget ~150 for a registered one with the solver
 protocol, verbose output and scheme metadata wired in. **Landed as `dirk.py`
-(~215 lines) + four registry entries**, reusing `butcher.py`'s `_weighted_update`,
+(~340 lines including the 2026-09-09 tableaus) + seven registry entries**, reusing
+`butcher.py`'s `_weighted_update`,
 `_error_estimate` and `finalizeSystem` machinery directly rather than duplicating it,
 per the design sketched here.
 
@@ -538,21 +620,35 @@ per the design sketched here.
 | **Backward Euler** | 1 | 1 | L | no | **Done.** |
 | **Trapezoidal / Crank–Nicolson** (Lobatto IIIA-2) | 2 | 2 | A, not L | symmetric | **Done.** Explicit first stage (`a11=0`) exercises the driver's non-Picard branch. |
 | **SDIRK2** (Ellsiepen, γ=1−√2/2) | 2 | 2 | L | no | **Done.** |
-| **TR-BDF2** | 2(3) | 3 | L | no | **Deliberately deferred** — see below. |
-| **ESDIRK3(2)4L[2]SA** (Kennedy–Carpenter) | 3(2) | 4 | L | no | **Deliberately deferred** — see below. |
-| **ESDIRK4(3)6L[2]SA** | 4(3) | 6 | L | no | later — same driver, more coefficients |
+| **TR-BDF2** | 2(3) | 3 | L | no | **Done 2026-09-09.** Embedded pair is SUNDIALS ARKODE's published (2, 3) pair. |
+| **ESDIRK3(2)4L[2]SA** (Kennedy–Carpenter) | 3(2) | 4 | L | no | **Done 2026-09-09.** Coefficients from SUNDIALS ARKODE v7.9.0; verified three ways (below). |
+| **ESDIRK4(3)6L[2]SA** | 4(3) | 6 | L | no | **Done 2026-09-09.** Same source and verification as ESDIRK3(2)4. |
 
-**TR-BDF2 and ESDIRK3(2)4L[2]SA were not implemented.** Both are embedded,
-higher-stage tableaus whose published coefficients are easy to transcribe wrong in a
-way a smoke test would not obviously catch — an order-2/3 convergence measurement
-looks the same whether the low-order embedded weights are exactly right or merely
-close, since only the *high-order* weights drive the propagated solution. The four
-tableaus that shipped were each verified two ways: by hand against their own order
-conditions before writing any code, and empirically via `testing.convergence` after
-(all four reach their claimed order to within 0.01 on `oscillator`/`forced`/`damped` —
-`tests/test_dirk.py`). Landing four verified tableaus beats landing six where two are
-unverified; add the other three when a concrete need for their extra stability
-margin or embedded error estimate shows up.
+**TR-BDF2 and both ESDIRKs landed 2026-09-09**, once the transcription concern
+below was resolved by a public, byte-for-byte reproducible coefficient source:
+SUNDIALS ARKODE v7.9.0's `src/arkode/arkode_butcher_dirk.def` (the Kennedy–Carpenter
+tableaus, entries `ARKODE_TRBDF2_3_3_2`, `ARKODE_ESDIRK324L2SA`,
+`ARKODE_ESDIRK436L2SA`). The original concern still stands as the reason: both are
+embedded, higher-stage tableaus whose published coefficients are easy to transcribe
+wrong in a way a smoke test would not obviously catch — an order-2/3 convergence
+measurement looks the same whether the low-order embedded weights are exactly right
+or merely close, since only the *high-order* weights drive the propagated solution.
+Each of the three was therefore verified beyond convergence: (1) the embedded
+weights satisfy the low branch's order conditions exactly (e.g. TR-BDF2's `d`:
+sum(d) = 1, d·c = 1/2, d·c² = 1/3); (2) one step expanded against the exact Taylor
+solution via a symbolic Taylor model gives the claimed main and embedded order
+(exact for the 4-stage ESDIRK3(2)4; numeric local-error rates against five
+closed-form ODEs for the 6-stage ESDIRK4(3)6, where the exact-√2 arithmetic is too
+slow symbolically); and (3) the stability function, computed exactly as a rational
+function, is A-stable (|R(z)| ≤ 1 on the left half-plane, on a sweep fine enough
+that grid artifact is ruled out) and L-stable (|R(-100)| = 2.65e-2 for
+ESDIRK3(2)4, 7.57e-2 for ESDIRK4(3)6, 4.41e-2 for TR-BDF2; decay ~ C/|z|). One
+naming note: the published names say "L[2]", but the exact stability functions
+decay as O(1/|z|), so these register `stability='L'` and no O(z⁻²) claim is made.
+The four 2026-08-24 tableaus were each verified two ways: by hand against their own
+order conditions before writing any code, and empirically via `testing.convergence`
+after (all four reach their claimed order to within 0.01 on `oscillator`/`forced`/
+`damped` — `tests/test_dirk.py`).
 
 **`reuse.py` was deliberately *not* touched, and the DIRK schemes deliberately do not
 expose `.butcherTableau`.** That attribute is what `reuse._tableau_of` looks for to
@@ -711,9 +807,46 @@ tension or the pressure term implicit, advection explicit. This is what producti
 stiff-SPH actually wants, and it sidesteps §3.2 — the implicit part is the part with a
 tractable, often *linear* operator.
 
-It needs a split right-hand side (`f_explicit`, `f_implicit`), which is a **protocol
-change**: `updateStep` returns one update object today. Effort **1 wk** on top of a
-working DIRK driver and Newton solver. Gate it on a downstream that has the split.
+**Landed 2026-09-09 (Phase 5)** as `ark.py`, an additive (two-half) Runge-Kutta
+driver. No protocol change was needed: it reuses the `IMEXRHS(explicit=..., implicit=...)`
+split that IMEX Euler already shipped (an ordinary RHS stays fully implicit — the pure
+ESDIRK limit), and each half is a plain `updateStep` evaluation, so `updateStep` still
+returns one update object per callback.
+
+| Scheme | Order | Stages | Stability | FSAL? | Status |
+|---|---|---|---|---|---|
+| **ARK3(2)4L[2]SA** | 3 | 4 | L[2] | no (implicit half SA) | **Done.** Coefficients from SUNDIALS ARKODE v7.9.0 (ERK + DIRK pair). |
+| **ARK4(3)6L[2]SA** | 4 | 6 | L[2] | no (implicit half SA) | **Done.** Same source; the implicit half is a *different* ESDIRK design than the standalone ESDIRK4(3)6. |
+
+Key findings, all verified in `tests/test_ark.py` (and numerically against the SUNDIALS
+C driver, `arkode_arkstep.c`):
+
+- **The propagated update is the additive `b`-weighted combination, not the last
+  stage.** An ARK method is a *pair*; the two halves are not symmetric under stiff
+  accuracy. The implicit (DIRK) half is stiffly accurate (`b_imp == A_i[last]`) but the
+  explicit (ERK) half is not (`b_exp != A_e[last]`), so the combined method is **not**
+  FSAL and `y^{n+1} != z_last`. SUNDIALS's own `IsStifflyAccurate` check (requires both
+  halves) falls through to the additive update. Using the last stage instead drops the
+  method to first order (measured); the additive combination keeps the full 3/4. This is
+  why both schemes register `stiffly_accurate=False` (this codebase's flag tracks FSAL)
+  and reject `priorStep`.
+- **`b_exp == b_imp` elementwise for both pairs.** The "two weight vectors" reduce to a
+  single vector (summing to 1) applied to `f_exp + f_imp`; the additive form is written
+  per half so the driver stays general.
+- **The ARK-context tableaus differ from the standalone ESDIRKs.** ARK3(2)4's implicit
+  `a/b/c` equal the registered ESDIRK3(2)4, but the ARK pair shares one embedded `d`
+  across both halves, and that `d` is *not* the standalone ESDIRK3(2)4's. ARK4(3)6's
+  implicit half is an entirely different 6-stage ESDIRK (nodes 83/250, 31/50, 17/20 vs
+  the standalone's (2−√2)/4, 5/8, 26/25), so its coefficients are carried in full.
+- **Copied-field ownership when both callbacks are active.** Each callback runs
+  `updateStep` on its own state object (one preprocess→f→postprocess each): the implicit
+  callback owns the stage buffer (the JFNK solve and post-convergence re-eval run on it,
+  the `dirk.DIRK` convention) and the explicit callback runs on a throwaway clone of the
+  converged buffer. The final state's copied fields come from the implicit buffer.
+- **Two-parameter IMEX stability** `R(z_exp, z_imp)` is computed exactly
+  (`stability.imex_stability_function`); the pure limits recover the component stability
+  functions, the implicit axis is L-stable, and a slice figure is generated by
+  `scripts/stability_gallery.py` (`images/imex_stability_slices.png`).
 
 ### 3.7 Pain points and limitations
 
@@ -810,11 +943,11 @@ Each phase is independently shippable and independently useful.
 | Phase | Content | Effort | Gate |
 |---|---|---|---|
 | **0** | S1–S5 + S2g groundwork (§3.5) — **done 2026-08-24** | 5–6 d | none — S1 also unblocks §2.3's adaptive `dt` |
-| **2** | DIRK driver + fixed-count `FixedPointSolver` + implicit midpoint, backward Euler, trapezoidal, SDIRK2 — **done 2026-08-24**; TR-BDF2, ESDIRK3(2) deferred (§3.6) | 4–5 d | Phase 0 |
+| **2** | DIRK driver + fixed-count `FixedPointSolver` + all seven DIRK tableaus — **done** (four 2026-08-24; TR-BDF2 + both ESDIRKs 2026-09-09, §3.6) | 4–5 d | Phase 0 |
 | **1** | Explicit multistep: AB2–5 + ABM PECE, DP5 starter, `dt`/`uid` guards — **done 2026-08-24** | 2–3 d | Phase 0 |
 | **3** | JFNK with FD matvecs + user `solve_linear` hook + particle masking | 1–1.5 wk | Phase 2, **and** a downstream that is actually stiff |
 | **4** | BDF1–6, fixed coefficients | 3–4 d | Phase 3 |
-| **5** | IMEX / ARK, split right-hand side | 1 wk | Phase 3 + a downstream with a split RHS |
+| **5** | IMEX / ARK, split right-hand side — **done 2026-09-09** (`ark.py`, ARK3(2)4L[2]SA + ARK4(3)6L[2]SA from SUNDIALS ARKODE v7.9.0, §3.6) | 1 wk | Phase 3 + a downstream with a split RHS |
 | **6** | Fully implicit: Gauss–Legendre, Radau IIA | 1–1.5 wk | demand-driven; symplectic order 4 is the draw |
 
 Phases 1 and 2 are listed out of numeric order deliberately: Phase 1's old gate —
@@ -838,8 +971,8 @@ session, and nothing here was building a solver contract with no user in the mea
   2-iteration default; only the *qualitative long-run energy behaviour* needs more
   iterations than the "ship 2" recommendation to recover. Four of six planned
   tableaus landed (backward Euler, implicit midpoint, trapezoidal, SDIRK2); TR-BDF2
-  and ESDIRK3(2) were deferred rather than risk unverified embedded-pair coefficients
-  (§3.6).
+  and both ESDIRKs landed 2026-09-09 once SUNDIALS ARKODE's published tableaus made
+  the embedded-pair transcription risk checkable (§3.6).
 - **Phase 1 landed cleanly, with no comparable caveat.** AB4 at one force evaluation
   per step against RK4's four, with exactly-correct fixed coefficients and a history
   that never expires — verified for every order (AB2-5, ABM2-4) against

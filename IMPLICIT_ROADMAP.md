@@ -8,7 +8,7 @@ This roadmap covers the remaining implicit, stiff, IMEX, stability, and nonlinea
 
 - [x] Nonlinear-solver protocol with fixed Picard, relaxed Picard, and matrix-free JFNK.
 - [x] JFNK is the default nonlinear closure for DIRK, Newmark, BDF, and IMEX Euler.
-- [x] DIRK: Backward Euler, implicit midpoint, trapezoidal / Crank-Nicolson, SDIRK2, and TR-BDF2.
+- [x] DIRK: Backward Euler, implicit midpoint, trapezoidal / Crank-Nicolson, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, and ESDIRK4(3)6L[2]SA.
 - [x] Newmark average-acceleration and linear-acceleration variants.
 - [x] BDF1-BDF3 with state-bearing `StepHistory` and a safe Dormand-Prince cold start.
 - [x] IMEX Euler with explicit `IMEXRHS(explicit=..., implicit=...)` callbacks; an ordinary RHS remains fully implicit.
@@ -19,13 +19,13 @@ This roadmap covers the remaining implicit, stiff, IMEX, stability, and nonlinea
 
 - [x] Update `README.md` Known Limitations to say BDF1/2 and IMEX Euler are available.
 - [x] Update `NOTES.md` status and scheme tables to replace old Picard-default claims with JFNK-default behavior.
-- [ ] Document the JFNK cost model: residual evaluations, GMRES matvecs, finite-difference versus exact JVP, and the need for preconditioning at scale.
+- [x] Document the JFNK cost model: residual evaluations, GMRES matvecs, finite-difference versus exact JVP, and the need for preconditioning at scale.
 - [x] Document which methods are A-stable, L-stable, symplectic, or only conditionally stable; distinguish the exact scheme from a truncated Picard override.
 - [x] Add a concise supported-scheme table with conservative dynamics, stiff dissipation, split stiff terms, and long smooth stiff integrations.
 
 Validation gate:
 
-- [ ] README examples execute in the `warp` environment.
+- [x] README examples execute in the `warp` environment.
 - [x] Scheme names, registry metadata, and documentation tables agree.
 
 ## Phase 1: Solver Observability and Robustness
@@ -33,10 +33,10 @@ Validation gate:
 - [x] Extend `SolveResult` with optional diagnostics: nonlinear residual, GMRES iterations, total RHS evaluations, and termination reason.
 - [x] Define termination reasons: converged tolerance, stagnation floor, maximum Newton iterations, maximum GMRES iterations, invalid residual.
 - [x] Add finite-value checks for nonlinear residuals before accepting a Newton update.
-- [ ] Add optional line search / damping for JFNK Newton corrections when a full correction increases the nonlinear residual.
-- [ ] Add a reusable solver-options dataclass or typed dictionary, while preserving current keyword compatibility.
+- [x] Add optional line search / damping for JFNK Newton corrections when a full correction increases the nonlinear residual.
+- [x] Add a reusable solver-options dataclass or typed dictionary, while preserving current keyword compatibility.
 - [x] Record diagnostics in `IntegrationResult` without changing existing `stages` semantics.
-- [ ] Add tests for Newton convergence, stagnation, GMRES exhaustion, NaN/Inf detection, and line-search recovery.
+- [x] Add tests for Newton convergence, stagnation, GMRES exhaustion, NaN/Inf detection, and line-search recovery.
 
 Validation gate:
 
@@ -46,19 +46,19 @@ Validation gate:
 
 ## Phase 2: Preconditioned JFNK
 
-- [ ] Add an optional `preconditioner(v, state, context) -> vector` hook to JFNK.
-- [ ] Upgrade GMRES to apply right or left preconditioning consistently and expose the selected mode.
-- [ ] Provide an identity preconditioner baseline and preserve current behavior when none is supplied.
-- [ ] Add diagonal / block-diagonal examples suitable for diffusion and relaxation terms.
-- [ ] Add a sparse or operator-based SPH preconditioner integration point; do not form dense Jacobians.
-- [ ] Measure residual evaluations and Krylov iterations as problem size grows.
-- [ ] Add benchmark plots comparing unpreconditioned and preconditioned JFNK.
+- [x] Add an optional `preconditioner(v, state, context) -> vector` hook to JFNK. (JFNKSolver binds the 3-arg callable to each Newton iterate: `state` is the current iterate, `context` is `{'state': Y, **preconditioner_context}`; settable at construction and via solve `**opts`.)
+- [x] Upgrade GMRES to apply right or left preconditioning consistently and expose the selected mode. (`gmres(..., preconditioner=, preconditioning='right'|'left')`; right solves `A M z = b` returning `x = M z` with the true residual, left solves `M A x = M b`; unknown modes rejected.)
+- [x] Provide an identity preconditioner baseline and preserve current behavior when none is supplied. (`identity_preconditioner`; a supplied identity is *bitwise* identical to no preconditioner in both modes, verified in `tests/test_preconditioner.py`.)
+- [x] Add diagonal / block-diagonal examples suitable for diffusion and relaxation terms. (`diagonal_preconditioner`: fixed tensor or state-dependent callable — the `1/(1 + dt*damping)` relaxation shape.)
+- [x] Add a sparse or operator-based SPH preconditioner integration point; do not form dense Jacobians. (The hook + `preconditioner_context` is the integration point; downstream `warpSPH/tests/test_implicitWaveEquation.py` exercises it with the block-lower-triangular factor of the backward-Euler wave stage Jacobian, applied through `warpOperationJVP` — one Laplacian apply, no dense matrix.)
+- [x] Measure residual evaluations and Krylov iterations as problem size grows. (`scripts/jfnk_preconditioner_benchmark.py`, n = 64..1024; Krylov cost is flat at 9-13 iterations preconditioned vs 104-173 unpreconditioned, 9-12x in total stage-map evaluations.)
+- [x] Add benchmark plots comparing unpreconditioned and preconditioned JFNK. (`images/jfnk_preconditioner_benchmark.png`.)
 
 Validation gate:
 
-- [ ] Preconditioned and unpreconditioned solutions agree on linear reference problems.
-- [ ] A representative stiff diffusion/relaxation problem uses materially fewer GMRES iterations with a supplied preconditioner.
-- [ ] The no-preconditioner path remains bitwise or tolerance-equivalent to the current solver.
+- [x] Preconditioned and unpreconditioned solutions agree on linear reference problems. (Library-level variable-coefficient stiff relaxation, and the wave equation against the hand-eliminated CG reference.)
+- [x] A representative stiff diffusion/relaxation problem uses materially fewer GMRES iterations with a supplied preconditioner. (n=200: 76 -> 32 right / 6 left; wave stage at nx=32: 41 -> 17 fd, 33 -> 7 jvp.)
+- [x] The no-preconditioner path remains bitwise or tolerance-equivalent to the current solver. (Identity preconditioner bitwise-identical in both modes; `tests/test_jfnk.py` passes unchanged.)
 
 ## Phase 3: Higher-Quality Sequential DIRK
 
@@ -66,24 +66,24 @@ Validation gate:
 
 - [x] Verify the TR-BDF2 SDIRK coefficients and independently check the second-order condition.
 - [x] Add the three-stage tableau to `getDIRKTableau`.
-- [ ] Add an embedded estimator, returning `IntegrationResult.error`.
+- [x] Add an embedded estimator, returning `IntegrationResult.error`.
 - [x] Register order 2, L-stable, stiffly accurate metadata.
 - [x] Test convergence through the generic oscillator, forced, damped, and Kepler suites plus nonlinear stiff relaxation.
-- [ ] Add a method-specific L-stable damping test on the negative-real-axis scalar problem.
+- [x] Add a method-specific L-stable damping test on the negative-real-axis scalar problem.
 
 ### ESDIRK3(2)4L[2]SA and ESDIRK4(3)6L[2]SA
 
-- [ ] Verify coefficients and named variants from Kennedy-Carpenter or the original source.
-- [ ] Extend the tableau model only if needed for explicit first stages and embedded weights.
-- [ ] Register both schemes with accurate stage count, stability, stiff-accuracy, and error-estimator metadata.
-- [ ] Add convergence and embedded-error tests on autonomous, non-autonomous, nonlinear, and stiff problems.
-- [ ] Add stability-region overlays for all new DIRK methods.
+- [x] Verify coefficients and named variants from Kennedy-Carpenter or the original source. (Sourced from SUNDIALS ARKODE v7.9.0, `src/arkode/arkode_butcher_dirk.def`, entries `ARKODE_ESDIRK324L2SA` / `ARKODE_ESDIRK436L2SA`; verified by symbolic Taylor-model order, numeric local-error rates on five closed-form ODEs, and exact stability-function sweeps — NOTES.md §3.6.)
+- [x] Extend the tableau model only if needed for explicit first stages and embedded weights. (Not needed: the DIRK driver already handles `a_ii == 0` explicit stages and tuple `b` embedded pairs.)
+- [x] Register both schemes with accurate stage count, stability, stiff-accuracy, and error-estimator metadata.
+- [x] Add convergence and embedded-error tests on autonomous, non-autonomous, nonlinear, and stiff problems.
+- [x] Add stability-region overlays for all new DIRK methods. (Numeric known-point containment and |R(-100)| L-damping assertions in `tests/test_stiff.py`, same convention as TR-BDF2; no new PNGs.)
 
 Validation gate:
 
-- [ ] Every new tableau passes hand-checked consistency/order conditions and empirical convergence tests.
-- [ ] JFNK preserves copied-field lifecycle through every implicit stage.
-- [ ] Stability plots match the advertised A/L-stability class numerically.
+- [x] Every new tableau passes hand-checked consistency/order conditions and empirical convergence tests.
+- [x] JFNK preserves copied-field lifecycle through every implicit stage.
+- [x] Stability plots match the advertised A/L-stability class numerically. (A-stable on fine left-half-plane and imaginary-axis sweeps, max |R| = 1 only at z = 0; L-decay |R(-100)| = 2.65e-2 / 7.57e-2.)
 
 ## Phase 4: Higher-Order BDF and True Adams-Moulton
 
@@ -111,21 +111,21 @@ Validation gate:
 
 ## Phase 5: Higher-Order IMEX / Additive RK
 
-- [ ] Define an additive-tableau representation with explicit and diagonally-implicit coefficients, stage times, propagated weights, and embedded weights.
-- [ ] Generalize IMEX Euler into an additive RK driver using `IMEXRHS`.
-- [ ] Preserve the compatibility rule: a normal RHS callable means fully implicit; only `IMEXRHS` activates a split.
-- [ ] Decide and document copied-field semantics when explicit and implicit callbacks each preprocess a stage.
-- [ ] Implement and verify ARK3(2)4L[2]SA.
-- [ ] Implement and verify ARK4(3)6L[2]SA.
-- [ ] Add split test problems: explicit transport plus implicit linear decay/diffusion; nonlinear explicit forcing plus implicit relaxation.
-- [ ] Add two-parameter IMEX stability plots over `(z_explicit, z_implicit)` slices.
-- [ ] Measure RHS cost: explicit evaluations, implicit residual evaluations, and GMRES iterations.
+- [x] Define an additive-tableau representation with explicit and diagonally-implicit coefficients, stage times, propagated weights, and embedded weights. (`ark.AdditiveTableau`)
+- [x] Generalize IMEX Euler into an additive RK driver using `IMEXRHS`. (`ark.ARK`; reuses the existing `IMEXRHS` split — no protocol change.)
+- [x] Preserve the compatibility rule: a normal RHS callable means fully implicit; only `IMEXRHS` activates a split.
+- [x] Decide and document copied-field semantics when explicit and implicit callbacks each preprocess a stage. (Implicit callback owns the stage buffer; explicit runs on a throwaway clone; final copied fields come from the implicit buffer — `ark.py` docstring + `tests/test_ark.py`.)
+- [x] Implement and verify ARK3(2)4L[2]SA. (SUNDIALS ARKODE v7.9.0 ERK+DIRK pair; order 3, L[2].)
+- [x] Implement and verify ARK4(3)6L[2]SA. (Same source; order 4, L[2]. The implicit half is a different ESDIRK design than the standalone ESDIRK4(3)6.)
+- [x] Add split test problems: explicit transport plus implicit linear decay/diffusion; nonlinear explicit forcing plus implicit relaxation. (`tests/test_ark.py`)
+- [x] Add two-parameter IMEX stability plots over `(z_explicit, z_implicit)` slices. (`stability.imex_stability_function` + `scripts/stability_gallery.py` → `images/imex_stability_slices.png`; numeric assertions in `tests/test_ark.py`.)
+- [x] Measure RHS cost: explicit evaluations, implicit residual evaluations, and GMRES iterations. (Per-stage `solver_diagnostics`; explicit-eval-per-stage and residual-count tests in `tests/test_ark.py`.)
 
 Validation gate:
 
-- [ ] Pure-explicit and pure-implicit limits recover the corresponding component methods where the tableau guarantees it.
-- [ ] Split linear test equations meet claimed order and remain stable in their published IMEX region.
-- [ ] Existing ordinary RHS behavior remains fully implicit and cannot silently discard a split term.
+- [x] Pure-explicit and pure-implicit limits recover the corresponding component methods where the tableau guarantees it. (Pure-implicit limit reaches order 3/4 on oscillator/forced/damped; pure-explicit limit's stability function matches the ERK half exactly.)
+- [x] Split linear test equations meet claimed order and remain stable in their published IMEX region. (Both split problems measure 3/4; L-damping and mixed-region stability asserted.)
+- [x] Existing ordinary RHS behavior remains fully implicit and cannot silently discard a split term. (Ordinary RHS → implicit half alone; the split only activates via `IMEXRHS`.)
 
 ## Phase 6: Coupled Fully Implicit RK
 
@@ -184,11 +184,11 @@ Validation gate:
 
 ## Recommended Execution Order
 
-1. [ ] Phase 0 documentation reconciliation.
-2. [ ] Phase 1 solver diagnostics and failure handling.
-3. [ ] Phase 3 TR-BDF2, then ESDIRK3.
-4. [ ] Phase 5 ARK3 IMEX after the existing `IMEXRHS` API is stress-tested.
-5. [ ] Phase 2 preconditioning using the first real SPH diffusion/acoustic downstream.
+1. [x] Phase 0 documentation reconciliation.
+2. [x] Phase 1 solver diagnostics and failure handling.
+3. [x] Phase 3 TR-BDF2, then ESDIRK3. (Landed 2026-09-09: TR-BDF2 with SUNDIALS ARKODE's published (2, 3) embedded pair; ESDIRK3(2)4L[2]SA and ESDIRK4(3)6L[2]SA from the same source.)
+4. [x] Phase 5 ARK3 IMEX after the existing `IMEXRHS` API is stress-tested. (Landed 2026-09-09: `ark.py` additive driver with ARK3(2)4L[2]SA and ARK4(3)6L[2]SA from SUNDIALS ARKODE v7.9.0; two-parameter IMEX stability function + slice figure; split and pure-limit convergence verified in `tests/test_ark.py`.)
+5. [x] Phase 2 preconditioning using the first real SPH diffusion/acoustic downstream. (Landed 2026-09-09: left/right preconditioned GMRES + 3-arg `preconditioner(v, state, context)` hook on JFNKSolver, identity/diagonal helpers, size-sweep benchmark figure; validated on the wave equation via the block-lower-triangular Laplacian preconditioner — operator-based, no dense Jacobian.)
 6. [ ] Phase 4 BDF3-BDF5 and true Adams-Moulton.
 7. [ ] Phase 8 broadened nonlinear/stiff benchmark and stability suite throughout.
 8. [ ] Phase 6 coupled implicit RK only when a high-order symplectic or Radau use case justifies the block solver.

@@ -10,7 +10,7 @@ rewrite -- that pluggability, not any one solver, is the point of landing this n
 """
 
 from dataclasses import dataclass
-from typing import Any, Callable, NamedTuple, Optional, Protocol, runtime_checkable
+from typing import Any, Callable, NamedTuple, Optional, Protocol, TypedDict, runtime_checkable
 
 from .fields import flatten_integrated, unflatten_integrated
 
@@ -23,6 +23,52 @@ class SolveDiagnostics:
     gmres_iterations: int = 0
     rhs_evaluations: int = 0
     termination: str = 'fixed_iterations'
+    #: JFNK line-search rejections of a damped Newton correction; 0 when line
+    #: search is off and for the fixed-point solvers.
+    line_search_backtracks: int = 0
+
+
+class SolverOptions(TypedDict, total=False):
+    """Typed view of the keyword options a solver's ``solve(step, y0, norm=None,
+    **opts)`` accepts.
+
+    Typing-only: the solvers read ``opts`` with ``opts.get(...)`` and ignore
+    unknown keys, so a plain ``dict`` keeps working exactly as before -- this
+    name exists so a caller can annotate ``opts: SolverOptions = {'tol': 1e-8,
+    'line_search': True}`` and get key checking without changing the call
+    convention. ``total=False`` because every option is optional and each solver
+    reads only the subset it knows: ``JFNKSolver`` reads ``matvec``/``tol``/
+    ``max_iterations``/``gmres_*``/``fd_eps``/``newton_*``/``line_search*``/
+    ``preconditioner``/``preconditioning``/``preconditioner_context``,
+    while the fixed-point solvers read ``iterations``/``relaxation``.
+    """
+
+    matvec: str
+    tol: float
+    max_iterations: int
+    gmres_tol: float
+    gmres_maxiter: int
+    gmres_restart: int
+    fd_eps: float
+    newton_tol: float
+    newton_stagnation_ratio: float
+    newton_stagnation_patience: int
+    iterations: int
+    relaxation: float
+    line_search: bool
+    line_search_min_step: float
+    #: ``JFNKSolver``: a ``preconditioner(v, state, context) -> vector`` callable
+    #: applied inside the GMRES loop to cluster the stage-Jacobian spectrum.
+    #: ``None`` (default) leaves the solve unpreconditioned, bitwise identical to
+    #: the pre-hook behaviour.
+    preconditioner: Callable
+    #: ``'right'`` (default) or ``'left'`` -- which side of the operator the
+    #: preconditioner multiplies. See ``jfnk.gmres`` for the exact formulation.
+    preconditioning: str
+    #: Extra context merged into the ``context`` dict the preconditioner receives
+    #: (``{'state': <current iterate>, **preconditioner_context}``): e.g. ``dt``,
+    #: the system, or an operator the preconditioner needs.
+    preconditioner_context: dict
 
 
 class SolveResult(NamedTuple):

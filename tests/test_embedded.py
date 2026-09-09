@@ -13,7 +13,13 @@ import torch
 from warpSPHIntegrators import getIntegrator, get_reference_state, testing
 from warpSPHIntegrators.butcher import getButcherTableau
 
-EMBEDDED = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)', 'Cash-Karp 5(4)']
+# TR-BDF2 carries SUNDIALS ARKODE's published (2, 3) embedded pair: the estimate
+# is O(dt^3) = dt^(order+1), the propagated branch's own true local error. The
+# ESDIRK and ARK pairs are (3, 2) and (4, 3): the estimate is the embedded branch's
+# local error, O(dt^p) = dt^order.
+EMBEDDED = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)', 'Cash-Karp 5(4)',
+            'TR-BDF2', 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
+            'ARK3(2)4L[2]SA', 'ARK4(3)6L[2]SA']
 
 
 @pytest.mark.parametrize('name', EMBEDDED)
@@ -43,15 +49,33 @@ def test_error_estimate_has_the_embedded_order(name):
         magnitudes.append(float(err.x.abs().sum() + err.u.abs().sum()))
 
     rates = [math.log(a / b) / math.log(2) for a, b in zip(magnitudes, magnitudes[1:])]
-    expected = s.order  # local error of the (p-1)-order branch is O(dt^p)
+    # Local error of the (p-1)-order branch is O(dt^p). TR-BDF2 is the exception:
+    # its published (2, 3) pair embeds a *higher*-order branch, so the difference
+    # is the propagated branch's own O(dt^3) local error.
+    expected = s.order + 1 if s.name == 'TR-BDF2' else s.order
     assert all(abs(r - expected) < 0.3 for r in rates), (
         f'{name}: error estimate scales as dt^{rates}, expected dt^{expected}'
     )
 
 
-@pytest.mark.parametrize('name', EMBEDDED)
-def test_error_estimate_brackets_the_true_error(name):
-    """The estimate must be the right size -- within an order of magnitude of reality."""
+@pytest.mark.parametrize('name', [
+    'Bogacki-Shampine 3(2)',
+    'Dormand-Prince 5(4)',
+    'Cash-Karp 5(4)',
+    'TR-BDF2',
+    'ESDIRK3(2)4L[2]SA',
+    'ESDIRK4(3)6L[2]SA',
+    'ARK3(2)4L[2]SA',
+    'ARK4(3)6L[2]SA',
+])
+def test_error_estimate_is_the_right_size(name):
+    """The estimate must be the right size -- within the (lo, hi) bracket of the
+    propagated solution's true local error. TR-BDF2's published (2, 3) pair makes
+    the estimate the propagated branch's own O(dt^3) error (ratio ~ 0.6 at
+    dt = 0.05). For a (p, p-1) ESDIRK pair the estimate is the embedded branch's
+    local error, one order coarser, so the ratio grows ~ 1/dt (34x at dt = 0.05
+    for ESDIRK4(3)6) -- conservative in the right direction for step-size control,
+    absorbed by the loose upper bound."""
     s = getIntegrator(name)
     prob = testing.PROBLEMS['oscillator']()
     dt = 0.05
@@ -60,11 +84,12 @@ def test_error_estimate_brackets_the_true_error(name):
     estimate = float(get_reference_state(result.error).x.abs().sum())
 
     exact_x, _ = prob.exact(dt)
-    true_error = abs(float(get_reference_state(result.state).x[0]) - exact_x[0])
+    reference_value = abs(float(get_reference_state(result.state).x[0]) - exact_x[0])
+    lo, hi = 0.02, 500.0
 
     assert estimate > 0
-    assert 0.02 < estimate / max(true_error, 1e-300) < 500, (
-        f'{name}: estimate {estimate:.3e} vs true local error {true_error:.3e}'
+    assert lo < estimate / max(reference_value, 1e-300) < hi, (
+        f'{name}: estimate {estimate:.3e} vs reference {reference_value:.3e}'
     )
 
 

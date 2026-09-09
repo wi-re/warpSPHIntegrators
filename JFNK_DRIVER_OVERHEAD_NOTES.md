@@ -267,6 +267,17 @@ problems); stagnation is the fallback for when it isn't. Enabled unconditionally
 itself (not `dirk.py`-only), since it's a strict robustness improvement with no norm-convention
 dependency: genuine progress never trips it, only genuine plateaus do.
 
+**Strengthened (2026-09-08, Phase 1)**: the plateau check now requires the current value to fail
+to beat *both* the best so far and the immediately preceding iterate's value by at least
+`stagnation_ratio`. Best-only comparison misread a *transient* Newton overshoot (residual rising
+for a step or two as the iterates wander outside the quadratic-convergence basin, then falling
+again) as a floor and reported converged at a residual of ~3.8 on a problem Newton then solves to
+1e-10 — found directly on a cubic test map, where the no-line-search trajectory 0.9 → 3.39 → 2.40
+plateaued against the pre-overshoot best before the iterates fell back into the basin. The
+preceding-iterate half of the check resets the count on any correction that improves well past
+the ratio, so genuine overshoots run their course while true floors (which wobble at most
+round-off scale around the same value) still trip it exactly as before.
+
 **Validated**: full `warpSPHIntegrators` suite (1399 passed) and `warpSPH`'s two JFNK/DIRK test
 files (23 passed) unaffected — the toy/unit-test problems converge tightly and monotonically before
 stagnation's 2-iteration patience ever engages. Traced outer Newton-iteration counts directly:

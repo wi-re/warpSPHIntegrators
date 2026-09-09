@@ -10,6 +10,7 @@ distinction the energy-drift investigation in `integration.py`'s registration co
 turned up.
 """
 
+import numpy as np
 import pytest
 import torch
 
@@ -18,7 +19,7 @@ from warpSPHIntegrators.dirk import DIRK, getDIRKTableau
 
 DIRK_SCHEMES = [
     'Backward Euler (implicit)', 'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)',
-    'SDIRK2', 'TR-BDF2',
+    'SDIRK2', 'TR-BDF2', 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
 ]
 
 
@@ -48,12 +49,16 @@ def test_newmark_rejects_invalid_beta_or_gamma(kwargs):
 # Tableau consistency (mirrors test_embedded.py's check for the explicit ones) #
 # --------------------------------------------------------------------------- #
 
-@pytest.mark.parametrize('name', ['backwardEuler', 'implicitMidpoint', 'trapezoidal', 'SDIRK2', 'TRBDF2'])
+@pytest.mark.parametrize('name', [
+    'backwardEuler', 'implicitMidpoint', 'trapezoidal', 'SDIRK2', 'TRBDF2',
+    'ESDIRK324L2SA', 'ESDIRK436L2SA',
+])
 def test_dirk_tableau_row_sums_match_c(name):
     tab = getDIRKTableau(name)
     for row, c in zip(tab.a, tab.c):
         assert row.sum() == pytest.approx(c, abs=1e-13)
-    assert tab.b.sum() == pytest.approx(1.0, abs=1e-13)
+    weights = tab.b[0] if isinstance(tab.b, tuple) else tab.b
+    assert weights.sum() == pytest.approx(1.0, abs=1e-13)
 
 
 def test_sdirk2_is_l_stable_by_construction():
@@ -65,13 +70,37 @@ def test_sdirk2_is_l_stable_by_construction():
 
 def test_trbdf2_satisfies_the_second_order_condition_and_is_stiffly_accurate():
     tab = getDIRKTableau('TRBDF2')
-    assert tab.b @ tab.c == pytest.approx(0.5, abs=1e-13)
-    assert tab.a[-1] == pytest.approx(tab.b, abs=1e-13)
+    b_main, b_embedded = tab.b
+    assert b_main @ tab.c == pytest.approx(0.5, abs=1e-13)
+    assert tab.a[-1] == pytest.approx(b_main, abs=1e-13)
 
 
-def test_trapezoidal_first_stage_is_explicit():
-    """a[0,0] == 0: exercises the DIRK driver's non-Picard branch on a real tableau."""
-    tab = getDIRKTableau('trapezoidal')
+def test_trbdf2_embedded_pair_is_the_published_third_order_pair():
+    """The embedded weights are SUNDIALS ARKODE's ARKODE_TRBDF2_3_3_2 published
+    (2, 3) pair, so the estimate is O(dt^3) -- the propagated branch's own true
+    local error. The three identities are the branch's order-3 conditions; the old
+    (0, 0, 1) backward-Euler branch, for comparison, satisfies the first two but
+    gives d.c^2 = 1, not 1/3."""
+    tab = getDIRKTableau('TRBDF2')
+    b_main, b_embedded = tab.b
+    gamma = 2.0 - np.sqrt(2.0)
+    expected = np.array([
+        (1.0 - np.sqrt(2.0) / 4.0) / 3.0,
+        (1.0 + 3.0 * np.sqrt(2.0) / 4.0) / 3.0,
+        gamma / 6.0,
+    ])
+    assert b_embedded == pytest.approx(expected, abs=1e-15)
+    assert b_embedded.sum() == pytest.approx(1.0, abs=1e-15)
+    assert b_embedded @ tab.c == pytest.approx(0.5, abs=1e-15)
+    assert b_embedded @ tab.c ** 2 == pytest.approx(1.0 / 3.0, abs=1e-15)
+
+
+@pytest.mark.parametrize('name', ['trapezoidal', 'ESDIRK324L2SA', 'ESDIRK436L2SA'])
+def test_esdirk_like_tableaus_have_an_explicit_first_stage(name):
+    """a[0,0] == 0: exercises the DIRK driver's non-Picard branch on a real
+    tableau. For the ESDIRKs this is the 'E' in the name -- the first stage
+    evaluates f explicitly and needs no solve."""
+    tab = getDIRKTableau(name)
     assert tab.a[0, 0] == 0.0
     assert tab.c[0] == 0.0
 

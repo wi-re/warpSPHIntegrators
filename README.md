@@ -19,7 +19,7 @@ blended with a reference state", and your system object decides what that means.
 
 ### Key Features
 
-- **Multiple Integration Schemes**: Runge-Kutta up to 5th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2) via a pluggable `NonlinearSolver`; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4)
+- **Multiple Integration Schemes**: Runge-Kutta up to 5th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA, Newmark) via a pluggable `NonlinearSolver`; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4); implicit multistep (BDF1–BDF3); additive (IMEX) RK (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA) and IMEX Euler, both through an explicit/implicit RHS split
 - **Flexible State Management**: Custom state objects with metadata-driven field behavior (integrated, constant, copied, ephemeral, custom)
 - **Type-Safe Protocol**: Structural typing for integration systems with clear separation of concerns
 - **Fully Differentiable**: All operations preserve gradient flow for end-to-end learning
@@ -312,6 +312,9 @@ the derivation and the remaining scheme work:
 | **Implicit Midpoint** | 2 | A, symplectic | JFNK converges the stage equation by default |
 | **Trapezoidal (Crank-Nicolson)** | 2 | A, not L | Classic pair with BDF2; symmetric |
 | **SDIRK2** | 2 | L | L-stability for real stiffness |
+| **TR-BDF2** | 2 | L, stiffly accurate | Three-stage L-stable DIRK; trapezoidal substep plus a BDF2 endpoint solve |
+| **ESDIRK3(2)4L[2]SA** | 3 | L, stiffly accurate | Kennedy–Carpenter 4-stage ESDIRK with explicit first stage; embedded (3, 2) pair |
+| **ESDIRK4(3)6L[2]SA** | 4 | L, stiffly accurate | Kennedy–Carpenter 6-stage ESDIRK with explicit first stage; embedded (4, 3) pair |
 | **Newmark** | 2 | A | Second-order structural dynamics update; JFNK closure through the repo's implicit solver API |
 
 ```python
@@ -341,6 +344,29 @@ a low-iteration Picard solve wrong, and more iterations of it explosively wrong,
 tableau you picked. The default JFNK path resolves this with a matrix-free Newton correction; relaxed
 Picard can only improve the non-stiff regime, not replace Newton for stiff systems.
 
+**JFNK accepts an optional operator-based preconditioner.** Pass
+`JFNKSolver(preconditioner=..., preconditioning='right'|'left', preconditioner_context=...)`
+(or the same keys through a driver's `solver_opts=`). The callable has the 3-arg contract
+`preconditioner(v, state, context) -> vector`: it should approximate the inverse of the
+stage Jacobian at the current Newton iterate `state`, with `context` carrying
+`{'state': state, **preconditioner_context}` so it can read anything fixed for the step
+(`dt`, an operator, ...). Only operator applications — never a dense matrix. Right
+preconditioning (the default) solves `A·M·z = b` and returns `x = M·z`; left solves
+`M·A·x = M·b`. Without a preconditioner the solve is bit-for-bit what it was before the
+hook existed, and `identity_preconditioner` reproduces that in both modes.
+`diagonal_preconditioner(inv_diag)` — a fixed tensor or a state-dependent callable, the
+`1/(1 + dt*damping)` relaxation shape — is the ready-made example. On a variable-coefficient
+stiff relaxation the per-particle diagonal holds GMRES to a flat 9–13 iterations through
+`n = 1024` where the unpreconditioned solve grows to ~170
+([`scripts/jfnk_preconditioner_benchmark.py`](scripts/jfnk_preconditioner_benchmark.py),
+![JFNK preconditioner size sweep](images/jfnk_preconditioner_benchmark.png)), and on the
+warpSPH wave-equation stage the block-lower-triangular Laplacian factor cuts the stage solve
+41 → 17 (`matvec='fd'`) / 33 → 7 (`matvec='jvp'`) iterations. The full
+walkthrough — solver-interface experiments 1–4 on the 1-D standing wave plus
+experiments 5–6 showing this preconditioner setup at the `gmres` level,
+end-to-end through `JFNKSolver`, and on the registered 2-D
+`waveEquationCase` — is [jfnk_wave_equation.ipynb](jfnk_wave_equation.ipynb).
+
 ### Explicit Multistep (Adams-Bashforth / Adams-Bashforth-Moulton)
 
 **These require `history=` to be threaded across calls to get their claimed cost.** Unlike every
@@ -369,16 +395,16 @@ cost every step rather than getting a wrong answer.
 
 ### Implicit Multistep (BDF)
 
-`BDF1` and `BDF2` use the same matrix-free JFNK closure as the DIRK methods. BDF2
-needs a previous-state snapshot, so thread `IntegrationResult.history` between steps;
-without it, it safely uses the repository's Dormand-Prince 5(4) starter rather than
-silently dropping to first order.
+`BDF1`–`BDF3` use the same matrix-free JFNK closure as the DIRK methods. BDF2 and
+BDF3 need previous-state snapshots, so thread `IntegrationResult.history` between
+steps (`maxlen=order - 1`); without enough history they safely use the repository's
+Dormand-Prince 5(4) starter rather than silently dropping to first order.
 
 ```python
 from warpSPHIntegrators import StepHistory, getIntegrator
 
-scheme = getIntegrator('BDF2')
-history = StepHistory(maxlen=1)
+scheme = getIntegrator('BDF3')
+history = StepHistory(maxlen=2)
 for _ in range(n_steps):
     result = scheme(system, dt=dt, f=rhs, history=history)
     system, history = result.state, result.history
@@ -388,6 +414,7 @@ for _ in range(n_steps):
 |--------|-------|-----------|----------|
 | **BDF1** | 1 | L | Backward-Euler form for strongly damped stiff modes |
 | **BDF2** | 2 | A | General stiff integration when a one-step history is acceptable |
+| **BDF3** | 3 | A(α) | Third-order stiff integration; sectorial (not full A-) stability |
 
 ### IMEX Euler
 
@@ -406,6 +433,32 @@ result = scheme(system, dt=dt, f=rhs)
 
 The explicit callback is evaluated from the known state once per step. Only the
 implicit callback is evaluated inside the JFNK nonlinear solve.
+
+### Additive (IMEX) Runge-Kutta — ARK3(2)4L[2]SA and ARK4(3)6L[2]SA
+
+The two Kennedy–Carpenter additive pairs are the higher-order split methods: each
+stage is an explicit (ERK) half plus a diagonally-implicit (ESDIRK) half, and the
+propagated update is the additive `b`-weighted combination of both. They take the
+same `IMEXRHS` split as IMEX Euler — an ordinary RHS stays fully implicit (the step
+reduces to the implicit ESDIRK half, a standalone method of the same order). The
+combined method is **not** FSAL (the explicit half is not stiffly accurate), so a
+reused `priorStep` is rejected and the schemes register `stiffly_accurate=False`.
+
+```python
+from warpSPHIntegrators import IMEXRHS, getIntegrator
+
+scheme = getIntegrator('ARK3(2)4L[2]SA')   # or 'ARK4(3)6L[2]SA'
+rhs = IMEXRHS(explicit=transport_rhs, implicit=diffusion_rhs)
+result = scheme(system, dt=dt, f=rhs)
+```
+
+When both callbacks are active, the implicit callback owns the stage buffer (the JFNK
+solve and its post-convergence re-evaluation run on it) and the explicit callback is
+evaluated on a throwaway clone of the converged stage; the final state's copied fields
+come from the implicit buffer. Each carries an embedded (3, 2) / (4, 3) error
+estimate, and their two-parameter stability region is in
+[NOTES.md §3.6](NOTES.md#36-valid-schemes-and-what-each-costs) and
+`images/imex_stability_slices.png`.
 | **Adams-Bashforth-Moulton 2–4 (PECE)** | 2–4 | 2 | order − 1 | Predict-Evaluate-Correct-Evaluate; a fixed (uniterated) correction |
 
 No linear multistep method is symplectic for a general Hamiltonian (Tang, 1993); all seven measure
@@ -453,11 +506,15 @@ position-only Hamiltonian.
 | Trapezoidal (Crank-Nicolson) | 2 | DIRK | A-stable and symmetric | linear only |
 | SDIRK2 | 2 | DIRK | L-stable | no |
 | TR-BDF2 | 2 | DIRK | L-stable and stiffly accurate | no |
+| ESDIRK3(2)4L[2]SA | 3 | DIRK | L-stable, stiffly accurate, explicit first stage | no |
+| ESDIRK4(3)6L[2]SA | 4 | DIRK | L-stable, stiffly accurate, explicit first stage | no |
 | Newmark | 2 | Implicit second-order | Average acceleration is oscillator-unconditionally stable | linear only |
 | BDF1 | 1 | Implicit multistep | L-stable | no |
 | BDF2 | 2 | Implicit multistep | A-stable | no |
 | BDF3 | 3 | Implicit multistep | Sectorial A(alpha) stability | no |
 | IMEX Euler | 1 | IMEX | Explicit/implicit split, JFNK implicit side | no |
+| ARK3(2)4L[2]SA | 3 | Additive IMEX RK | L[2]-stable split (ERK + ESDIRK half); embedded (3, 2); not FSAL | no |
+| ARK4(3)6L[2]SA | 4 | Additive IMEX RK | L[2]-stable split (ERK + ESDIRK half); embedded (4, 3); not FSAL | no |
 | Adams-Bashforth 2 | 2 | Explicit multistep | One RHS evaluation after startup | no |
 | Adams-Bashforth 3 | 3 | Explicit multistep | One RHS evaluation after startup | no |
 | Adams-Bashforth 4 | 4 | Explicit multistep | One RHS evaluation after startup | no |
@@ -556,6 +613,8 @@ relevant stability domain is parameterized by $dt^2\omega^2$, not scalar Dahlqui
 $z$. IMEX methods likewise have a two-parameter region $z_{explicit}, z_{implicit}$
 that depends on the caller's chosen split; plotting either as a one-parameter region
 would be misleading.
+
+![Two-parameter IMEX stability slices: IMEX Euler, ARK3(2)4L[2]SA, ARK4(3)6L[2]SA over $z_{implicit}$ slices in the $z_{explicit}$ plane](images/imex_stability_slices.png)
 
 ![Undamped oscillator amplification stability for Newmark and Verlet-family methods](images/oscillator_stability_newmark_verlet.png)
 
@@ -845,18 +904,21 @@ method runs.
 - **JFNK is matrix-free but not fixed-cost.** The default DIRK/Newmark Newton solve uses residual
     evaluations and GMRES iterations, so it is not CUDA-graph-capturable in the way explicit Picard is.
     `FixedPointSolver` and `RelaxedFixedPointSolver` remain opt-in alternatives for a fixed schedule.
+    The unpreconditioned GMRES iteration count grows with the stage operator's eigenvalue spread, so
+    at particle scale a problem-specific operator-based preconditioner (the
+    `JFNKSolver(preconditioner=...)` hook, DIRK section above) is what keeps the Krylov count flat.
 - **Fully implicit RK is not implemented.** Gauss, Radau, and Lobatto methods need a coupled
-    `s·N`-unknown solve rather than the sequential DIRK solve. BDF1 and BDF2 are available; higher-order
-    BDF methods remain planned — scoped in [NOTES.md §3.6](NOTES.md#36-valid-schemes-and-what-each-costs).
-- **TR-BDF2 and ESDIRK3(2)4L[2]SA are not implemented**, despite being "tableau only" work on top of
-  the existing DIRK driver — deliberately deferred rather than risk transcribing an unverified embedded
-  pair's coefficients wrong in a way a smoke test wouldn't catch (NOTES.md §3.6).
-- **High-order IMEX/additive RK is not implemented.** `IMEX Euler` is available through the explicit
-    `IMEXRHS(explicit=..., implicit=...)` callback bundle; ARK3/ARK4 schemes and their embedded error
-    estimators remain planned (NOTES.md §3.6).
+    `s·N`-unknown solve rather than the sequential DIRK solve. BDF1–BDF3 are available; BDF4 and above
+    remain planned — scoped in [NOTES.md §3.6](NOTES.md#36-valid-schemes-and-what-each-costs).
+- **Only two additive (IMEX) pairs are shipped.** The Kennedy–Carpenter
+    ARK3(2)4L[2]SA and ARK4(3)6L[2]SA are implemented (with embedded estimators and the
+    `IMEXRHS` split); other additive families (higher-stage ARK, Radau-type, Rosenbrock)
+    remain planned (NOTES.md §3.6).
 
-Explicit multistep (Adams-Bashforth/-Moulton) and four DIRK schemes (Backward Euler, Implicit
-Midpoint, Trapezoidal, SDIRK2) *are* implemented — see the two sections above. Everything still open
+Explicit multistep (Adams-Bashforth/-Moulton), seven DIRK schemes (Backward Euler, Implicit
+Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA), and two
+additive IMEX pairs (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA) *are* implemented — see the sections
+above. Everything still open
 is scoped and costed in [NOTES.md §3](NOTES.md#3-multistep-and-implicit-methods), including which
 schemes are worth adding next and what each one costs.
 
@@ -864,7 +926,7 @@ schemes are worth adding next and what each one costs.
 
 Contributions welcome! Areas of interest:
 
-- Remaining implicit schemes (TR-BDF2, ESDIRK3(2)4L[2]SA, fully implicit RK, BDF, IMEX/ARK) and a stiff (JFNK) `NonlinearSolver`
+- Remaining implicit schemes (fully implicit RK, BDF4+) and a stiff (JFNK) `NonlinearSolver`
 - Adaptive time stepping
 - Better documentation and examples
 - Performance optimizations

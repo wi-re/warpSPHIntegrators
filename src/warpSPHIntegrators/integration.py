@@ -39,7 +39,9 @@ from .butcher import (
 from .verlet import leapFrog, symplecticEuler, velocityVerlet
 from .tvd import TVDRK3, TVDRK2
 from .ruth import PEFRL, VEFRL
-from .dirk import backwardEuler as implicitBackwardEuler, implicitMidpoint, trapezoidal, SDIRK2, TRBDF2
+from .dirk import (backwardEuler as implicitBackwardEuler, implicitMidpoint, trapezoidal,
+                   SDIRK2, TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA)
+from .ark import ARK324L2SA, ARK436L2SA
 from .newmark import newmark
 from .multistep import AB2, AB3, AB4, AB5, ABM2, ABM3, ABM4
 from .bdf import BDF1, BDF2, BDF3
@@ -116,6 +118,23 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     TRBDF2, 'TR-BDF2', IntegrationSchemeType.trbdf2, 2, True, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    ESDIRK324L2SA, 'ESDIRK3(2)4L[2]SA', IntegrationSchemeType.esdirk324l2sa, 3, True, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    ESDIRK436L2SA, 'ESDIRK4(3)6L[2]SA', IntegrationSchemeType.esdirk436l2sa, 4, True, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+# Additive (IMEX) Kennedy-Carpenter ARK pairs (NOTES.md S3.9 Phase 5). Each is an
+# explicit + implicit half; the combined method is *not* FSAL (the explicit half is
+# not stiffly accurate), so `stiffly_accurate=False` and priorStep is rejected. The
+# order is the *combined* additive order (3 / 4); pass an IMEXRHS to activate the
+# split, or an ordinary RHS for the pure-implicit (ESDIRK) limit.
+IntegrationSchemes.append(IntegrationScheme(
+    ARK324L2SA, 'ARK3(2)4L[2]SA', IntegrationSchemeType.ark324l2sa, 3, True, True,
+    implicit=True, steps=1, stiffly_accurate=False, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    ARK436L2SA, 'ARK4(3)6L[2]SA', IntegrationSchemeType.ark436l2sa, 4, True, True,
+    implicit=True, steps=1, stiffly_accurate=False, stability='L'))
 IntegrationSchemes.append(IntegrationScheme(
     newmark, 'Newmark', IntegrationSchemeType.newmark, 2, True, True,
     implicit=True, steps=1, stiffly_accurate=False, stability='A'))

@@ -33,7 +33,8 @@ from .fields import (
 )
 from .solvers import SolveDiagnostics, SolveResult
 
-__all__ = ['fd_matvec', 'jvp_matvec', 'gmres', 'JFNKSolver']
+__all__ = ['fd_matvec', 'jvp_matvec', 'gmres', 'identity_preconditioner',
+           'diagonal_preconditioner', 'JFNKSolver']
 
 
 # --------------------------------------------------------------------------- #
@@ -167,8 +168,11 @@ def jvp_matvec(step: Callable, Y) -> Callable[[torch.Tensor], torch.Tensor]:
 
 def gmres(matvec: Callable[[torch.Tensor], torch.Tensor], b: torch.Tensor,
           x0: Optional[torch.Tensor] = None, tol: float = 1e-8,
-          maxiter: Optional[int] = None, restart: int = 30):
-    """Restarted GMRES, no symmetry assumption (JFNK_PLAN.md A4).
+          maxiter: Optional[int] = None, restart: int = 30,
+          preconditioner: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
+          preconditioning: str = 'right'):
+    """Restarted GMRES, no symmetry assumption (JFNK_PLAN.md A4), with an optional
+    left or right preconditioner (Phase 2).
 
     Matrix-free: ``matvec(v)`` is the only way this ever touches the operator, so
     it composes directly with ``fd_matvec``/``jvp_matvec`` above -- neither ever
@@ -179,26 +183,68 @@ def gmres(matvec: Callable[[torch.Tensor], torch.Tensor], b: torch.Tensor,
     flat-vector one -- a correctness cross-check while developing this, not
     something to import (JFNK_PLAN.md A4).
 
+    ``preconditioner`` is a 1-arg *linear* operator ``v -> M(v)`` approximating
+    the inverse of the operator ``matvec`` applies (``M ~= A^{-1}``). The 3-arg
+    ``preconditioner(v, state, context)`` form is what ``JFNKSolver`` and callers
+    supply -- ``JFNKSolver`` adapts it to this 1-arg form once per Newton iterate.
+    ``preconditioning`` selects the side:
+      * ``'right'`` (default): solve ``A M z = b`` for ``z``, return ``x = M z``.
+        The Arnoldi operator is ``v -> A(M v)`` and the residual GMRES drives down
+        is the *true* residual ``b - A x``. The standard JFNK choice: it keeps the
+        residual and the returned correction in the physical space.
+      * ``'left'``: solve ``M A x = M b`` for ``x`` and return it directly. The
+        Arnoldi operator is ``v -> M(A v)`` and the right-hand side is ``M b``;
+        the residual is the preconditioned one ``M (b - A x)``.
+    With ``preconditioner=None`` (the default) neither wrap is applied and the
+    result is bitwise identical to the unpreconditioned GMRES, so existing callers
+    are unaffected. A supplied *identity* preconditioner is likewise bitwise
+    identical in both modes -- that equivalence is a regression check in
+    ``tests/test_preconditioner.py``.
+
     Returns ``(x, iterations)``; ``iterations`` counts total Arnoldi steps (one
     matvec each) across every restart cycle.
     """
-    n = b.shape[0]
-    x = x0.clone() if x0 is not None else torch.zeros_like(b)
-    b_norm = float(torch.linalg.norm(b))
-    if b_norm == 0.0:
-        return torch.zeros_like(b), 0
-    atol = tol * max(b_norm, 1.0)
+    if preconditioner is None:
+        op = matvec
+        rhs = b
+
+        def _finalize(z: torch.Tensor) -> torch.Tensor:
+            return z
+    elif preconditioning == 'right':
+        # x = M z, so A M z = b; the Arnoldi operator is A o M, RHS is b, and the
+        # answer is x = M z (one extra preconditioner apply at the end).
+        def op(v: torch.Tensor) -> torch.Tensor:
+            return matvec(preconditioner(v))
+        rhs = b
+        _finalize = preconditioner
+    elif preconditioning == 'left':
+        # M A x = M b; the Arnoldi operator is M o A, RHS is M b, x returned as-is.
+        def op(v: torch.Tensor) -> torch.Tensor:
+            return preconditioner(matvec(v))
+        rhs = preconditioner(b)
+
+        def _finalize(z: torch.Tensor) -> torch.Tensor:
+            return z
+    else:
+        raise ValueError(f"gmres preconditioning must be 'left' or 'right', got {preconditioning!r}")
+
+    n = rhs.shape[0]
+    x = x0.clone() if x0 is not None else torch.zeros_like(rhs)
+    rhs_norm = float(torch.linalg.norm(rhs))
+    if rhs_norm == 0.0:
+        return torch.zeros_like(rhs), 0
+    atol = tol * max(rhs_norm, 1.0)
     if maxiter is None:
         maxiter = n
     m = max(1, min(restart, n))
 
     total_iters = 0
     while total_iters < maxiter:
-        # `matvec` is always a Jacobian-vector product here (fd_matvec/jvp_matvec),
-        # linear in its argument by construction, so `matvec(0) == 0` holds exactly
-        # -- skip the call rather than evaluate it. This is the standard "x0 is
-        # zero" GMRES shortcut, and it also sidesteps a real
-        # `torch.autograd.forward_ad` incompatibility: an all-zero tangent reaching
+        # `op` is a Jacobian-vector product (fd_matvec/jvp_matvec) composed with a
+        # linear preconditioner, so `op(0) == 0` holds exactly -- skip the call
+        # rather than evaluate it. This is the standard "x0 is zero" GMRES
+        # shortcut, and it also sidesteps a real `torch.autograd.forward_ad`
+        # incompatibility: an all-zero tangent reaching
         # `StateAwareWarpFunction.apply` (warpSPHCore) trips an internal PyTorch
         # assertion ("expected both tensor and its forward grad to be floating
         # point or complex") rather than returning a zero tangent, confirmed by
@@ -208,22 +254,22 @@ def gmres(matvec: Callable[[torch.Tensor], torch.Tensor], b: torch.Tensor,
         # cycle whose initial guess was the zero vector (the default `x0`), so this
         # triggers on the very first GMRES call in the common case, not just as a
         # rare edge case.
-        r = b.clone() if float(torch.linalg.norm(x)) == 0.0 else b - matvec(x)
+        r = rhs.clone() if float(torch.linalg.norm(x)) == 0.0 else rhs - op(x)
         r_norm = torch.linalg.norm(r)
         if float(r_norm) < atol:
-            return x, total_iters
+            return _finalize(x), total_iters
 
         cycle = min(m, maxiter - total_iters)
         V = [r / r_norm]
-        H = torch.zeros(cycle + 1, cycle, dtype=b.dtype, device=b.device)
-        g = torch.zeros(cycle + 1, dtype=b.dtype, device=b.device)
+        H = torch.zeros(cycle + 1, cycle, dtype=rhs.dtype, device=rhs.device)
+        g = torch.zeros(cycle + 1, dtype=rhs.dtype, device=rhs.device)
         g[0] = r_norm
-        cs = torch.zeros(cycle, dtype=b.dtype, device=b.device)
-        sn = torch.zeros(cycle, dtype=b.dtype, device=b.device)
+        cs = torch.zeros(cycle, dtype=rhs.dtype, device=rhs.device)
+        sn = torch.zeros(cycle, dtype=rhs.dtype, device=rhs.device)
 
         k_used = 0
         for k in range(cycle):
-            w = matvec(V[k])
+            w = op(V[k])
             for i in range(k + 1):
                 H[i, k] = torch.dot(w, V[i])
                 w = w - H[i, k] * V[i]
@@ -250,7 +296,7 @@ def gmres(matvec: Callable[[torch.Tensor], torch.Tensor], b: torch.Tensor,
             if abs(float(g[k + 1])) < atol or total_iters >= maxiter:
                 break
 
-        y = torch.zeros(k_used, dtype=b.dtype, device=b.device)
+        y = torch.zeros(k_used, dtype=rhs.dtype, device=rhs.device)
         for i in reversed(range(k_used)):
             denom_ii = H[i, i]
             if abs(float(denom_ii)) > 1e-300:
@@ -259,9 +305,49 @@ def gmres(matvec: Callable[[torch.Tensor], torch.Tensor], b: torch.Tensor,
             x = x + y[i] * V[i]
 
         if abs(float(g[k_used])) < atol:
-            return x, total_iters
+            return _finalize(x), total_iters
 
-    return x, total_iters
+    return _finalize(x), total_iters
+
+
+# --------------------------------------------------------------------------- #
+# A4b: preconditioner helpers                                                 #
+# --------------------------------------------------------------------------- #
+
+def identity_preconditioner(v: torch.Tensor, state, context) -> torch.Tensor:
+    """The identity preconditioner ``v -> v`` (the 3-arg ``JFNKSolver`` contract).
+
+    The baseline that must reproduce the unpreconditioned solve exactly: passing
+    this to ``JFNKSolver``/``gmres`` (either side) is bitwise identical to passing
+    no preconditioner at all. Useful to exercise the preconditioning plumbing
+    without changing the operator, and as the reference in
+    ``tests/test_preconditioner.py``.
+    """
+    return v
+
+
+def diagonal_preconditioner(inv_diag):
+    """A diagonal preconditioner factory (the cheapest useful stiff-term hook).
+
+    ``inv_diag`` is either a per-DOF ``torch.Tensor`` (a *fixed* diagonal inverse)
+    or a callable ``inv_diag(state, context) -> torch.Tensor`` (a state-dependent
+    diagonal, e.g. ``1 / (1 + dt * damping)`` for a relaxation term). The returned
+    preconditioner applies it elementwise in the flattened integrated-field space:
+    ``preconditioner(v, state, context) = v * inv_diag``.
+
+    ``inv_diag`` must have the same shape as the flattened integrated state the
+    GMRES loop operates on; build it by concatenating a per-field diagonal in the
+    same field order ``integrated_field_names`` uses. For diffusion/relaxation
+    terms the operator's own diagonal already captures most of the stiffness, so
+    this is a strong preconditioner at negligible cost (one elementwise multiply).
+    """
+    if torch.is_tensor(inv_diag):
+        def preconditioner(v: torch.Tensor, state, context) -> torch.Tensor:
+            return v * inv_diag
+    else:
+        def preconditioner(v: torch.Tensor, state, context) -> torch.Tensor:
+            return v * inv_diag(state, context)
+    return preconditioner
 
 
 # --------------------------------------------------------------------------- #
@@ -339,20 +425,57 @@ class JFNKSolver:
         the ``1e-3`` default; ~2.3e-3-2.8e-3 at 1M particles, comfortably
         *over* it -- both are genuine convergence, just to different floors).
         Tracked regardless of ``newton_tol``'s convention, so it needs no
-        caller-side tuning: if ``norm_fn`` fails to improve on its best value
-        so far by at least a factor of ``newton_stagnation_ratio`` (default
-        ``0.9``, i.e. less than 10% better) for ``newton_stagnation_patience``
-        (default ``2``) consecutive iterations, that plateau *is* this
-        solve's floor -- reported as converged (this is the best available
-        answer, not a failure), same as tripping ``newton_tol`` would be.
-        Only evaluated once at least one non-``newton_tol`` iteration has a
-        prior norm to compare against, so it can never trigger on the very
-        first correction, before any progress has been measured at all.
+        caller-side tuning: if ``norm_fn`` fails to improve by at least a
+        factor of ``newton_stagnation_ratio`` (default ``0.9``, i.e. less
+        than 10% better) against *both* its best value so far and the
+        immediately preceding iterate's value, for
+        ``newton_stagnation_patience`` (default ``2``) consecutive
+        iterations, that plateau *is* this solve's floor -- reported as
+        converged (this is the best available answer, not a failure), same
+        as tripping ``newton_tol`` would be. Only evaluated once at least
+        one non-``newton_tol`` iteration has a prior norm to compare
+        against, so it can never trigger on the very first correction,
+        before any progress has been measured at all. The preceding-iterate
+        half of the check is what keeps a transient Newton overshoot -- the
+        residual rising for a step or two as the iterates wander outside the
+        quadratic-convergence basin, then falling again -- from reading as a
+        floor: the overshoot's successor improves on it well past the ratio
+        and resets the count, while a true floor wobbles at most round-off
+        scale around the same value.
+      ``line_search`` (default ``False``): backtracking on the trial residual.
+        When the full GMRES correction would *increase* the nonlinear residual
+        -- a badly scaled or noise-dominated matvec does this -- the correction
+        is damped (alpha halved, one extra ``step`` evaluation per trial) until
+        the residual drops. When no damping down to ``line_search_min_step``
+        produces a decrease, the best iterate measured so far is reported with
+        ``termination='stagnation'`` (converged) -- the line-search-side twin
+        of the stagnation-floor policy the no-line-search path applies to a
+        non-improving plateau -- instead of taking a known-worse step.
+        Rejections are counted in ``SolveDiagnostics.line_search_backtracks``;
+        trial evaluations count toward ``rhs_evaluations``, so the cost model
+        ``total step evaluations = rhs_evaluations + gmres_iterations`` holds
+        with or without it.
+      ``line_search_min_step`` (default ``1e-2``): smallest damping alpha tried.
       ``max_iterations``: outer Newton *correction* budget (default 20) -- the
         number of ``step`` calls is this plus one (one final evaluation to verify
         the last correction, or to report on running out of budget).
       ``gmres_tol``/``gmres_maxiter``/``gmres_restart``: forwarded to ``gmres``
         (A4); ``gmres_tol`` defaults to ``tol``.
+      ``preconditioner`` (default ``None``): an optional
+        ``preconditioner(v, state, context) -> vector`` callable applied inside
+        the GMRES loop to cluster the stage-Jacobian spectrum and cut Krylov
+        iterations (Phase 2). ``state`` is the current Newton iterate and
+        ``context`` is ``{'state': state, **preconditioner_context}``. ``None``
+        (the default) leaves the solve unpreconditioned -- bitwise identical to
+        the pre-hook behaviour. See ``gmres`` for the left/right formulation and
+        ``identity_preconditioner``/``diagonal_preconditioner`` for ready-made
+        examples.
+      ``preconditioning`` (default ``'right'``): ``'right'`` solves
+        ``A M z = b`` and returns ``x = M z``; ``'left'`` solves
+        ``M A x = M b`` and returns ``x``.
+      ``preconditioner_context`` (default ``None``): extra keys merged into the
+        ``context`` dict the preconditioner receives -- e.g. ``dt``, the system,
+        or an operator it needs.
     """
 
     def __init__(self, matvec: str = 'fd', tol: float = 1e-8, max_iterations: int = 20,
@@ -360,7 +483,12 @@ class JFNKSolver:
                  gmres_restart: int = 30, fd_eps: Optional[float] = None,
                  newton_tol: Optional[float] = None,
                  newton_stagnation_ratio: float = 0.9,
-                 newton_stagnation_patience: int = 2):
+                 newton_stagnation_patience: int = 2,
+                 line_search: bool = False,
+                 line_search_min_step: float = 1e-2,
+                 preconditioner: Optional[Callable] = None,
+                 preconditioning: str = 'right',
+                 preconditioner_context: Optional[dict] = None):
         if matvec not in ('fd', 'jvp'):
             raise ValueError(f"JFNKSolver needs matvec in ('fd', 'jvp'), got {matvec!r}")
         if tol <= 0.0:
@@ -377,6 +505,16 @@ class JFNKSolver:
                 'JFNKSolver needs newton_stagnation_patience >= 1, '
                 f'got {newton_stagnation_patience}'
             )
+        if not 0.0 < line_search_min_step <= 1.0:
+            raise ValueError(
+                'JFNKSolver needs line_search_min_step in (0, 1], '
+                f'got {line_search_min_step}'
+            )
+        if preconditioning not in ('left', 'right'):
+            raise ValueError(
+                f"JFNKSolver needs preconditioning in ('left', 'right'), "
+                f'got {preconditioning!r}'
+            )
         self.matvec = matvec
         self.tol = tol
         self.max_iterations = max_iterations
@@ -387,6 +525,11 @@ class JFNKSolver:
         self.newton_tol = newton_tol
         self.newton_stagnation_ratio = newton_stagnation_ratio
         self.newton_stagnation_patience = newton_stagnation_patience
+        self.line_search = line_search
+        self.line_search_min_step = line_search_min_step
+        self.preconditioner = preconditioner
+        self.preconditioning = preconditioning
+        self.preconditioner_context = preconditioner_context
 
     def solve(self, step: Callable, y0, norm: Optional[Callable] = None, **opts) -> SolveResult:
         matvec_kind = opts.get('matvec', self.matvec)
@@ -401,13 +544,22 @@ class JFNKSolver:
             newton_tol = tol
         stagnation_ratio = opts.get('newton_stagnation_ratio', self.newton_stagnation_ratio)
         stagnation_patience = opts.get('newton_stagnation_patience', self.newton_stagnation_patience)
+        line_search = bool(opts.get('line_search', self.line_search))
+        line_search_min_step = opts.get('line_search_min_step', self.line_search_min_step)
+        preconditioner = opts.get('preconditioner', self.preconditioner)
+        preconditioning = opts.get('preconditioning', self.preconditioning)
+        preconditioner_context = dict(
+            opts.get('preconditioner_context', self.preconditioner_context) or {}
+        )
         norm_fn = norm if norm is not None else _default_flat_norm()
 
         Y = y0
         n = 0
         total_gmres_iterations = 0
         best_norm = None
+        last_norm = None
         stagnant_count = 0
+        backtracks = 0
         for _ in range(max_iterations):
             Y_step = step(Y)
             n += 1
@@ -415,44 +567,102 @@ class JFNKSolver:
             if not math.isfinite(nv):
                 return SolveResult(Y, False, n, SolveDiagnostics(
                     residual=nv, gmres_iterations=total_gmres_iterations,
-                    rhs_evaluations=n, termination='invalid_residual'))
+                    rhs_evaluations=n, line_search_backtracks=backtracks,
+                    termination='invalid_residual'))
             if nv < newton_tol:
                 return SolveResult(Y_step, True, n, SolveDiagnostics(
                     residual=nv, gmres_iterations=total_gmres_iterations,
-                    rhs_evaluations=n, termination='tolerance'))
+                    rhs_evaluations=n, line_search_backtracks=backtracks,
+                    termination='tolerance'))
 
-            if best_norm is not None:
-                if nv >= best_norm * stagnation_ratio:
-                    stagnant_count += 1
-                    if stagnant_count >= stagnation_patience:
-                        # Not "gave up" -- this plateau is this problem's
-                        # (resolution- and precision-dependent) floor, and
-                        # nv is already the best correction reached; further
-                        # iterations only re-measure the same noise.
-                        return SolveResult(Y_step, True, n, SolveDiagnostics(
-                            residual=nv, gmres_iterations=total_gmres_iterations,
-                            rhs_evaluations=n, termination='stagnation'))
-                else:
-                    stagnant_count = 0
-                best_norm = min(best_norm, nv)
+            if best_norm is not None and nv >= max(best_norm, last_norm) * stagnation_ratio:
+                stagnant_count += 1
+                if stagnant_count >= stagnation_patience:
+                    # Not "gave up" -- this plateau is this problem's
+                    # (resolution- and precision-dependent) floor, and
+                    # nv is already the best correction reached; further
+                    # iterations only re-measure the same noise. The check is
+                    # against the *worse* of the best-so-far and the previous
+                    # iterate's residual: a transient Newton overshoot (the
+                    # residual rising, then falling again as the iterates
+                    # return to the convergence basin) improves on its
+                    # predecessor well past the ratio and resets the count,
+                    # while a true floor wobbles at most round-off scale
+                    # around the same value.
+                    return SolveResult(Y_step, True, n, SolveDiagnostics(
+                        residual=nv, gmres_iterations=total_gmres_iterations,
+                        rhs_evaluations=n, line_search_backtracks=backtracks,
+                        termination='stagnation'))
             else:
-                best_norm = nv
+                stagnant_count = 0
+            best_norm = min(best_norm, nv) if best_norm is not None else nv
+            last_norm = nv
 
             y_flat = flatten_integrated(Y)
             G_y = y_flat - flatten_integrated(Y_step)
             matvec_fn = (jvp_matvec(step, Y) if matvec_kind == 'jvp'
                          else fd_matvec(step, Y, y_flat, G_y, eps=fd_eps))
+            if preconditioner is not None:
+                # Adapt the caller's 3-arg preconditioner(v, state, context) to
+                # the 1-arg operator gmres consumes, bound to this iterate: the
+                # preconditioner approximates J_G(Y)^{-1} at the current Newton
+                # iterate Y. gmres is called synchronously in this iteration, so
+                # the closure over Y / context is stable for the whole call.
+                context = {'state': Y, **preconditioner_context}
+                _gmres_prec = lambda v: preconditioner(v, Y, context)
+            else:
+                _gmres_prec = None
             delta, _gmres_iters = gmres(
                 matvec_fn, -G_y, tol=gmres_tol,
                 maxiter=gmres_maxiter if gmres_maxiter is not None else y_flat.numel(),
                 restart=gmres_restart,
+                preconditioner=_gmres_prec,
+                preconditioning=preconditioning,
             )
             total_gmres_iterations += _gmres_iters
-            Y = unflatten_integrated(y_flat + delta, Y)
+            if not line_search:
+                Y = unflatten_integrated(y_flat + delta, Y)
+                continue
+            # Backtracking on the trial residual: shrink the Newton correction
+            # until the residual actually drops, instead of accepting a full
+            # correction that makes the problem worse (the regime a badly
+            # scaled or noise-dominated matvec produces). Each trial is one
+            # extra ``step`` evaluation, so it counts toward ``n`` exactly like
+            # the base residual does -- the documented cost model keeps
+            # holding: total step evaluations = rhs_evaluations +
+            # gmres_iterations (NOTES.md S3.4).
+            alpha = 1.0
+            while True:
+                Y_trial = unflatten_integrated(y_flat + alpha * delta, Y)
+                Y_trial_step = step(Y_trial)
+                n += 1
+                nv_trial = norm_fn(Y_trial, Y_trial_step)
+                if math.isfinite(nv_trial) and nv_trial < nv:
+                    Y = Y_trial
+                    break
+                alpha *= 0.5
+                backtracks += 1
+                if alpha < line_search_min_step:
+                    # No damping produced a decrease. The current iterate is
+                    # the best one measured so far (acceptance is strict
+                    # decrease), so that plateau *is* this solve's floor --
+                    # the same reading the no-line-search path gives a
+                    # non-improving plateau (the 'stagnation' exit above):
+                    # the best available answer, not a failure. That covers
+                    # both a genuinely converged answer at the precision
+                    # floor (float32 Newton: the correction falls below
+                    # ulp/2 and no damping can decrease the residual) and a
+                    # matvec bad enough that no damped step helps.
+                    return SolveResult(Y_step, True, n, SolveDiagnostics(
+                        residual=nv, gmres_iterations=total_gmres_iterations,
+                        rhs_evaluations=n,
+                        termination='stagnation',
+                        line_search_backtracks=backtracks))
 
         Y_step = step(Y)
         n += 1
         residual = norm_fn(Y, Y_step)
         return SolveResult(Y_step, residual < newton_tol, n, SolveDiagnostics(
             residual=residual, gmres_iterations=total_gmres_iterations,
-            rhs_evaluations=n, termination='tolerance' if residual < newton_tol else 'max_iterations'))
+            rhs_evaluations=n, line_search_backtracks=backtracks,
+            termination='tolerance' if residual < newton_tol else 'max_iterations'))

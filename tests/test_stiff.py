@@ -6,7 +6,7 @@ import pytest
 import torch
 
 from warpSPHIntegrators import StepHistory, getIntegrator, get_reference_state, testing
-from warpSPHIntegrators.stability import bdf_is_stable, oscillator_is_stable, oscillator_spectral_radius, rk_is_stable
+from warpSPHIntegrators.stability import bdf_is_stable, oscillator_is_stable, oscillator_spectral_radius, rk_is_stable, rk_stability_function
 from warpSPHIntegrators.integration import IntegrationSchemes
 
 
@@ -16,6 +16,10 @@ STATE_SPACE_IMPLICIT = [
     'Trapezoidal (Crank-Nicolson)',
     'SDIRK2',
     'TR-BDF2',
+    'ESDIRK3(2)4L[2]SA',
+    'ESDIRK4(3)6L[2]SA',
+    'ARK3(2)4L[2]SA',
+    'ARK4(3)6L[2]SA',
     'BDF1',
     'BDF2',
     'IMEX Euler',
@@ -59,12 +63,41 @@ def test_every_tableau_is_consistent_at_the_dahlquist_origin():
 
 @pytest.mark.parametrize('name', [
     'Backward Euler (implicit)', 'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)',
-    'SDIRK2', 'TR-BDF2',
+    'SDIRK2', 'TR-BDF2', 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
 ])
 @pytest.mark.parametrize('z', [-10.0, -10.0 + 4.0j, -0.25 + 3.0j])
 def test_a_stable_dirk_schemes_contain_known_left_half_plane_points(name, z):
     scheme = getIntegrator(name)
     assert rk_is_stable(scheme.function.dirkTableau, z), f'{name} rejected z={z}'
+
+
+@pytest.mark.parametrize('name', [
+    'Backward Euler (implicit)', 'SDIRK2', 'TR-BDF2',
+    'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
+])
+def test_l_stable_dirk_schemes_damp_the_negative_real_axis(name):
+    """L-stability, method-specifically: the stability function decays along the
+    negative real axis (|R(z)| -> 0 as z -> -inf), not merely stays bounded.
+
+    Hand-checked values at z = -100: backward Euler R(z) = 1/(1-z) gives
+    1/101 ~= 0.0099; SDIRK2 and TR-BDF2 both land near 0.044-0.049; the ESDIRK
+    pair sits at 2.65e-2 (order 3) and 7.57e-2 (order 4). All show the L-stable
+    decay ~ C/|z|, far under the 0.1 bound below, so the bound pins the class,
+    not one tableau's exact constant."""
+    tab = getIntegrator(name).function.dirkTableau
+    r = abs(rk_stability_function(tab, -100.0))
+    assert r < 0.1, f'{name}: |R(-100)| = {r:.4f}, expected strong L-stable damping'
+
+
+@pytest.mark.parametrize('name', ['Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)'])
+def test_a_stable_but_not_l_dirk_schemes_approach_unit_magnitude(name):
+    """The companion: A-stable but not L-stable tableaus have R(z) -> -1 along
+    the negative real axis (|R(-100)| = 49/51 ~= 0.961 by the (1+z/2)/(1-z/2)
+    closed form for both), i.e. they bound the solution but do not damp it.
+    This is what separates the two rows of the stability='L' flag."""
+    tab = getIntegrator(name).function.dirkTableau
+    r = abs(rk_stability_function(tab, -100.0))
+    assert r > 0.9, f'{name}: |R(-100)| = {r:.4f}, expected approach to 1 (A-stable, not L)'
 
 
 @pytest.mark.parametrize('order', [1, 2])
