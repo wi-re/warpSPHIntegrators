@@ -6,8 +6,7 @@ matching derivative tags, and a system that routes the four ``apply_*_update`` c
 through the generic ``update_component`` / ``update_position`` kernels. It doubles as
 worked documentation of what a user's system has to provide.
 
-Three problems are provided, chosen so that between them they catch every class of
-integration defect this library has had:
+The registry (``PROBLEMS``) provides:
 
 ``oscillator``
     Harmonic oscillator, autonomous and Hamiltonian. Measures nominal convergence
@@ -16,9 +15,33 @@ integration defect this library has had:
     ``x'' = cos(t)``. Non-autonomous, so a scheme that evaluates the right-hand side
     at the wrong stage *time* collapses to first order here while still looking
     correct on ``oscillator``.
+``damped``
+    ``x'' = -k x - c u``. Velocity-dependent force; separates lossless reuse
+    (position-only forces) from lossy reuse.
 ``kepler``
     Circular two-body orbit. Nonlinear and Hamiltonian, with an analytic solution,
     so it catches errors that a linear problem cannot.
+``stiffRelaxation``
+    Prothero-Robinson ``x' = -sign*rate*(x - s(t)) + s'(t)`` with configurable
+    stiffness ``rate``, sign (stable ``+1`` / unstable ``-1`` variant), and smooth
+    target ``s`` (``tanh``/``sin``/``cos``); exact solution ``x = s`` in both
+    variants. The nonlinear stiff reference problem.
+``stiffDampedOscillator``
+    ``x'' = -omega^2 x - c u`` with independently scalable frequency and damping,
+    separating high-frequency stiffness from true dissipative stiffness; closed-form
+    solution in all three damping regimes.
+``vanDerPol``
+    ``x'' = mu*(1 - x^2)*u - x``. Nonlinear, no closed form; the attractor is a
+    limit cycle of amplitude ~2, so tests check the cycle instead of an exact value.
+``robertson``
+    The classic three-species chemical kinetics (stiffness ratio ~1e9). Invariants
+    (mass conservation, positivity, monotone ``y3``, quasi-steady ``y2``) stand in
+    for the unknown exact solution.
+``diffusion``
+    Semi-discrete 1D diffusion on ``n`` interior points with Dirichlet boundaries,
+    initialized on two eigenvectors of the discrete Laplacian so the exact
+    semi-discrete solution is known and the spectral stiffness scale is
+    ``|mu_n| ~= 4*D/h^2``.
 """
 
 from __future__ import annotations
@@ -218,11 +241,244 @@ def kepler_problem() -> Problem:
                    energy, autonomous=True)
 
 
+def stiff_relaxation_problem(rate: float = 10.0, forcing: str = 'tanh', sign: int = +1) -> Problem:
+    """Prothero-Robinson relaxation toward a smooth target.
+
+    ``x' = -sign*rate*(x - s(t)) + s'(t)`` with the invariant (exact) solution
+    ``x(t) = s(t)`` whenever ``x(0) = s(0)``. ``sign = +1`` is the stable variant
+    (stiff eigenvalue ``-rate``): explicit methods are restricted to
+    ``dt < ~2/rate``, implicit ones are not. ``sign = -1`` is the classic
+    *unstable* Prothero-Robinson test (eigenvalue ``+rate``): the exact solution
+    is still ``s(t)``, but the explicit stability boundary is hit on the positive
+    real axis instead. ``rate`` is the stiff eigenvalue magnitude and
+    ``forcing`` selects the smooth target:
+
+    - ``'tanh'``: ``s = tanh(t)``   (``s(0) = 0``)
+    - ``'sin'``:  ``s = sin(t)``    (``s(0) = 0``)
+    - ``'cos'``:  ``s = cos(t)``    (``s(0) = 1``)
+    """
+    targets = {
+        'tanh': (lambda t: math.tanh(t), lambda t: 1.0 / math.cosh(t) ** 2),
+        'sin': (lambda t: math.sin(t), lambda t: math.cos(t)),
+        'cos': (lambda t: math.cos(t), lambda t: -math.sin(t)),
+    }
+    if forcing not in targets:
+        raise ValueError(f"Unknown stiff_relaxation forcing {forcing!r}; choose from {sorted(targets)}")
+    if sign not in (+1, -1):
+        raise ValueError(f'stiff_relaxation sign must be +1 (stable) or -1 (unstable PR), got {sign!r}')
+    s, s_prime = targets[forcing]
+    eigenvalue = -sign * rate
+
+    def rhs(system, dt, **kwargs):
+        state = get_reference_state(system)
+        time = float(system.t)
+        return ParticleUpdate(
+            dxdt=eigenvalue * (state.x - s(time)) + s_prime(time),
+            dudt=torch.zeros_like(state.u),
+            dedt=torch.zeros_like(state.e),
+        ), None
+
+    def initial():
+        return ParticleSystem(
+            state=ParticleState(x=_vec(s(0.0)), u=_vec(0.0), e=_vec(0.0), m=_vec(1.0)),
+            t=0.0)
+
+    return Problem('stiffRelaxation',
+                   f'Prothero-Robinson relaxation, x\' = {eigenvalue:g}*(x - {forcing}(t)) + d/dt {forcing}(t), '
+                   f'exact x = {forcing}(t), stiff scale {rate}',
+                   rhs, initial,
+                   lambda t: ([s(t)], [0.0]),
+                   None, autonomous=False)
+
+
+def stiff_damped_oscillator_problem(omega: float = 1.0, c: float = 50.0) -> Problem:
+    """Damped oscillator ``x'' = -omega^2 x - c*u`` with separable stiffness regimes.
+
+    Two stiffness scales that explicit methods must resolve but that are
+    fundamentally different:
+
+    - *high-frequency* stiffness (large ``omega``, small ``c``): the step
+      restriction is set by the oscillation, ``dt < 2/omega``;
+    - *dissipative* stiffness (small ``omega``, large ``c``): the restriction is
+      set by the relaxation rate, ``dt < 2/c``.
+
+    The default parameters sit in the dissipative regime (overdamped). Closed-form
+    solution for all three damping regimes, ``x(0) = 1``, ``u(0) = 0``.
+    """
+    gamma = c / 2.0
+
+    def rhs(system, dt, **kwargs):
+        s = get_reference_state(system)
+        return ParticleUpdate(
+            dxdt=s.u.clone(),
+            dudt=-omega ** 2 * s.x - c * s.u,
+            dedt=torch.zeros_like(s.e),
+        ), None
+
+    def initial():
+        return ParticleSystem(
+            state=ParticleState(x=_vec(1.0), u=_vec(0.0), e=_vec(0.0), m=_vec(1.0)),
+            t=0.0)
+
+    def exact(t):
+        if c < 2.0 * omega:  # underdamped
+            omega_d = math.sqrt(omega ** 2 - gamma ** 2)
+            decay = math.exp(-gamma * t)
+            x = decay * (math.cos(omega_d * t) + gamma / omega_d * math.sin(omega_d * t))
+            u = -decay * (omega ** 2 / omega_d) * math.sin(omega_d * t)
+        elif c > 2.0 * omega:  # overdamped
+            r1 = (-c + math.sqrt(c ** 2 - 4.0 * omega ** 2)) / 2.0
+            r2 = (-c - math.sqrt(c ** 2 - 4.0 * omega ** 2)) / 2.0
+            x = (r1 * math.exp(r2 * t) - r2 * math.exp(r1 * t)) / (r1 - r2)
+            u = r1 * r2 * (math.exp(r2 * t) - math.exp(r1 * t)) / (r1 - r2)
+        else:  # critically damped
+            x = math.exp(-gamma * t) * (1.0 + gamma * t)
+            u = -gamma ** 2 * t * math.exp(-gamma * t)
+        return ([x], [u])
+
+    regime = 'underdamped' if c < 2.0 * omega else ('overdamped' if c > 2.0 * omega else 'critically damped')
+    return Problem('stiffDampedOscillator',
+                   f'damped oscillator, x\'\' = -{omega ** 2:g} x - {c:g} u ({regime}), x(0)=1, u(0)=0',
+                   rhs, initial, exact, None, autonomous=True)
+
+
+def van_der_pol_problem(mu: float = 2.0) -> Problem:
+    """Van der Pol oscillator ``x'' = mu*(1 - x^2)*u - x`` with ``u = x'``.
+
+    Autonomous and nonlinear, with no closed-form solution: the long-time attractor
+    is a limit cycle of amplitude ~2 for every ``mu > 0``, and the cycle becomes
+    increasingly stiff in ``u`` as ``mu`` grows (``|dudt_u| <= mu*(1 + amplitude^2)``
+    sets the explicit step restriction). ``exact`` raises on purpose; use the
+    limit-cycle amplitude checks (see ``tests/test_benchmarks.py``).
+    """
+
+    def rhs(system, dt, **kwargs):
+        s = get_reference_state(system)
+        return ParticleUpdate(
+            dxdt=s.u.clone(),
+            dudt=mu * (1.0 - s.x ** 2) * s.u - s.x,
+            dedt=torch.zeros_like(s.e),
+        ), None
+
+    def initial():
+        return ParticleSystem(
+            state=ParticleState(x=_vec(1.0), u=_vec(0.0), e=_vec(0.0), m=_vec(1.0)),
+            t=0.0)
+
+    def exact(t):
+        raise NotImplementedError(
+            'van der Pol has no closed-form solution; check the limit-cycle attractor instead')
+
+    return Problem('vanDerPol',
+                   f'van der Pol, x\'\' = {mu:g}*(1 - x^2)u - x (autonomous, nonlinear, limit cycle)',
+                   rhs, initial, exact, None, autonomous=True)
+
+
+def robertson_problem() -> Problem:
+    """Robertson chemical kinetics, the classic nonlinear stiff chemistry benchmark.
+
+    Three species (carried in the ``x`` components), the classic Robertson
+    kinetics with rate coefficients spanning ~1e9:
+
+    - ``y1' = -0.04*y1 + 1e4*y2*y3``
+    - ``y2' =  0.04*y1 - 3e7*y2^2 - 1e4*y2*y3``
+    - ``y3' =  3e7*y2^2``,   ``y(0) = (1, 0, 0)``
+
+    No closed form, but the system has exact invariants that a correct stiff
+    integrator must respect: ``sum(y) = 1`` is conserved, ``y3' >= 0`` so ``y3``
+    increases monotonically, all species stay non-negative, and the intermediate
+    ``y2`` stays on its quasi-steady plateau (``~ sqrt(y1/3e7)``, i.e. ``O(1e-4)``).
+    ``exact`` raises on purpose; use the invariant checks.
+    """
+    k1, k2, k3 = 0.04, 3.0e7, 1.0e4
+
+    def rhs(system, dt, **kwargs):
+        s = get_reference_state(system)
+        y1, y2, y3 = s.x
+        return ParticleUpdate(
+            dxdt=torch.stack([-k1 * y1 + k3 * y2 * y3,
+                              k1 * y1 - k2 * y2 ** 2 - k3 * y2 * y3,
+                              k2 * y2 ** 2]),
+            dudt=torch.zeros_like(s.u),
+            dedt=torch.zeros_like(s.e),
+        ), None
+
+    def initial():
+        return ParticleSystem(
+            state=ParticleState(x=_vec(1.0, 0.0, 0.0), u=_vec(0.0, 0.0, 0.0),
+                                e=_vec(0.0, 0.0, 0.0), m=_vec(1.0, 1.0, 1.0)),
+            t=0.0)
+
+    def exact(t):
+        raise NotImplementedError(
+            'Robertson kinetics has no closed-form solution; check the linear invariants instead')
+
+    return Problem('robertson',
+                   'Robertson kinetics, 3 species, stiffness ratio ~1e9 (autonomous, nonlinear, stiff)',
+                   rhs, initial, exact, None, autonomous=True)
+
+
+def diffusion_problem(n: int = 32, D: float = 1.0, L: float = 1.0) -> Problem:
+    """Semi-discrete 1D diffusion ``u_t = D*u_xx`` with Dirichlet boundaries.
+
+    ``n`` interior grid points, ``h = L/(n+1)``, second-order central differences
+    with ``u(0) = u(L) = 0``. The initial condition is the sum of two eigenvectors
+    of the discrete Laplacian, ``sin(pi*x) + 0.5*sin(5*pi*x)``, so the exact
+    semi-discrete solution is known analytically:
+
+    ``u_i(t) = e^{mu_1 t} sin(pi x_i) + 0.5 e^{mu_5 t} sin(5 pi x_i)``,
+    ``mu_j = -(4D/h^2) sin^2(j pi h / 2)``.
+
+    The spectral stiffness scale is ``|mu_n| ~= 4*D/h^2``: explicit methods need
+    ``dt < ~h^2/(2D)`` while implicit methods do not. The state carries the field
+    in ``x`` (``n`` components); ``u`` and ``e`` stay zero.
+    """
+    h = L / (n + 1)
+    xs = [i * h for i in range(1, n + 1)]
+    u0 = [math.sin(math.pi * x / L) + 0.5 * math.sin(5.0 * math.pi * x / L) for x in xs]
+    eig = {j: -(4.0 * D / h ** 2) * math.sin(j * math.pi * h / (2.0 * L)) ** 2 for j in (1, 5)}
+
+    def rhs(system, dt, **kwargs):
+        s = get_reference_state(system)
+        u = s.x
+        lap = torch.empty_like(u)
+        lap[0] = -2.0 * u[0] + u[1]
+        lap[1:-1] = u[:-2] - 2.0 * u[1:-1] + u[2:]
+        lap[-1] = u[-2] - 2.0 * u[-1]
+        return ParticleUpdate(
+            dxdt=D * lap / h ** 2,
+            dudt=torch.zeros_like(s.u),
+            dedt=torch.zeros_like(s.e),
+        ), None
+
+    def initial():
+        return ParticleSystem(
+            state=ParticleState(x=torch.tensor(u0, dtype=torch.float64),
+                                u=torch.zeros(n, dtype=torch.float64),
+                                e=torch.zeros(n, dtype=torch.float64),
+                                m=torch.ones(n, dtype=torch.float64)),
+            t=0.0)
+
+    def exact(t):
+        vals = [math.exp(eig[1] * t) * math.sin(math.pi * x / L)
+                + 0.5 * math.exp(eig[5] * t) * math.sin(5.0 * math.pi * x / L) for x in xs]
+        return (vals, [0.0] * n)
+
+    return Problem('diffusion',
+                   f'semi-discrete diffusion, n={n}, D={D}, L={L}, spectral stiffness ~{4.0 * D / h ** 2:.3g}',
+                   rhs, initial, exact, None, autonomous=True)
+
+
 PROBLEMS = {
     'oscillator': oscillator_problem,
     'forced': forced_problem,
     'damped': damped_problem,
     'kepler': kepler_problem,
+    'stiffRelaxation': stiff_relaxation_problem,
+    'stiffDampedOscillator': stiff_damped_oscillator_problem,
+    'vanDerPol': van_der_pol_problem,
+    'robertson': robertson_problem,
+    'diffusion': diffusion_problem,
 }
 
 

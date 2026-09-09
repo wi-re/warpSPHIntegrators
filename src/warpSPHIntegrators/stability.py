@@ -105,3 +105,70 @@ def oscillator_spectral_radius(method: str, h_omega: float) -> float:
 
 def oscillator_is_stable(method: str, h_omega: float, tolerance: float = 1e-7) -> bool:
     return oscillator_spectral_radius(method, h_omega) <= 1.0 + tolerance
+
+
+def damped_oscillator_amplification_matrix(method: str, h_omega: float, zeta: float) -> np.ndarray:
+    """Amplification matrix for ``x'' + 2*zeta*omega*x' + omega^2*x = 0`` in ``(x, h*v)``.
+
+    ``zeta`` is the damping ratio (critical damping at ``zeta = 1``); ``c = 2*zeta*h*omega``
+    is the dimensionless damping below. Each formula uses the same convention as the
+    registered scheme it describes -- the force is evaluated with whichever velocity is
+    available at that evaluation point:
+
+    - ``leapfrog``: synchronized form; the second force evaluation sits at the new
+      position with the *old* velocity, so its damping is an explicit old-velocity term
+      that is itself unstable for ``c > 2``.
+    - ``velocity_verlet``: kick-drift-kick; the second kick uses the half-step velocity.
+    - ``symplectic_euler``: the registered KDK form, force evaluated at the
+      half-drifted state ``(x + h*v/2, v + h*a/2)``.
+    - ``newmark_average_acceleration`` / ``newmark_linear_acceleration``: the library's
+      fixed-point Newmark (``newmark.py``), where the unknown is the endpoint state and
+      the endpoint acceleration is the force evaluated at that endpoint,
+      ``a_{n+1} = f(x_{n+1}, v_{n+1})``. For position-only forces this is the textbook
+      Newmark update; with velocity-dependent forces the damping enters through the
+      endpoint force rather than the textbook acceleration relation.
+
+    Every formula reduces to :func:`oscillator_amplification_matrix` at ``zeta = 0``.
+    """
+    q2 = h_omega ** 2
+    c = 2.0 * zeta * h_omega
+    if method in ('leapfrog', 'velocity_verlet'):
+        position_x = 1.0 - 0.5 * q2
+        if method == 'leapfrog':
+            return np.array([
+                [position_x, 1.0 - 0.5 * c],
+                [-0.5 * q2 * (1.0 + position_x), 1.0 - c - 0.5 * q2 + 0.25 * c * q2],
+            ])
+        return np.array([
+            [position_x, 1.0 - 0.5 * c],
+            [-0.5 * q2 * (1.0 + position_x - 0.5 * c),
+             (1.0 - 0.5 * c) * (1.0 - 0.5 * c - 0.5 * q2)],
+        ])
+    if method == 'symplectic_euler':
+        return np.array([
+            [1.0 - 0.25 * q2 * (2.0 - c), 1.0 - 0.25 * q2 - 0.5 * c + 0.25 * c * c],
+            [0.5 * q2 * (c - 2.0), 1.0 - 0.5 * q2 - c + 0.5 * c * c],
+        ])
+    if method in ('newmark_average_acceleration', 'newmark_linear_acceleration'):
+        beta = 0.25 if method == 'newmark_average_acceleration' else 1.0 / 6.0
+        gamma = 0.5
+        left = np.array([
+            [1.0 + beta * q2, beta * c],
+            [gamma * q2, 1.0 + gamma * c],
+        ])
+        right = np.array([
+            [1.0 - (0.5 - beta) * q2, 1.0 - (0.5 - beta) * c],
+            [-(1.0 - gamma) * q2, 1.0 - (1.0 - gamma) * c],
+        ])
+        return np.linalg.solve(left, right)
+    raise ValueError(f'Unknown damped oscillator stability method {method!r}')
+
+
+def damped_oscillator_spectral_radius(method: str, h_omega: float, zeta: float) -> float:
+    return float(np.max(np.abs(np.linalg.eigvals(
+        damped_oscillator_amplification_matrix(method, h_omega, zeta)))))
+
+
+def damped_oscillator_is_stable(method: str, h_omega: float, zeta: float,
+                                tolerance: float = 1e-7) -> bool:
+    return damped_oscillator_spectral_radius(method, h_omega, zeta) <= 1.0 + tolerance

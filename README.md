@@ -662,8 +662,62 @@ The plot uses the spectral radius of the linear oscillator amplification matrix 
 the dimensionless variable $dt\omega$. Leap Frog, Velocity Verlet, and Symplectic
 Euler are bounded through $dt\omega=2$; average-acceleration Newmark is unconditionally
 bounded for this undamped linear problem, while linear-acceleration Newmark is bounded
-through $dt\omega=\sqrt{12}$. Run `conda run -n warp python
-scripts/oscillator_stability_gallery.py` to regenerate it.
+through $dt\omega=\sqrt{12}$.
+
+With damping, the amplification matrix gains the dimensionless damping
+$c = 2\zeta\,dt\omega$ and the stability domain is two-parameter. The gallery below
+shows $\log_{10}\rho(h\omega, \zeta)$ for $h\omega \in [0, 8]$ and $\zeta \in [0, 1]$
+with the $\rho = 1$ boundary contoured (the same closed-form matrices as the test
+suite's one-step cross-checks, in `warpSPHIntegrators.stability`). Damping extends
+velocity Verlet's region — at $h\omega = 2.5$ the stable window is
+$0.5055 < \zeta < 0.8$ — but it cannot rescue Leap Frog: its damping term is
+evaluated at the *old* velocity, so it is itself an explicit update unstable for
+$c > 2$. Newmark (average acceleration) is neutrally stable undamped for every
+$h\omega$ and asymptotically stable for any $\zeta > 0$.
+
+![Damped oscillator stability: log10 spectral radius over (dt*omega, zeta) for Newmark and the Verlet family, rho = 1 boundary contoured](images/oscillator_stability_damped_newmark_verlet.png)
+
+Run `conda run -n warp python scripts/oscillator_stability_gallery.py` to
+regenerate both figures.
+
+### Nonlinear and stiff benchmarks
+
+`warpSPHIntegrators.testing` ships nine problem factories, five of them stiff or
+nonlinear stiff, used by `tests/test_benchmarks.py` (52 tests, all small and
+deterministic) and by the benchmark script below:
+
+- `stiff_relaxation_problem(rate, forcing, sign)` — Prothero–Robinson with a
+  configurable smooth target; `sign=-1` is the *unstable* variant (positive
+  eigenvalue) whose exact solution is still the target.
+- `stiff_damped_oscillator_problem(omega, c)` — separates high-frequency stiffness
+  from true dissipative stiffness; closed-form exact solution in all three damping
+  regimes.
+- `van_der_pol_problem(mu)`, `robertson_problem()`, `diffusion_problem(n)` — limit
+  cycle, stiff chemistry (invariants: mass conservation, positivity, monotone
+  $y_3$, quasi-steady $y_2$), and spectral-stiffness diffusion on Laplacian
+  eigenvectors, respectively.
+
+`conda run -n warp python scripts/stiff_benchmark_suite.py` regenerates the
+accuracy/cost figure below (all parameters and the JFNK settings are stated in the
+script's docstring): error vs $dt$ on the four stiff benchmarks, with the explicit
+methods' walls marked where the step restriction is actually active, plus
+per-step RHS-evaluation and GMRES-iteration panels.
+
+![Phase 8 stiff benchmark suite: error vs dt on Prothero-Robinson, diffusion, van der Pol, and Robertson kinetics, plus per-step RHS and GMRES cost](images/stiff_benchmark_suite.png)
+
+Two behaviours worth knowing before reading those curves:
+
+- **Robertson needs a bootstrap.** The initial quasi-steady layer (width $\sim10^{-3}$)
+  is not crossable from $y(0) = (1,0,0)$ at $dt \ge 0.02$; ten $dt = 0.001$ steps
+  put the solution on the quasi-steady manifold first. Backward Euler at
+  $dt \ge 2$ then converges each nonlinear solve to an unstable discrete fixed
+  point of the stiff quadratic and diverges — BE inaccuracy above the fast scale
+  (fast eigenvalue $\sim 2.2\times10^{3}$), not a solver failure.
+- **ESDIRK6's stability function has a pole at $z = 1$** (the stiffly-accurate
+  $\gamma = 1$ stage), so it diverges on the *unstable* Prothero–Robinson variant
+  at $z = +5$ even though it is A-stable. On that problem only BE/BDF-type methods
+  track the solution, and there the explicit wall is the point: DP5 amplifies the
+  unstable mode by $R(+5) = 117$ per step.
 
 ## Symplecticity Validation
 

@@ -167,21 +167,21 @@ Validation gate:
 - [x] Dahlquist stability regions for implemented tableau and BDF methods.
 - [x] Add automatic numerical assertions for known points in every plotted one-step tableau and BDF1/2 region, not only image generation.
 - [x] Add second-order undamped-oscillator amplification-matrix plots for Newmark and the Verlet family over `dt * omega`.
-- [ ] Extend the oscillator stability plots over damping ratio.
+- [x] Extend the oscillator stability plots over damping ratio. (Landed 2026-09-09: closed-form damped amplification matrices in `stability.py`, verified against the registered schemes' one-step maps; `log10(rho)` heatmaps over `(h*omega, zeta)` in `scripts/oscillator_stability_gallery.py`.)
 - [x] Add direct finite-difference phase-area checks across every registered scheme and nonlinear Kepler symplectic-form checks for the genuinely symplectic subset.
-- [ ] Add two-parameter IMEX stability slices for IMEX Euler and each later ARK method.
-- [ ] Add Prothero-Robinson with configurable smooth forcing and stiffness parameter.
-- [ ] Add stiff van der Pol with a moderate parameter for deterministic CI and a large parameter for an opt-in benchmark.
-- [ ] Add Robertson or Oregonator kinetics as a positive, nonlinear stiff chemistry benchmark.
-- [ ] Add a semi-discrete diffusion or reaction-diffusion benchmark with a known spectral stiffness scale.
-- [ ] Add a stiff damped oscillator separating high frequency from true dissipative stiffness.
-- [ ] Produce figures comparing solution error, energy/dissipation, nonlinear iterations, Krylov iterations, and RHS cost.
+- [x] Add two-parameter IMEX stability slices for IMEX Euler and each later ARK method. (Done in Phase 5, `imex_stability_slices`.)
+- [x] Add Prothero-Robinson with configurable smooth forcing and stiffness parameter. (Landed 2026-09-09: `stiff_relaxation_problem(rate, forcing, sign)` — stable and unstable-PR variants.)
+- [x] Add stiff van der Pol with a moderate parameter for deterministic CI and a large parameter for an opt-in benchmark. (Landed 2026-09-09: mu = 2 in CI, mu = 10 in the benchmark figure; explicit wall at mu = 10.)
+- [x] Add Robertson or Oregonator kinetics as a positive, nonlinear stiff chemistry benchmark. (Landed 2026-09-09: Robertson kinetics; invariants (mass, positivity, monotone y3, QSS y2) stand in for the exact solution; 10 x dt = 0.001 bootstrap needed to cross the initial QSS layer.)
+- [x] Add a semi-discrete diffusion or reaction-diffusion benchmark with a known spectral stiffness scale. (Landed 2026-09-09: `diffusion_problem(n)` on Laplacian eigenvectors 1 and 5 with the exact decay.)
+- [x] Add a stiff damped oscillator separating high frequency from true dissipative stiffness. (Landed 2026-09-09: `stiff_damped_oscillator_problem(omega, c)` with the closed form in all three damping regimes.)
+- [x] Produce figures comparing solution error, energy/dissipation, nonlinear iterations, Krylov iterations, and RHS cost. (Landed 2026-09-09: `scripts/stiff_benchmark_suite.py` -> `images/stiff_benchmark_suite.png`, error vs dt on four stiff benchmarks plus per-step RHS/GMRES cost panels.)
 
 Validation gate:
 
-- [ ] CI tests remain small and deterministic.
-- [ ] Longer benchmark scripts produce versioned PNGs under `images/` and clearly state parameter values and solver settings.
-- [ ] Claimed stability advantages are demonstrated on a problem where the explicit step restriction is actually active.
+- [x] CI tests remain small and deterministic.
+- [x] Longer benchmark scripts produce versioned PNGs under `images/` and clearly state parameter values and solver settings.
+- [x] Claimed stability advantages are demonstrated on a problem where the explicit step restriction is actually active.
 
 ## Recommended Execution Order
 
@@ -191,7 +191,7 @@ Validation gate:
 4. [x] Phase 5 ARK3 IMEX after the existing `IMEXRHS` API is stress-tested. (Landed 2026-09-09: `ark.py` additive driver with ARK3(2)4L[2]SA and ARK4(3)6L[2]SA from SUNDIALS ARKODE v7.9.0; two-parameter IMEX stability function + slice figure; split and pure-limit convergence verified in `tests/test_ark.py`.)
 5. [x] Phase 2 preconditioning using the first real SPH diffusion/acoustic downstream. (Landed 2026-09-09: left/right preconditioned GMRES + 3-arg `preconditioner(v, state, context)` hook on JFNKSolver, identity/diagonal helpers, size-sweep benchmark figure; validated on the wave equation via the block-lower-triangular Laplacian preconditioner — operator-based, no dense Jacobian.)
 6. [x] Phase 4 BDF3-BDF5 and true Adams-Moulton. (Landed 2026-09-09: BDF4/BDF5 from the exact order conditions with measured A(α) cones 73.35°/51.84°, zero-stability + stability-boundary tests; JFNK-corrected Adams-Moulton AM2-AM4 with derivative history and an optional AB predictor; the iterated corrector beats same-order PECE by ~10x on the stiff nonlinear relaxation.)
-7. [ ] Phase 8 broadened nonlinear/stiff benchmark and stability suite throughout.
+7. [x] Phase 8 broadened nonlinear/stiff benchmark and stability suite throughout. (Landed 2026-09-09: five new problem factories (stiff PR both signs, stiff damped oscillator, van der Pol, Robertson, diffusion), damped-oscillator amplification matrices + damping-ratio stability gallery, `tests/test_benchmarks.py` (52 tests), and `images/stiff_benchmark_suite.png` with per-step JFNK cost panels.)
 8. [ ] Phase 6 coupled implicit RK only when a high-order symplectic or Radau use case justifies the block solver.
 9. [ ] Phase 7 Rosenbrock/exponential methods only when their downstream structure makes them competitive.
 
