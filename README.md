@@ -690,9 +690,10 @@ regenerate both figures.
 
 ### Nonlinear and stiff benchmarks
 
-`warpSPHIntegrators.testing` ships nine problem factories, five of them stiff or
-nonlinear stiff, used by `tests/test_benchmarks.py` (52 tests, all small and
-deterministic) and by the benchmark script below:
+`warpSPHIntegrators.testing` ships eleven problem factories, five of them stiff or
+nonlinear stiff and two hyperbolic (`advection_problem`, `burgers_problem`), used
+by `tests/test_benchmarks.py` (52 tests, all small and deterministic),
+`tests/test_tvd.py`, and by the benchmark script below:
 
 - `stiff_relaxation_problem(rate, forcing, sign)` — Prothero–Robinson with a
   configurable smooth target; `sign=-1` is the *unstable* variant (positive
@@ -727,6 +728,42 @@ Two behaviours worth knowing before reading those curves:
   at $z = +5$ even though it is A-stable. On that problem only BE/BDF-type methods
   track the solution, and there the explicit wall is the point: DP5 amplifies the
   unstable mode by $R(+5) = 117$ per step.
+
+### TVD / total-variation classification
+
+The TVD/SSP property of the registered schemes is measured, not asserted by name.
+`warpSPHIntegrators.tvd_analysis` classifies every registered scheme on the model
+hyperbolic problem (1D periodic first-order upwind advection, step initial
+condition, `testing.advection_problem`) with two independent measurements:
+
+- the **SSP coefficient** `convex_combination_cfl(tableau)` — the largest CFL up
+  to which every stage-value map *and* the final map is a convex combination of
+  periodic shifts, from the Fourier stage maps of the upwind model. A
+  convex-combination step is TVD by construction, so this is a *rigorous* TVD CFL
+  for every scheme that exposes its tableau;
+- the **measured per-step TVD CFL** `measure_tvd_cfl(scheme, problem, cfls,
+  dt_scale)` — the registered driver run on the step initial condition, requiring
+  the per-step total-variation increase to stay within $10^{-8} \cdot TV_0$ in a
+  post-burn-in window. This one sees the actual driver, so it also classifies the
+  schemes that expose no tableau (the BDF/Adams family).
+
+Results (n = 64, tested to CFL 5): the TVD-named schemes — TVD RK2, TVD RK3, and
+SSP RK3, together with every second- and third-order explicit RK scheme — have
+the published $r = 1$ and measure TVD to CFL 1. TVD is strictly broader than SSP:
+classical RK3 has $r = 1/2$ yet a per-step TVD CFL of 1 (RK4: $r = 2/3$, TVD to
+1.25); Nystrom 5th order and Dormand–Prince 5(4) have $r = 0$ — their stage maps
+leave the convex hull at *any* CFL, verified by exact rational arithmetic — and
+are still per-step TVD to CFL 1.5. The L-stable implicits (Backward Euler,
+SDIRK2, TR-BDF2, ESDIRK3/4, the ARK pairs) are TVD to the tested CFL 5, and the
+multistep family (BDF2–5, Adams-Bashforth 2–5, ABM 2–4, implicit AM 2–4) to a
+measured CFL 1.5. The Verlet family and Newmark integrate second-order systems,
+so the TVD question does not apply to them.
+
+The per-scheme verdict table is the maintained fact printed by
+`python scripts/tvd_classifier.py` (re-run it to refresh) and pinned by
+`tests/test_tvd.py`; NOTES.md §3.11 has the full landscape, including why
+per-step TV cannot separate classical RK3 from TVD RK3 at CFL 1 and how the
+classifier detects the difference at the stage level instead.
 
 ## Symplecticity Validation
 

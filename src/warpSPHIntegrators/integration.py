@@ -252,6 +252,8 @@ def _with_reuse_guard(scheme: IntegrationScheme) -> IntegrationScheme:
         guarded.butcherTableau = inner.butcherTableau
     if hasattr(inner, 'dirkTableau'):
         guarded.dirkTableau = inner.dirkTableau
+    if hasattr(inner, 'arkTableau'):
+        guarded.arkTableau = inner.arkTableau
     return scheme._replace(function=guarded, reuse_order=analysis.order, fsal=analysis.fsal)
 
 

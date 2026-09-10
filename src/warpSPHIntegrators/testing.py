@@ -42,10 +42,24 @@ The registry (``PROBLEMS``) provides:
     initialized on two eigenvectors of the discrete Laplacian so the exact
     semi-discrete solution is known and the spectral stiffness scale is
     ``|mu_n| ~= 4*D/h^2``.
+``advection``
+    Semi-discrete 1D periodic advection ``u_t + c u_x = 0`` with first-order
+    upwind differences -- the model hyperbolic problem for the TVD/SSP
+    classifier (NOTES S3.11). ``ic='mode'`` initialises on two Fourier modes,
+    which are exact eigenmodes of the periodic upwind operator, so the exact
+    semi-discrete solution is known; ``ic='step'`` is a periodic square wave
+    (no closed form -- use the total-variation checks).
+``burgers``
+    Semi-discrete inviscid Burgers ``u_t + (u^2/2)_x = 0`` with Lax-Friedrichs
+    fluxes on a periodic grid, initialised on a smooth entropy wave. The
+    nonlinear hyperbolic problem: it is where the SSP (convex-combination)
+    representation of a scheme separates from schemes with the same stability
+    function (tests/test_tvd.py).
 """
 
 from __future__ import annotations
 
+import cmath
 import math
 from dataclasses import dataclass
 from typing import Callable, List, NamedTuple, Optional, Sequence
@@ -469,6 +483,145 @@ def diffusion_problem(n: int = 32, D: float = 1.0, L: float = 1.0) -> Problem:
                    rhs, initial, exact, None, autonomous=True)
 
 
+def advection_problem(n: int = 64, c: float = 1.0, L: float = 1.0,
+                      ic: str = 'mode') -> Problem:
+    """Semi-discrete 1D periodic advection ``u_t + c u_x = 0``, first-order upwind.
+
+    ``u`` is carried in ``system.state.x`` (``u`` and ``e`` are zero, ``m``
+    ones) on the periodic grid ``x_i = i * L / n``. The semi-discretisation is
+    ``(Au)_i = c (u_{i-1} - u_i) / h`` -- the model hyperbolic problem for the
+    TVD/SSP classifier (NOTES S3.11): every Fourier mode ``e^{2 pi i m x / L}``
+    is an exact eigenmode with eigenvalue ``(c/h) (e^{-2 pi i m / n} - 1)``, so
+    the semi-discrete CFL scale is ``mu = c dt / h`` and the mode amplitudes
+    decay like ``exp((c/h)(e^{-2 pi i m/n} - 1) t)``.
+
+    ``ic='mode'`` starts on ``cos(2 pi x / L) + 0.5 cos(4 pi x / L)`` and the
+    exact semi-discrete solution is known (the two eigenmodes above);
+    ``ic='step'`` starts on a periodic square wave (+1 for ``x < L/2``, -1
+    otherwise) which has no closed-form semi-discrete solution -- its exact
+    solution is the initial step translated by ``c t`` with two sharp jumps, so
+    the checks that matter are the total-variation ones (tests/test_tvd.py).
+    """
+    if ic not in ('mode', 'step'):
+        raise ValueError(f"Unknown advection initial condition {ic!r}")
+    h = L / n
+    xs = [i * h for i in range(n)]
+    if ic == 'mode':
+        # (mode number, amplitude, eigenvalue) -- the real part of
+        # a_m exp(2 pi i m x / L) exp(lam_m t) is a solution.
+        modes = [
+            (1, 1.0, (c / h) * (complex(math.cos(2 * math.pi / n),
+                                        -math.sin(2 * math.pi / n)) - 1.0)),
+            (2, 0.5, (c / h) * (complex(math.cos(4 * math.pi / n),
+                                        -math.sin(4 * math.pi / n)) - 1.0)),
+        ]
+        u0 = [1.0 * math.cos(2 * math.pi * x / L) + 0.5 * math.cos(4 * math.pi * x / L)
+              for x in xs]
+
+        def exact(t):
+            vals = []
+            for x in xs:
+                v = 0.0
+                for m, a, lam in modes:
+                    v += a * (cmath.exp(lam * t) * cmath.exp(2j * math.pi * m * x / L)).real
+                vals.append(v)
+            return (vals, [0.0] * n)
+    else:
+        u0 = [1.0 if x < L / 2 else -1.0 for x in xs]
+
+        def exact(t):
+            raise NotImplementedError(
+                'the exact semi-discrete solution of a step initialisation '
+                'has no closed form; use the total-variation checks '
+                '(tests/test_tvd.py)')
+
+    def rhs(system, dt, **kwargs):
+        s = get_reference_state(system)
+        u = s.x
+        return ParticleUpdate(
+            dxdt=c * (torch.roll(u, 1) - u) / h,
+            dudt=torch.zeros_like(u),
+            dedt=torch.zeros_like(u)), None
+
+    def initial():
+        return ParticleSystem(
+            state=ParticleState(
+                x=torch.tensor(u0, dtype=torch.float64),
+                u=torch.zeros(n, dtype=torch.float64),
+                e=torch.zeros(n, dtype=torch.float64),
+                m=torch.ones(n, dtype=torch.float64)),
+            t=0.0)
+
+    return Problem(
+        name=f'advection ({ic})',
+        description=(f'semi-discrete 1D periodic advection, first-order upwind, '
+                     f'n={n}, c={c}, CFL scale mu = c dt / h'),
+        rhs=rhs,
+        initial=initial,
+        exact=exact,
+        energy=None,
+        autonomous=True)
+
+
+def burgers_problem(n: int = 64, L: float = 1.0) -> Problem:
+    """Semi-discrete inviscid Burgers ``u_t + (u^2/2)_x = 0``, Lax-Friedrichs.
+
+    ``u`` is carried in ``system.state.x`` (``u`` and ``e`` are zero, ``m``
+    ones) on the periodic grid ``x_i = i * L / n``. The numerical flux is the
+    local Lax-Friedrichs flux
+    ``F_{i+1/2} = (f(u_i) + f(u_{i+1}))/2 - (alpha/2)(u_{i+1} - u_i)`` with
+    ``f(u) = u^2 / 2`` and ``alpha = max_j |u_j|`` (recomputed at every
+    evaluation), giving the semi-discretisation
+    ``(Au)_i = (F_{i-1/2} - F_{i+1/2}) / h``. The CFL scale is
+    ``mu = alpha dt / h``.
+
+    Initialised on the smooth entropy wave ``u(x) = -sin(2 pi x / L)``
+    (range [-1, 1]): smooth, but it steepens as it evolves, so a scheme that
+    is not a convex combination at the working CFL produces overshoots and
+    negative dips here even when its linear stability function is identical to
+    an SSP scheme's of the same order (tests/test_tvd.py).
+    """
+    h = L / n
+    u0 = [-math.sin(2 * math.pi * i / n) for i in range(n)]
+
+    def rhs(system, dt, **kwargs):
+        s = get_reference_state(system)
+        u = s.x
+        f = 0.5 * u ** 2
+        alpha = u.abs().max()
+        f_plus = 0.5 * (f + torch.roll(f, -1)) - 0.5 * alpha * (torch.roll(u, -1) - u)
+        f_minus = 0.5 * (f + torch.roll(f, 1)) - 0.5 * alpha * (u - torch.roll(u, 1))
+        return ParticleUpdate(
+            dxdt=(f_minus - f_plus) / h,
+            dudt=torch.zeros_like(u),
+            dedt=torch.zeros_like(u)), None
+
+    def initial():
+        return ParticleSystem(
+            state=ParticleState(
+                x=torch.tensor(u0, dtype=torch.float64),
+                u=torch.zeros(n, dtype=torch.float64),
+                e=torch.zeros(n, dtype=torch.float64),
+                m=torch.ones(n, dtype=torch.float64)),
+            t=0.0)
+
+    def exact(t):
+        raise NotImplementedError(
+            'inviscid Burgers has no closed-form semi-discrete solution for '
+            'this initialisation; use the total-variation checks '
+            '(tests/test_tvd.py)')
+
+    return Problem(
+        name='burgers',
+        description=(f'semi-discrete inviscid Burgers, Lax-Friedrichs fluxes, '
+                     f'n={n}, CFL scale mu = alpha dt / h with alpha = max|u|'),
+        rhs=rhs,
+        initial=initial,
+        exact=exact,
+        energy=None,
+        autonomous=True)
+
+
 PROBLEMS = {
     'oscillator': oscillator_problem,
     'forced': forced_problem,
@@ -479,6 +632,8 @@ PROBLEMS = {
     'vanDerPol': van_der_pol_problem,
     'robertson': robertson_problem,
     'diffusion': diffusion_problem,
+    'advection': advection_problem,
+    'burgers': burgers_problem,
 }
 
 

@@ -428,22 +428,65 @@ A(alpha) cones, amplification matrices) plus nonlinear *stiff* benchmarks. The
 explicit/hyperbolic half has no equivalent, and three registered schemes advertise a
 property nothing measures.
 
-- [ ] Measure the SSP coefficient of SSP RK3, TVD RK2 and TVD RK3 directly, and
+- [x] Measure the SSP coefficient of SSP RK3, TVD RK2 and TVD RK3 directly, and
   document the forward-Euler CFL each one preserves. Right now the defining property of
-  these three schemes is asserted by their names alone.
-- [ ] Add a hyperbolic benchmark problem. All nine current problems are dissipative or
+  these three schemes is asserted by their names alone. (Measured: all three have the
+  published `r = 1`, i.e. a convex-combination step up to CFL 1 = the forward-Euler
+  CFL, from the Fourier stage maps of the upwind-advection model
+  (`tvd_analysis.convex_combination_cfl`); `tests/test_tvd.py` pins it.)
+- [x] Add a hyperbolic benchmark problem. All nine current problems are dissipative or
   Hamiltonian ODEs; `diffusion_problem` is the only PDE semi-discretization and there is
   nothing hyperbolic. A scalar advection or inviscid Burgers semi-discretization would
-  give the SSP schemes something to be right about.
-- [ ] Add total-variation / positivity assertions on that problem, in the same
+  give the SSP schemes something to be right about. (Two landed: `advection_problem`
+  — 1D periodic first-order upwind advection, the classifier's model problem because
+  every mode is an exact eigenmode — with `mode` (exact solution) and `step` (TV = 4)
+  initialisations, and `burgers_problem`, semi-discrete inviscid Burgers with
+  Lax-Friedrichs fluxes; the `PROBLEMS` registry now has eleven.)
+- [x] Add total-variation / positivity assertions on that problem, in the same
   "numerical assertion, not just a figure" style Phase 8 used for the implicit side.
+  (TVD RK2/3 per-step TV non-increasing at CFL 1 on step advection and Burgers, and
+  positivity of a non-negative IC under TVD RK3 at CFL 1 — all in `tests/test_tvd.py`.)
+- [x] Generalize the TVD check into a **classifier usable on any registered scheme**,
+  not just the three TVD/SSP-named ones: confirm TVD RK2 and TVD RK3 are actually TVD
+  at their documented CFL, then scan every other registered scheme for TVD-ness despite
+  lacking a TVD name — TVD is strictly broader than SSP, so non-SSP candidates can pass.
+  Report the verdict per scheme with the measured TVD CFL (or a concrete counterexample
+  for the non-TVD ones). Requested 2026-09-10: TVD-ness is a property worth knowing for
+  all schemes, so build it as a general classifier rather than per-scheme assertions.
+  (`tvd_analysis.classify_tvd` / `classify_all` + `scripts/tvd_classifier.py`, two
+  measurements per scheme: the rigorous SSP coefficient from the stage maps where a
+  tableau is exposed, and the measured per-step TVD CFL from a trajectory sweep that
+  also covers the tableau-less BDF/Adams family. The verdict table is the maintained
+  fact of NOTES §3.11 and is pinned for the whole registry by
+  `tests/test_tvd.py::test_classifier_verdicts_match_the_recorded_landscape`.
+  Findings: TVD ⊋ SSP in the registry — RK4 (`r = 2/3`) is per-step TVD to CFL 1.25,
+  and Nystrom 5th order / Dormand-Prince (`r = 0`, stage maps negative at every
+  resolvable CFL, checked by exact rational arithmetic) are still per-step TVD to
+  CFL 1.5; the L-stable implicits are TVD to the tested CFL 5; the multistep family
+  to a measured CFL 1.5.)
 
 Validation gate:
 
-- [ ] Each SSP scheme's measured SSP coefficient matches its published value.
-- [ ] A non-SSP scheme of the same order visibly violates the TVD bound on the same
+- [x] Each SSP scheme's measured SSP coefficient matches its published value.
+  (SSP RK3 / TVD RK2 / TVD RK3 all measure `r = 1`; the landmark values of the rest
+  of the registry — RK3 `1/2`, RK4 `2/3`, RK4alt `1/3`, Cash-Karp `5/12`, BE
+  unconditional, IMID/Trapezoidal `2`, SDIRK2/TR-BDF2 `1+√2`, Nystrom/DP5/ESDIRK
+  `0` — are pinned in `tests/test_tvd.py`.)
+- [x] A non-SSP scheme of the same order visibly violates the TVD bound on the same
   problem where the SSP schemes hold it — otherwise the test is not measuring the
-  property it claims to.
+  property it claims to. (Per-step TV cannot separate them — all third-order RK
+  methods share the same final map, convex to CFL 1, so classical RK3 and TVD RK3
+  both show zero per-step TV increase at CFL 1. The violation is at the *stage*
+  level: RK3's stage-3 row at CFL 1 is `[1, -1, 1]` (circulant entry `μ(1-2μ) = -1`)
+  while TVD RK3's stage rows are `[0, 1]` and `[3/4, 0, 1/4]`;
+  `tests/test_tvd.py::test_classical_rk3_stage_leaves_the_convex_hull` runs the
+  registered drivers from a delta IC so each stage state is exactly its row.)
+- [x] The TVD classifier's verdict is recorded for every registered scheme (the
+  TVD-named ones confirmed, any newly-discovered TVD scheme's CFL documented), so the
+  classification stays a maintained fact rather than a one-off script run. (The full
+  table is in NOTES §3.11, printed by `scripts/tvd_classifier.py`, and pinned per
+  scheme — including the "not applicable" Verlet/Newmark verdicts — in
+  `tests/test_tvd.py::test_classifier_verdicts_match_the_recorded_landscape`.)
 
 ## Housekeeping
 
@@ -467,7 +510,7 @@ Validation gate:
 7. [x] Phase 8 broadened nonlinear/stiff benchmark and stability suite throughout. (Landed 2026-09-09: five new problem factories (stiff PR both signs, stiff damped oscillator, van der Pol, Robertson, diffusion), damped-oscillator amplification matrices + damping-ratio stability gallery, `tests/test_benchmarks.py` (52 tests), and `images/stiff_benchmark_suite.png` with per-step JFNK cost panels.)
 8. [x] Phase 9 gradient coverage. (Landed 2026-09-10: the "fully differentiable" claim was false for all 19 implicit schemes — `gmres`'s in-place workspace made the autograd tape reject every one. `JFNKSolver.solve` now solves under `no_grad` and re-attaches by the implicit function theorem; gradients verified against closed-form amplification matrices to 1.1e-16 and shown independent of `newton_tol`; `tests/test_gradients.py`, suite 2228 → 2285.)
 9. [x] Phase 10 stiffly-accurate DIRK first-stage reuse. (Landed 2026-09-10: `reuse.dirk_reuse_analysis` + the driver's `_dirk_reuses_first_stage` accept `priorStep` losslessly for Trapezoidal / TR-BDF2 / both ESDIRKs — the stiffly-accurate tableaus with an explicit first stage — while SDIRK2 and the single-stage backward Euler / midpoint still reject; the `stiffly_accurate` metadata gained its first consumer; order preserved and one explicit RHS eval/step saved within JFNK noise, `tests/test_dirk.py`; suite 2285 → 2320.)
-10. [ ] Phase 13 explicit-side nonlinear stability — small, and it closes the one place where a registered scheme advertises a property nothing measures.
+10. [x] Phase 13 explicit-side nonlinear stability — small, and it closes the one place where a registered scheme advertises a property nothing measures. Includes the requested general TVD classifier (verify the TVD-named schemes, scan all others; TVD is broader than SSP, 2026-09-10). (Landed 2026-09-10: `advection_problem` (upwind advection, the classifier's model problem) + `burgers_problem` in `testing.py`; `tvd_analysis.py` — rigorous SSP coefficient from the Fourier stage maps plus measured per-step TVD CFL from a trajectory sweep, and `classify_tvd`/`classify_all` over the whole registry; `scripts/tvd_classifier.py` prints the maintained verdict table (NOTES §3.11): TVD RK2/3 + SSP RK3 at the published r = 1, RK4 r = 2/3 yet TVD to CFL 1.25, Nystrom/DP5/ESDIRK/ARK r = 0 (stage maps negative at every resolvable CFL — Nystrom/DP5 by exact rational arithmetic) yet per-step TVD to 1.5, L-stable implicits to CFL 5, multistep family to a measured CFL 1.5; the stage-level gate separates classical RK3 (stage-3 row [1, -1, 1] at CFL 1) from TVD RK3 where per-step TV cannot; `tests/test_tvd.py` pins the whole table; suite 2320 → 2346.)
 11. [ ] Phase 11 adaptive step control, once the multistep-vs-variable-`dt` contract is decided.
 12. [ ] Phase 12 missing families, RKC/RKL first: it is the one candidate that directly challenges the Phase 8 cost baseline on a benchmark that already exists.
 13. [ ] Phase 6 coupled implicit RK only when a high-order symplectic or Radau use case justifies the block solver.
@@ -479,4 +522,4 @@ Validation gate:
 - [x] Every stiff-method claim is backed by a nonlinear stiff benchmark and a stability diagnostic appropriate to that method family. (Phase 8: van der Pol, Robertson, diffusion, Prothero-Robinson in both signs, stiff damped oscillator; per-family diagnostics: Dahlquist regions, A(α) cones, L-damping assertions, damped-oscillator amplification matrices, two-parameter IMEX slices.)
 - [x] Solver diagnostics make failed or stalled nonlinear solves observable to callers. (Phase 1: `SolveDiagnostics` in `IntegrationResult` — residual, GMRES iterations, RHS evaluations, line-search backtracks, termination reason — with finite-value checks and structured failure paths.)
 - [x] New methods do not regress copied fields, stage times, history invalidation, gradients, or existing public APIs. (Copied fields: Phase 3 gate; stage times: `forced`-problem coverage; history invalidation: Phase 4 gate + `StepHistory` dt/uid guards; public API: full suite green after every phase. Gradient-through-step **was** the exception and is now covered — see Phase 9 below: the "differentiable by construction" claim was false for every implicit scheme, and `tests/test_gradients.py` (57 tests) now pins it. The warp gradient path remains open, NOTES §2.2.)
-- [x] The full test suite passes in the `warp` environment. (2320 passed / 187 skipped as of 2026-09-10.)
+- [x] The full test suite passes in the `warp` environment. (2346 passed / 187 skipped as of 2026-09-10.)
