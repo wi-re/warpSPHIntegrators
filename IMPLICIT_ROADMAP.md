@@ -23,6 +23,7 @@ Adaptive timestep control *was* explicitly out of scope, on the grounds that it 
 - [x] Nonlinear Kepler convergence coverage and nonlinear stiff relaxation coverage.
 - [x] Gradient-through-step coverage for every registered scheme, implicit ones differentiated by the implicit function theorem rather than by unrolling the Newton/GMRES iteration (`tests/test_gradients.py`, Phase 9).
 - [x] First-stage reuse for the stiffly accurate DIRK tableaus with an explicit first stage — Trapezoidal, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA — lossless, saving one (cheap, explicit) RHS evaluation per step (`tests/test_dirk.py`, Phase 10).
+- [x] `viscous_burgers_demo.ipynb` — the Phase 14 viscous-Burgers semilinear benchmark (n=64, ν=0.01, T=0.4) run through every registered family (explicit / JFNK-closed implicit / IMEX) with space–time shock-formation plots (x horizontal, t vertical), measured convergence orders against an RK4 (dt=2e-3) semi-discrete reference, and a Phase 1-diagnostics cost table (RHS evaluations + GMRES iterations per run).
 
 ## Phase 0: Keep the Public Story Accurate
 
@@ -220,6 +221,13 @@ Rosenbrock-W trades the nonlinear solve for one *linear* solve per stage, so it 
 candidate must clear: Phase 8's measured cost baseline (BE 3.40, BDF2 2.96, TR-BDF2
 4.50, ESDIRK6 10.72 RHS evaluations/step; GMRES iterations/step equal to the
 stage-solve count, at GMRES tolerance 1e-8).
+
+`viscous_burgers_demo.ipynb` already carries that comparison on the benchmark
+itself: §9 tabulates per-run RHS evaluations and GMRES iterations for every
+registered stiff family at a fixed `dt` past the explicit wall (n=64, ν=0.01,
+T=0.4), and §8 measures each family's convergence order against the RK4
+(dt=2e-3) semi-discrete reference — the scaffold the gate's "to a fixed error"
+comparison plugs into.
 
 ### Rosenbrock / W methods
 
@@ -654,7 +662,7 @@ Validation gate:
 12. [ ] Phase 11 adaptive step control, once the multistep-vs-variable-`dt` contract is decided.
 13. [ ] Phase 12 missing families, RKC/RKL first: it is the one candidate that directly challenges the Phase 8 cost baseline on a benchmark that already exists.
 14. [ ] Phase 6 coupled implicit RK — de-gated 2026-09-10 (Gauss-Legendre is the library's only symplectic method above order 2, Radau IIA its only no-compromise stiff method), no longer waiting on a downstream. Needs the `BlockState` product type; then it inherits the Phase 1/2/9 machinery unchanged.
-15. [ ] Phase 7 Rosenbrock-W (outright) then exponential integrators — unblocked (Phase 14 landed 2026-09-10); the validation gate still requires beating same-order DIRK/IMEX cost on viscous Burgers.
+15. [ ] Phase 7 Rosenbrock-W (outright) then exponential integrators — unblocked (Phase 14 landed 2026-09-10); the validation gate still requires beating same-order DIRK/IMEX cost on viscous Burgers (`viscous_burgers_demo.ipynb` §9/§8 is the working reference for that bar).
 
 ## Completion Definition
 
