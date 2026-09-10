@@ -2,7 +2,9 @@
 
 Status markers: `[x]` complete, `[>]` in progress, `[ ]` planned, `[?]` needs a downstream use case or design decision.
 
-This roadmap covers the remaining implicit, stiff, IMEX, stability, and nonlinear-validation work. Adaptive timestep control is explicitly out of scope: it belongs to a problem-specific driving loop and only applies where a meaningful local error estimator is available.
+This roadmap covers the remaining implicit, stiff, IMEX, stability, and nonlinear-validation work.
+
+Adaptive timestep control *was* explicitly out of scope, on the grounds that it belongs to a problem-specific driving loop and only applies where a meaningful local error estimator is available. The second half of that reasoning has since expired: eight registered schemes now carry embedded estimators and `IntegrationResult.error` has no consumer at all. It is scoped as Phase 11 below, together with the `StepHistory`-invalidation problem that is its actual blocker.
 
 ## Current Baseline
 
@@ -14,7 +16,10 @@ This roadmap covers the remaining implicit, stiff, IMEX, stability, and nonlinea
 - [x] Fully implicit (iterated) Adams-Moulton AM2-AM4 with derivative-bearing `StepHistory` and an optional Adams-Bashforth predictor.
 - [x] IMEX Euler with explicit `IMEXRHS(explicit=..., implicit=...)` callbacks; an ordinary RHS remains fully implicit.
 - [x] Dahlquist stability-region plots and numerical boundary checks for tableau methods and BDF1-BDF5.
+- [x] Damped-oscillator amplification matrices (closed form, cross-checked against the registered schemes' one-step maps) and damping-ratio stability gallery for the Verlet family and Newmark.
+- [x] Stiff/nonlinear benchmark problem registry in `testing.py` (Prothero-Robinson in both signs, stiff damped oscillator, van der Pol, Robertson kinetics, semi-discrete diffusion) plus the error/cost benchmark figure `images/stiff_benchmark_suite.png`.
 - [x] Nonlinear Kepler convergence coverage and nonlinear stiff relaxation coverage.
+- [x] Gradient-through-step coverage for every registered scheme, implicit ones differentiated by the implicit function theorem rather than by unrolling the Newton/GMRES iteration (`tests/test_gradients.py`, Phase 9).
 
 ## Phase 0: Keep the Public Story Accurate
 
@@ -110,6 +115,18 @@ Validation gate:
 - [x] History resets safely on `dt` or particle-set changes. (Scheme-level restart tests for BDF4 and AM3; the shared `StepHistory` dt/uid guards were already covered by the Phase 0 state tests.)
 - [x] AM methods converge their nonlinear corrector and outperform or match PECE on a stiff nonlinear case. (Prothero-Robinson rate=10, dt=0.1: corrector residuals reach ~1e-7; AM2/3/4 errors 6.0e-5 / 7.6e-5 / 2.3e-5 vs PECE 8.3e-4 / 4.0e-4 / 3.1e-3 — `tests/test_am.py::test_am_corrector_beats_pece_on_stiff_nonlinear_case`.)
 
+### Deferred (gated)
+
+- [?] **BDF6.** The A(α) cone shrinks below BDF5's 51.84°, so order 6 buys accuracy
+  only while losing the stiff sector. Trigger: a downstream stiff problem that needs
+  order ≥ 6 *and* whose stiff modes stay inside the narrower cone.
+- [?] **BDF3-5 cold-start ceiling.** The Dormand-Prince bootstrap is explicit with a
+  negative-real-axis boundary at |z| ≈ 3.3, so BDF3-5 cannot *start* at
+  `dt·rate ≳ 3.3` on the stiff relaxation (the rate=100 case is out of reach for
+  them — see the `tests/test_stiff.py` docstring). Options: document the per-order
+  usable-rate ceiling, or add a JFNK-based startup (e.g. a BE or AM2 warm-up).
+  Trigger: a downstream stiff problem where the ceiling binds.
+
 ## Phase 5: Higher-Order IMEX / Additive RK
 
 - [x] Define an additive-tableau representation with explicit and diagonally-implicit coefficients, stage times, propagated weights, and embedded weights. (`ark.AdditiveTableau`)
@@ -130,13 +147,22 @@ Validation gate:
 
 ## Phase 6: Coupled Fully Implicit RK
 
+**Trigger (what would justify starting):** a downstream simulation that needs order-4
+symplectic accuracy — e.g. long-run Hamiltonian training where the order-2
+shadow-Hamiltonian drift of the registered Verlet/Forest-Ruth set is measurable and
+costly — or L-stable Radau damping for stiff oscillatory modes that fall outside
+BDF5's 51.84° A(α) cone. Until one of those appears, the block solver is machinery
+with no user (the same caution as NOTES §3.8's "no solver contract without a
+downstream"). The Phase 8 cost panels quantify what the block solver must beat:
+ESDIRK6 already costs ~3× BE in RHS evaluations per step with per-stage solves.
+
 - [ ] Create a block-state representation for all implicit stages, with flatten/unflatten over `s * N` unknowns.
 - [ ] Extend JFNK residual construction to coupled stage systems without forming a dense block Jacobian.
 - [ ] Implement Gauss-Legendre s=2 (order 4) first.
 - [x] Validate direct symplectic-form behavior on oscillator and Kepler after tightening the default JFNK residual and finite-difference settings.
 - [ ] Implement Radau IIA s=2 (order 3, L-stable) as the first high-quality fully implicit stiff method.
-- [ ] Consider Gauss-Legendre s=3 and Radau IIA s=3 only after the block solver and preconditioner are proven at scale.
-- [ ] Consider Lobatto IIIA-IIIB only for a concrete partitioned/separable Hamiltonian downstream.
+- [?] Consider Gauss-Legendre s=3 and Radau IIA s=3 only after the block solver and preconditioner are proven at scale.
+- [?] Consider Lobatto IIIA-IIIB only for a concrete partitioned/separable Hamiltonian downstream.
 
 Validation gate:
 
@@ -146,6 +172,19 @@ Validation gate:
 
 ## Phase 7: Alternative Stiff Families
 
+**Trigger (what would justify starting):** a downstream RHS that splits cleanly into
+a linear stiff operator with a cheap matrix-free action (a mass-lumped diffusion or
+acoustic stiffness term, or the existing wave-equation Laplacian of the Phase 2
+preconditioning work) plus a comparatively mild nonlinear remainder. Rosenbrock-W
+trades the nonlinear solve for one *linear* solve per stage, so it only wins when
+that linear solve is cheap (operator-based, preconditioned — the Phase 2
+`preconditioner(v, state, context)` hook is the integration point) and the
+nonlinearity is weak enough that a low-order method suffices. Exponential
+integrators need the same split plus a `phi_k(hL)v` hook. The bar any candidate
+must clear: Phase 8's measured cost baseline (BE 3.40, BDF2 2.96, TR-BDF2 4.50,
+ESDIRK6 10.72 RHS evaluations/step; GMRES iterations/step equal to the stage-solve
+count, at GMRES tolerance 1e-8).
+
 ### Rosenbrock / W methods
 
 - [ ] Evaluate a linearly implicit Rosenbrock-W method as a lower-nonlinear-iteration alternative for diffusion-like SPH terms.
@@ -154,7 +193,7 @@ Validation gate:
 
 ### Exponential integrators
 
-- [ ] Only pursue when a downstream exposes a natural linear stiff operator plus nonlinear remainder.
+- [?] Only pursue when a downstream exposes a natural linear stiff operator plus nonlinear remainder.
 - [ ] Define matrix-function-vector product hooks (`phi_k(hL)v`) without dense matrix construction.
 - [ ] Start with ETD2 / exponential Rosenbrock on a diffusion-dominated semi-discretization.
 
@@ -175,13 +214,227 @@ Validation gate:
 - [x] Add Robertson or Oregonator kinetics as a positive, nonlinear stiff chemistry benchmark. (Landed 2026-09-09: Robertson kinetics; invariants (mass, positivity, monotone y3, QSS y2) stand in for the exact solution; 10 x dt = 0.001 bootstrap needed to cross the initial QSS layer.)
 - [x] Add a semi-discrete diffusion or reaction-diffusion benchmark with a known spectral stiffness scale. (Landed 2026-09-09: `diffusion_problem(n)` on Laplacian eigenvectors 1 and 5 with the exact decay.)
 - [x] Add a stiff damped oscillator separating high frequency from true dissipative stiffness. (Landed 2026-09-09: `stiff_damped_oscillator_problem(omega, c)` with the closed form in all three damping regimes.)
-- [x] Produce figures comparing solution error, energy/dissipation, nonlinear iterations, Krylov iterations, and RHS cost. (Landed 2026-09-09: `scripts/stiff_benchmark_suite.py` -> `images/stiff_benchmark_suite.png`, error vs dt on four stiff benchmarks plus per-step RHS/GMRES cost panels.)
+- [x] Produce figures comparing solution error, energy/dissipation, nonlinear iterations, Krylov iterations, and RHS cost. (Landed 2026-09-09, energy panel added 2026-09-10: `scripts/stiff_benchmark_suite.py` -> `images/stiff_benchmark_suite.png` — error vs dt on four stiff benchmarks, per-step RHS/GMRES cost panels (GMRES iterations per step equal the stage-solve count, i.e. the per-step nonlinear-iteration cost), and a van der Pol energy-vs-time panel for the settling vs diverging orbits.)
 
 Validation gate:
 
 - [x] CI tests remain small and deterministic.
 - [x] Longer benchmark scripts produce versioned PNGs under `images/` and clearly state parameter values and solver settings.
 - [x] Claimed stability advantages are demonstrated on a problem where the explicit step restriction is actually active.
+
+## Phase 9: Gradient Coverage — done 2026-09-10
+
+The library's headline claim is "fully differentiable", and until this phase nothing
+in the suite ever called `.backward()` through a step. The claim was false for all 19
+implicit schemes; see NOTES §2.2 for the finding and the derivation.
+
+- [x] Run the JFNK Newton/GMRES iteration under `torch.no_grad()`. (`gmres` writes its
+  Hessenberg factor, Givens rotations and back-substitution vector in place, which the
+  autograd tape rejects outright; recording a linear solver is also simply the wrong
+  thing to do.)
+- [x] Re-attach gradients by the implicit function theorem rather than by unrolling.
+  (`_implicit_diff_reattach`: a backward hook maps the incoming cotangent `g` to
+  `λ = (I − Jᵀ)⁻¹ g` via one more matrix-free GMRES driven by reverse-mode VJPs.)
+- [x] Keep the forward trajectory bit-for-bit identical when no gradient is requested,
+  and when one is. (The re-attached tensor carries `out`'s gradient but `y_star`'s
+  value; `test_values_are_identical_with_and_without_grad_tracking` pins all 19.)
+- [x] Leave `SolveDiagnostics` untouched on the differentiable path — the extra `step`
+  applications belong to the gradient machinery, not to the nonlinear solve, so the
+  documented cost model (NOTES §3.4) still reads correctly.
+- [x] Add `tests/test_gradients.py`: gradients flow through all 19 implicit schemes and
+  7 explicit ones, match closed-form amplification matrices, and are independent of
+  `newton_tol`.
+
+Validation gate:
+
+- [x] Every implicit scheme produces a finite gradient. (Previously every one raised
+  `RuntimeError`; BDF2+/AM only after their explicit cold start handed over.)
+- [x] Gradients match an independent closed form, not just each other. (Backward Euler,
+  BDF1, IMEX Euler, trapezoidal and implicit midpoint against their exact linear
+  amplification matrices on the oscillator: agreement to **1.1e-16**.)
+- [x] The gradient is independent of the nonlinear tolerance. (`newton_tol` swept 1.0 →
+  1e-3 → 1e-6, gradient unchanged to 1e-11 — the property that distinguishes implicit
+  differentiation from unrolling.)
+- [x] Full suite green: 2285 passed / 199 skipped, up from 2228 / 199.
+
+### Deferred (gated)
+
+- [?] **Warp gradient path.** Still the open `torch.autograd` vs `wp.Tape` decision of
+  NOTES §2.2. Phase 9 settles the torch half only. Note that the adjoint solve needs
+  *reverse*-mode VJPs, which warp has — so the implicit-differentiation design carries
+  over to a warp backend more cleanly than an unrolled one would have.
+- [?] **Gradients through the explicit cold start.** BDF/AM gradients currently flow
+  through the Dormand-Prince bootstrap by unrolling it, which is correct but not free.
+  Only worth revisiting if a downstream differentiates long multistep runs where the
+  startup cost is measurable.
+
+## Phase 10: First-Stage Reuse for Stiffly Accurate DIRK
+
+**Trigger: none needed — this is a measured, order-free saving already sitting in the
+driver.** TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA and Trapezoidal all satisfy
+both halves of the FSAL condition: an explicit first stage (`a[0,0] == 0`) *and* stiff
+accuracy (`b == a[-1]`, `c[-1] == 1`). The DIRK driver already re-evaluates the RHS on
+the converged final stage, so `stages[-1].update` **is** `f(t^{n+1}, y^{n+1})` — verified
+directly: it matches an independent evaluation at the returned state to 0.0 on `forced`
+and ~1e-11 (the Newton tolerance) on `oscillator`. That value is exactly what the next
+step's explicit first stage needs, so reuse costs no order at all.
+
+Today `dirk.py` rejects `priorStep` for every scheme. The stated reason — "a converged
+stage's `k` was evaluated one Picard iteration before the returned state" — is
+contradicted by the driver's own inline comment ("not an approximation one iteration
+behind"), and NOTES §3.6's argument that an implicit stage's value depends on `dt`
+through the solve is correct for DIRK in general but does not apply to an *explicit*
+first stage.
+
+- [ ] Teach `reuse.py` the stiffly-accurate-plus-explicit-first-stage case, without
+  handing it the explicit-tableau substitution analysis that `_tableau_of` deliberately
+  withholds from implicit schemes.
+- [ ] Give `stiffly_accurate` its first consumer — it is currently recorded metadata
+  that nothing reads.
+- [ ] Accept `priorStep` in the DIRK driver for exactly the qualifying tableaus, and
+  keep rejecting it for SDIRK2 (stiffly accurate but `a[0,0] != 0`, so its first stage
+  is implicit and cannot consume a `k0` directly).
+- [ ] Reconcile the `DIRK` docstring with the driver's actual behaviour.
+- [?] **Warm-starting implicit first stages.** For SDIRK2 and any other
+  non-explicit-first-stage tableau, a reused `k` is still a better Newton *initial
+  guess* than the current cold start. That is a softer, iteration-count win rather than
+  an evaluation-count one; measure before building.
+
+Validation gate:
+
+- [ ] Reuse preserves the measured convergence order for all four qualifying schemes
+  (`step_reuse_analysis` reports `reuse_order == order`, not a drop).
+- [ ] `supports_step_reuse` and `is_fsal` report these schemes correctly.
+- [ ] Measured saving matches the prediction from the Phase 8 cost panels: one RHS
+  evaluation per step, i.e. TR-BDF2 4.50 → ~3.50/step (~22%), ESDIRK6 10.72 → ~9.7
+  (~9%). **The saved evaluation is the cheap explicit one**, so the wall-clock win is
+  smaller than the evaluation-count win; report both rather than the flattering one.
+
+## Phase 11: Adaptive Step Control and Dense Output
+
+**Why this is no longer "out of scope".** This roadmap's header defers adaptive `dt` to
+"a problem-specific driving loop", which was the right call when almost nothing had an
+error estimator. Eight schemes now do — Bogacki-Shampine 3(2), Dormand-Prince 5(4),
+Cash-Karp 5(4), TR-BDF2, both ESDIRKs and both ARKs — and `IntegrationResult.error` is
+produced by all of them and **read by nothing**. The controller is the missing consumer,
+not a missing estimator.
+
+The genuinely hard part is not the controller. It is that `StepHistory` invalidates on
+any `dt` change, so adaptive stepping and the entire multistep family (BDF1-5, AM2-4,
+AB2-5, ABM2-4) are mutually exclusive today. That interaction is the real blocker and
+should be decided before any controller lands.
+
+- [ ] Add a PI (or predictive) step-size controller with the standard safety factor,
+  min/max growth clamps, and a rejection path that re-runs the step.
+- [ ] Decide the contract: does the driver own the loop, or does the library expose a
+  `propose_dt(error, dt, order)` helper the caller drives? The latter matches this
+  library's existing "no solver contract without a downstream" caution (NOTES §3.8).
+- [ ] Decide what adaptive `dt` means for multistep. Options: refuse the combination
+  explicitly (honest, cheap), or implement variable-step BDF/Adams coefficients
+  (correct, substantially more work, and the route CVODE/LSODA take).
+- [ ] Add dense output / interpolants, starting with Dormand-Prince's published
+  formula. Needed for output at fixed times under a varying `dt`, and for event
+  location. Nothing in the library interpolates within a step today.
+- [?] **Error-norm convention.** `fields.state_norm`'s weighted-RMS ("< 1.0 means
+  converged") is already the DIRK driver's convention; a controller should reuse it
+  rather than introduce a second scale.
+
+Validation gate:
+
+- [ ] A stiff problem from the Phase 8 registry completes in materially fewer steps
+  under control than at the fixed `dt` needed for the same final error.
+- [ ] Step rejection actually triggers on van der Pol at mu = 10, where the Phase 8
+  work already measured a hard explicit wall.
+- [ ] Dense output reproduces the propagated solution at the step endpoints exactly and
+  meets its advertised interpolation order in between.
+
+## Phase 12: Families Not Yet Represented
+
+Ordered by relevance to this library's SPH downstream, not by classical prominence.
+Each is gated the same way Phases 6 and 7 are: a concrete downstream need, and a cost
+comparison against the Phase 8 baseline.
+
+### Stabilized explicit (RKC / RKL / ROCK) — the strongest omission
+
+- [ ] Evaluate RKC or RKL2 ("super-time-stepping") for parabolic SPH terms. Explicit
+  Chebyshev recursions whose real-axis stability grows as O(s²) in the stage count,
+  matrix-free, with **no nonlinear solver at all**. They attack exactly the regime the
+  Phase 2 preconditioning work and the `diffusion_problem(n)` benchmark exist for, and
+  for SPH viscosity they are frequently the right answer over implicit.
+- [ ] No tableau needed — a coefficient recursion plus a stage-count rule, so the
+  marginal cost is close to the "tableau only" tier of NOTES §3.6.
+- [ ] Benchmark against BE / BDF2 / TR-BDF2 on `diffusion_problem` at several `n`,
+  reporting RHS evaluations to a fixed error.
+
+### IMEX linear multistep (SBDF2/3, CNAB2)
+
+- [ ] Add semi-implicit BDF and Crank-Nicolson/Adams-Bashforth. All three ingredients
+  already exist — BDF coefficients, AB coefficients, and `IMEXRHS` — so SBDF2 is BDF2
+  with an AB2 extrapolation of the explicit half. These dominate PDE and fluid codes,
+  and Phase 5 currently jumps straight from IMEX Euler to two ARK pairs with nothing
+  multistep in between.
+
+### Generalized-alpha / HHT-alpha
+
+- [ ] The natural sibling of the registered Newmark: adds controllable high-frequency
+  numerical dissipation, and is close to a parameter generalization of the existing
+  167-line `newmark.py`. Relevant to structural/solid SPH.
+
+### Higher-order SSP
+
+- [ ] SSPRK(5,4) and/or SSPRK(10,4). The shipped SSP/TVD set stops at order 3, which is
+  precisely where the SSP barrier for explicit RK bites (order 4 needs 5+ stages).
+
+### High-order symplectic composition
+
+- [?] Yoshida 4/6/8, Suzuki, Blanes-Moan, or a general `compose()` helper over the
+  existing Verlet base. **Gated on a separable Hamiltonian downstream**, and that gate
+  is real: NOTES already measures the whole Verlet/Forest-Ruth family dropping to first
+  order under a velocity-dependent force, which is every actual SPH momentum equation.
+  Worth noting against Phase 6's trigger, which cites "order-4 symplectic accuracy" —
+  for a *separable* Hamiltonian, composition reaches order 6-8 explicitly and far more
+  cheaply than Gauss-Legendre s=3, so Phase 6's trigger should say "non-separable"
+  explicitly rather than leaving the cheaper route looking unconsidered.
+
+### One-step Runge-Kutta-Nystrom
+
+- [?] NOTES §3.6 lists *multistep* Nystrom (Stormer-Cowell) and Gauss-Jackson as
+  not-done, but not one-step RKN. Same separability caveat as composition methods.
+
+## Phase 13: Nonlinear Stability for the Explicit Side
+
+Phase 8 built a thorough stability story that is entirely **linear** (Dahlquist regions,
+A(alpha) cones, amplification matrices) plus nonlinear *stiff* benchmarks. The
+explicit/hyperbolic half has no equivalent, and three registered schemes advertise a
+property nothing measures.
+
+- [ ] Measure the SSP coefficient of SSP RK3, TVD RK2 and TVD RK3 directly, and
+  document the forward-Euler CFL each one preserves. Right now the defining property of
+  these three schemes is asserted by their names alone.
+- [ ] Add a hyperbolic benchmark problem. All nine current problems are dissipative or
+  Hamiltonian ODEs; `diffusion_problem` is the only PDE semi-discretization and there is
+  nothing hyperbolic. A scalar advection or inviscid Burgers semi-discretization would
+  give the SSP schemes something to be right about.
+- [ ] Add total-variation / positivity assertions on that problem, in the same
+  "numerical assertion, not just a figure" style Phase 8 used for the implicit side.
+
+Validation gate:
+
+- [ ] Each SSP scheme's measured SSP coefficient matches its published value.
+- [ ] A non-SSP scheme of the same order visibly violates the TVD bound on the same
+  problem where the SSP schemes hold it — otherwise the test is not measuring the
+  property it claims to.
+
+## Housekeeping
+
+- [ ] `midPoint` is imported in `integration.py` and never registered — dead import.
+- [ ] `nonLagrangian` agrees with `dissipation` for every registered scheme, carries no
+  information, and is documented as a removal candidate. Remove it, or give it a
+  meaning.
+- [ ] Phase 6 contains an orphan `[x]` item (symplectic-form validation) inside an
+  otherwise unstarted phase; it belongs in Phase 8.
+- [ ] The Current Baseline's JFNK-default list omits ARK, which does default to
+  `JFNKSolver`.
 
 ## Recommended Execution Order
 
@@ -192,13 +445,18 @@ Validation gate:
 5. [x] Phase 2 preconditioning using the first real SPH diffusion/acoustic downstream. (Landed 2026-09-09: left/right preconditioned GMRES + 3-arg `preconditioner(v, state, context)` hook on JFNKSolver, identity/diagonal helpers, size-sweep benchmark figure; validated on the wave equation via the block-lower-triangular Laplacian preconditioner — operator-based, no dense Jacobian.)
 6. [x] Phase 4 BDF3-BDF5 and true Adams-Moulton. (Landed 2026-09-09: BDF4/BDF5 from the exact order conditions with measured A(α) cones 73.35°/51.84°, zero-stability + stability-boundary tests; JFNK-corrected Adams-Moulton AM2-AM4 with derivative history and an optional AB predictor; the iterated corrector beats same-order PECE by ~10x on the stiff nonlinear relaxation.)
 7. [x] Phase 8 broadened nonlinear/stiff benchmark and stability suite throughout. (Landed 2026-09-09: five new problem factories (stiff PR both signs, stiff damped oscillator, van der Pol, Robertson, diffusion), damped-oscillator amplification matrices + damping-ratio stability gallery, `tests/test_benchmarks.py` (52 tests), and `images/stiff_benchmark_suite.png` with per-step JFNK cost panels.)
-8. [ ] Phase 6 coupled implicit RK only when a high-order symplectic or Radau use case justifies the block solver.
-9. [ ] Phase 7 Rosenbrock/exponential methods only when their downstream structure makes them competitive.
+8. [x] Phase 9 gradient coverage. (Landed 2026-09-10: the "fully differentiable" claim was false for all 19 implicit schemes — `gmres`'s in-place workspace made the autograd tape reject every one. `JFNKSolver.solve` now solves under `no_grad` and re-attaches by the implicit function theorem; gradients verified against closed-form amplification matrices to 1.1e-16 and shown independent of `newton_tol`; `tests/test_gradients.py`, suite 2228 → 2285.)
+9. [ ] Phase 10 stiffly-accurate DIRK first-stage reuse. **Do this next of the open items**: it needs no downstream trigger, costs no order, and the qualifying property is already verified in the driver.
+10. [ ] Phase 13 explicit-side nonlinear stability — small, and it closes the one place where a registered scheme advertises a property nothing measures.
+11. [ ] Phase 11 adaptive step control, once the multistep-vs-variable-`dt` contract is decided.
+12. [ ] Phase 12 missing families, RKC/RKL first: it is the one candidate that directly challenges the Phase 8 cost baseline on a benchmark that already exists.
+13. [ ] Phase 6 coupled implicit RK only when a high-order symplectic or Radau use case justifies the block solver.
+14. [ ] Phase 7 Rosenbrock/exponential methods only when their downstream structure makes them competitive.
 
 ## Completion Definition
 
-- [ ] Each registered scheme has verified coefficients, correct metadata, a documented RHS/history contract, and targeted regression tests.
-- [ ] Every stiff-method claim is backed by a nonlinear stiff benchmark and a stability diagnostic appropriate to that method family.
-- [ ] Solver diagnostics make failed or stalled nonlinear solves observable to callers.
-- [ ] New methods do not regress copied fields, stage times, history invalidation, gradients, or existing public APIs.
-- [ ] The full test suite passes in the `warp` environment.
+- [x] Each registered scheme has verified coefficients, correct metadata, a documented RHS/history contract, and targeted regression tests. (Coefficients: SUNDIALS ARKODE v7.9.0 for TR-BDF2/ESDIRK/ARK pairs, exact order conditions for BDF4-5 and AM2-4, Taylor-model + local-error verification (Phases 3-5); metadata/tables reconciled in Phase 0; per-family regression tests in `tests/`.)
+- [x] Every stiff-method claim is backed by a nonlinear stiff benchmark and a stability diagnostic appropriate to that method family. (Phase 8: van der Pol, Robertson, diffusion, Prothero-Robinson in both signs, stiff damped oscillator; per-family diagnostics: Dahlquist regions, A(α) cones, L-damping assertions, damped-oscillator amplification matrices, two-parameter IMEX slices.)
+- [x] Solver diagnostics make failed or stalled nonlinear solves observable to callers. (Phase 1: `SolveDiagnostics` in `IntegrationResult` — residual, GMRES iterations, RHS evaluations, line-search backtracks, termination reason — with finite-value checks and structured failure paths.)
+- [x] New methods do not regress copied fields, stage times, history invalidation, gradients, or existing public APIs. (Copied fields: Phase 3 gate; stage times: `forced`-problem coverage; history invalidation: Phase 4 gate + `StepHistory` dt/uid guards; public API: full suite green after every phase. Gradient-through-step **was** the exception and is now covered — see Phase 9 below: the "differentiable by construction" claim was false for every implicit scheme, and `tests/test_gradients.py` (57 tests) now pins it. The warp gradient path remains open, NOTES §2.2.)
+- [x] The full test suite passes in the `warp` environment. (2228 passed / 199 skipped as of 2026-09-09.)

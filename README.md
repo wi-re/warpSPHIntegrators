@@ -700,10 +700,11 @@ deterministic) and by the benchmark script below:
 `conda run -n warp python scripts/stiff_benchmark_suite.py` regenerates the
 accuracy/cost figure below (all parameters and the JFNK settings are stated in the
 script's docstring): error vs $dt$ on the four stiff benchmarks, with the explicit
-methods' walls marked where the step restriction is actually active, plus
-per-step RHS-evaluation and GMRES-iteration panels.
+methods' walls marked where the step restriction is actually active, per-step
+RHS-evaluation and GMRES-iteration panels, and the van der Pol energy evolution
+(settling orbits fill a bounded band; the diverging ones leave the axis).
 
-![Phase 8 stiff benchmark suite: error vs dt on Prothero-Robinson, diffusion, van der Pol, and Robertson kinetics, plus per-step RHS and GMRES cost](images/stiff_benchmark_suite.png)
+![Phase 8 stiff benchmark suite: error vs dt on Prothero-Robinson, diffusion, van der Pol, and Robertson kinetics, per-step RHS and GMRES cost, and van der Pol energy vs time](images/stiff_benchmark_suite.png)
 
 Two behaviours worth knowing before reading those curves:
 
@@ -995,6 +996,14 @@ method runs.
 - **Adaptive step-size control not built-in** (use external error estimators; the embedded pairs'
   `IntegrationResult.error` gives you the estimate, the driving loop and step-rejection path are not
   written yet — NOTES.md §2.3).
+- **Implicit schemes differentiate by the implicit function theorem, not by unrolling.** The
+    Newton/GMRES iteration runs under `torch.no_grad()`; the gradient is re-attached at the converged
+    fixed point (`JFNKSolver.solve`). Two consequences worth knowing: the gradient is *exact* and
+    independent of `newton_tol` — it depends on where the fixed point is, not on how many iterations
+    found it — and asking for a gradient costs two extra `step` evaluations in the forward pass plus
+    one vector-Jacobian product per Krylov iteration of the adjoint solve in the backward pass. The
+    trajectory itself is bit-for-bit identical whether or not gradients are requested
+    (`tests/test_gradients.py`).
 - **JFNK is matrix-free but not fixed-cost.** The default DIRK/Newmark Newton solve uses residual
     evaluations and GMRES iterations, so it is not CUDA-graph-capturable in the way explicit Picard is.
     `FixedPointSolver` and `RelaxedFixedPointSolver` remain opt-in alternatives for a fixed schedule.

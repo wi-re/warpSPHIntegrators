@@ -531,7 +531,7 @@ class JFNKSolver:
         self.preconditioning = preconditioning
         self.preconditioner_context = preconditioner_context
 
-    def solve(self, step: Callable, y0, norm: Optional[Callable] = None, **opts) -> SolveResult:
+    def _solve_core(self, step: Callable, y0, norm: Optional[Callable] = None, **opts) -> SolveResult:
         matvec_kind = opts.get('matvec', self.matvec)
         tol = opts.get('tol', self.tol)
         max_iterations = opts.get('max_iterations', self.max_iterations)
@@ -666,3 +666,128 @@ class JFNKSolver:
             residual=residual, gmres_iterations=total_gmres_iterations,
             rhs_evaluations=n, line_search_backtracks=backtracks,
             termination='tolerance' if residual < newton_tol else 'max_iterations'))
+
+    def solve(self, step: Callable, y0, norm: Optional[Callable] = None, **opts) -> SolveResult:
+        """Solve `y == step(y)`, differentiably when the caller's state carries grad.
+
+        The Newton/GMRES iteration itself always runs under `torch.no_grad()`. That
+        is not only an optimisation: `gmres` builds its Hessenberg factor `H`, its
+        Givens rotations and its back-substitution vector by *in-place* element
+        writes, so recording it on the autograd tape used to make any implicit
+        scheme raise "one of the variables needed for gradient computation has been
+        modified by an inplace operation" the moment a caller asked for a gradient
+        (every DIRK/Newmark/IMEX/ARK scheme on its first step; BDF/AM as soon as the
+        explicit cold start handed over). Unrolling the solver would also be the
+        *wrong* derivative to take: it differentiates the path to the fixed point
+        rather than the fixed point, and with `matvec='fd'` it would differentiate a
+        divided difference.
+
+        Gradients are re-attached instead by the implicit function theorem, which is
+        exact at a converged fixed point and independent of how many iterations
+        reaching it took. With `G(y, theta) = y - step(y, theta)` and `G(y*, theta) = 0`,
+
+            dy*/dtheta = (I - J)^-1 dstep/dtheta,   J = dstep/dy at y*
+
+        so a cotangent `g` arriving at `y*` must be mapped to
+        `lambda = (I - J^T)^-1 g` before it is propagated into `step`'s own inputs.
+        That transpose solve is one more matrix-free GMRES, using vector-Jacobian
+        products (ordinary reverse-mode `torch.autograd.grad` through a single
+        `step` application) in place of the forward matvec -- no dense Jacobian,
+        matching the forward solver's own cost model.
+
+        Cost when a gradient is actually requested: two extra `step` evaluations in
+        the forward pass (see `_implicit_diff_reattach` for why the adjoint needs a
+        graph of its own), and one VJP per Krylov iteration of the adjoint solve in
+        the backward pass. When no input requires grad -- every non-differentiable
+        use, including all of the stiff benchmarks -- this is exactly the old code
+        path plus one `requires_grad` scan, and `_solve_core`'s diagnostics are
+        returned unchanged.
+        """
+        differentiable = torch.is_grad_enabled() and _state_requires_grad(y0)
+        with torch.no_grad():
+            result = self._solve_core(step, y0, norm, **opts)
+        if not differentiable:
+            return result
+
+        tol = opts.get('tol', self.tol)
+        y_attached = _implicit_diff_reattach(
+            step, result.y,
+            gmres_tol=opts.get('gmres_tol', self.gmres_tol) or tol,
+            gmres_maxiter=opts.get('gmres_maxiter', self.gmres_maxiter),
+            gmres_restart=opts.get('gmres_restart', self.gmres_restart),
+        )
+        return SolveResult(y_attached, result.converged, result.iterations, result.diagnostics)
+
+
+def _state_requires_grad(state) -> bool:
+    """True if any `integrated` field of `state` is on the autograd tape."""
+    s = _maybe_reference_state(state)
+    for name in integrated_field_names(state):
+        value = getattr(s, name, None)
+        if isinstance(value, torch.Tensor) and value.requires_grad:
+            return True
+    return False
+
+
+def _implicit_diff_reattach(step: Callable, Y_star, *, gmres_tol: float,
+                            gmres_maxiter: Optional[int], gmres_restart: int):
+    """Put `Y_star` back on the autograd tape as the fixed point it is.
+
+    See `JFNKSolver.solve` for the derivation. `Y_star` arrives detached (the solve
+    ran under `no_grad`); the returned state is a differentiable function of
+    whatever `step` closes over, with the `(I - J^T)^-1` factor supplied by a
+    backward hook rather than by unrolling.
+    """
+    y_star = flatten_integrated(Y_star).detach()
+
+    with torch.enable_grad():
+        # Two *separate* applications of `step`, deliberately not one:
+        #
+        #   `out`     holds the theta-path alone (`y_star` enters detached), and is
+        #             the tensor returned and hooked.
+        #   `out_vjp` holds the y-path, and exists only to answer `J^T v`.
+        #
+        # They cannot be the same graph. A backward hook on `out` runs while the
+        # autograd engine is inside `out`'s own node, so calling
+        # `torch.autograd.grad(out, ...)` from that hook re-enters the node the
+        # engine is already holding and deadlocks -- silently, with no error, just
+        # a hang. Evaluating `step` a second time gives the adjoint solve a graph
+        # of its own to traverse, which is ordinary supported reentrant autograd.
+        out = flatten_integrated(step(unflatten_integrated(y_star, Y_star)))
+        y_var = y_star.clone().requires_grad_(True)
+        out_vjp = flatten_integrated(step(unflatten_integrated(y_var, Y_star)))
+
+    if not out.requires_grad:
+        # `step` turned out not to depend differentiably on anything after all
+        # (e.g. every upstream tensor was detached inside the rhs). Nothing to
+        # re-attach, and no adjoint solve worth running.
+        return Y_star
+
+    def jacobian_transpose(v: torch.Tensor) -> torch.Tensor:
+        (g,) = torch.autograd.grad(out_vjp, y_var, grad_outputs=v, retain_graph=True)
+        return g
+
+    def adjoint_hook(grad: torch.Tensor) -> torch.Tensor:
+        # Solve (I - J^T) lambda = grad. `gmres` mutates its own workspace in
+        # place, so it must not be recorded; `torch.autograd.grad` inside
+        # `jacobian_transpose` still works under `no_grad` because it replays an
+        # already-built graph rather than extending one.
+        with torch.no_grad():
+            lam, _ = gmres(
+                lambda v: v - jacobian_transpose(v), grad,
+                tol=gmres_tol,
+                maxiter=gmres_maxiter if gmres_maxiter is not None else grad.numel(),
+                restart=gmres_restart,
+            )
+        return lam
+
+    out.register_hook(adjoint_hook)
+    # Carry `out`'s *gradient* but `y_star`'s *value*. `out` is one further
+    # application of `step` than the solver actually returned, so returning it
+    # directly would move the answer by the nonlinear residual (~1e-11 on a
+    # converged solve) purely as a side effect of asking for a gradient. Adding a
+    # numerically-zero `out - out.detach()` keeps the trajectory bit-for-bit
+    # identical to the no-grad path while leaving the autograd graph intact --
+    # `tests/test_gradients.py` pins both halves of that.
+    value_preserving = y_star + (out - out.detach())
+    return unflatten_integrated(value_preserving, Y_star)

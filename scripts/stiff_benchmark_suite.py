@@ -1,7 +1,7 @@
 """Phase 8: broadened nonlinear/stiff benchmark suite -> images/stiff_benchmark_suite.png.
 
-A 2x3 figure comparing accuracy and per-step nonlinear-solve cost on four stiff
-benchmarks. Every parameter is fixed here (deterministic, no adaptive steps):
+A figure comparing accuracy, energy, and per-step nonlinear-solve cost on four
+stiff benchmarks. Every parameter is fixed here (deterministic, no adaptive steps):
 
 1. Prothero-Robinson, x' = -100(x - tanh t) + sech^2(t), T = 1: error vs dt for
    BE (1st order), BDF2 (2nd order) and DP5 (5th order). DP5's stability
@@ -21,6 +21,10 @@ benchmarks. Every parameter is fixed here (deterministic, no adaptive steps):
 5-6. Per-step cost on the PR problem (rate = 100, dt = 0.01, 100 steps):
    mean RHS evaluations and mean GMRES iterations per step for BE, BDF2,
    TR-BDF2 and ESDIRK6.
+7. Van der Pol, mu = 10: energy E = u^2/2 + x^2/2 vs t for ESDIRK6 at
+   dt = 0.01 (reference), 0.2 and 0.4 (the 0.4 orbit diverges), plus the
+   DP5 dt = 0.5 wall: the energy picture of limit-cycle settling vs the
+   explicit/implicit walls.
 
 Implicit solves use the registered JFNK defaults (finite-difference
 Jacobian-vector products, GMRES tolerance 1e-8; the DIRK driver's Newton
@@ -33,6 +37,7 @@ import os
 
 import matplotlib
 matplotlib.use('Agg')
+import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -117,6 +122,43 @@ def _vdp_sweeps():
     return dts, errors, diverged, (0.5, wall)
 
 
+def _vdp_energy():
+    """Panel 7: VdP mu=10 energy E = u^2/2 + x^2/2 vs t for ESDIRK6 at
+    dt in {0.01, 0.2, 0.4} (0.4 diverges to NaN) and the DP5 dt = 0.5 wall.
+    Returns an ordered dict label -> (t, E, color)."""
+    problem = testing.van_der_pol_problem(mu=10.0)
+
+    def energy(sys):
+        s = get_reference_state(sys)
+        return 0.5 * float(s.u[0]) ** 2 + 0.5 * float(s.x[0]) ** 2
+
+    series = {}
+    for dt, label, color in (
+        (0.01, 'ESDIRK6 dt = 0.01 (ref)', '#3478a6'),
+        (0.2, 'ESDIRK6 dt = 0.2', '#758c37'),
+        (0.4, 'ESDIRK6 dt = 0.4 (diverges)', '#c44e52'),
+    ):
+        scheme = getIntegrator('ESDIRK4(3)6L[2]SA')
+        system = problem.initial()
+        ts, es = [0.0], []
+        es.append(energy(system))
+        for _ in range(int(round(50.0 / dt))):
+            system = scheme(system, dt=dt, f=problem.rhs).state
+            ts.append(dt * len(ts))
+            es.append(energy(system))
+        series[label] = (np.asarray(ts), np.asarray(es), color)
+    # the DP5 wall: 20 steps at dt = 0.5 (T = 10), energy leaves the axis fast
+    scheme = getIntegrator('Dormand-Prince 5(4)')
+    system = problem.initial()
+    ts, es = [0.0], [energy(system)]
+    for _ in range(20):
+        system = scheme(system, dt=0.5, f=problem.rhs).state
+        ts.append(0.5 * len(ts))
+        es.append(energy(system))
+    series['DP5 dt = 0.5 (diverges)'] = (np.asarray(ts), np.asarray(es), '#9a5b36')
+    return series
+
+
 def _robertson_sweeps():
     """Panel 4: Robertson, bootstrap 10 x 0.001 then dt in {1.0, 0.25, 0.05} to
     T = 10.01; ref ESDIRK6 dt=0.002 (5000 main steps)."""
@@ -164,8 +206,19 @@ def main():
     vdp_dts, vdp_errors, vdp_diverged, vdp_wall = _vdp_sweeps()
     rob_dts, rob_errors = _robertson_sweeps()
     cost_names, cost_rhs, cost_gmres = _cost_panel()
+    energy_series = _vdp_energy()
 
-    fig, axes = plt.subplots(2, 3, figsize=(16, 9))
+    fig = plt.figure(figsize=(16, 12.5))
+    gs = gridspec.GridSpec(3, 3, figure=fig)
+    axes = {
+        (0, 0): fig.add_subplot(gs[0, 0]),
+        (0, 1): fig.add_subplot(gs[0, 1]),
+        (0, 2): fig.add_subplot(gs[0, 2]),
+        (1, 0): fig.add_subplot(gs[1, 0]),
+        (1, 1): fig.add_subplot(gs[1, 1]),
+        (1, 2): fig.add_subplot(gs[1, 2]),
+        (2, 0): fig.add_subplot(gs[2, :]),
+    }
 
     # Panel 1: PR (the DP5 wall marker sits at the top of the axis: the actual
     # error at dt = 0.05 is ~1e17, which would squash the converging curves)
@@ -235,7 +288,19 @@ def main():
     axis.set_title('PR rate = 100, dt = 0.01, 100 steps (JFNK defaults)')
     axis.grid(axis='y', alpha=0.4)
 
-    fig.suptitle('Phase 8 stiff benchmark suite: accuracy and per-step nonlinear-solve cost', fontsize=13)
+    # Panel 7 (wide): van der Pol energy vs time (the diverging orbits run off
+    # the top of the capped axis; the settling orbits fill a bounded band)
+    axis = axes[2, 0]
+    for label, (ts, es, color) in energy_series.items():
+        axis.semilogy(ts, es, '-', label=label, color=color)
+    axis.set_ylim(bottom=0.1, top=1e4)
+    axis.set_xlabel('t')
+    axis.set_ylabel('E = u^2/2 + x^2/2')
+    axis.set_title('Van der Pol, mu = 10: energy vs time (diverging orbits leave the axis)')
+    axis.grid(which='both', alpha=0.4)
+    axis.legend(fontsize=8)
+
+    fig.suptitle('Phase 8 stiff benchmark suite: accuracy, energy, and per-step nonlinear-solve cost', fontsize=13)
     fig.tight_layout(rect=[0, 0, 1, 0.96])
     fig.savefig('images/stiff_benchmark_suite.png', dpi=200)
     plt.close(fig)

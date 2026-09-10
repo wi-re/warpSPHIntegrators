@@ -205,6 +205,40 @@ derivatives drive Newton just as well with no AD of any kind. That resolves the
 implicit-solver corner of this question; the general "what backs `.backward()` for a
 Warp state" decision above is still open.
 
+**The torch half of the headline claim was false until 2026-09-10, and nothing caught
+it because nothing tested it.** No test in the suite ever called `.backward()` through
+a step — the only gradient coverage checked that `requires_grad` survived cloning — so
+"fully differentiable" went unverified for the entire implicit family. It did not
+hold: `gmres` builds its Hessenberg factor, its Givens rotations and its
+back-substitution vector by *in-place element writes*, and recording that on the
+autograd tape makes torch raise "one of the variables needed for gradient computation
+has been modified by an inplace operation". Every DIRK, Newmark, IMEX and ARK scheme
+hit it on step 1; BDF2+/AM hid it one step longer, because their explicit
+Dormand-Prince cold start has to hand over to the implicit path before the solver runs
+at all — which is exactly the kind of gap a "does it run?" smoke test cannot see.
+
+Unrolling the solver would have been the wrong fix even if the tape had accepted it:
+it differentiates *the path to* the fixed point rather than the fixed point, and under
+`matvec='fd'` it would differentiate a divided difference. `JFNKSolver.solve` now runs
+the whole iteration under `no_grad` and re-attaches gradients by the implicit function
+theorem — with `G(y, θ) = y − step(y, θ)` and `G(y*, θ) = 0`, a cotangent `g` arriving
+at `y*` is mapped to `λ = (I − Jᵀ)⁻¹ g` by one more matrix-free GMRES, this one driven
+by ordinary reverse-mode VJPs instead of the forward matvec. Verified against the
+closed-form amplification matrices of backward Euler, trapezoidal, implicit midpoint,
+BDF1 and IMEX Euler on the linear oscillator: **agreement to 1.1e-16, and unchanged
+across a `newton_tol` sweep from 1.0 to 1e-6**. That tolerance-independence is the
+signature of the method — a gradient taken through the iterations would move as the
+iteration count moved. `tests/test_gradients.py` (57 tests) pins all of it, including
+that the forward trajectory stays bit-for-bit identical when gradients are off.
+
+One implementation trap worth recording, because it fails *silently*: the adjoint's
+`Jᵀv` products cannot be taken on the same graph the backward pass is traversing. A
+hook on `out` that calls `torch.autograd.grad(out, ...)` re-enters the node the engine
+is already holding and **deadlocks** — no exception, no timeout, just a hang. The fix
+is to evaluate `step` a second time to give the adjoint solve a graph of its own,
+which is why the differentiable path costs two extra `step` evaluations rather than
+one.
+
 ### 2.3 Nothing in the API is SPH-aware
 
 - **CFL / adaptive `dt`.** `dt` is a caller-supplied constant. Real SPH recomputes
@@ -1048,8 +1082,10 @@ What landed:
   μ = 2 and μ = 10, Robertson invariants and scheme agreement, diffusion, three
   explicit-wall tests, and the amplification-matrix checks.
 - **`scripts/stiff_benchmark_suite.py` → `images/stiff_benchmark_suite.png`** —
-  error vs `dt` on the four stiff benchmarks plus per-step JFNK cost panels;
-  all parameters and solver settings are stated in the figure caption.
+  error vs `dt` on the four stiff benchmarks, per-step JFNK cost panels, and a
+  van der Pol energy-vs-time panel (bounded bands for the settling orbits, the
+  diverging orbits leave the capped axis within `t < 2`); all parameters and
+  solver settings are stated in the figure caption.
 - **`scripts/oscillator_stability_gallery.py`** gained the damping-ratio figure
   (`images/oscillator_stability_damped_newmark_verlet.png`): `log10(ρ)` over
   `(h·ω, ζ)` for the five methods with the `ρ = 1` boundary contoured.
@@ -1079,10 +1115,11 @@ Findings worth keeping:
   every `h·ω` and becomes asymptotically stable for any `ζ > 0`.
 - **Van der Pol at μ = 10 has a discrete-attractor wall.** ESDIRK6 tracks the
   amplitude-~2 cycle at `dt ≤ 0.2` (errors 0.53 / 1.22 / 3.4 vs a `dt = 0.01`
-  reference at `dt = 0.05 / 0.1 / 0.2`) and diverges to NaN by T = 50 at
-  `dt = 0.4`; DP5 at `dt = 0.5` leaves the O(1) band within a few steps. At
-  μ = 2, by contrast, DP5 tracks the cycle at `dt = 0.05` — the explicit
-  restriction is not active until μ grows.
+  reference at `dt = 0.05 / 0.1 / 0.2`) and diverges at `dt = 0.4` — the energy
+  overflows by `t ≈ 2` and the state reaches NaN well before T = 50; DP5 at
+  `dt = 0.5` leaves the O(1) band within a few steps. At μ = 2, by contrast,
+  DP5 tracks the cycle at `dt = 0.05` — the explicit restriction is not active
+  until μ grows.
 - **Per-step JFNK cost (PR, rate = 100, `dt = 0.01`, 100 steps, FD matvecs,
   GMRES tol 1e-8):** GMRES iterations per step are exactly the stage-solve counts
   (1.00 / 0.99 / 2.00 / 5.00 for BE / BDF2 / TR-BDF2 / ESDIRK6) with zero
