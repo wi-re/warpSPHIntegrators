@@ -69,8 +69,9 @@ from torch.profiler import record_function
 from .fields import get_reference_state, integrated_field_names, state_difference, state_norm
 from .history import HistoryEntry
 from .jfnk import JFNKSolver
+from .rhs import resolve
 from .solvers import NonlinearSolver
-from .specs import IMEXRHS, IntegrationResult, StageResult
+from .specs import IntegrationResult, StageResult
 from .util import finalizeSystem, initializeSystem, reject_prior_step, updateStateEuler, updateStep
 
 
@@ -237,10 +238,12 @@ def ARK(initialState, dt, f, tableau: AdditiveTableau, *args,
     solver_opts = kwargs.get('solver_opts', {})
     norm = _default_norm(kwargs.get('rtol', 1e-3), kwargs.get('atol', 1e-6))
 
-    if isinstance(f, IMEXRHS):
-        explicit_rhs, implicit_rhs = f.explicit, f.implicit
-    else:
-        explicit_rhs, implicit_rhs = None, f
+    # The additive split is read by capability (NOTES S3.12), not by type: a plain
+    # callable resolves to (explicit=None, implicit=f) -- the pure-implicit limit --
+    # exactly as the old isinstance dispatch did, so bare-callable trajectories are
+    # unchanged.
+    resolved = resolve(f, scheme_name=name)
+    explicit_rhs, implicit_rhs = resolved.explicit, resolved.implicit
 
     with record_function(f"[Integration] {name}"):
         initializeSystem(initialState, dt, *args, **kwargs)

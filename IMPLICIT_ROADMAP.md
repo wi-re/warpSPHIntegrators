@@ -204,7 +204,7 @@ Validation gate:
 
 ## Phase 7: Alternative Stiff Families
 
-**Status: no longer gated (2026-09-10); depends on Phase 14.** The original gate was
+**Status: unblocked — Phase 14 landed 2026-09-10.** The original gate was
 "a downstream RHS that splits into a linear stiff operator plus a mild nonlinear
 remainder." Phase 14's structured `RHS` interface *is* that split, expressed as a
 first-class problem description (`linear` / `nonlinear` accessors), and the viscous
@@ -544,7 +544,8 @@ Validation gate:
 
 ## Phase 14: Structured RHS Interface
 
-**Status: not gated — groundwork that also tidies the current API.** Today a scheme
+**Status: done 2026-09-10.** (Was: not gated — groundwork that also tidies the
+current API.) Today a scheme
 receives its dynamics one of two ways: a bare callable (fully implicit, or just
 evaluated) or `IMEXRHS(explicit=, implicit=)` (additive split, read by IMEX Euler and
 ARK via `isinstance`). Phase 7's Rosenbrock-W and exponential integrators need a third
@@ -555,60 +556,66 @@ typed `RHS`** whose declared capabilities cover every split any registered or pl
 scheme asks for. `IMEXRHS` folds in as one shape of it; nothing downstream constructs
 an `IMEXRHS`, so the reshape has no external contract to preserve.
 
-- [ ] Add a concrete `RHS` base class (not a bare structural `Protocol` — a plain
+- [x] Add a concrete `RHS` base class (not a bare structural `Protocol` — a plain
   function must never `isinstance`-match it) with `__call__(state) -> Update` (the
   combined `f = f_E + f_I = L·y + N`, always defined, the ground truth) and a
   `provides: frozenset[str]` over `{"explicit", "implicit", "linear", "nonlinear"}`.
-- [ ] Optional accessors `explicit(state)`, `implicit(state)`, `linear(v, state)`,
+- [x] Optional accessors `explicit(state)`, `implicit(state)`, `linear(v, state)`,
   `nonlinear(state)`, each with the same `(…) -> Update` contract as the RHS callable,
   so a driver routes each through `updateStep` exactly as `ark.py` already does with
   the two `IMEXRHS` halves.
-- [ ] A bare callable stays first-class: `f_combined = f` works whether `f` is a
+- [x] A bare callable stays first-class: `f_combined = f` works whether `f` is a
   function or an `RHS`, and a scheme that only needs the combined RHS never branches.
-- [ ] `IMEXRHS(explicit=, implicit=)` becomes a thin constructor returning an `RHS`
+- [x] `IMEXRHS(explicit=, implicit=)` becomes a thin constructor returning an `RHS`
   with `provides={"explicit","implicit"}` and a summing `__call__`; `ark.py`,
   `imex.py` and their tests move from `isinstance(f, IMEXRHS)` to the capability check
   with no behaviour change.
-- [ ] `SemilinearRHS(linear=, nonlinear=)` — and the `linear=` + combined-`f` form
+- [x] `SemilinearRHS(linear=, nonlinear=)` — and the `linear=` + combined-`f` form
   that synthesizes `nonlinear = f − L·y` — as the sugar for the semilinear split;
   `provides={"linear","nonlinear"}`.
-- [ ] `RHS(**parts)` general constructor accepting any subset, so one object can
+- [x] `RHS(**parts)` general constructor accepting any subset, so one object can
   declare all four (the overlap case: the same stiff operator behind both `implicit`
   and `linear`).
-- [ ] Driver resolution rules: synthesize what can be (`implicit` ← combined,
+- [x] Driver resolution rules: synthesize what can be (`implicit` ← combined,
   `explicit` ← 0, `nonlinear` ← `f − L·y`); require what cannot (`linear`); and fail
   before the solve with a message naming the missing capability when a scheme needs a
   split the RHS does not carry.
-- [ ] `J·v` stays derived from the combined `f` (`jfnk.jvp_matvec` / finite
+- [x] `J·v` stays derived from the combined `f` (`jfnk.jvp_matvec` / finite
   difference); it is not an `RHS` slot. A frozen local linearization `J(y^n)` handed
   to Rosenbrock is an explicit opt-in, never a silent stand-in for a supplied
   `linear`.
-- [ ] Document and debug-mode check the three contracts: additivity is disjoint
+- [x] Document and debug-mode check the three contracts: additivity is disjoint
   (`explicit + implicit == f`), `linear` is linear and homogeneous (`L·0 = 0`,
   spot-checked `L(a+b) ≈ L(a)+L(b)` on random vectors — the identity-preconditioner
   regression style), and any two declared splits agree (`explicit+implicit ==
-  linear·y+nonlinear == f`).
+  linear·y+nonlinear == f`). (`check_contracts` in `rhs.py`, on demand, not on the
+  production step path.)
 
 ### Test problem: viscous Burgers
 
-- [ ] Add semi-discrete **viscous Burgers** `u_t + (u²/2)_x = ν u_xx` to `testing.py`
+- [x] Add semi-discrete **viscous Burgers** `u_t + (u²/2)_x = ν u_xx` to `testing.py`
   as the canonical semilinear benchmark: `ν u_xx` is a constant-coefficient linear
   operator `L` with a cheap matrix-free action, `(u²/2)_x` is the nonlinear remainder
   `N`. Ship it as a `SemilinearRHS` so the split is exercised end to end, and keep a
   manufactured or fine-grid reference so it doubles as the Phase 7 accuracy/cost
   problem — exponential integrators are conventionally demonstrated on exactly this
   equation. Distinct from the existing inviscid `burgers_problem` (Lax-Friedrichs,
-  TVD/SSP classifier): different `ν` regime, different purpose.
+  TVD/SSP classifier): different `ν` regime, different purpose. (Landed as
+  `viscous_burgers_problem` / `PROBLEMS['viscousBurgers']`; the fine-grid reference
+  stays a Phase 7 item — it only exists once there is a method to check it against.)
 
 Validation gate:
 
-- [ ] Every registered scheme produces bit-identical trajectories on a bare callable
-  before and after the refactor.
-- [ ] ARK / IMEX Euler behave identically given an `IMEXRHS` (now a constructor) or a
+- [x] Every registered scheme produces bit-identical trajectories on a bare callable
+  before and after the refactor. (Golden master `tests/data/bitident_golden.json`,
+  captured pre-refactor, dt = 0.1 × 3 steps on the one-DOF oscillator — strict
+  float equality over all 52 registered schemes, pinned by
+  `tests/test_rhs.py::test_bitidentical_bare_callable_trajectories`.)
+- [x] ARK / IMEX Euler behave identically given an `IMEXRHS` (now a constructor) or a
   hand-built `RHS` with the same halves.
-- [ ] A `linear`-consuming scheme raises a specific capability error on a plain `f`
+- [x] A `linear`-consuming scheme raises a specific capability error on a plain `f`
   and on an `IMEXRHS`, not a mid-solve shape mismatch.
-- [ ] `nonlinear` synthesized from `f − L·y` matches an independently supplied `N` on
+- [x] `nonlinear` synthesized from `f − L·y` matches an independently supplied `N` on
   viscous Burgers to round-off.
 
 ### Out of scope — no accessor without a consumer
@@ -643,11 +650,11 @@ Validation gate:
 8. [x] Phase 9 gradient coverage. (Landed 2026-09-10: the "fully differentiable" claim was false for all 19 implicit schemes — `gmres`'s in-place workspace made the autograd tape reject every one. `JFNKSolver.solve` now solves under `no_grad` and re-attaches by the implicit function theorem; gradients verified against closed-form amplification matrices to 1.1e-16 and shown independent of `newton_tol`; `tests/test_gradients.py`, suite 2228 → 2285.)
 9. [x] Phase 10 stiffly-accurate DIRK first-stage reuse. (Landed 2026-09-10: `reuse.dirk_reuse_analysis` + the driver's `_dirk_reuses_first_stage` accept `priorStep` losslessly for Trapezoidal / TR-BDF2 / both ESDIRKs — the stiffly-accurate tableaus with an explicit first stage — while SDIRK2 and the single-stage backward Euler / midpoint still reject; the `stiffly_accurate` metadata gained its first consumer; order preserved and one explicit RHS eval/step saved within JFNK noise, `tests/test_dirk.py`; suite 2285 → 2320.)
 10. [x] Phase 13 explicit-side nonlinear stability — small, and it closes the one place where a registered scheme advertises a property nothing measures. Includes the requested general TVD classifier (verify the TVD-named schemes, scan all others; TVD is broader than SSP, 2026-09-10). (Landed 2026-09-10: `advection_problem` (upwind advection, the classifier's model problem) + `burgers_problem` in `testing.py`; `tvd_analysis.py` — rigorous SSP coefficient from the Fourier stage maps plus measured per-step TVD CFL from a trajectory sweep, and `classify_tvd`/`classify_all` over the whole registry; `scripts/tvd_classifier.py` prints the maintained verdict table (NOTES §3.11): TVD RK2/3 + SSP RK3 at the published r = 1, RK4 r = 2/3 yet TVD to CFL 1.25, Nystrom/DP5/ESDIRK/ARK r = 0 (stage maps negative at every resolvable CFL — Nystrom/DP5 by exact rational arithmetic) yet per-step TVD to 1.5, L-stable implicits to CFL 5, multistep family to a measured CFL 1.5; the stage-level gate separates classical RK3 (stage-3 row [1, -1, 1] at CFL 1) from TVD RK3 where per-step TV cannot; `tests/test_tvd.py` pins the whole table; suite 2320 → 2346.)
-11. [ ] Phase 14 structured RHS interface — collapses the RHS input surface to "a plain function or a typed `RHS`", folds in the `IMEXRHS` split, and adds the `linear`/`nonlinear` accessors plus the viscous Burgers semilinear test problem. Small, a pure refactor for existing schemes, and it unblocks Phase 7; worth doing early regardless of when 6/7 land.
+11. [x] Phase 14 structured RHS interface — collapses the RHS input surface to "a plain function or a typed `RHS`", folds in the `IMEXRHS` split, and adds the `linear`/`nonlinear` accessors plus the viscous Burgers semilinear test problem. (Landed 2026-09-10: `rhs.py` — concrete `RHS` class + `provides` capabilities, `IMEXRHS`/`SemilinearRHS` constructors, `resolve` with pre-solve capability errors, `check_contracts` for the three split contracts; `ark.py`/`imex.py` moved off `isinstance`; the old `IMEXRHS` NamedTuple is gone from `specs.py`; `viscous_burgers_problem` in `testing.py` as the Phase 7 benchmark; the pre-refactor bit-identical golden over all 52 registered schemes pinned in `tests/test_rhs.py` (19 tests); NOTES §3.12; suite 2346 → 2365.)
 12. [ ] Phase 11 adaptive step control, once the multistep-vs-variable-`dt` contract is decided.
 13. [ ] Phase 12 missing families, RKC/RKL first: it is the one candidate that directly challenges the Phase 8 cost baseline on a benchmark that already exists.
 14. [ ] Phase 6 coupled implicit RK — de-gated 2026-09-10 (Gauss-Legendre is the library's only symplectic method above order 2, Radau IIA its only no-compromise stiff method), no longer waiting on a downstream. Needs the `BlockState` product type; then it inherits the Phase 1/2/9 machinery unchanged.
-15. [ ] Phase 7 Rosenbrock-W (outright) then exponential integrators — de-gated 2026-09-10, depends on Phase 14; the validation gate still requires beating same-order DIRK/IMEX cost on viscous Burgers.
+15. [ ] Phase 7 Rosenbrock-W (outright) then exponential integrators — unblocked (Phase 14 landed 2026-09-10); the validation gate still requires beating same-order DIRK/IMEX cost on viscous Burgers.
 
 ## Completion Definition
 
@@ -655,4 +662,4 @@ Validation gate:
 - [x] Every stiff-method claim is backed by a nonlinear stiff benchmark and a stability diagnostic appropriate to that method family. (Phase 8: van der Pol, Robertson, diffusion, Prothero-Robinson in both signs, stiff damped oscillator; per-family diagnostics: Dahlquist regions, A(α) cones, L-damping assertions, damped-oscillator amplification matrices, two-parameter IMEX slices.)
 - [x] Solver diagnostics make failed or stalled nonlinear solves observable to callers. (Phase 1: `SolveDiagnostics` in `IntegrationResult` — residual, GMRES iterations, RHS evaluations, line-search backtracks, termination reason — with finite-value checks and structured failure paths.)
 - [x] New methods do not regress copied fields, stage times, history invalidation, gradients, or existing public APIs. (Copied fields: Phase 3 gate; stage times: `forced`-problem coverage; history invalidation: Phase 4 gate + `StepHistory` dt/uid guards; public API: full suite green after every phase. Gradient-through-step **was** the exception and is now covered — see Phase 9 below: the "differentiable by construction" claim was false for every implicit scheme, and `tests/test_gradients.py` (57 tests) now pins it. The warp gradient path remains open, NOTES §2.2.)
-- [x] The full test suite passes in the `warp` environment. (2346 passed / 187 skipped as of 2026-09-10.)
+- [x] The full test suite passes in the `warp` environment. (2365 passed / 187 skipped as of 2026-09-10.)

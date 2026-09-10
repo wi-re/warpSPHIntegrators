@@ -184,6 +184,15 @@ def my_rhs(system: MySystem, dt: float, verbose: bool = False) -> tuple:
     )
 ```
 
+This plain callable is all most schemes need. Split methods take a
+**structured RHS** instead: `IMEXRHS(explicit=, implicit=)` for the additive
+split `f = f_E + f_I` (IMEX Euler, ARK3/ARK4), or `SemilinearRHS(linear=,
+nonlinear=)` for the semilinear split `f = L·y + N`. Both remain callable as
+the combined `f`, so a scheme that only needs the full right-hand side treats
+the split as fully implicit; a scheme that needs a split the RHS does not
+declare fails before the solve with an error naming the missing capability.
+See [NOTES.md §3.12](NOTES.md#312-phase-14-the-structured-rhs-interface--done-2026-09-10).
+
 ### 5. Choose an Integration Scheme and Integrate
 
 ```python
@@ -457,8 +466,10 @@ for _ in range(n_steps):
 
 `IMEX Euler` is the first split explicit-implicit scheme. It accepts an ordinary
 RHS exactly like every other implicit method and treats that complete update as
-implicit. To split terms, pass an `IMEXRHS` bundle; this avoids overloading the
-existing `(update, aux)` RHS return convention.
+implicit. To split terms, pass an `IMEXRHS` — a thin constructor over the
+structured `RHS` interface (NOTES §3.12) whose `__call__` is the combined
+`f = f_E + f_I`; this avoids overloading the existing `(update, aux)` RHS
+return convention.
 
 ```python
 from warpSPHIntegrators import IMEXRHS, getIntegrator

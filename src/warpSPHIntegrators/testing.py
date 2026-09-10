@@ -55,6 +55,12 @@ The registry (``PROBLEMS``) provides:
     nonlinear hyperbolic problem: it is where the SSP (convex-combination)
     representation of a scheme separates from schemes with the same stability
     function (tests/test_tvd.py).
+``viscousBurgers``
+    Semi-discrete viscous Burgers ``u_t + (u^2/2)_x = nu u_xx`` with central
+    fluxes, shipped as a ``SemilinearRHS`` (``L(u) = nu u_xx`` +
+    ``N(u) = -(u^2/2)_x``). The canonical semilinear benchmark for the
+    structured RHS interface (NOTES S3.12, Phase 14) and the Phase 7
+    accuracy/cost problem; the discrete mass is exactly conserved.
 """
 
 from __future__ import annotations
@@ -69,6 +75,7 @@ import torch
 from .fields import BaseState, constant, integrated, get_reference_state, reference_state, tagged, update_component, update_position
 from .history import StepHistory
 from .protocol import BaseIntegrationSystem
+from .rhs import SemilinearRHS
 from .specs import ComponentUpdateSpec, PositionUpdateSpec
 
 
@@ -622,6 +629,80 @@ def burgers_problem(n: int = 64, L: float = 1.0) -> Problem:
         autonomous=True)
 
 
+def viscous_burgers_problem(n: int = 64, L: float = 1.0, nu: float = 0.01) -> Problem:
+    """Semi-discrete viscous Burgers ``u_t + (u^2/2)_x = nu u_xx``, central differences.
+
+    The canonical **semilinear** benchmark (NOTES S3.12, Phase 14): the dynamics
+    split cleanly into a constant-coefficient linear operator
+    ``L(u) = nu u_xx`` (a cheap matrix-free action, the stiff part) and the
+    nonlinear convective remainder ``N(u) = -(u^2/2)_x``. It is shipped as a
+    ``SemilinearRHS`` so the split is exercised end to end, and it doubles as the
+    Phase 7 accuracy/cost problem -- Rosenbrock-W and exponential integrators are
+    conventionally demonstrated on exactly this equation.
+
+    Distinct from the inviscid ``burgers_problem`` (Lax-Friedrichs, TVD/SSP
+    classifier): here the flux is *central*, so the linear/semilinear split is
+    clean, and the viscosity ``nu`` is what makes the linear part stiff. ``u`` is
+    carried in ``system.state.x`` (``u``, ``e`` zero, ``m`` ones) on the periodic
+    grid ``x_i = i * L / n``; both the convective flux and the Laplacian have zero
+    periodic mean, so the discrete mass ``sum(u)`` is exactly conserved.
+
+    No closed-form semi-discrete solution: the reference is a fine-``dt``
+    integration of the combined (unsplit) dynamics, e.g.
+    ``testing.run(getIntegrator('RK4'), problem, dt, T)`` with a small ``dt``
+    (the stiffest decay rate is ``~4 nu / h^2``).
+    """
+    h = L / n
+    xc = L / 2
+    sigma = 0.08
+    u0 = [math.exp(-((i * h - xc) ** 2) / (2 * sigma ** 2)) for i in range(n)]
+
+    def linear(state, dt, *args, **kwargs):
+        # L(u) = nu u_xx, second-order central Laplacian (zero periodic mean).
+        s = get_reference_state(state)
+        u = s.x
+        u_xx = (torch.roll(u, -1) - 2 * u + torch.roll(u, 1)) / (h * h)
+        return ParticleUpdate(dxdt=nu * u_xx,
+                              dudt=torch.zeros_like(u),
+                              dedt=torch.zeros_like(u)), None
+
+    def nonlinear(state, dt, *args, **kwargs):
+        # N(u) = -(u^2/2)_x, second-order central flux (zero periodic mean).
+        s = get_reference_state(state)
+        u = s.x
+        f = 0.5 * u ** 2
+        return ParticleUpdate(dxdt=-(torch.roll(f, -1) - torch.roll(f, 1)) / (2 * h),
+                              dudt=torch.zeros_like(u),
+                              dedt=torch.zeros_like(u)), None
+
+    rhs = SemilinearRHS(linear=linear, nonlinear=nonlinear)
+
+    def initial():
+        return ParticleSystem(
+            state=ParticleState(
+                x=torch.tensor(u0, dtype=torch.float64),
+                u=torch.zeros(n, dtype=torch.float64),
+                e=torch.zeros(n, dtype=torch.float64),
+                m=torch.ones(n, dtype=torch.float64)),
+            t=0.0)
+
+    def exact(t):
+        raise NotImplementedError(
+            'viscous Burgers has no closed-form semi-discrete solution for this '
+            'initialisation; use a fine-dt integration of the combined dynamics '
+            '(see the docstring)')
+
+    return Problem(
+        name='viscousBurgers',
+        description=(f'semi-discrete viscous Burgers, central fluxes, n={n}, nu={nu}; '
+                     f'semilinear split L(u)=nu u_xx + N(u)=-(u^2/2)_x, stiff rate ~4 nu/h^2'),
+        rhs=rhs,
+        initial=initial,
+        exact=exact,
+        energy=None,
+        autonomous=True)
+
+
 PROBLEMS = {
     'oscillator': oscillator_problem,
     'forced': forced_problem,
@@ -634,6 +715,7 @@ PROBLEMS = {
     'diffusion': diffusion_problem,
     'advection': advection_problem,
     'burgers': burgers_problem,
+    'viscousBurgers': viscous_burgers_problem,
 }
 
 

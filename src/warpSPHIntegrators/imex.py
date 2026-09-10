@@ -4,8 +4,9 @@ from typing import Optional
 
 from .fields import get_reference_state, integrated_field_names, state_difference, state_norm
 from .jfnk import JFNKSolver
+from .rhs import resolve
 from .solvers import NonlinearSolver
-from .specs import IMEXRHS, IntegrationResult, StageResult
+from .specs import IntegrationResult, StageResult
 from .util import finalizeSystem, initializeSystem, reject_prior_step, updateStateEuler, updateStep
 
 
@@ -28,10 +29,11 @@ def IMEXEuler(initial_state, dt, f, *args, solver: Optional[NonlinearSolver] = N
     kwargs.pop('history', None)
     initializeSystem(initial_state, dt, *args, **kwargs)
 
-    if isinstance(f, IMEXRHS):
-        explicit_rhs, implicit_rhs = f.explicit, f.implicit
-    else:
-        explicit_rhs, implicit_rhs = None, f
+    # The additive split is read by capability (NOTES S3.12), not by type: a plain
+    # callable resolves to (explicit=None, implicit=f) -- fully implicit -- exactly
+    # as the old isinstance dispatch did, so bare-callable trajectories are unchanged.
+    resolved = resolve(f, scheme_name='IMEX Euler')
+    explicit_rhs, implicit_rhs = resolved.explicit, resolved.implicit
 
     explicit_aux = None
     base_state = initial_state.initializeNewState(*args, **kwargs)
