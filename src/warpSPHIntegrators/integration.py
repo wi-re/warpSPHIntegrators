@@ -250,6 +250,8 @@ def _with_reuse_guard(scheme: IntegrationScheme) -> IntegrationScheme:
     # functools.wraps does not carry non-function attributes set on the original.
     if hasattr(inner, 'butcherTableau'):
         guarded.butcherTableau = inner.butcherTableau
+    if hasattr(inner, 'dirkTableau'):
+        guarded.dirkTableau = inner.dirkTableau
     return scheme._replace(function=guarded, reuse_order=analysis.order, fsal=analysis.fsal)
 
 

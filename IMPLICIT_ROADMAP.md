@@ -20,6 +20,7 @@ Adaptive timestep control *was* explicitly out of scope, on the grounds that it 
 - [x] Stiff/nonlinear benchmark problem registry in `testing.py` (Prothero-Robinson in both signs, stiff damped oscillator, van der Pol, Robertson kinetics, semi-discrete diffusion) plus the error/cost benchmark figure `images/stiff_benchmark_suite.png`.
 - [x] Nonlinear Kepler convergence coverage and nonlinear stiff relaxation coverage.
 - [x] Gradient-through-step coverage for every registered scheme, implicit ones differentiated by the implicit function theorem rather than by unrolling the Newton/GMRES iteration (`tests/test_gradients.py`, Phase 9).
+- [x] First-stage reuse for the stiffly accurate DIRK tableaus with an explicit first stage — Trapezoidal, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA — lossless, saving one (cheap, explicit) RHS evaluation per step (`tests/test_dirk.py`, Phase 10).
 
 ## Phase 0: Keep the Public Story Accurate
 
@@ -279,36 +280,55 @@ directly: it matches an independent evaluation at the returned state to 0.0 on `
 and ~1e-11 (the Newton tolerance) on `oscillator`. That value is exactly what the next
 step's explicit first stage needs, so reuse costs no order at all.
 
-Today `dirk.py` rejects `priorStep` for every scheme. The stated reason — "a converged
-stage's `k` was evaluated one Picard iteration before the returned state" — is
-contradicted by the driver's own inline comment ("not an approximation one iteration
+Before this phase, `dirk.py` rejected `priorStep` for every scheme. The stated reason —
+"a converged stage's `k` was evaluated one Picard iteration before the returned state" —
+is contradicted by the driver's own inline comment ("not an approximation one iteration
 behind"), and NOTES §3.6's argument that an implicit stage's value depends on `dt`
 through the solve is correct for DIRK in general but does not apply to an *explicit*
 first stage.
 
-- [ ] Teach `reuse.py` the stiffly-accurate-plus-explicit-first-stage case, without
+- [x] Teach `reuse.py` the stiffly-accurate-plus-explicit-first-stage case, without
   handing it the explicit-tableau substitution analysis that `_tableau_of` deliberately
-  withholds from implicit schemes.
-- [ ] Give `stiffly_accurate` its first consumer — it is currently recorded metadata
-  that nothing reads.
-- [ ] Accept `priorStep` in the DIRK driver for exactly the qualifying tableaus, and
+  withholds from implicit schemes. (A separate `reuse.dirk_reuse_analysis`, gated on the
+  registered `stiffly_accurate` flag with the tableau check as a drift guard;
+  `step_reuse_analysis` dispatches to it via `.dirkTableau`.)
+- [x] Give `stiffly_accurate` its first consumer — it is currently recorded metadata
+  that nothing reads. (`dirk_reuse_analysis` reads it as the primary gate;
+  `tests/test_dirk.py::test_dirk_stiffly_accurate_metadata_matches_the_tableau` pins the
+  flag to the tableau for all seven schemes so the consumer is non-vacuous.)
+- [x] Accept `priorStep` in the DIRK driver for exactly the qualifying tableaus, and
   keep rejecting it for SDIRK2 (stiffly accurate but `a[0,0] != 0`, so its first stage
-  is implicit and cannot consume a `k0` directly).
-- [ ] Reconcile the `DIRK` docstring with the driver's actual behaviour.
+  is implicit and cannot consume a `k0` directly). (`_dirk_reuses_first_stage` decides
+  from the tableau alone; Trapezoidal / TR-BDF2 / both ESDIRKs accept, SDIRK2 and the
+  single-stage backward Euler / midpoint still reject with the standard warning.)
+- [x] Reconcile the `DIRK` docstring with the driver's actual behaviour.
 - [?] **Warm-starting implicit first stages.** For SDIRK2 and any other
   non-explicit-first-stage tableau, a reused `k` is still a better Newton *initial
   guess* than the current cold start. That is a softer, iteration-count win rather than
-  an evaluation-count one; measure before building.
+  an evaluation-count one; measure before building. (Still open — deferred, no
+  downstream trigger.)
 
 Validation gate:
 
-- [ ] Reuse preserves the measured convergence order for all four qualifying schemes
+- [x] Reuse preserves the measured convergence order for all four qualifying schemes
   (`step_reuse_analysis` reports `reuse_order == order`, not a drop).
-- [ ] `supports_step_reuse` and `is_fsal` report these schemes correctly.
-- [ ] Measured saving matches the prediction from the Phase 8 cost panels: one RHS
+  (`tests/test_dirk.py::test_dirk_reuse_preserves_the_measured_order`; reuse/no-reuse
+  answers agree to ~1e-11 on `oscillator`, exactly on `forced` — JFNK last-bit
+  sensitivity, not an order cost.)
+- [x] `supports_step_reuse` and `is_fsal` report these schemes correctly. (Both `True`
+  for the four qualifying schemes; the four DIRK entries join the explicit FSAL pair in
+  `tests/test_step_reuse.py`.)
+- [x] Measured saving matches the prediction from the Phase 8 cost panels: one RHS
   evaluation per step, i.e. TR-BDF2 4.50 → ~3.50/step (~22%), ESDIRK6 10.72 → ~9.7
   (~9%). **The saved evaluation is the cheap explicit one**, so the wall-clock win is
   smaller than the evaluation-count win; report both rather than the flattering one.
+  (Confirmed as one *explicit* `f`-call per reusable step, within JFNK iteration noise —
+  `tests/test_dirk.py::test_dirk_reuse_saves_an_explicit_evaluation_per_step`. **Metric
+  caveat:** the Phase 8 "RHS evaluations/step" panels count
+  `SolveDiagnostics.rhs_evaluations`, which the DIRK driver records as `None` for the
+  explicit first stage, so *that panel number does not move under reuse* (the 4.50 and
+  10.72 exclude the saved evaluation). The saving shows up in raw `f`-call counts, not
+  in those panels — see NOTES.md §3.6's Phase 10 note.)
 
 ## Phase 11: Adaptive Step Control and Dense Output
 
@@ -446,7 +466,7 @@ Validation gate:
 6. [x] Phase 4 BDF3-BDF5 and true Adams-Moulton. (Landed 2026-09-09: BDF4/BDF5 from the exact order conditions with measured A(α) cones 73.35°/51.84°, zero-stability + stability-boundary tests; JFNK-corrected Adams-Moulton AM2-AM4 with derivative history and an optional AB predictor; the iterated corrector beats same-order PECE by ~10x on the stiff nonlinear relaxation.)
 7. [x] Phase 8 broadened nonlinear/stiff benchmark and stability suite throughout. (Landed 2026-09-09: five new problem factories (stiff PR both signs, stiff damped oscillator, van der Pol, Robertson, diffusion), damped-oscillator amplification matrices + damping-ratio stability gallery, `tests/test_benchmarks.py` (52 tests), and `images/stiff_benchmark_suite.png` with per-step JFNK cost panels.)
 8. [x] Phase 9 gradient coverage. (Landed 2026-09-10: the "fully differentiable" claim was false for all 19 implicit schemes — `gmres`'s in-place workspace made the autograd tape reject every one. `JFNKSolver.solve` now solves under `no_grad` and re-attaches by the implicit function theorem; gradients verified against closed-form amplification matrices to 1.1e-16 and shown independent of `newton_tol`; `tests/test_gradients.py`, suite 2228 → 2285.)
-9. [ ] Phase 10 stiffly-accurate DIRK first-stage reuse. **Do this next of the open items**: it needs no downstream trigger, costs no order, and the qualifying property is already verified in the driver.
+9. [x] Phase 10 stiffly-accurate DIRK first-stage reuse. (Landed 2026-09-10: `reuse.dirk_reuse_analysis` + the driver's `_dirk_reuses_first_stage` accept `priorStep` losslessly for Trapezoidal / TR-BDF2 / both ESDIRKs — the stiffly-accurate tableaus with an explicit first stage — while SDIRK2 and the single-stage backward Euler / midpoint still reject; the `stiffly_accurate` metadata gained its first consumer; order preserved and one explicit RHS eval/step saved within JFNK noise, `tests/test_dirk.py`; suite 2285 → 2320.)
 10. [ ] Phase 13 explicit-side nonlinear stability — small, and it closes the one place where a registered scheme advertises a property nothing measures.
 11. [ ] Phase 11 adaptive step control, once the multistep-vs-variable-`dt` contract is decided.
 12. [ ] Phase 12 missing families, RKC/RKL first: it is the one candidate that directly challenges the Phase 8 cost baseline on a benchmark that already exists.
@@ -459,4 +479,4 @@ Validation gate:
 - [x] Every stiff-method claim is backed by a nonlinear stiff benchmark and a stability diagnostic appropriate to that method family. (Phase 8: van der Pol, Robertson, diffusion, Prothero-Robinson in both signs, stiff damped oscillator; per-family diagnostics: Dahlquist regions, A(α) cones, L-damping assertions, damped-oscillator amplification matrices, two-parameter IMEX slices.)
 - [x] Solver diagnostics make failed or stalled nonlinear solves observable to callers. (Phase 1: `SolveDiagnostics` in `IntegrationResult` — residual, GMRES iterations, RHS evaluations, line-search backtracks, termination reason — with finite-value checks and structured failure paths.)
 - [x] New methods do not regress copied fields, stage times, history invalidation, gradients, or existing public APIs. (Copied fields: Phase 3 gate; stage times: `forced`-problem coverage; history invalidation: Phase 4 gate + `StepHistory` dt/uid guards; public API: full suite green after every phase. Gradient-through-step **was** the exception and is now covered — see Phase 9 below: the "differentiable by construction" claim was false for every implicit scheme, and `tests/test_gradients.py` (57 tests) now pins it. The warp gradient path remains open, NOTES §2.2.)
-- [x] The full test suite passes in the `warp` environment. (2228 passed / 199 skipped as of 2026-09-09.)
+- [x] The full test suite passes in the `warp` environment. (2320 passed / 187 skipped as of 2026-09-10.)

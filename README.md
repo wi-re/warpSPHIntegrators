@@ -302,8 +302,10 @@ Each stage's implicit diagonal term is closed with a `NonlinearSolver`. The defa
 `JFNKSolver`, which uses an inexact Newton solve with matrix-free GMRES and finite-difference
 Jacobian-vector products, so it can converge where Picard iteration diverges. For a fixed-depth,
 CUDA-graph-capturable non-stiff solve, explicitly pass `FixedPointSolver(iterations=...)` or the
-damped `RelaxedFixedPointSolver(relaxation=..., iterations=...)`. None of these implement
-`priorStep` reuse yet. See [NOTES.md §3.6](NOTES.md#36-valid-schemes-and-what-each-costs) for
+damped `RelaxedFixedPointSolver(relaxation=..., iterations=...)`. The stiffly accurate schemes
+with an explicit first stage — Trapezoidal, TR-BDF2, and the two ESDIRKs — implement lossless
+`priorStep` reuse (the previous step's last stage *is* `f(t^{n+1}, y^{n+1})`); the rest reject it
+with the standard warning. See [NOTES.md §3.6](NOTES.md#36-valid-schemes-and-what-each-costs) for
 the derivation and the remaining scheme work:
 
 | Scheme | Order | Stability | Use Case |
@@ -581,6 +583,12 @@ scheme = getIntegrator('SSP RK3')
 supports_step_reuse(scheme)   # False
 step_reuse_order(scheme)      # 1  -- third order becomes first
 ```
+
+The same lossless reuse applies to the stiffly accurate DIRK schemes with an explicit
+first stage (Trapezoidal, TR-BDF2, `ESDIRK3(2)4L[2]SA`, `ESDIRK4(3)6L[2]SA`): their last
+stage is `f(t^{n+1}, y^{n+1})` exactly, so `supports_step_reuse` is `True` for them too.
+The DIRK reuse is exact only up to the JFNK solve's last-bit sensitivity (~1e-11) rather
+than the ~1e-14 the all-explicit FSAL pairs reach.
 
 Supplying `priorStep` to a scheme that loses order still works — trading order for half
 the evaluations is a legitimate choice — but warns once, naming the order you will

@@ -25,6 +25,12 @@ degenerates to ``y^{n+1} = y^n + dt*f(y^{n-1})``, which is formally first order 
 has no stability region on the imaginary axis, so single-stage schemes refuse reuse
 outright rather than reporting an order.
 
+That substitution argument is for *explicit* tableaus, where every stage is a plain
+function of already-known states. An implicit (DIRK) stage is not: its value depends
+on ``dt`` through the very solve reuse would try to skip. DIRK tableaus are therefore
+analysed separately (``dirk_reuse_analysis``), on the implicit FSAL condition -- an
+explicit first stage *and* stiff accuracy -- rather than with the formula above.
+
 Public API::
 
     step_reuse_order(scheme)     -> int | None   order retained, None if unsupported
@@ -139,10 +145,67 @@ def tableau_reuse_analysis(tableau, nominal_order: int) -> ReuseAnalysis:
     return ReuseAnalysis(min(nominal_order, q + gain), False, why)
 
 
+def _dirk_reuse_refusal(a: np.ndarray, explicit_first: bool) -> str:
+    """Why a DIRK tableau that fails the FSAL test does not implement reuse here."""
+    if a.shape[0] == 1:
+        return ('single-stage DIRK: the one stage is implicit (a[0,0] != 0), so reusing it '
+                'degenerates to y^{n+1} = y^n + dt f(y^{n-1}) -- consistent but with no '
+                'stability region on the imaginary axis, refused rather than merely degraded')
+    return ('implicit first stage (a[0,0] != 0): the first stage requires a nonlinear solve, '
+            'so a reused k0 cannot be consumed directly')
+
+
+def dirk_reuse_analysis(tableau, nominal_order: int, stiffly_accurate: bool) -> ReuseAnalysis:
+    """Predict the order retained under reuse for a DIRK tableau.
+
+    A DIRK's last stage is the step's unknown endpoint, not a stage of an already-known
+    trajectory, so the *explicit*-tableau substitution analysis does not apply. Reuse is
+    exact -- and is the only reuse this driver implements -- when both halves of the
+    (implicit) FSAL condition hold: an explicit first stage (``a[0,0] == 0``,
+    ``c[0] == 0``), so it can consume a ready-made derivative, *and* stiff accuracy
+    (``c[-1] == 1``, ``a[-1] == b``), so the previous step's last stage IS ``y^{n+1}``
+    and its converged derivative is exactly the ``f(t^{n+1}, y^{n+1})`` this stage needs.
+
+    ``stiffly_accurate`` is the registered metadata -- this analysis is its first
+    consumer. The ``c[-1] == 1 and a[-1] == b`` check on the actual tableau is the
+    drift guard: a stale ``True`` flag cannot grant reuse on a non-stiffly-accurate
+    tableau, and a ``False`` flag cannot withhold it from one that is.
+    """
+    a = np.asarray(tableau.a, dtype=float)
+    c = np.asarray(tableau.c, dtype=float)
+    b = np.asarray(tableau.b[0] if isinstance(tableau.b, tuple) else tableau.b, dtype=float)
+
+    explicit_first = abs(a[0, 0]) < _TOL and abs(c[0]) < _TOL
+    if not explicit_first:
+        return ReuseAnalysis(None, False, _dirk_reuse_refusal(a, explicit_first))
+
+    tableau_sa = abs(c[-1] - 1.0) < _TOL and np.allclose(a[-1], b, atol=_TOL)
+    if not stiffly_accurate:
+        return ReuseAnalysis(
+            None, False,
+            'not stiffly accurate per its registered metadata: the last stage is not y^{n+1}, '
+            'so a reused k0 would be stale')
+    if not tableau_sa:
+        return ReuseAnalysis(
+            None, False,
+            'registered stiffly_accurate but the tableau disagrees (a[-1] != b or c[-1] != 1): '
+            'stale metadata, reuse refused')
+    return ReuseAnalysis(
+        nominal_order, True,
+        'stiffly accurate with an explicit first stage: the last stage IS y^{n+1}, so the '
+        'reused k0 is exactly f(t^{n+1}, y^{n+1})')
+
+
 def _tableau_of(scheme):
-    """The tableau behind a registered scheme, or None if it is hand-rolled."""
+    """The Butcher tableau behind an explicit registered scheme, or None if it has none."""
     fn = getattr(scheme, 'function', scheme)
     return getattr(fn, 'butcherTableau', None)
+
+
+def _dirk_tableau_of(scheme):
+    """The DIRK tableau behind an implicit registered scheme, or None if it is not a DIRK."""
+    fn = getattr(scheme, 'function', scheme)
+    return getattr(fn, 'dirkTableau', None)
 
 
 def step_reuse_analysis(scheme) -> ReuseAnalysis:
@@ -150,6 +213,11 @@ def step_reuse_analysis(scheme) -> ReuseAnalysis:
     tableau = _tableau_of(scheme)
     if tableau is not None:
         return tableau_reuse_analysis(tableau, scheme.order)
+
+    dirk_tableau = _dirk_tableau_of(scheme)
+    if dirk_tableau is not None:
+        return dirk_reuse_analysis(
+            dirk_tableau, scheme.order, getattr(scheme, 'stiffly_accurate', False))
 
     identifier = getattr(scheme, 'identifier', None)
     if identifier in HANDROLLED_REUSE:

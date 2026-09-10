@@ -35,7 +35,8 @@ from .history import HistoryEntry
 from .jfnk import JFNKSolver
 from .solvers import FixedPointSolver, NonlinearSolver
 from .specs import IntegrationResult, StageResult
-from .util import finalizeSystem, initializeSystem, reject_prior_step, updateStateEuler, updateStep
+from .util import (finalizeSystem, initializeSystem, reject_prior_step,
+                  unpack_prior_step, updateStateEuler, updateStep)
 
 
 def getDIRKTableau(scheme: str) -> butcherTableau:
@@ -170,6 +171,31 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         raise ValueError(f"Unknown DIRK scheme {scheme}")
 
 
+def _dirk_reuses_first_stage(tableau: butcherTableau) -> bool:
+    """True iff this DIRK tableau consumes a reused ``k0`` losslessly.
+
+    Both halves of the (implicit) FSAL condition must hold:
+
+    * the first stage is explicit (``a[0,0] == 0``, ``c[0] == 0``), so it needs no
+      solve and can consume a ready-made derivative; and
+    * the tableau is stiffly accurate (``c[-1] == 1``, ``a[-1] == b``), so the
+      previous step's last stage IS ``y^{n+1}`` and its converged derivative is
+      exactly ``f(t^{n+1}, y^{n+1})`` -- the value this step's first stage needs.
+
+    Only then is the reuse exact (no order cost). This is derived from the tableau
+    itself so the call-time decision cannot drift from the registered
+    ``stiffly_accurate`` metadata; ``reuse.dirk_reuse_analysis`` reports the same
+    property for callers that only have the scheme.
+    """
+    a = np.asarray(tableau.a, dtype=float)
+    c = np.asarray(tableau.c, dtype=float)
+    b = tableau.b[0] if isinstance(tableau.b, tuple) else tableau.b
+    b = np.asarray(b, dtype=float)
+    explicit_first = abs(a[0, 0]) < 1e-12 and abs(c[0]) < 1e-12
+    stiffly_accurate = abs(c[-1] - 1.0) < 1e-12 and np.allclose(a[-1], b, atol=1e-12)
+    return bool(explicit_first and stiffly_accurate)
+
+
 def _default_norm(rtol: float, atol: float):
     def norm(y_new, y_old):
         return state_norm(state_difference(y_new, y_old), rtol, atol, reference=y_old)
@@ -180,11 +206,16 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
         name: str = 'DIRK', solver: Optional[NonlinearSolver] = None, **kwargs):
     """One DIRK step. `tableau.a`'s diagonal may be nonzero; those stages solve implicitly.
 
-    Does not implement first-stage reuse (`priorStep`) yet -- a converged stage's `k`
-    was evaluated one Picard iteration before the returned state (see the comment
-    below), and whether that residual is small enough to reuse across a *different*
-    `dt` at the next step has not been analysed. Rejects it the same way every other
-    non-reuse scheme in this library does, with the same warning.
+    First-stage reuse (`priorStep`) is implemented for the tableaus that satisfy both
+    halves of the (implicit) FSAL condition -- an explicit first stage
+    (`a[0,0] == 0`, `c[0] == 0`) *and* stiff accuracy (`c[-1] == 1`, `a[-1] == b`):
+    Trapezoidal, TR-BDF2, ESDIRK3(2)4L[2]SA and ESDIRK4(3)6L[2]SA. For those, the
+    previous step's last stage IS `y^{n+1}`, so `stages[-1].update` is exactly the
+    `f(t^{n+1}, y^{n+1})` this step's explicit first stage needs; the reuse costs no
+    order and saves one (cheap, explicit) RHS evaluation per step. Every other DIRK
+    tableau -- SDIRK2's implicit first stage, the single-stage backward Euler and
+    implicit midpoint -- cannot consume a reused `k0`, so it rejects `priorStep` with
+    the same warning every other non-reuse scheme in this library gives.
 
     `history=`, `rtol=`/`atol=` (the default Picard-convergence norm's tolerances, only
     used when `solver_opts={'tol': ...}` requests early exit -- the default fixed
@@ -206,7 +237,13 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
     verbose = bool(kwargs.get('verbose', False))
     solver = solver or JFNKSolver()
     history = kwargs.pop('history', None)
-    reject_prior_step(name, kwargs.pop('priorStep', None))
+    priorStep = kwargs.pop('priorStep', None)
+    # Reuse is valid for exactly the stiffly-accurate tableaus with an explicit first
+    # stage (`_dirk_reuses_first_stage`). For every other DIRK tableau the reused k0
+    # would be stale (last stage is not y^{n+1}) or unusable (the first stage is
+    # implicit), so reject it the same way every other non-reuse scheme does.
+    if priorStep is not None and not _dirk_reuses_first_stage(tableau):
+        reject_prior_step(name, priorStep)
     solver_opts = kwargs.get('solver_opts', {})
     norm = _default_norm(kwargs.get('rtol', 1e-3), kwargs.get('atol', 1e-6))
 
@@ -231,7 +268,14 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
                 if a_ii == 0:
                     # An explicit stage inside an otherwise-implicit tableau (e.g.
                     # trapezoidal's first stage): no solve needed, k_i = f(t_i, base).
-                    k_i, r_i = updateStep(initialState, base_state, dt, f, *args, **kwargs)
+                    if i == 0 and priorStep is not None:
+                        # Stiffly accurate + explicit first stage: the previous step's
+                        # last stage IS f(t^{n+1}, y^{n+1}), exactly this stage's value,
+                        # so consume it instead of re-evaluating. Saves one (cheap,
+                        # explicit) RHS evaluation per step at no order cost.
+                        k_i, r_i = unpack_prior_step(priorStep, verbose)
+                    else:
+                        k_i, r_i = updateStep(initialState, base_state, dt, f, *args, **kwargs)
                     stage_state = base_state
                     solver_diagnostics.append(None)
                 else:
@@ -313,14 +357,15 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
 def dirkScheme(tableau_name: str, **tableau_kwargs):
     """Build a DIRK scheme callable that carries its tableau, mirroring `butcherScheme`.
 
-    Deliberately does **not** expose `.butcherTableau` the way `butcherScheme` does:
-    that attribute is what `reuse._tableau_of` looks for to run the *explicit*-scheme
-    reuse analysis, whose substitution argument assumes a stage is a plain function of
-    already-known states -- not true for an implicit stage, whose value depends on
-    `dt` through the very solve reuse would try to skip. Leaving the attribute off
-    makes `reuse.step_reuse_analysis` fall through to its "no tableau, no recorded
-    reuse behaviour" answer, which is the correct one until DIRK reuse is analysed on
-    its own terms.
+    Exposes the tableau as `.dirkTableau`, not `.butcherTableau`. The distinction is
+    load-bearing: `reuse._tableau_of` looks for `.butcherTableau` to run the
+    *explicit*-scheme substitution analysis, whose argument assumes a stage is a plain
+    function of already-known states -- not true for an implicit stage, whose value
+    depends on `dt` through the very solve reuse would try to skip. Carrying the
+    tableau under a distinct name keeps `reuse.step_reuse_analysis` off that analysis;
+    it instead dispatches to `reuse.dirk_reuse_analysis`, which decides reuse on the
+    DIRK terms (stiff accuracy + explicit first stage) rather than the explicit-tableau
+    formula.
     """
     tableau = getDIRKTableau(tableau_name)
 

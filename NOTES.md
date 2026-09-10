@@ -89,7 +89,12 @@ are gone.
   in both signs, stiff damped oscillator, van der Pol, Robertson kinetics,
   semi-discrete diffusion), the damped-oscillator amplification matrices in
   `stability.py`, `tests/test_benchmarks.py` (52 tests), and
-  `images/stiff_benchmark_suite.png`; see §3.10.)
+  `images/stiff_benchmark_suite.png`; see §3.10.
+  First-stage reuse for the stiffly accurate DIRK tableaus with an explicit first
+  stage landed as IMPLICIT_ROADMAP Phase 10 on 2026-09-10 — `reuse.dirk_reuse_analysis`
+  plus the driver's `_dirk_reuses_first_stage` accept `priorStep` losslessly for
+  Trapezoidal, TR-BDF2, and both ESDIRKs (order preserved; one explicit RHS eval/step
+  saved within JFNK noise, `tests/test_dirk.py`); see §3.6's Phase 10 note.)
 - **A finding, not a defect:** Leap Frog, Velocity Verlet, PEFRL and VEFRL are only
   second/fourth order for a **separable** Hamiltonian, i.e. a force depending on
   position alone. With a velocity-dependent force — artificial viscosity, drag, any
@@ -700,8 +705,34 @@ plain function of already-known states — not true for an implicit stage, whose
 depends on `dt` through the very solve reuse would try to skip. Leaving the attribute
 off makes `step_reuse_analysis` correctly fall through to "no tableau, no recorded
 reuse behaviour" rather than silently misapplying the explicit-tableau formula to an
-implicit one. DIRK does not implement first-stage reuse at all yet; `priorStep` is
+implicit one. DIRK did not implement first-stage reuse at all then; `priorStep` was
 rejected with the same warning every other non-reuse scheme in this library gives.
+
+**Update (2026-09-10, IMPLICIT_ROADMAP Phase 10):** that "not yet" is now implemented
+for the four stiffly accurate tableaus with an explicit first stage — Trapezoidal,
+TR-BDF2, `ESDIRK3(2)4L[2]SA`, `ESDIRK4(3)6L[2]SA`. Each satisfies both halves of the
+implicit FSAL condition: `a[0,0] == 0` / `c[0] == 0` (the first stage is explicit) *and*
+`c[-1] == 1` / `a[-1] == b` (stiff accuracy), so the previous step's last stage *is*
+`y^{n+1}` and its converged derivative is exactly `f(t^{n+1}, y^{n+1})` — the value this
+step's first stage needs. Reuse is therefore lossless, saving one (cheap, explicit) RHS
+evaluation per step. The split mirrors the design note above: `dirk.py` decides reuse
+from the tableau alone (`_dirk_reuses_first_stage`, so the call-time check cannot drift
+from the registration), while `reuse.py` gained a separate `dirk_reuse_analysis` — *not*
+an extension of the explicit-tableau formula, which still does not apply to implicit
+stages. It gates on the registered `stiffly_accurate` flag (that metadata's first real
+consumer) with the same tableau check as a drift guard, and `step_reuse_analysis`
+dispatches to it via `.dirkTableau` (now copied onto the reuse-guarded wrapper alongside
+`.butcherTableau`). SDIRK2 (`a[0,0] != 0`, implicit first stage) and the single-stage
+backward Euler / implicit midpoint still reject `priorStep` with the standard warning.
+Measured (`tests/test_dirk.py`): reuse preserves the measured order on both problems, the
+reuse run agrees with the no-reuse run to ~1e-11 on `oscillator` and exactly on `forced`
+(the gap is JFNK's last-bit sensitivity to the reused initial guess, not a correctness
+issue), and the saving is one explicit evaluation per reusable step within JFNK
+iteration noise. **A subtlety for the Phase 8 cost panels:** those panels count
+`SolveDiagnostics.rhs_evaluations`, which the DIRK driver records as `None` for explicit
+stages, so the 4.50/step (TR-BDF2) and 10.72/step (ESDIRK4) figures do *not* include the
+explicit first stage and do not move under reuse. The "4.50 → ~3.50" saving is a raw
+`f`-call count, not a change in that panel number.
 
 **A finding significant enough to change a registration flag, not just an
 implementation detail:** implicit midpoint is the textbook symplectic Gauss-Legendre
@@ -785,6 +816,12 @@ slow enough for it to apply to.
 accurate" (`a[-1] == b`) as an implicit FSAL analogue — correctly so, since DIRK reuse
 was not implemented at all this round (see above), so there is nothing yet for that
 extension to serve.
+
+**Update (2026-09-10, Phase 10):** it now is, as a *separate* `dirk_reuse_analysis`
+rather than an extension of the explicit-tableau formula — the substitution argument
+still does not apply to implicit stages, so the implicit case is decided on the DIRK
+terms (`a[0,0] == 0` + stiff accuracy, gated by the registered `stiffly_accurate`
+flag) instead. See the Phase 10 note above for the mechanism and the measured results.
 
 #### Fully implicit RK (needs a *coupled* s·N-unknown solve — a different solver shape)
 
@@ -1125,7 +1162,10 @@ Findings worth keeping:
   (1.00 / 0.99 / 2.00 / 5.00 for BE / BDF2 / TR-BDF2 / ESDIRK6) with zero
   line-search backtracks; RHS evaluations per step are 3.40 / 2.96 / 4.50 / 10.72.
   ESDIRK6's per-step cost is ~3× BE's, so its accuracy advantage on these
-  benchmarks is bought at a real price.
+  benchmarks is bought at a real price. (This metric counts only the implicit
+  stages' `rhs_evaluations`; the DIRK explicit first stage is recorded as `None` and
+  is excluded, so Phase 10's first-stage reuse — which saves that explicit evaluation
+  — does not move these numbers. See §3.6's Phase 10 note.)
 
 ---
 

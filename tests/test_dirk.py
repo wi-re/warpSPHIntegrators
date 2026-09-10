@@ -10,17 +10,31 @@ distinction the energy-drift investigation in `integration.py`'s registration co
 turned up.
 """
 
+import warnings
+
 import numpy as np
 import pytest
 import torch
 
-from warpSPHIntegrators import FixedPointSolver, get_reference_state, getIntegrator, testing
-from warpSPHIntegrators.dirk import DIRK, getDIRKTableau
+from warpSPHIntegrators import (FixedPointSolver, get_reference_state, getIntegrator,
+                                is_fsal, step_reuse_order, supports_step_reuse, testing)
+from warpSPHIntegrators.dirk import DIRK, _dirk_reuses_first_stage, getDIRKTableau
 
 DIRK_SCHEMES = [
     'Backward Euler (implicit)', 'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)',
     'SDIRK2', 'TR-BDF2', 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
 ]
+
+# Stiffly accurate (a[-1] == b, c[-1] == 1) WITH an explicit first stage
+# (a[0,0] == 0): the previous step's last stage IS y^{n+1}, so its converged
+# derivative is exactly the f(t^{n+1}, y^{n+1}) the next step's first stage needs.
+# Reuse is lossless for exactly these four (Phase 10). The other three either have an
+# implicit first stage (SDIRK2) or are single-stage (backward Euler, implicit
+# midpoint), so they cannot consume a reused k0 and reject priorStep.
+DIRK_REUSE_SCHEMES = [
+    'Trapezoidal (Crank-Nicolson)', 'TR-BDF2', 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
+]
+DIRK_NO_REUSE_SCHEMES = ['Backward Euler (implicit)', 'Implicit Midpoint', 'SDIRK2']
 
 
 def test_newmark_reaches_second_order_on_the_oscillator():
@@ -233,13 +247,105 @@ def test_dirk_defaults_to_jfnk_on_a_stiff_backward_euler_stage():
 # priorStep / history                                                         #
 # --------------------------------------------------------------------------- #
 
-@pytest.mark.parametrize('name', DIRK_SCHEMES)
+@pytest.mark.parametrize('name', DIRK_NO_REUSE_SCHEMES)
 def test_dirk_rejects_prior_step_with_a_warning(name):
+    """Implicit first stage (SDIRK2) or single-stage (BE / midpoint): no reuse."""
     s = getIntegrator(name)
     prob = testing.PROBLEMS['oscillator']()
     first = s(prob.initial(), dt=0.1, f=prob.rhs)
     with pytest.warns(RuntimeWarning, match='does not support first-stage reuse'):
         s(prob.initial(), dt=0.1, f=prob.rhs, priorStep=first.stages[-1])
+
+
+@pytest.mark.parametrize('name', DIRK_REUSE_SCHEMES)
+def test_dirk_accepts_prior_step_without_a_warning(name):
+    """Stiffly accurate + explicit first stage: reuse is lossless, so no warning."""
+    s = getIntegrator(name)
+    prob = testing.PROBLEMS['oscillator']()
+    first = s(prob.initial(), dt=0.1, f=prob.rhs)
+    with warnings.catch_warnings():
+        warnings.simplefilter('error', RuntimeWarning)
+        s(prob.initial(), dt=0.1, f=prob.rhs, priorStep=first.stages[-1])
+
+
+@pytest.mark.parametrize('name', DIRK_REUSE_SCHEMES)
+def test_dirk_reuse_preserves_the_measured_order(name, step_sizes):
+    """The reuse gate: order with reuse must equal the scheme's order, not drop."""
+    from conftest import ORDER_TOLERANCE, order_of
+    s = getIntegrator(name)
+    assert step_reuse_order(s) == s.order
+    assert supports_step_reuse(s) and is_fsal(s)
+    for problem_name in ['oscillator', 'forced']:
+        order, errors = order_of(s, problem_name, step_sizes, reuse=True)
+        assert order is not None, f'{name} produced no usable errors: {errors}'
+        assert order >= s.order - ORDER_TOLERANCE, (
+            f'{name} on {problem_name}: reuse dropped the order to {order:.2f}, '
+            f'expected {s.order}')
+
+
+@pytest.mark.parametrize('name', DIRK_REUSE_SCHEMES)
+def test_dirk_reuse_saves_an_explicit_evaluation_per_step(name):
+    """One saved RHS per step (the explicit first stage), within JFNK iteration noise.
+
+    The implicit stages' JFNK cost is unchanged in expectation -- the reused k0 only
+    perturbs the next stage's initial guess by a roundoff, which shifts the iteration
+    count by a few. So the saving is "one explicit evaluation per reusable step", not
+    an exact count of total f calls.
+    """
+    s = getIntegrator(name)
+    prob = testing.PROBLEMS['oscillator']()
+
+    def count(reuse):
+        calls = {'n': 0}
+
+        def f(system, dt, *args, **kwargs):
+            calls['n'] += 1
+            return prob.rhs(system, dt)
+
+        system = prob.initial()
+        prior = None
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', RuntimeWarning)
+            for _ in range(20):
+                result = s(system, dt=0.05, f=f, priorStep=prior if reuse else None)
+                system, prior = result.state, result.stages[-1]
+        return calls['n']
+
+    saved = count(False) - count(True)
+    # 20 steps, but the first has no prior, so 19 reusable steps, each saving exactly
+    # one explicit evaluation. The JFNK iteration noise is a few, so allow a band.
+    assert 0.5 * 19 <= saved <= 1.5 * 19, (
+        f'{name}: saved {saved} RHS evaluations over 19 reusable steps, '
+        f'expected ~19 (one explicit stage per step)')
+
+
+@pytest.mark.parametrize('name', DIRK_SCHEMES)
+def test_dirk_stiffly_accurate_metadata_matches_the_tableau(name):
+    """`stiffly_accurate` is now read (reuse.dirk_reuse_analysis), so pin it to the tableau.
+
+    The driver decides reuse from the tableau alone (`_dirk_reuses_first_stage`); the
+    analysis gates on the registered `stiffly_accurate` flag. They must agree, or the
+    driver would accept a priorStep the analysis (and the registration warning) says is
+    ignored -- a silent divergence. This test is what makes the metadata a real consumer
+    rather than an unverified flag.
+    """
+    s = getIntegrator(name)
+    # The tableau the scheme actually carries (same object the driver decides reuse
+    # from), not a re-lookup by enum name -- the enum names are lowercase and are not
+    # `getDIRKTableau`'s keys.
+    tab = s.function.dirkTableau
+    a = np.asarray(tab.a, dtype=float)
+    c = np.asarray(tab.c, dtype=float)
+    b = np.asarray(tab.b[0] if isinstance(tab.b, tuple) else tab.b, dtype=float)
+    tableau_sa = abs(c[-1] - 1.0) < 1e-12 and np.allclose(a[-1], b, atol=1e-12)
+    assert s.stiffly_accurate == tableau_sa, (
+        f'{name}: registered stiffly_accurate={s.stiffly_accurate} but the tableau says '
+        f'{tableau_sa} (a[-1] == b and c[-1] == 1)')
+
+    # And the driver's call-time predicate agrees with the analysis for this scheme.
+    explicit_first = abs(a[0, 0]) < 1e-12 and abs(c[0]) < 1e-12
+    assert _dirk_reuses_first_stage(tab) == bool(explicit_first and s.stiffly_accurate), (
+        f'{name}: driver reuse predicate disagrees with the registered metadata')
 
 
 @pytest.mark.parametrize('name', DIRK_SCHEMES)

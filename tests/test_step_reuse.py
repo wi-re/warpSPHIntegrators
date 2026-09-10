@@ -20,9 +20,17 @@ from warpSPHIntegrators.reuse import step_reuse_analysis
 from conftest import ORDER_TOLERANCE, order_of, problem
 
 
-#: The FSAL pairs. Reuse on these is exact, not merely harmless: the reused stage is
-#: literally f(t^{n+1}, y^{n+1}).
-FSAL_SCHEMES = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)']
+#: The FSAL tableaus. Reuse on these is exact, not merely harmless: the reused stage
+#: is f(t^{n+1}, y^{n+1}). The four DIRK entries are stiffly accurate with an explicit
+#: first stage (Phase 10), so the implicit analogue of FSAL holds for them too. The
+#: difference for those is exact only up to the JFNK solve's last-bit sensitivity
+#: (~1e-11: the reused stage perturbs the next implicit stage's initial guess by a
+#: roundoff, and the nonlinear solve lands on a different last-bit iterate), rather
+#: than the ~1e-14 the all-explicit FSAL pairs reach -- hence the exactness tolerance
+#: in `test_fsal_reuse_is_free` is sized for the JFNK level.
+FSAL_SCHEMES = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)',
+                'Trapezoidal (Crank-Nicolson)', 'TR-BDF2',
+                'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA']
 
 
 @pytest.mark.parametrize('problem_name', ['oscillator', 'forced'])
@@ -63,9 +71,12 @@ def test_fsal_reuse_is_free(name, problem_name, step_sizes):
 
     # Not just the same order: with c_s == 1 and a[-1] == b the reused stage is the
     # same derivative that would have been recomputed, so the errors agree to
-    # roundoff rather than merely scaling alike.
+    # roundoff rather than merely scaling alike. The all-explicit FSAL pairs agree to
+    # ~1e-14; the DIRK ones only to ~1e-11 (JFNK last-bit sensitivity), so the
+    # tolerance is sized for the looser of the two. A genuinely broken reuse (wrong
+    # stage, stale time) would move the error by O(dt) or worse, far beyond this.
     for e_off, e_on in zip(errors_off, errors_on):
-        assert e_on == pytest.approx(e_off, rel=1e-9, abs=1e-14), (
+        assert e_on == pytest.approx(e_off, rel=1e-5, abs=1e-11), (
             f'{name}: reuse changed the answer ({e_off:.6e} -> {e_on:.6e}); it should be exact'
         )
 
