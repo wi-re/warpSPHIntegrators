@@ -91,6 +91,11 @@ HANDROLLED_REUSE = {
     IntegrationSchemeType.rkc1: (None, 'RKC1 does not implement first-stage reuse (its stage count is a per-step parameter)'),
     IntegrationSchemeType.rkc2: (None, 'RKC2 does not implement first-stage reuse (its stage count is a per-step parameter)'),
     IntegrationSchemeType.rkl2: (None, 'RKL2 does not implement first-stage reuse (its stage count is a per-step parameter)'),
+    # Rosenbrock-W: the stages are coupled linear solves against a frozen operator
+    # (each K_i = M^{-1} b_i with b_i built from the earlier K_j), and the method is
+    # not stiffly accurate (the last stage is not y^{n+1}), so there is no ready-made
+    # derivative to splice in.
+    IntegrationSchemeType.ros3p: (None, 'ROS3P does not implement first-stage reuse (its stages are coupled linear solves and it is not stiffly accurate)'),
 }
 
 _TOL = 1e-12

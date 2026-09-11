@@ -342,6 +342,9 @@ EXPECTED_VERDICTS = {
     'RKC1': (None, None, False),
     'RKC2': (None, None, False),
     'RKL2': (None, None, False),
+    # Rosenbrock-W: no tableau (so no SSP convex-combination coefficient), but
+    # A-stable, so the measured sweep finds no TV increase up to the CFL cap.
+    'ROS3P': (None, 5.0, True),
 }
 
 CFLS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 5.0]

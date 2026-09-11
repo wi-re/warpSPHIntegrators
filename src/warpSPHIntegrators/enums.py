@@ -76,3 +76,7 @@ class IntegrationSchemeType(Enum):
     rkc1 = 52
     rkc2 = 53
     rkl2 = 54
+    # Rosenbrock-W (linearly implicit, semilinear split) (NOTES.md S3.14, Phase 7).
+    # Each stage is one GMRES solve against a frozen operator W (no outer Newton);
+    # not stiffly accurate, so no first-stage reuse.
+    ros3p = 55

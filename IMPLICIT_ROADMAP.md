@@ -205,14 +205,16 @@ Validation gate:
 
 ## Phase 7: Alternative Stiff Families
 
-**Status: unblocked — Phase 14 landed 2026-09-10.** The original gate was
-"a downstream RHS that splits into a linear stiff operator plus a mild nonlinear
-remainder." Phase 14's structured `RHS` interface *is* that split, expressed as a
-first-class problem description (`linear` / `nonlinear` accessors), and the viscous
-Burgers test problem gives both families the standard semilinear benchmark they are
-conventionally demonstrated on. Rosenbrock-W is planned outright; exponential
-integrators remain a second step within the phase because the matrix-free
-`phi_k(hL)v` build is the largest new piece.
+**Status: Rosenbrock-W (ROS3P) landed 2026-09-11; exponential integrators are the
+next sub-phase.** Phase 14's structured `RHS` interface (landed 2026-09-10)
+unblocked this phase. The original gate was "a downstream RHS that splits into a
+linear stiff operator plus a mild nonlinear remainder." Phase 14's structured `RHS`
+interface *is* that split, expressed as a first-class problem description
+(`linear` / `nonlinear` accessors), and the viscous Burgers test problem gives both
+families the standard semilinear benchmark they are conventionally demonstrated on.
+Rosenbrock-W (ROS3P) is landed; exponential integrators remain the second step
+within the phase because the matrix-free `phi_k(hL)v` build is the largest new
+piece.
 
 The efficiency argument is unchanged and still governs the validation gate:
 Rosenbrock-W trades the nonlinear solve for one *linear* solve per stage, so it only
@@ -231,20 +233,34 @@ comparison plugs into.
 
 ### Rosenbrock / W methods
 
-- [ ] A dedicated `rosenbrock.py` driver with its own coefficient structure
+- [x] A dedicated `rosenbrock.py` driver with its own coefficient structure
   (`alpha_ij`, `gamma_ij`, `gamma`, `b_i`) — not a DIRK tableau. Each stage is one
   `gmres` solve against `I/(dt·gamma) − W`, with no outer Newton loop.
-- [ ] `W` is one linearization held fixed across a step's stages, selectable as the
+  (Landed 2026-09-11: `integrateROS3P`; the three stage states collapse to two
+  RHS points and stage 3 reuses stage 2's `StageResult`.)
+- [x] `W` is one linearization held fixed across a step's stages, selectable as the
   exact Jacobian action (`jfnk.jvp_matvec` at `y^n`), a finite-difference action, or
   the Phase 14 `linear` accessor when the RHS supplies one (the "W": an inexact `J`
   is admissible without order loss).
-- [ ] Start with a verified 2nd- or 3rd-order Rosenbrock-W method with an embedded
+  (Landed as `w='jvp'`/`'fd'`/`'linear'`. Correction to "without order loss": the
+  `linear` accessor drops the nonlinear Jacobian `J_N`, so it is order 3 only for a
+  linear RHS and **first order** on a genuinely semilinear one — documented in
+  NOTES S3.14.)
+- [x] Start with a verified 2nd- or 3rd-order Rosenbrock-W method with an embedded
   estimator (ROS3P / RODAS3 / ROS34PW2), coefficients from a citable source, order
   checked with the existing Taylor-model machinery.
-- [ ] Non-autonomous `∂f/∂t` term: finite-difference it or require autonomous;
+  (Landed: ROS3P, order 3, from Lang & Verwer, *BIT* 41(4) 2001, with the
+  embedded (3, 2) estimator `tau (K1-K2)/3`; measured order 3 on viscous Burgers
+  for `w='jvp'` and `w='fd'`.)
+- [x] Non-autonomous `∂f/∂t` term: finite-difference it or require autonomous;
   document which.
-- [ ] Gradient parity: per-stage adjoint via the `gmres` transpose solve, reusing the
+  (Landed: `f_t='fd'` default — one-sided FD at a `dt`-scaled step, reusing the
+  stage-1 evaluation; `f_t='none'` for autonomous. NOTES S3.14.)
+- [x] Gradient parity: per-stage adjoint via the `gmres` transpose solve, reusing the
   Phase 9 pattern (`_implicit_diff_reattach`'s `jacobian_transpose`).
+  (Landed: frozen-`W` re-attachment, three transposed `gmres` solves plus the `W^T`
+  VJP; exact on a linear RHS, a few percent on nonlinear — the `dW/dy` Hessian is
+  dropped. NOTES S3.14.)
 
 ### Exponential integrators
 
@@ -257,10 +273,20 @@ comparison plugs into.
 
 Validation gate:
 
-- [ ] Rosenbrock-W and any exponential method reproduce the semi-discrete viscous
-  Burgers reference to their advertised order at fixed `nu`.
-- [ ] Each family beats the same-order JFNK DIRK / IMEX cost on viscous Burgers (RHS
-  evaluations and GMRES iterations to a fixed error) before its method set expands.
+- [x] Rosenbrock-W reproduces the semi-discrete viscous Burgers reference to its
+  advertised order at fixed `nu`. (Landed 2026-09-11: order 3 measured on viscous
+  Burgers for `w='jvp'` and `w='fd'`; `w='linear'` is order 1 on this semilinear
+  problem by design — it drops `J_N`.)
+- [x] Rosenbrock-W beats the same-order JFNK DIRK / IMEX cost on viscous Burgers
+  (total work-units to a fixed error) before its method set expands. (Landed
+  2026-09-11: ROS3P (`w='jvp'`) is the cheapest order-3 total work-unit cost on the
+  notebook's work-unit metric (706 < ARK3 793 < ESDIRK3 988) and beats ESDIRK3 on
+  GMRES iterations (586 < 688). Caveat: the additive ARK3 split's GMRES iterations
+  are cheap linear-operator applications, so it is cheaper per iteration in FLOPs.
+  NOTES S3.14.)
+- [ ] Exponential integrators reproduce the reference to their advertised order and
+  beat the same-order cost, before the exponential method set expands. (Pending —
+  next sub-phase of Phase 7.)
 
 ## Phase 8: Stability and Nonlinear Benchmark Suite
 
@@ -672,7 +698,7 @@ Validation gate:
 12. [ ] Phase 11 adaptive step control, once the multistep-vs-variable-`dt` contract is decided.
 13. [x] Phase 12 missing families, RKC/RKL first: it is the one candidate that directly challenges the Phase 8 cost baseline on a benchmark that already exists. (Landed 2026-09-11: RKC1 / RKC2 / RKL2 in `rkc.py` — the published recurrences, per-step stage count from `stage_count(dt·|λ_max|)`, orders 1 / 2 / 2 verified on the semi-discrete diffusion, stability pinned at the K(s) boundary; `scripts/rkc_benchmark.py` reaches max error 1e-2 at n = 16 / 32 / 64 with fewer total RHS evaluations than BE / BDF2 / TR-BDF2 under the default JFNK, and exposes BDF2's solver-limited practical stability there; `tests/test_rkc.py` (35 tests), NOTES §3.13; suite 2365 → 2400.)
 14. [ ] Phase 6 coupled implicit RK — de-gated 2026-09-10 (Gauss-Legendre is the library's only symplectic method above order 2, Radau IIA its only no-compromise stiff method), no longer waiting on a downstream. Needs the `BlockState` product type; then it inherits the Phase 1/2/9 machinery unchanged.
-15. [ ] Phase 7 Rosenbrock-W (outright) then exponential integrators — unblocked (Phase 14 landed 2026-09-10); the validation gate still requires beating same-order DIRK/IMEX cost on viscous Burgers (`viscous_burgers_demo.ipynb` §9/§8 is the working reference for that bar).
+15. [ ] Phase 7 Rosenbrock-W (outright) then exponential integrators. (Rosenbrock-W **landed 2026-09-11**: ROS3P in `rosenbrock.py` — a 3-stage order-3 A-stable (not L) Rosenbrock-W method (Lang & Verwer, *BIT* 41(4) 2001), `w='jvp'`/`'fd'`/`'linear'` frozen-Jacobian selector, `f_t='fd'` one-sided time derivative, frozen-`W` adjoint (three transposed `gmres` solves + the `W^T` VJP). Gate cleared on viscous Burgers: order 3 measured for `jvp`/`fd`, and ROS3P (`w='jvp'`) is the cheapest order-3 total work-unit cost (706 < ARK3 793 < ESDIRK3 988, `viscous_burgers_demo.ipynb` §10) — with the caveat that the additive ARK3 split is cheaper per iteration in FLOPs (linear-operator matvec). `tests/test_rosenbrock.py` (18 tests), NOTES §3.14. **Exponential integrators remain the next sub-phase** (the matrix-free `phi_k(hL)v` build is the largest new piece).)
 
 ## Completion Definition
 

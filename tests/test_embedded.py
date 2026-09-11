@@ -19,7 +19,10 @@ from warpSPHIntegrators.butcher import getButcherTableau
 # local error, O(dt^p) = dt^order.
 EMBEDDED = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)', 'Cash-Karp 5(4)',
             'TR-BDF2', 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
-            'ARK3(2)4L[2]SA', 'ARK4(3)6L[2]SA']
+            'ARK3(2)4L[2]SA', 'ARK4(3)6L[2]SA',
+            # Rosenbrock-W carries the built-in order-2 embedded estimate
+            # y - y_hat = tau (K1 - K2) / 3 (local error O(dt^3)).
+            'ROS3P']
 
 
 @pytest.mark.parametrize('name', EMBEDDED)
@@ -37,9 +40,17 @@ def test_error_estimate_has_the_embedded_order(name):
     """|y_high - y_low| must scale as dt^(p_low + 1), the local error of the low branch.
 
     That is what makes it usable for step size control.
+
+    ROS3P's (3, 2) embedded pair is degenerate on a linear *autonomous* problem:
+    there the frozen operator is the constant Jacobian ``A`` and the stage-2 right
+    hand side ``A(z_n + tau K1) - tau A K1`` collapses to ``A z_n`` -- stage 1's --
+    so ``K1 == K2`` and the estimate ``tau (K1 - K2) / 3`` is exactly zero (0/0 here).
+    The non-autonomous forced oscillator is the smallest problem where the pair is
+    active, so it is the one ROS3P is measured on.
     """
     s = getIntegrator(name)
-    prob = testing.PROBLEMS['oscillator']()
+    prob_name = 'forced' if name == 'ROS3P' else 'oscillator'
+    prob = testing.PROBLEMS[prob_name]()
 
     dts = [0.1, 0.05, 0.025, 0.0125]
     magnitudes = []

@@ -720,6 +720,33 @@ PROBLEMS = {
 
 
 # --------------------------------------------------------------------------- #
+# viscousBurgers reference (Phase 7)                                           #
+# --------------------------------------------------------------------------- #
+
+def viscous_burgers_reference(n: int = 64, L: float = 1.0, nu: float = 0.01,
+                              dt: float = 2e-3, T: float = 0.4) -> torch.Tensor:
+    """The canonical accuracy reference for ``viscousBurgers``: the final ``u``
+    field of a fine-``dt`` RK4 run of the combined (unsplit) dynamics.
+
+    The problem has no closed-form semi-discrete solution (its ``exact`` raises
+    ``NotImplementedError`` by design), so accuracy is measured against this
+    reference, which the factory docstring itself recommends: RK4 at
+    ``dt = 2e-3`` sits well inside the explicit (parabolic CFL) wall, so its
+    temporal error is far below the ``n``-point spatial floor of the grid. The
+    run uses the problem's own (Gaussian) initial condition, so a caller
+    comparing its own run should integrate that same initial condition.
+
+    Returns the final ``x`` (``u``) field, a 1-D ``float64`` tensor of length
+    ``n``, ready for a relative-``L2`` comparison:
+    ``torch.linalg.norm(u - ref) / torch.linalg.norm(ref)``.
+    """
+    from .integration import getIntegrator
+    problem = viscous_burgers_problem(n=n, L=L, nu=nu)
+    system = run(getIntegrator('RK4'), problem, dt=dt, T=T)
+    return get_reference_state(system).x
+
+
+# --------------------------------------------------------------------------- #
 # Measurement                                                                  #
 # --------------------------------------------------------------------------- #
 

@@ -47,6 +47,7 @@ from .multistep import AB2, AB3, AB4, AB5, ABM2, ABM3, ABM4, AM2, AM3, AM4
 from .bdf import BDF1, BDF2, BDF3, BDF4, BDF5
 from .imex import IMEXEuler
 from .rkc import RKC1, RKC2, RKL2
+from .rosenbrock import integrateROS3P
 from .reuse import step_reuse_analysis, step_reuse_order, supports_step_reuse, is_fsal
 
 semiImplicitEuler = lambda state, dt, f, *args, **kwargs: integrateSemiImplicitEuler(state, dt, f, *args, **kwargs)
@@ -229,6 +230,20 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     RKL2, 'RKL2', IntegrationSchemeType.rkl2, 2, True, True,
     implicit=False, steps=1, stiffly_accurate=False, stability=None))
+
+# ---- Rosenbrock-W (NOTES.md S3.14, Phase 7) --------------------------------- #
+# Linearly-implicit Rosenbrock-W on the semilinear split f = L·y + N: each of the
+# three stages is ONE GMRES solve against the frozen operator W (the Jacobian of f
+# at the step start, or the linear part), so there is no outer Newton loop. ROS3P
+# is order 3, A-stable but *not* L-stable (R(inf) = 1 - sqrt(3) ~= -0.732: stiff
+# modes are damped to |1 - sqrt(3)| per step, not killed). It is *not* stiffly
+# accurate (the last stage is not the step), so priorStep is rejected. Pass a
+# SemilinearRHS to activate the split; the frozen operator W is selected with
+# `w=` ('jvp' exact / 'fd' finite-difference / 'linear' the L part only -- the
+# latter is order 3 only when f is linear in the state, first order otherwise).
+IntegrationSchemes.append(IntegrationScheme(
+    integrateROS3P, 'ROS3P', IntegrationSchemeType.ros3p, 3, True, True,
+    implicit=True, steps=1, stiffly_accurate=False, stability='A'))
 
 
 # --------------------------------------------------------------------------- #
