@@ -81,6 +81,8 @@ def test_bitidentical_bare_callable_trajectories():
     prob = testing.PROBLEMS['oscillator']()
     mismatches = []
     for scheme in IntegrationSchemes:
+        if scheme.name not in golden['states']:
+            continue  # added after the golden was captured; no pre-refactor trajectory
         ref = golden['states'][scheme.name]
         if 'error' in ref:
             continue

@@ -19,7 +19,7 @@ blended with a reference state", and your system object decides what that means.
 
 ### Key Features
 
-- **Multiple Integration Schemes**: Runge-Kutta up to 5th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA, Newmark) via a pluggable `NonlinearSolver`; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4); implicit multistep (BDF1–BDF5, fully implicit Adams-Moulton 2–4); additive (IMEX) RK (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA) and IMEX Euler, both through an explicit/implicit RHS split
+- **Multiple Integration Schemes**: Runge-Kutta up to 5th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; stabilized explicit super-timestepping for parabolic stiffness (RKC1/RKC2/RKL2, no nonlinear solver); diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA, Newmark) via a pluggable `NonlinearSolver`; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4); implicit multistep (BDF1–BDF5, fully implicit Adams-Moulton 2–4); additive (IMEX) RK (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA) and IMEX Euler, both through an explicit/implicit RHS split
 - **Flexible State Management**: Custom state objects with metadata-driven field behavior (integrated, constant, copied, ephemeral, custom)
 - **Type-Safe Protocol**: Structural typing for integration systems with clear separation of concerns
 - **Fully Differentiable**: All operations preserve gradient flow for end-to-end learning
@@ -304,6 +304,35 @@ order**. Symplectic Euler does not; it keeps second order either way.
 |--------|-------|-------|----------|
 | **TVD-RK2** | 2 | refused | Conservation laws with the TVD property |
 | **TVD-RK3** | 3 | refused | Shu–Osher form of SSP-RK3 |
+
+### Stabilized Explicit (RKC / RKL)
+
+Chebyshev- and Legendre-based super-timestepping for **parabolic stiffness**
+(diffusion, SPH viscosity). No tableau and no nonlinear solver: a fixed coefficient
+recursion, and a stage count `s` chosen *per step* so the real-axis stability range
+`K(s)` covers `dt·|λ_max|`. The driver therefore requires `s=` *or* `lambda_max=`
+(omitting both is a `ValueError`); `lambda_max=` runs `s = stage_count(dt·|λ_max|,
+family)` internally. First-stage reuse is refused — `s` is a per-step quantity. The
+family is built for real (negative) eigenvalues, so the hyperbolic TVD/SSP question
+does not apply to it. On the semi-discrete diffusion benchmark it reaches a fixed
+error with fewer total RHS evaluations than BE / BDF2 / TR-BDF2 run with the default
+JFNK — and BDF2's practical stability there turns out to be solver-limited rather
+than method-limited ([`scripts/rkc_benchmark.py`](scripts/rkc_benchmark.py),
+![RKC / RKL vs the implicit baselines](images/rkc_benchmark.png),
+[NOTES §3.13](NOTES.md#313-phase-12-rkc--rkl--stabilized-explicit-super-timestepping--done-2026-09-11)):
+
+| Scheme | Order | Stability range (real axis) | Reuse | Use Case |
+|--------|-------|-----------------------------|-------|----------|
+| **RKC1** | 1 | K = 2s² | refused | Fewest stages per unit stiffness — the cheapest option |
+| **RKC2** | 2 | K = 2(s²−1)/3 | refused | Order 2; the wider of the two order-2 ranges |
+| **RKL2** | 2 | K = (s²+s−2)/2 | refused | Legendre (relaxed Lobatto) variant; Meyer, Balsara & Aslam 2014 |
+
+```python
+from warpSPHIntegrators import RKC2
+
+system = RKC2(system, dt=dt, f=rhs, s=s)            # explicit stage count
+system = RKC2(system, dt=dt, f=rhs, lambda_max=L)   # or let stage_count pick s
+```
 
 ### Diagonally Implicit (DIRK) Methods
 

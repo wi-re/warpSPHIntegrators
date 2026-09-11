@@ -438,15 +438,25 @@ duplicate an existing capability or need a downstream structure that has not app
 
 ### Stabilized explicit (RKC / RKL / ROCK) — the strongest omission
 
-- [ ] Evaluate RKC or RKL2 ("super-time-stepping") for parabolic SPH terms. Explicit
+- [x] Evaluate RKC or RKL2 ("super-time-stepping") for parabolic SPH terms. Explicit
   Chebyshev recursions whose real-axis stability grows as O(s²) in the stage count,
   matrix-free, with **no nonlinear solver at all**. They attack exactly the regime the
   Phase 2 preconditioning work and the `diffusion_problem(n)` benchmark exist for, and
-  for SPH viscosity they are frequently the right answer over implicit.
-- [ ] No tableau needed — a coefficient recursion plus a stage-count rule, so the
-  marginal cost is close to the "tableau only" tier of NOTES §3.6.
-- [ ] Benchmark against BE / BDF2 / TR-BDF2 on `diffusion_problem` at several `n`,
-  reporting RHS evaluations to a fixed error.
+  for SPH viscosity they are frequently the right answer over implicit. (Landed
+  2026-09-11: `rkc.py` implements RKC1 / RKC2 / RKL2 from the published recurrences
+  (Meyer, Balsara & Aslam 2014; Ruuth 2001), orders 1 / 2 / 2, real-axis ranges
+  K(s) = 2s² / 2(s²−1)/3 / (s²+s−2)/2, exactly `s` RHS evaluations per step; NOTES §3.13.)
+- [x] No tableau needed — a coefficient recursion plus a stage-count rule, so the
+  marginal cost is close to the "tableau only" tier of NOTES §3.6. (Landed 2026-09-11:
+  `stage_count(dt·|λ_max|, family)` returns the smallest admissible `s`, clamped to the
+  family's minimum; the drivers take `s=` or `lambda_max=` and refuse first-stage reuse.)
+- [x] Benchmark against BE / BDF2 / TR-BDF2 on `diffusion_problem` at several `n`,
+  reporting RHS evaluations to a fixed error. (Landed 2026-09-11:
+  `scripts/rkc_benchmark.py` → `images/rkc_benchmark.png`. To max error 1e-2 at
+  n = 16 / 32 / 64 the family needs 32 / 64 / 128 (RKC1), 40 / 80 / 144 (RKC2),
+  48 / 88 / 168 (RKL2) total RHS evaluations, against TR-BDF2 89 / 147 / 271, BE
+  268 / 399 / 710, BDF2 224 / 896 / unstable — the implicit cost is dominated by the
+  default finite-difference JFNK solve, which also caps BDF2's practical stability.)
 
 ### IMEX linear multistep (SBDF2/3, CNAB2)
 
@@ -660,7 +670,7 @@ Validation gate:
 10. [x] Phase 13 explicit-side nonlinear stability — small, and it closes the one place where a registered scheme advertises a property nothing measures. Includes the requested general TVD classifier (verify the TVD-named schemes, scan all others; TVD is broader than SSP, 2026-09-10). (Landed 2026-09-10: `advection_problem` (upwind advection, the classifier's model problem) + `burgers_problem` in `testing.py`; `tvd_analysis.py` — rigorous SSP coefficient from the Fourier stage maps plus measured per-step TVD CFL from a trajectory sweep, and `classify_tvd`/`classify_all` over the whole registry; `scripts/tvd_classifier.py` prints the maintained verdict table (NOTES §3.11): TVD RK2/3 + SSP RK3 at the published r = 1, RK4 r = 2/3 yet TVD to CFL 1.25, Nystrom/DP5/ESDIRK/ARK r = 0 (stage maps negative at every resolvable CFL — Nystrom/DP5 by exact rational arithmetic) yet per-step TVD to 1.5, L-stable implicits to CFL 5, multistep family to a measured CFL 1.5; the stage-level gate separates classical RK3 (stage-3 row [1, -1, 1] at CFL 1) from TVD RK3 where per-step TV cannot; `tests/test_tvd.py` pins the whole table; suite 2320 → 2346.)
 11. [x] Phase 14 structured RHS interface — collapses the RHS input surface to "a plain function or a typed `RHS`", folds in the `IMEXRHS` split, and adds the `linear`/`nonlinear` accessors plus the viscous Burgers semilinear test problem. (Landed 2026-09-10: `rhs.py` — concrete `RHS` class + `provides` capabilities, `IMEXRHS`/`SemilinearRHS` constructors, `resolve` with pre-solve capability errors, `check_contracts` for the three split contracts; `ark.py`/`imex.py` moved off `isinstance`; the old `IMEXRHS` NamedTuple is gone from `specs.py`; `viscous_burgers_problem` in `testing.py` as the Phase 7 benchmark; the pre-refactor bit-identical golden over all 52 registered schemes pinned in `tests/test_rhs.py` (19 tests); NOTES §3.12; suite 2346 → 2365.)
 12. [ ] Phase 11 adaptive step control, once the multistep-vs-variable-`dt` contract is decided.
-13. [ ] Phase 12 missing families, RKC/RKL first: it is the one candidate that directly challenges the Phase 8 cost baseline on a benchmark that already exists.
+13. [x] Phase 12 missing families, RKC/RKL first: it is the one candidate that directly challenges the Phase 8 cost baseline on a benchmark that already exists. (Landed 2026-09-11: RKC1 / RKC2 / RKL2 in `rkc.py` — the published recurrences, per-step stage count from `stage_count(dt·|λ_max|)`, orders 1 / 2 / 2 verified on the semi-discrete diffusion, stability pinned at the K(s) boundary; `scripts/rkc_benchmark.py` reaches max error 1e-2 at n = 16 / 32 / 64 with fewer total RHS evaluations than BE / BDF2 / TR-BDF2 under the default JFNK, and exposes BDF2's solver-limited practical stability there; `tests/test_rkc.py` (35 tests), NOTES §3.13; suite 2365 → 2400.)
 14. [ ] Phase 6 coupled implicit RK — de-gated 2026-09-10 (Gauss-Legendre is the library's only symplectic method above order 2, Radau IIA its only no-compromise stiff method), no longer waiting on a downstream. Needs the `BlockState` product type; then it inherits the Phase 1/2/9 machinery unchanged.
 15. [ ] Phase 7 Rosenbrock-W (outright) then exponential integrators — unblocked (Phase 14 landed 2026-09-10); the validation gate still requires beating same-order DIRK/IMEX cost on viscous Burgers (`viscous_burgers_demo.ipynb` §9/§8 is the working reference for that bar).
 

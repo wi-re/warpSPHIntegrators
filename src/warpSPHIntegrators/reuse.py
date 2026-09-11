@@ -85,6 +85,12 @@ HANDROLLED_REUSE = {
     IntegrationSchemeType.tvdRK2: (None, 'TVD RK2 does not implement first-stage reuse'),
     IntegrationSchemeType.semiImplicitEuler: (None, 'Semi-Implicit Euler does not implement first-stage reuse'),
     IntegrationSchemeType.explicitEuler: (None, 'Explicit Euler does not implement first-stage reuse'),
+    # Super-timestepping: the stage count `s` (hence the whole recurrence) is a
+    # per-step choice, so the previous step's last stage cannot be spliced into this
+    # step's first stage. None of the three implement first-stage reuse.
+    IntegrationSchemeType.rkc1: (None, 'RKC1 does not implement first-stage reuse (its stage count is a per-step parameter)'),
+    IntegrationSchemeType.rkc2: (None, 'RKC2 does not implement first-stage reuse (its stage count is a per-step parameter)'),
+    IntegrationSchemeType.rkl2: (None, 'RKL2 does not implement first-stage reuse (its stage count is a per-step parameter)'),
 }
 
 _TOL = 1e-12

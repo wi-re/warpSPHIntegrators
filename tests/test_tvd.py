@@ -339,6 +339,9 @@ EXPECTED_VERDICTS = {
     'Adams-Moulton 2 (implicit)': (None, 1.5, False),
     'Adams-Moulton 3 (implicit)': (None, 1.5, False),
     'Adams-Moulton 4 (implicit)': (None, 1.5, False),
+    'RKC1': (None, None, False),
+    'RKC2': (None, None, False),
+    'RKL2': (None, None, False),
 }
 
 CFLS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 5.0]

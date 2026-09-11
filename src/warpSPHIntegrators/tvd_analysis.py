@@ -298,6 +298,12 @@ NOT_APPLICABLE_IDENTIFIERS = {
     'newmark',
 }
 
+#: Parabolic super-timestepping schemes (RKC1 / RKC2 / RKL2, NOTES.md S3.13).
+#: They take a per-step stage count and are built to stabilise real negative
+#: (parabolic) eigenvalues, so they cannot be run on the advection problem as-is
+#: and the hyperbolic TVD / SSP question does not apply to them either.
+PARABOLIC_ONLY_IDENTIFIERS = {'rkc1', 'rkc2', 'rkl2'}
+
 
 @dataclass(frozen=True)
 class TVDVerdict:
@@ -361,6 +367,14 @@ def classify_tvd(scheme, problem, cfls, dt_scale: float,
             tvd_cfl=None, unconditional=False,
             verdict='not applicable (second-order system scheme)',
             detail='integrates x\'\' = f, not a first-order system')
+
+    if scheme.identifier.name in PARABOLIC_ONLY_IDENTIFIERS:
+        return TVDVerdict(
+            scheme=scheme.name, order=scheme.order, ssp_cfl=None,
+            tvd_cfl=None, unconditional=False,
+            verdict='not applicable (parabolic super-timestepping)',
+            detail='per-step stage count (s=), no tableau; stabilises parabolic '
+                   'terms, the hyperbolic TVD/SSP question does not apply')
 
     ssp_cfl = None
     tableau = scheme_tableau(scheme)

@@ -70,3 +70,9 @@ class IntegrationSchemeType(Enum):
     am2 = 49
     am3 = 50
     am4 = 51
+    # Relaxed Chebyshev / Lobatto super-timestepping (NOTES.md S3.13, Phase 12).
+    # Explicit, matrix-free, O(s^2) real-axis stability; s is a per-step parameter
+    # (pass s= or lambda_max=). None implement first-stage reuse.
+    rkc1 = 52
+    rkc2 = 53
+    rkl2 = 54

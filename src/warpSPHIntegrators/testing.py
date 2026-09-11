@@ -724,7 +724,8 @@ PROBLEMS = {
 # --------------------------------------------------------------------------- #
 
 def run(scheme, problem: Problem, dt: float, T: float, *,
-        reuse: bool = False, history: bool = False, history_length: int = 4) -> ParticleSystem:
+        reuse: bool = False, history: bool = False, history_length: int = 4,
+        **scheme_kwargs) -> ParticleSystem:
     """Integrate ``problem`` from t=0 to t=T in fixed steps of ``dt``.
 
     ``history=True`` threads a ``StepHistory`` through the run instead of (or, if
@@ -735,12 +736,17 @@ def run(scheme, problem: Problem, dt: float, T: float, *,
     Phase 1) or a step-reuse test that wants more than one entry of lookback can
     exercise this without every other test's ``run`` call changing shape first
     (NOTES.md S5).
+
+    ``**scheme_kwargs`` are forwarded to the scheme on every step (and are therefore
+    ignored by schemes that do not read them). They exist for schemes that take a
+    per-step parameter the run loop does not own -- the RKC/RKL family's stage count
+    ``s=`` (or ``lambda_max=``) is the first consumer (NOTES.md S3.13, Phase 12).
     """
     system = problem.initial()
     prior = None
     step_history = StepHistory(maxlen=history_length) if history else None
     for _ in range(int(round(T / dt))):
-        kwargs = {}
+        kwargs = dict(scheme_kwargs)
         if reuse:
             kwargs['priorStep'] = prior
         if history:
@@ -755,9 +761,14 @@ def run(scheme, problem: Problem, dt: float, T: float, *,
 
 
 def final_error(scheme, problem: Problem, dt: float, T: float, *,
-                reuse: bool = False, history: bool = False) -> float:
-    """L1 error in (x, u) at time T against the analytic solution."""
-    system = run(scheme, problem, dt, T, reuse=reuse, history=history)
+                reuse: bool = False, history: bool = False,
+                **scheme_kwargs) -> float:
+    """L1 error in (x, u) at time T against the analytic solution.
+
+    ``**scheme_kwargs`` are forwarded to :func:`run` (and hence to the scheme); see
+    that function for the RKC/RKL stage-count use.
+    """
+    system = run(scheme, problem, dt, T, reuse=reuse, history=history, **scheme_kwargs)
     s = get_reference_state(system)
     ex, eu = problem.exact(T)
     return (sum(abs(a - b) for a, b in zip(s.x.tolist(), ex))
@@ -784,9 +795,12 @@ def measured_order(errors: Sequence[Optional[float]], dts: Sequence[float],
 
 
 def convergence(scheme, problem: Problem, dts: Sequence[float], T: float = 2.0,
-                *, reuse: bool = False):
-    """(measured order, errors) for ``scheme`` on ``problem`` over ``dts``."""
-    errors = [final_error(scheme, problem, dt, T, reuse=reuse) for dt in dts]
+                *, reuse: bool = False, **scheme_kwargs):
+    """(measured order, errors) for ``scheme`` on ``problem`` over ``dts``.
+
+    ``**scheme_kwargs`` are forwarded to :func:`final_error` (and hence the scheme).
+    """
+    errors = [final_error(scheme, problem, dt, T, reuse=reuse, **scheme_kwargs) for dt in dts]
     return measured_order(errors, dts), errors
 
 

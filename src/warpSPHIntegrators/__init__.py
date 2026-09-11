@@ -57,6 +57,7 @@ from .rhs import (RHS, IMEXRHS, SemilinearRHS, resolve, ResolvedRHS,
 from .newmark import newmark, newmark_average_acceleration, newmark_linear_acceleration
 from .dirk import TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA
 from .ark import ARK324L2SA, ARK436L2SA
+from .rkc import RKC1, RKC2, RKL2, stage_count
 
 from .util import IntegrationSchemeType
 
@@ -128,6 +129,10 @@ __all__ = [
     "ESDIRK436L2SA",
     "ARK324L2SA",
     "ARK436L2SA",
+    "RKC1",
+    "RKC2",
+    "RKL2",
+    "stage_count",
     "StateBlend",
     "ComponentUpdateSpec",
     "PositionUpdateSpec",

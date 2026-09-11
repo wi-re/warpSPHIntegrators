@@ -46,6 +46,7 @@ from .newmark import newmark
 from .multistep import AB2, AB3, AB4, AB5, ABM2, ABM3, ABM4, AM2, AM3, AM4
 from .bdf import BDF1, BDF2, BDF3, BDF4, BDF5
 from .imex import IMEXEuler
+from .rkc import RKC1, RKC2, RKL2
 from .reuse import step_reuse_analysis, step_reuse_order, supports_step_reuse, is_fsal
 
 semiImplicitEuler = lambda state, dt, f, *args, **kwargs: integrateSemiImplicitEuler(state, dt, f, *args, **kwargs)
@@ -209,6 +210,25 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     AM4, 'Adams-Moulton 4 (implicit)', IntegrationSchemeType.am4, 4, True, True,
     implicit=True, steps=3, stiffly_accurate=False, startup_order=4))
+
+# ---- Stabilised explicit super-timestepping (NOTES.md S3.13, Phase 12) ---- #
+# RKC/RKL trade a variable number `s` of cheap right-hand-side evaluations for a
+# real-axis stability interval that grows like O(s^2), so the step size is set by
+# the physics rather than the stiffest diffusive eigenvalue. They are fully explicit
+# (no solve, no linear-RHS requirement -- the full `f` is evaluated at every stage),
+# one-step, and dissipative. `stability` is left None: the interval is `[-K(s), 0]`
+# with K depending on the per-step stage count (pass `s=` or `lambda_max=`), so there
+# is no single region to advertise. RKL2 is Meyer/Balsara/Aslam 2014; RKC2 is the same
+# construction with Chebyshev in place of Legendre; RKC1 is the order-1 limit.
+IntegrationSchemes.append(IntegrationScheme(
+    RKC1, 'RKC1', IntegrationSchemeType.rkc1, 1, True, True,
+    implicit=False, steps=1, stiffly_accurate=False, stability=None))
+IntegrationSchemes.append(IntegrationScheme(
+    RKC2, 'RKC2', IntegrationSchemeType.rkc2, 2, True, True,
+    implicit=False, steps=1, stiffly_accurate=False, stability=None))
+IntegrationSchemes.append(IntegrationScheme(
+    RKL2, 'RKL2', IntegrationSchemeType.rkl2, 2, True, True,
+    implicit=False, steps=1, stiffly_accurate=False, stability=None))
 
 
 # --------------------------------------------------------------------------- #

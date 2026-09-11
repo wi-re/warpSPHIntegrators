@@ -15,6 +15,7 @@ O(dt^p) band however long you integrate, while a dissipative one accumulates.
 import pytest
 import torch
 
+from conftest import NEEDS_STAGE_COUNT
 from warpSPHIntegrators import JFNKSolver, getIntegrator, get_reference_state, testing
 from warpSPHIntegrators.integration import IntegrationSchemes
 
@@ -124,6 +125,9 @@ def _phase_jacobian(scheme, problem, phase=(0.7, -0.4), dt=0.5, epsilon=1e-4, so
 
 @pytest.mark.parametrize('scheme', IntegrationSchemes, ids=lambda scheme: scheme.name)
 def test_every_scheme_has_the_expected_linear_oscillator_area_property(scheme):
+    if scheme.name in NEEDS_STAGE_COUNT:
+        pytest.skip(f'{scheme.name} needs a per-step stage count (s=); '
+                    f'covered in tests/test_rkc.py')
     solver = None
     if scheme.name in {'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)', 'Newmark'}:
         solver = JFNKSolver(tol=1e-12, gmres_tol=1e-12, newton_tol=1e-12, fd_eps=1e-6)

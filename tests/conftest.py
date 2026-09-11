@@ -6,8 +6,30 @@ from warpSPHIntegrators import testing
 from warpSPHIntegrators.integration import IntegrationSchemes
 
 
+#: Schemes that take a per-step stage count (`s=`, or `lambda_max=`) the generic
+#: one-step-callable tests do not provide (NOTES.md S3.13, Phase 12). They are
+#: stabilised explicit methods for parabolic (real negative-eigenvalue) right-hand
+#: sides, so the generic oscillator / forced / kepler convergence problems do not
+#: exercise them correctly either. They are covered in tests/test_rkc.py instead.
+NEEDS_STAGE_COUNT = {'RKC1', 'RKC2', 'RKL2'}
+
+
+def _scheme_params():
+    params = []
+    for s in IntegrationSchemes:
+        if s.name in NEEDS_STAGE_COUNT:
+            params.append(pytest.param(
+                s, id=s.name,
+                marks=pytest.mark.skip(
+                    reason=(f'{s.name} needs a per-step stage count (s= or lambda_max=); '
+                            f'see tests/test_rkc.py'))))
+        else:
+            params.append(pytest.param(s, id=s.name))
+    return params
+
+
 #: Every registered scheme, as pytest params keyed by display name.
-ALL_SCHEMES = [pytest.param(s, id=s.name) for s in IntegrationSchemes]
+ALL_SCHEMES = _scheme_params()
 
 #: How far below the claimed order a measurement is allowed to sit. Convergence
 #: orders measured over four halvings land within a few hundredths of the true value;
