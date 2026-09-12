@@ -15,7 +15,7 @@ O(dt^p) band however long you integrate, while a dissipative one accumulates.
 import pytest
 import torch
 
-from conftest import NEEDS_STAGE_COUNT
+from conftest import NEEDS_SEMILINEAR_RHS, NEEDS_STAGE_COUNT
 from warpSPHIntegrators import JFNKSolver, getIntegrator, get_reference_state, testing
 from warpSPHIntegrators.integration import IntegrationSchemes
 
@@ -128,6 +128,9 @@ def test_every_scheme_has_the_expected_linear_oscillator_area_property(scheme):
     if scheme.name in NEEDS_STAGE_COUNT:
         pytest.skip(f'{scheme.name} needs a per-step stage count (s=); '
                     f'covered in tests/test_rkc.py')
+    if scheme.name in NEEDS_SEMILINEAR_RHS:
+        pytest.skip(f'{scheme.name} needs a SemilinearRHS (the `linear` part); '
+                    f'the oscillator is a plain callable; see tests/test_exponential.py')
     solver = None
     if scheme.name in {'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)', 'Newmark'}:
         solver = JFNKSolver(tol=1e-12, gmres_tol=1e-12, newton_tol=1e-12, fd_eps=1e-6)

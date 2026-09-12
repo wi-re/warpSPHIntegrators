@@ -80,3 +80,7 @@ class IntegrationSchemeType(Enum):
     # Each stage is one GMRES solve against a frozen operator W (no outer Newton);
     # not stiffly accurate, so no first-stage reuse.
     ros3p = 55
+    # Exponential integrator (NOTES.md S3.15, Phase 7): integrates the linear part
+    # exactly via the matrix exponential / phi_k, matrix-free through a Krylov
+    # approximation of phi_k(hL)v. Not stiffly accurate, so no first-stage reuse.
+    etd2rk = 56

@@ -48,6 +48,7 @@ from .bdf import BDF1, BDF2, BDF3, BDF4, BDF5
 from .imex import IMEXEuler
 from .rkc import RKC1, RKC2, RKL2
 from .rosenbrock import integrateROS3P
+from .exponential import integrateETD2RK
 from .reuse import step_reuse_analysis, step_reuse_order, supports_step_reuse, is_fsal
 
 semiImplicitEuler = lambda state, dt, f, *args, **kwargs: integrateSemiImplicitEuler(state, dt, f, *args, **kwargs)
@@ -244,6 +245,22 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     integrateROS3P, 'ROS3P', IntegrationSchemeType.ros3p, 3, True, True,
     implicit=True, steps=1, stiffly_accurate=False, stability='A'))
+
+
+# ---- Exponential integrator (NOTES.md S3.15, Phase 7) ---------------------- #
+# ETD2RK: a two-stage, order-2 exponential Runge-Kutta method for the semilinear
+# split f = L·y + N. The linear part L is integrated EXACTLY through the matrix
+# exponential and the entire phi_k functions, applied matrix-free as
+# phi_k(hL)v via a Krylov (Arnoldi) approximation; the nonlinear remainder N is
+# quadratured (two evaluations per step). It is *explicit* in the stage sense
+# (no stage solves for its own value), so `implicit=False`, and it is L-stable
+# for the linear part (e^{hL} damps stiff modes to zero as h|lambda| -> inf). It
+# is *not* stiffly accurate (the last stage is not the step), so priorStep is
+# rejected. Pass a SemilinearRHS (or an RHS providing `linear`); a plain
+# callable has no linear part and is rejected before the solve.
+IntegrationSchemes.append(IntegrationScheme(
+    integrateETD2RK, 'ETD2RK', IntegrationSchemeType.etd2rk, 2, True, True,
+    implicit=False, steps=1, stiffly_accurate=False, stability='L'))
 
 
 # --------------------------------------------------------------------------- #

@@ -13,6 +13,16 @@ from warpSPHIntegrators.integration import IntegrationSchemes
 #: exercise them correctly either. They are covered in tests/test_rkc.py instead.
 NEEDS_STAGE_COUNT = {'RKC1', 'RKC2', 'RKL2'}
 
+#: Schemes that integrate the linear part exactly and therefore require the
+#: `linear` accessor of a SemilinearRHS (NOTES.md S3.15, Phase 7). The generic
+#: oscillator / forced / kepler convergence problems are registered as plain
+#: callables (no `linear` part), so they cannot be run on those as registered.
+#: Their order and driver contract are covered in tests/test_exponential.py on
+#: the semilinear viscous-Burgers problem instead. (Rosenbrock-W is *not* in this
+#: set: it falls back to the combined `f`'s Jacobian, so it runs on a plain
+#: callable.)
+NEEDS_SEMILINEAR_RHS = {'ETD2RK'}
+
 
 def _scheme_params():
     params = []
@@ -23,6 +33,13 @@ def _scheme_params():
                 marks=pytest.mark.skip(
                     reason=(f'{s.name} needs a per-step stage count (s= or lambda_max=); '
                             f'see tests/test_rkc.py'))))
+        elif s.name in NEEDS_SEMILINEAR_RHS:
+            params.append(pytest.param(
+                s, id=s.name,
+                marks=pytest.mark.skip(
+                    reason=(f'{s.name} needs a SemilinearRHS (the `linear` part); '
+                            f'the generic problems are plain callables; '
+                            f'see tests/test_exponential.py'))))
         else:
             params.append(pytest.param(s, id=s.name))
     return params

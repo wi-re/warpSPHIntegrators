@@ -59,6 +59,7 @@ from .dirk import TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA
 from .ark import ARK324L2SA, ARK436L2SA
 from .rkc import RKC1, RKC2, RKL2, stage_count
 from .rosenbrock import integrateROS3P as ROS3P
+from .exponential import integrateETD2RK as ETD2RK
 
 from .util import IntegrationSchemeType
 
@@ -135,6 +136,7 @@ __all__ = [
     "RKL2",
     "stage_count",
     "ROS3P",
+    "ETD2RK",
     "StateBlend",
     "ComponentUpdateSpec",
     "PositionUpdateSpec",

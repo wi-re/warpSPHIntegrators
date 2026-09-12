@@ -96,6 +96,10 @@ HANDROLLED_REUSE = {
     # not stiffly accurate (the last stage is not y^{n+1}), so there is no ready-made
     # derivative to splice in.
     IntegrationSchemeType.ros3p: (None, 'ROS3P does not implement first-stage reuse (its stages are coupled linear solves and it is not stiffly accurate)'),
+    # ETD2RK: a two-stage exponential integrator (exp-Euler predictor + corrector);
+    # it is not stiffly accurate (the last stage is not y^{n+1}), so there is no
+    # ready-made derivative to splice in as a first stage.
+    IntegrationSchemeType.etd2rk: (None, 'ETD2RK does not implement first-stage reuse (it is not stiffly accurate)'),
 }
 
 _TOL = 1e-12

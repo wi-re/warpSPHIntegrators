@@ -205,16 +205,20 @@ Validation gate:
 
 ## Phase 7: Alternative Stiff Families
 
-**Status: Rosenbrock-W (ROS3P) landed 2026-09-11; exponential integrators are the
-next sub-phase.** Phase 14's structured `RHS` interface (landed 2026-09-10)
+**Status: Rosenbrock-W (ROS3P) landed 2026-09-11; ETD2RK (exponential) landed
+2026-09-12 (order 2, matrix-free `phi_k` Krylov, gradient in-scope for the
+self-adjoint-`L` benchmark; the exponential *cost* gate is open and assessed at
+exprb32) — exprb32 (order 3) is the next method in the open exponential
+sub-phase.** Phase 14's structured `RHS` interface (landed 2026-09-10)
 unblocked this phase. The original gate was "a downstream RHS that splits into a
 linear stiff operator plus a mild nonlinear remainder." Phase 14's structured `RHS`
 interface *is* that split, expressed as a first-class problem description
 (`linear` / `nonlinear` accessors), and the viscous Burgers test problem gives both
 families the standard semilinear benchmark they are conventionally demonstrated on.
-Rosenbrock-W (ROS3P) is landed; exponential integrators remain the second step
-within the phase because the matrix-free `phi_k(hL)v` build is the largest new
-piece.
+Rosenbrock-W (ROS3P) is landed, and the exponential sub-phase is underway: the
+matrix-free `phi_k(hL)v` build (the largest new piece) and ETD2RK are landed,
+leaving the family's cost gate (assessed at exprb32) and the order-3 exprb32
+method.
 
 The efficiency argument is unchanged and still governs the validation gate:
 Rosenbrock-W trades the nonlinear solve for one *linear* solve per stage, so it only
@@ -264,12 +268,33 @@ comparison plugs into.
 
 ### Exponential integrators
 
-- [ ] Matrix-free `phi_k(hL)v` via a Krylov approximation (Arnoldi on `L`, then
+- [x] Matrix-free `phi_k(hL)v` via a Krylov approximation (Arnoldi on `L`, then
   `phi_k` of the small dense Hessenberg matrix) — shares the Arnoldi core with
   `gmres`, consumes the Phase 14 `linear` accessor, forms no dense matrix.
-- [ ] Start with ETD2RK / exponential Rosenbrock (exprb32) on semi-discrete viscous
+  (Landed 2026-09-12 in `exponential.py`: `krylov_phi(matvec, v, k, m=, tol=)` —
+  one Arnoldi build per distinct right-hand-side vector, `phi_k(H) e1` by a short
+  Taylor-vector series (no matrix exponential / eigendecomposition); the
+  `L`-matvec count is reported as the step's Krylov-iteration count.)
+- [x] Start with ETD2RK / exponential Rosenbrock (exprb32) on semi-discrete viscous
   Burgers (Phase 14's test problem).
-- [?] Gradient path through the `phi_k` Krylov approximation — deferrable.
+  (Landed 2026-09-12: **ETD2RK** — the base unsplit 2-stage, order-2, L-stable
+  exponential integrator (Sarumi, arXiv:2601.06849; `phi` per Caliari & Ostermann
+  2009). It integrates `L` exactly through `exp(hL)` / `phi_1` / `phi_2` (matrix-
+  free, Krylov) and quadratures `N` (two evaluations per step). Measured **order 2**
+  on viscous Burgers; **exact** on a purely linear problem (`N = 0`, error at the
+  Krylov tolerance, not `O(h^2)`); L-stable (a stiff linear mode is damped by
+  `exp(-rate·h)`, killed, not merely damped as in the Rosenbrock case). exprb32
+  (order 3) is the next method in this sub-phase.)
+- [x] Gradient path through the `phi_k` Krylov approximation.
+  (Landed 2026-09-12: because `L` is *constant* (independent of `y`), the three
+  matrix-function actions are constant linear maps, each re-attached with its
+  transposed operator as the adjoint (transpose `phi_k(hL)` actions via the same
+  Krylov machinery on `L^T`) — no unrolled Krylov and, unlike the Rosenbrock
+  frozen-`W` (which drops a `dW/dy` Hessian), **no structural approximation**, so
+  the gradient is exact up to the Krylov tolerance. Scope note: the transpose
+  reuses the forward `linear` accessor because the benchmark `L = nu·u_xx` is
+  **self-adjoint**; a non-self-adjoint `L` would need `L^T` (a future extension).
+  NOTES S3.15.)
 
 Validation gate:
 
@@ -284,9 +309,21 @@ Validation gate:
   GMRES iterations (586 < 688). Caveat: the additive ARK3 split's GMRES iterations
   are cheap linear-operator applications, so it is cheaper per iteration in FLOPs.
   NOTES S3.14.)
-- [ ] Exponential integrators reproduce the reference to their advertised order and
-  beat the same-order cost, before the exponential method set expands. (Pending —
-  next sub-phase of Phase 7.)
+- [x] Exponential integrators reproduce the reference to their advertised order.
+  (Landed 2026-09-12: ETD2RK measured **order 2** on viscous Burgers — the order
+  part of the gate. The *cost* half is assessed separately below, at exprb32,
+  before the exponential method set expands.)
+- [ ] ... and beat the same-order cost, before the exponential method set expands.
+  (Open — deferred to **exprb32** (order 3), the method that should carry the
+  family's cost case. ETD2RK's order-2 cost is **not** competitive on the
+  work-unit metric: at `dt = 0.02` it is 1782 work-units (40 `N` evals + 1742
+  `L`-matvec Krylov iters, the three per-step builds each running to the full
+  `m = 30` because `||dt·L|| ~= 3.3` does not drive the Arnoldi residual below
+  `1e-10` early) versus the order-2 bars BDF2 393 / TR-BDF2 575. **FLOP caveat:**
+  each `L`-matvec is a cheap `nu·u_xx` stencil, whereas a JFNK `rhs_evaluation` /
+  GMRES iteration is a full `N + L` (Jacobian-vector) evaluation, so the
+  work-unit metric overstates ETD2RK's true cost — the fair comparison is deferred
+  to exprb32. NOTES S3.15.)
 
 ## Phase 8: Stability and Nonlinear Benchmark Suite
 

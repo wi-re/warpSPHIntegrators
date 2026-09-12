@@ -345,6 +345,10 @@ EXPECTED_VERDICTS = {
     # Rosenbrock-W: no tableau (so no SSP convex-combination coefficient), but
     # A-stable, so the measured sweep finds no TV increase up to the CFL cap.
     'ROS3P': (None, 5.0, True),
+    # Exponential integrator: needs the `linear` accessor of a SemilinearRHS to
+    # integrate the linear part exactly, but the model advection problem is a
+    # plain callable, so the TVD/SSP measurement does not apply to it here.
+    'ETD2RK': (None, None, False),
 }
 
 CFLS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 5.0]

@@ -304,6 +304,16 @@ NOT_APPLICABLE_IDENTIFIERS = {
 #: and the hyperbolic TVD / SSP question does not apply to them either.
 PARABOLIC_ONLY_IDENTIFIERS = {'rkc1', 'rkc2', 'rkl2'}
 
+#: Structured-semilinear-only schemes (NOTES.md S3.15). These integrate the
+#: linear part ``L`` exactly and therefore require the ``linear`` accessor of a
+#: ``SemilinearRHS`` (a plain callable carries only the combined ``f``). The
+#: model advection problem is registered as a plain callable, so such a scheme
+#: cannot be run on it as registered -- the hyperbolic TVD / SSP measurement
+#: does not apply to it here. (Rosenbrock-W is *not* in this set: it falls back
+#: to the combined ``f``'s Jacobian for its frozen operator, so it runs on a
+#: plain callable.)
+SEMILINEAR_ONLY_IDENTIFIERS = {'etd2rk'}
+
 
 @dataclass(frozen=True)
 class TVDVerdict:
@@ -375,6 +385,16 @@ def classify_tvd(scheme, problem, cfls, dt_scale: float,
             verdict='not applicable (parabolic super-timestepping)',
             detail='per-step stage count (s=), no tableau; stabilises parabolic '
                    'terms, the hyperbolic TVD/SSP question does not apply')
+
+    if scheme.identifier.name in SEMILINEAR_ONLY_IDENTIFIERS:
+        return TVDVerdict(
+            scheme=scheme.name, order=scheme.order, ssp_cfl=None,
+            tvd_cfl=None, unconditional=False,
+            verdict='not applicable (structured semilinear RHS required)',
+            detail='integrates the linear part exactly via phi_k(hL), so it '
+                   'needs the `linear` accessor of a SemilinearRHS; the model '
+                   'advection problem is a plain callable, so the step cannot '
+                   'be run on it as registered')
 
     ssp_cfl = None
     tableau = scheme_tableau(scheme)

@@ -19,7 +19,7 @@ blended with a reference state", and your system object decides what that means.
 
 ### Key Features
 
-- **Multiple Integration Schemes**: Runge-Kutta up to 5th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; stabilized explicit super-timestepping for parabolic stiffness (RKC1/RKC2/RKL2, no nonlinear solver); diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA, Newmark) via a pluggable `NonlinearSolver`; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4); implicit multistep (BDF1–BDF5, fully implicit Adams-Moulton 2–4); additive (IMEX) RK (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA) and IMEX Euler, both through an explicit/implicit RHS split; and Rosenbrock-W (ROS3P: one linear solve per stage against a frozen Jacobian, no Newton loop)
+- **Multiple Integration Schemes**: Runge-Kutta up to 5th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; stabilized explicit super-timestepping for parabolic stiffness (RKC1/RKC2/RKL2, no nonlinear solver); diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA, Newmark) via a pluggable `NonlinearSolver`; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4); implicit multistep (BDF1–BDF5, fully implicit Adams-Moulton 2–4); additive (IMEX) RK (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA) and IMEX Euler, both through an explicit/implicit RHS split; Rosenbrock-W (ROS3P: one linear solve per stage against a frozen Jacobian, no Newton loop); and the first exponential integrator (ETD2RK: the linear part `L` integrated exactly through matrix-free `exp(hL)` / `phi_k(hL)` Krylov builds, the nonlinear remainder quadrature)
 - **Flexible State Management**: Custom state objects with metadata-driven field behavior (integrated, constant, copied, ephemeral, custom)
 - **Type-Safe Protocol**: Structural typing for integration systems with clear separation of concerns
 - **Fully Differentiable**: All operations preserve gradient flow for end-to-end learning
@@ -595,6 +595,7 @@ position-only Hamiltonian.
 | ARK3(2)4L[2]SA | 3 | Additive IMEX RK | L[2]-stable split (ERK + ESDIRK half); embedded (3, 2); not FSAL | no |
 | ARK4(3)6L[2]SA | 4 | Additive IMEX RK | L[2]-stable split (ERK + ESDIRK half); embedded (4, 3); not FSAL | no |
 | ROS3P | 3 | Rosenbrock-W | A-stable ($R(\infty)=1-\sqrt{3}$), not L-stable; 3 stages, 3 GMRES solves/step, frozen Jacobian; embedded (3, 2) | no |
+| ETD2RK | 2 | Exponential | L-stable for the linear part; 2 stages, 2 `N` evals/step + 3 matrix-free `phi_k(hL)` Krylov builds/step; integrates `L` exactly via `exp(hL)`/`phi_1`/`phi_2`; needs the `linear` accessor (`SemilinearRHS`) | no |
 | Adams-Bashforth 2 | 2 | Explicit multistep | One RHS evaluation after startup | no |
 | Adams-Bashforth 3 | 3 | Explicit multistep | One RHS evaluation after startup | no |
 | Adams-Bashforth 4 | 4 | Explicit multistep | One RHS evaluation after startup | no |
@@ -1104,12 +1105,16 @@ method runs.
     ARK3(2)4L[2]SA and ARK4(3)6L[2]SA are implemented (with embedded estimators and the
     `IMEXRHS` split); higher-stage ARK and Radau-type additive schemes remain planned
     (NOTES.md §3.6). The Rosenbrock-W family has one member, `ROS3P` (NOTES.md §3.14).
+    The exponential-integrator family has its first member, `ETD2RK` (order 2,
+    L-stable for the linear part; the order-3 `exprb32` is the next one) (NOTES.md
+    §3.15).
 
 Explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4), implicit multistep
 (BDF1–BDF5, fully implicit Adams-Moulton 2–4), seven DIRK schemes (Backward Euler, Implicit
 Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA), two
-additive IMEX pairs (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA), and one Rosenbrock-W scheme
-(ROS3P) *are* implemented — see the sections above. Everything still open
+additive IMEX pairs (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA), one Rosenbrock-W scheme (ROS3P), and
+the first exponential integrator (ETD2RK) *are* implemented — see the sections above.
+Everything still open
 is scoped and costed in [NOTES.md §3](NOTES.md#3-multistep-and-implicit-methods), including which
 schemes are worth adding next and what each one costs.
 
