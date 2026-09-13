@@ -19,13 +19,17 @@ order-3 bars ROS3P (706), ARK3 (793) and ESDIRK3 (988 work-units at ``dt =
   1. **Convergence** (Gaussian IC): endpoint relative ``L2`` error at ``T = 0.4``
      against the fine-``dt`` RK4 reference, on ``dt`` that divide ``T`` exactly.
      ETD2RK sits on the order-2 line, EXPRB32 on the order-3 line.
-  2. **Cost** (sine IC, ``dt = 0.02``, 20 steps): total ``rhs_evaluations`` +
-     ``gmres_iterations`` (the Phase 1 ``SolveDiagnostics``, summed over every
-     stage). For ETD2RK the ``gmres_iterations`` field carries the total
-     ``L``-matvec (Krylov) count -- a cheap ``nu·u_xx`` stencil, so the metric
+  2. **Cost** (sine IC, ``dt = 0.02``, 20 steps): the Phase 1
+     ``SolveDiagnostics`` summed over every stage -- ``rhs_evaluations`` +
+     ``gmres_iterations`` -- with three accounting notes. The explicit family
+     emits no diagnostics, so its full-f count is (stages per step) x (steps).
+     For ROS3P (W = jvp/fd) the GMRES matvecs are full Jacobian sweeps already
+     inside ``rhs_evaluations``, so total = ``rhs_evaluations`` (no
+     double-count) -- the notebook's S11 convention, shared with Panel 3. For
+     ETD2RK the Krylov count is cheap ``nu·u_xx`` L-matvecs, so its total
      *overstates* its FLOP cost; for EXPRB32 the Krylov matvecs are **full
-     Jacobian JVPs**, the same cost class as a full ``f`` evaluation, so the
-     metric is fair for it.
+     Jacobian JVPs**, the same cost class as a full ``f`` evaluation, so its
+     total is fair.
   3. **Order-3 cost gate at fixed error** (sine IC): each order-3 method runs the
      ``dt`` ladder and the table reports its total work at the *largest* ``dt``
      that reaches the target error -- the "fixed error" half of the gate, which
@@ -160,16 +164,34 @@ def main():
         # work-unit total is a fair FLOP proxy (unlike ETD2RK's cheap L-matvecs).
         ('exponential', 'EXPRB32 (jvp)', 'EXPRB32', DT_STIFF, problem.rhs, False, {}),
     ]
-    print(f"\nCost, sine IC, T = {T} (RHS evals + L-matvec Krylov iters, summed):")
+    # The explicit family emits no solver diagnostics (no solve to observe);
+    # count its full-f evaluations as (stages per step) x (steps) -- the
+    # Butcher-built schemes expose their tableau, TVD RK3 is hand-rolled with
+    # 3 stages -- the same numbers the notebook's S11 table quotes.
+    def _explicit_stages(name):
+        if name == 'TVD RK3':
+            return 3
+        return len(getIntegrator(name).function.butcherTableau.a)
+
+    # ROS3P (W = jvp/fd): every GMRES matvec is a full Jacobian sweep already
+    # counted in rhs_evaluations (the notebook's S11 convention, as in Panel 3
+    # below) -- adding g would double-count them.
+    def _in_rhs(name, kw):
+        return name == 'ROS3P' and kw.get('w', 'jvp') in ('jvp', 'fd')
+
+    print(f"\nCost, sine IC, T = {T} (RHS evals + Krylov iters, summed):")
     print(f"  {'family':13s} {'scheme':20s} {'dt':>6s} {'steps':>5s} "
-          f"{'RHS evals':>9s} {'L-matvecs':>11s} {'total':>7s} {'rel L2 err':>11s}")
+          f"{'RHS evals':>9s} {'Krylov iters':>12s} {'total':>7s} {'rel L2 err':>11s}")
     cost_data = []
     for family, label, name, dt, f, hist, kw in cost:
         times, U, r, g = run_cost(name, dt, T, f, make_sine, history=hist, **kw)
+        if family == 'explicit':
+            r = _explicit_stages(name) * (len(times) - 1)
         err = float(np.linalg.norm(U[-1] - u_sref[-1]) / np.linalg.norm(u_sref[-1]))
         cost_data.append((family, label, dt, len(times) - 1, r, g, err))
+        total = r if _in_rhs(name, kw) else r + g
         print(f"  {family:13s} {label:20s} {dt:6g} {len(times) - 1:5d} "
-              f"{r:9d} {g:11d} {r + g:7d} {err:11.3e}")
+              f"{r:9d} {g:12d} {total:7d} {err:11.3e}")
 
     # --------------------------------------------------------------------- #
     # Panel 3: the order-3 cost gate at fixed error (sine IC)                #
