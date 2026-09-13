@@ -1,32 +1,35 @@
-"""Phase 7: ETD2RK (exponential integrator) vs the implicit / IMEX / RW baselines
-on the semi-discrete viscous Burgers benchmark -> images/exponential_benchmark.png.
+"""Phase 7: the exponential family (ETD2RK, EXPRB32) vs the implicit / IMEX / RW
+baselines on the semi-discrete viscous Burgers benchmark ->
+images/exponential_benchmark.png.
 
-ETD2RK is the first of Phase 7's exponential-integrator sub-phase: it integrates
-the semilinear split ``f = L·y + N`` with the linear part ``L`` carried **exactly**
-through ``exp(hL)`` and the entire ``phi`` functions -- applied **matrix-free** as
-``phi_k(hL)v`` via a Krylov (Arnoldi) approximation, consuming the Phase 14
-``linear`` accessor -- and quadratures the nonlinear remainder ``N`` (two
-evaluations per step).
+ETD2RK (order 2) integrates the semilinear split ``f = L·y + N`` with the linear
+part ``L`` carried **exactly** through ``exp(hL)`` and the entire ``phi``
+functions -- applied **matrix-free** as ``phi_k(hL)v`` via a Krylov (Arnoldi)
+approximation, consuming the Phase 14 ``linear`` accessor -- and quadratures the
+nonlinear remainder ``N`` (two evaluations per step). EXPRB32 (order 3, with an
+embedded order-2 estimator) freezes the **full** Jacobian ``Jn`` (forward-mode AD)
+and applies every ``phi_k(hJn)`` the same matrix-free way (Hochbrueck, Ostermann
+& Schweitzer 2009, section 2.3 / 6.5 reformulation).
 
 The roadmap gate for the exponential family is "**beat the same-order cost to a
-fixed error**". For ETD2RK (order 2) only the **order** part is assessed here;
-the **cost** part is deliberately deferred to the order-3 method (exprb32) before
-the method set expands, because ETD2RK's per-step cost is dominated by three
-Krylov builds (``3m`` ``L``-matvecs) and the work-unit metric below is *not* a
-fair FLOP comparison (each Krylov ``L``-matvec is a cheap ``nu·u_xx`` application,
-whereas each JFNK ``rhs_evaluation`` is a full ``N + L`` evaluation). See the
-prose under Panel 2.
-
-Two panels:
+fixed error**", assessed here for the order-3 method (EXPRB32) against the
+order-3 bars ROS3P (706), ARK3 (793) and ESDIRK3 (988 work-units at ``dt =
+0.02``, sine IC, Panel 2):
 
   1. **Convergence** (Gaussian IC): endpoint relative ``L2`` error at ``T = 0.4``
      against the fine-``dt`` RK4 reference, on ``dt`` that divide ``T`` exactly.
-     ETD2RK sits on the order-2 line.
+     ETD2RK sits on the order-2 line, EXPRB32 on the order-3 line.
   2. **Cost** (sine IC, ``dt = 0.02``, 20 steps): total ``rhs_evaluations`` +
      ``gmres_iterations`` (the Phase 1 ``SolveDiagnostics``, summed over every
      stage). For ETD2RK the ``gmres_iterations`` field carries the total
-     ``L``-matvec (Krylov) count. The order-2 bars (BDF2, TR-BDF2) are shown for
-     reference; the cost gate is assessed at exprb32, not here.
+     ``L``-matvec (Krylov) count -- a cheap ``nu·u_xx`` stencil, so the metric
+     *overstates* its FLOP cost; for EXPRB32 the Krylov matvecs are **full
+     Jacobian JVPs**, the same cost class as a full ``f`` evaluation, so the
+     metric is fair for it.
+  3. **Order-3 cost gate at fixed error** (sine IC): each order-3 method runs the
+     ``dt`` ladder and the table reports its total work at the *largest* ``dt``
+     that reaches the target error -- the "fixed error" half of the gate, which
+     rewards a small error constant with a larger step.
 
 Run:  OMP_NUM_THREADS=4 python scripts/exponential_benchmark.py
 """
@@ -120,6 +123,7 @@ def main():
         ('ARK3(2)4L[2]SA', 'ARK3(2)4L[2]SA', [0.04, 0.02, 0.01], imex_rhs, False, {}),
         ('ROS3P (jvp)', 'ROS3P', [0.08, 0.04, 0.02, 0.01, 0.005], problem.rhs, False, {'w': 'jvp'}),
         ('ETD2RK', 'ETD2RK', [0.08, 0.04, 0.02, 0.01, 0.005], problem.rhs, False, {}),
+        ('EXPRB32 (jvp)', 'EXPRB32', [0.08, 0.04, 0.02, 0.01, 0.005], problem.rhs, False, {}),
     ]
     print(f"\nConvergence, Gaussian IC, relative L2 error at T = {T} vs RK4 (dt = 2e-3):")
     print(f"  {'scheme':18s} {'errors':>30s}   measured orders")
@@ -151,6 +155,10 @@ def main():
         ('IMEX', 'ARK4(3)6L[2]SA', 'ARK4(3)6L[2]SA', DT_STIFF, imex_rhs, False, {}),
         ('Rosenbrock-W', 'ROS3P (jvp)', 'ROS3P', DT_STIFF, problem.rhs, False, {'w': 'jvp'}),
         ('exponential', 'ETD2RK', 'ETD2RK', DT_STIFF, problem.rhs, False, {}),
+        # Registered defaults (w='jvp', f_t='fd'); its Krylov iters are full
+        # Jacobian JVPs -- the same cost class as a full f evaluation, so its
+        # work-unit total is a fair FLOP proxy (unlike ETD2RK's cheap L-matvecs).
+        ('exponential', 'EXPRB32 (jvp)', 'EXPRB32', DT_STIFF, problem.rhs, False, {}),
     ]
     print(f"\nCost, sine IC, T = {T} (RHS evals + L-matvec Krylov iters, summed):")
     print(f"  {'family':13s} {'scheme':20s} {'dt':>6s} {'steps':>5s} "
@@ -162,6 +170,46 @@ def main():
         cost_data.append((family, label, dt, len(times) - 1, r, g, err))
         print(f"  {family:13s} {label:20s} {dt:6g} {len(times) - 1:5d} "
               f"{r:9d} {g:11d} {r + g:7d} {err:11.3e}")
+
+    # --------------------------------------------------------------------- #
+    # Panel 3: the order-3 cost gate at fixed error (sine IC)                #
+    # --------------------------------------------------------------------- #
+    # The gate's "fixed error" half: each order-3 method may use the LARGEST
+    # dt that reaches the target error (order 3 + a small error constant
+    # earns a larger step), and the work at that dt is compared. The bars are
+    # the Panel-2 work-unit totals at dt = 0.02.
+    E_TARGET = 1e-3
+    GATE_DTS = [0.08, 0.04, 0.02, 0.01, 0.005, 0.0025]  # coarsest first
+    # (label, name, f, kw, matvecs_already_in_rhs): for ROS3P (W = jvp) every
+    # GMRES matvec is a full Jacobian sweep and is already counted in
+    # `rhs_evaluations`, so `total = rhs_evals` (adding `gmres_iterations`
+    # would double-count them) -- the notebook's S11 convention. For the other
+    # schemes the Krylov iters are separate operator applications.
+    gate_schemes = [
+        ('ROS3P (jvp)', 'ROS3P', problem.rhs, {'w': 'jvp'}, True),
+        ('ARK3(2)4L[2]SA', 'ARK3(2)4L[2]SA', imex_rhs, {}, False),
+        ('ESDIRK3(2)4L[2]SA', 'ESDIRK3(2)4L[2]SA', problem.rhs, {}, False),
+        ('EXPRB32 (jvp)', 'EXPRB32', problem.rhs, {}, False),
+    ]
+    print(f"\nOrder-3 cost gate, sine IC: total work at the largest dt with "
+          f"rel L2 err <= {E_TARGET:g}:")
+    print(f"  {'scheme':18s} {'dt':>6s} {'steps':>5s} {'rel L2 err':>11s} "
+          f"{'RHS evals':>9s} {'Krylov iters':>12s} {'total':>7s}")
+    for label, name, f, kw, in_rhs in gate_schemes:
+        best = None
+        for dt in GATE_DTS:
+            times, U, r, g = run_cost(name, dt, T, f, make_sine, **kw)
+            err = float(np.linalg.norm(U[-1] - u_sref[-1]) / np.linalg.norm(u_sref[-1]))
+            if err <= E_TARGET:
+                best = (dt, len(times) - 1, err, r, g, r if in_rhs else r + g)
+                break  # GATE_DTS is coarsest-first: first hit = largest dt
+        if best is None:
+            print(f"  {label:18s} {'-':>6s} {'-':>5s} {'(not reached)':>11s} "
+                  f"{'-':>9s} {'-':>12s} {'-':>7s}")
+        else:
+            dt, steps, err, r, g, tot = best
+            print(f"  {label:18s} {dt:6g} {steps:5d} {err:11.3e} "
+                  f"{r:9d} {g:12d} {tot:7d}")
 
     # --------------------------------------------------------------------- #
     # Figure                                                                  #
@@ -181,7 +229,8 @@ def main():
         ax1.text(x0 * 1.12, ys[1] * 1.35, f'order {p}', fontsize=8, c='0.5')
     ax1.set_xlabel('dt')
     ax1.set_ylabel('relative L2 error at T = 0.4 (Gaussian IC)')
-    ax1.set_title('Convergence vs the RK4 (dt = 2e-3) reference\n(ETD2RK sits on the order-2 line)')
+    ax1.set_title('Convergence vs the RK4 (dt = 2e-3) reference\n'
+                  '(ETD2RK on the order-2 line, EXPRB32 on the order-3 line)')
     ax1.legend(fontsize=7)
     ax1.grid(True, which='both', alpha=0.3)
 
@@ -195,19 +244,20 @@ def main():
     x = np.arange(len(labels))
     width = 0.4
     ax2.bar(x - width / 2, rhs, width, color=[fam_colors[c[0]] for c in cost_data],
-            edgecolor='white', linewidth=0.5, label='RHS (N) evals')
+            edgecolor='white', linewidth=0.5, label='full-f / stage evals')
     ax2.bar(x + width / 2, krylov, width, color='0.75', edgecolor='white',
-            linewidth=0.5, label='L-matvec / GMRES iters')
+            linewidth=0.5, label='Krylov iters (GMRES / JVP / L-matvec)')
     ax2.set_yscale('log')
     ax2.set_xticks(x)
     ax2.set_xticklabels(labels, rotation=40, ha='right', fontsize=7)
     ax2.set_ylabel('count (log scale)')
     ax2.set_title(f'Cost to T = 0.4, sine IC (stiff families at dt = {DT_STIFF:g};\n'
-                  f'ETD2RK "iters" are Krylov L-matvecs, a cheaper op than a full N+L eval)')
+                  f'EXPRB32 "iters" are full-Jacobian JVPs -- a fair work unit; '
+                  f'ETD2RK "L-matvecs" are cheap nu*u_xx stencils)')
     ax2.grid(axis='y', alpha=0.4, which='both')
     ax2.legend(fontsize=8)
 
-    fig.suptitle('Phase 7: ETD2RK (exponential integrator) on viscous Burgers '
+    fig.suptitle('Phase 7: exponential family (ETD2RK, EXPRB32) on viscous Burgers '
                  '(cost = SolveDiagnostics summed over every stage)',
                  fontsize=12)
     fig.tight_layout(rect=[0, 0, 1, 0.95])

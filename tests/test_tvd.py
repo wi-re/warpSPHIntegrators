@@ -349,6 +349,13 @@ EXPECTED_VERDICTS = {
     # integrate the linear part exactly, but the model advection problem is a
     # plain callable, so the TVD/SSP measurement does not apply to it here.
     'ETD2RK': (None, None, False),
+    # Exponential Rosenbrock: no tableau (so no SSP coefficient), and -- unlike
+    # ETD2RK -- it runs on the plain-callable advection problem (it freezes the
+    # FULL right-hand-side Jacobian, no `linear` accessor needed). Advection is
+    # linear, so the step is the exact per-mode exponential (L-stable: the
+    # amplification is e^{-h lambda} per mode, a contraction at every CFL) and
+    # the sweep finds no TV increase up to the CFL cap.
+    'EXPRB32': (None, 5.0, True),
 }
 
 CFLS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 5.0]

@@ -10,6 +10,7 @@ import math
 import pytest
 import torch
 
+from conftest import EXACT_ON_LINEAR_PROBLEMS
 from warpSPHIntegrators import getIntegrator, get_reference_state, testing
 from warpSPHIntegrators.butcher import getButcherTableau
 
@@ -22,7 +23,11 @@ EMBEDDED = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)', 'Cash-Karp 5(4)',
             'ARK3(2)4L[2]SA', 'ARK4(3)6L[2]SA',
             # Rosenbrock-W carries the built-in order-2 embedded estimate
             # y - y_hat = tau (K1 - K2) / 3 (local error O(dt^3)).
-            'ROS3P']
+            'ROS3P',
+            # Exponential Rosenbrock carries the embedded order-2 estimate: the
+            # stage U2 (exp-Rosenbrock-Euler), so the estimate is the corrector
+            # correction y - y_hat = 2 h phi_3(hJn) D2 (local error O(dt^3)).
+            'EXPRB32']
 
 
 @pytest.mark.parametrize('name', EMBEDDED)
@@ -45,11 +50,14 @@ def test_error_estimate_has_the_embedded_order(name):
     there the frozen operator is the constant Jacobian ``A`` and the stage-2 right
     hand side ``A(z_n + tau K1) - tau A K1`` collapses to ``A z_n`` -- stage 1's --
     so ``K1 == K2`` and the estimate ``tau (K1 - K2) / 3`` is exactly zero (0/0 here).
-    The non-autonomous forced oscillator is the smallest problem where the pair is
-    active, so it is the one ROS3P is measured on.
+    EXPRB32's pair degenerates the same way: on a linear autonomous problem the
+    nonlinear remainder ``D2 = f - f_n - Jn (u - un)`` vanishes, so the estimate
+    ``2 h phi_3(hJn) D2`` is exactly zero. The non-autonomous forced oscillator is
+    the smallest problem where the pair is active, so it is the one both are
+    measured on.
     """
     s = getIntegrator(name)
-    prob_name = 'forced' if name == 'ROS3P' else 'oscillator'
+    prob_name = 'forced' if name in ('ROS3P', 'EXPRB32') else 'oscillator'
     prob = testing.PROBLEMS[prob_name]()
 
     dts = [0.1, 0.05, 0.025, 0.0125]
@@ -108,7 +116,11 @@ def test_error_estimate_is_the_right_size(name):
 def test_propagated_solution_is_the_high_order_branch(name):
     """b[0] propagates. Returning b[-1] instead would silently cost a whole order."""
     s = getIntegrator(name)
-    order, _ = testing.convergence(s, testing.PROBLEMS['oscillator'](),
+    # EXPRB32 is exact on the linear autonomous oscillator (roundoff-floor error,
+    # no measurable order); the forced problem is the smallest one where its order
+    # 3 shows up.
+    prob_name = 'forced' if name in EXACT_ON_LINEAR_PROBLEMS else 'oscillator'
+    order, _ = testing.convergence(s, testing.PROBLEMS[prob_name](),
                                    testing.default_step_sizes(), 2.0)
     assert order >= s.order - 0.15
 

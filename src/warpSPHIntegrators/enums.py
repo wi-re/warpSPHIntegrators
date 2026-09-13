@@ -84,3 +84,9 @@ class IntegrationSchemeType(Enum):
     # exactly via the matrix exponential / phi_k, matrix-free through a Krylov
     # approximation of phi_k(hL)v. Not stiffly accurate, so no first-stage reuse.
     etd2rk = 56
+    # Exponential Rosenbrock (NOTES.md S3.16, Phase 7): order 3 with an embedded
+    # order-2 estimator; freezes the FULL right-hand-side Jacobian (no semilinear
+    # split needed), phi_k(hJn)v matrix-free through a Krylov approximation.
+    # Exact on linear problems, L-stable for the linear part; not stiffly
+    # accurate, so no first-stage reuse.
+    exprb32 = 57

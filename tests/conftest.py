@@ -23,6 +23,22 @@ NEEDS_STAGE_COUNT = {'RKC1', 'RKC2', 'RKL2'}
 #: callable.)
 NEEDS_SEMILINEAR_RHS = {'ETD2RK'}
 
+#: Schemes whose step is the *exact* exponential flow on a linear autonomous
+#: right-hand side (NOTES.md S3.16, Phase 7). EXPRB32 freezes the full Jacobian
+#: `Jn`; on a linear autonomous problem `Jn` is constant and the nonlinear
+#: remainder `D2 = f - f_n - Jn (u - un)` vanishes, so the step reduces to
+#: `exp(h Jn)` applied exactly (the two `phi`-Krylov builds exhaust the small
+#: Krylov space and are exact to rounding). The measured error is at the
+#: roundoff floor and no convergence order is measurable there
+#: (`measured_order` returns None) -- the order is pinned on the non-autonomous
+#: (`forced`), the nonlinear (`kepler`), and the semilinear canonical
+#: (viscous Burgers, in tests/test_exponential.py) problems instead.
+EXACT_ON_LINEAR_PROBLEMS = {'EXPRB32'}
+
+#: The generic problems that are linear and autonomous (so
+#: `EXACT_ON_LINEAR_PROBLEMS` shows sub-noise error on them).
+LINEAR_AUTONOMOUS_PROBLEMS = {'oscillator', 'damped'}
+
 
 def _scheme_params():
     params = []

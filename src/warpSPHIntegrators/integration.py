@@ -48,7 +48,7 @@ from .bdf import BDF1, BDF2, BDF3, BDF4, BDF5
 from .imex import IMEXEuler
 from .rkc import RKC1, RKC2, RKL2
 from .rosenbrock import integrateROS3P
-from .exponential import integrateETD2RK
+from .exponential import integrateETD2RK, integrateEXPRB32
 from .reuse import step_reuse_analysis, step_reuse_order, supports_step_reuse, is_fsal
 
 semiImplicitEuler = lambda state, dt, f, *args, **kwargs: integrateSemiImplicitEuler(state, dt, f, *args, **kwargs)
@@ -260,6 +260,23 @@ IntegrationSchemes.append(IntegrationScheme(
 # callable has no linear part and is rejected before the solve.
 IntegrationSchemes.append(IntegrationScheme(
     integrateETD2RK, 'ETD2RK', IntegrationSchemeType.etd2rk, 2, True, True,
+    implicit=False, steps=1, stiffly_accurate=False, stability='L'))
+
+
+# ---- Exponential Rosenbrock (NOTES.md S3.16, Phase 7) ---------------------- #
+# EXPRB32: a two-stage, order-3 exponential Rosenbrock method (Hochbrueck,
+# Ostermann & Schweitzer 2009) with an embedded order-2 estimator. Where ETD2RK
+# needs the semilinear split f = L·y + N, it freezes the FULL right-hand-side
+# Jacobian Jn = Df(tn, yn) and carries the stiffness through the phi_k(hJn)
+# functions, applied matrix-free via Krylov (two builds per step, three with the
+# non-autonomous f_t term). It is *explicit* in the stage sense (Jn is never
+# inverted), exact on linear problems, L-stable for the linear part (scalar
+# stability function e^{h lambda}), and *not* stiffly accurate (the stage U2 is
+# not the step), so priorStep is rejected. It runs on plain callables -- no
+# `linear` part is needed; the frozen operator is selected with `w=` ('jvp'
+# exact / 'fd' finite-difference) and the time derivative with `f_t=`.
+IntegrationSchemes.append(IntegrationScheme(
+    integrateEXPRB32, 'EXPRB32', IntegrationSchemeType.exprb32, 3, True, True,
     implicit=False, steps=1, stiffly_accurate=False, stability='L'))
 
 

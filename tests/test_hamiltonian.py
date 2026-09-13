@@ -15,7 +15,7 @@ O(dt^p) band however long you integrate, while a dissipative one accumulates.
 import pytest
 import torch
 
-from conftest import NEEDS_SEMILINEAR_RHS, NEEDS_STAGE_COUNT
+from conftest import EXACT_ON_LINEAR_PROBLEMS, NEEDS_SEMILINEAR_RHS, NEEDS_STAGE_COUNT
 from warpSPHIntegrators import JFNKSolver, getIntegrator, get_reference_state, testing
 from warpSPHIntegrators.integration import IntegrationSchemes
 
@@ -131,6 +131,11 @@ def test_every_scheme_has_the_expected_linear_oscillator_area_property(scheme):
     if scheme.name in NEEDS_SEMILINEAR_RHS:
         pytest.skip(f'{scheme.name} needs a SemilinearRHS (the `linear` part); '
                     f'the oscillator is a plain callable; see tests/test_exponential.py')
+    if scheme.name in EXACT_ON_LINEAR_PROBLEMS:
+        pytest.skip(f'{scheme.name} is exact on the linear oscillator (the step is the '
+                    f'exact exponential flow, area-preserving trivially, so the area '
+                    f'defect is at rounding); its non-symplectic character on nonlinear '
+                    f'problems is pinned by the dissipation-flag kepler test')
     solver = None
     if scheme.name in {'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)', 'Newmark'}:
         solver = JFNKSolver(tol=1e-12, gmres_tol=1e-12, newton_tol=1e-12, fd_eps=1e-6)

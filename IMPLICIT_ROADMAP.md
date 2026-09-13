@@ -205,20 +205,21 @@ Validation gate:
 
 ## Phase 7: Alternative Stiff Families
 
-**Status: Rosenbrock-W (ROS3P) landed 2026-09-11; ETD2RK (exponential) landed
-2026-09-12 (order 2, matrix-free `phi_k` Krylov, gradient in-scope for the
-self-adjoint-`L` benchmark; the exponential *cost* gate is open and assessed at
-exprb32) — exprb32 (order 3) is the next method in the open exponential
-sub-phase.** Phase 14's structured `RHS` interface (landed 2026-09-10)
-unblocked this phase. The original gate was "a downstream RHS that splits into a
-linear stiff operator plus a mild nonlinear remainder." Phase 14's structured `RHS`
-interface *is* that split, expressed as a first-class problem description
-(`linear` / `nonlinear` accessors), and the viscous Burgers test problem gives both
-families the standard semilinear benchmark they are conventionally demonstrated on.
-Rosenbrock-W (ROS3P) is landed, and the exponential sub-phase is underway: the
-matrix-free `phi_k(hL)v` build (the largest new piece) and ETD2RK are landed,
-leaving the family's cost gate (assessed at exprb32) and the order-3 exprb32
-method.
+**Status: done — all three methods landed: Rosenbrock-W (ROS3P) 2026-09-11,
+ETD2RK (exponential, order 2) 2026-09-12, and EXPRB32 (exponential Rosenbrock,
+order 3) 2026-09-13, which closes the family's cost gate: at fixed error
+(rel L2 ≤ 1e-3, sine IC) EXPRB32 is the cheapest order-3 method on the work-unit
+metric (640 < ROS3P 706 < ESDIRK3 715 < ARK3 793, `scripts/exponential_benchmark.py`
+gate table, NOTES S3.16).** Phase 14's structured `RHS` interface (landed
+2026-09-10) unblocked this phase. The original gate was "a downstream RHS that
+splits into a linear stiff operator plus a mild nonlinear remainder." Phase 14's
+structured `RHS` interface *is* that split, expressed as a first-class problem
+description (`linear` / `nonlinear` accessors), and the viscous Burgers test
+problem gives both families the standard semilinear benchmark they are
+conventionally demonstrated on. Rosenbrock-W (ROS3P) is landed, and the
+exponential sub-phase is complete: the matrix-free `phi_k` build (the largest new
+piece), ETD2RK (order 2), and EXPRB32 (order 3, the family's cost-gate carrier —
+full frozen Jacobian, no semilinear split needed) are all landed.
 
 The efficiency argument is unchanged and still governs the validation gate:
 Rosenbrock-W trades the nonlinear solve for one *linear* solve per stage, so it only
@@ -283,8 +284,17 @@ comparison plugs into.
   free, Krylov) and quadratures `N` (two evaluations per step). Measured **order 2**
   on viscous Burgers; **exact** on a purely linear problem (`N = 0`, error at the
   Krylov tolerance, not `O(h^2)`); L-stable (a stiff linear mode is damped by
-  `exp(-rate·h)`, killed, not merely damped as in the Rosenbrock case). exprb32
-  (order 3) is the next method in this sub-phase.)
+  `exp(-rate·h)`, killed, not merely damped as in the Rosenbrock case).)
+  (Landed 2026-09-13: **EXPRB32** — the order-3 exponential Rosenbrock method
+  (Hochbrueck, Ostermann & Schweitzer, *SIAM J. Numer. Anal.* 47(1) 2009 786–803,
+  `literature/080717717.pdf`), frozen-`Jn` reformulation with the embedded order-2
+  estimate `û = U2`. Freezes the **full** Jacobian (forward-mode AD, `w='jvp'`/`'fd'`;
+  deliberately no `w='linear'` — order 1 on a nonlinear problem) and applies every
+  `phi_k(h·Jn)` matrix-free through the same `krylov_phi` machinery, so it runs on
+  plain callables (no semilinear split needed). Measured **order 3** on viscous
+  Burgers (`[2.96, 2.99, 2.99, 2.99]`); exact on linear RHS; L-stable; gradient
+  O(dt²) on semilinear (frozen-`Jn`, one power better than the Rosenbrock frozen-`W`
+  O(dt)). Clears the family's cost gate below.)
 - [x] Gradient path through the `phi_k` Krylov approximation.
   (Landed 2026-09-12: because `L` is *constant* (independent of `y`), the three
   matrix-function actions are constant linear maps, each re-attached with its
@@ -313,17 +323,21 @@ Validation gate:
   (Landed 2026-09-12: ETD2RK measured **order 2** on viscous Burgers — the order
   part of the gate. The *cost* half is assessed separately below, at exprb32,
   before the exponential method set expands.)
-- [ ] ... and beat the same-order cost, before the exponential method set expands.
-  (Open — deferred to **exprb32** (order 3), the method that should carry the
-  family's cost case. ETD2RK's order-2 cost is **not** competitive on the
-  work-unit metric: at `dt = 0.02` it is 1782 work-units (40 `N` evals + 1742
-  `L`-matvec Krylov iters, the three per-step builds each running to the full
-  `m = 30` because `||dt·L|| ~= 3.3` does not drive the Arnoldi residual below
-  `1e-10` early) versus the order-2 bars BDF2 393 / TR-BDF2 575. **FLOP caveat:**
-  each `L`-matvec is a cheap `nu·u_xx` stencil, whereas a JFNK `rhs_evaluation` /
-  GMRES iteration is a full `N + L` (Jacobian-vector) evaluation, so the
-  work-unit metric overstates ETD2RK's true cost — the fair comparison is deferred
-  to exprb32. NOTES S3.15.)
+- [x] ... and beat the same-order cost, before the exponential method set expands.
+  (Landed 2026-09-13 with **EXPRB32**: at fixed error — the largest `dt` reaching
+  rel L2 ≤ 1e-3 on the sine-IC benchmark — EXPRB32 (`w='jvp'`, registered defaults)
+  is the cheapest order-3 method on the work-unit metric: **640** (10 steps at
+  `dt = 0.04`: 40 full-`f` evals + 600 Krylov iters) < ROS3P (jvp) **706** < ESDIRK3
+  **715** < ARK3 **793**, and it lands the smallest error of the four (1.2e-4).
+  The metric is fair in cost class: EXPRB32's Krylov matvecs are **full Jacobian
+  JVPs** (forward-mode AD sweeps through the full RHS) — the same class as a full
+  `f` evaluation and as ROS3P's frozen-Jacobian GMRES sweeps — in contrast to
+  ETD2RK's cheap `nu·u_xx` `L`-matvecs, which is why the order-2 comparison was
+  deferred (ETD2RK's 1782 work-units at `dt = 0.02` overstate its FLOP cost;
+  NOTES S3.15). Caveats: the 9% margin over ROS3P is a same-class work-unit win,
+  not a FLOP blowout, and at the *same* `dt = 0.02` EXPRB32 is the most expensive
+  stiff method (1280) — the gate is the fixed-error one, and EXPRB32's ~13x smaller
+  order-3 error constant is what turns that around. NOTES S3.16.)
 
 ## Phase 8: Stability and Nonlinear Benchmark Suite
 
@@ -735,7 +749,7 @@ Validation gate:
 12. [ ] Phase 11 adaptive step control, once the multistep-vs-variable-`dt` contract is decided.
 13. [x] Phase 12 missing families, RKC/RKL first: it is the one candidate that directly challenges the Phase 8 cost baseline on a benchmark that already exists. (Landed 2026-09-11: RKC1 / RKC2 / RKL2 in `rkc.py` — the published recurrences, per-step stage count from `stage_count(dt·|λ_max|)`, orders 1 / 2 / 2 verified on the semi-discrete diffusion, stability pinned at the K(s) boundary; `scripts/rkc_benchmark.py` reaches max error 1e-2 at n = 16 / 32 / 64 with fewer total RHS evaluations than BE / BDF2 / TR-BDF2 under the default JFNK, and exposes BDF2's solver-limited practical stability there; `tests/test_rkc.py` (35 tests), NOTES §3.13; suite 2365 → 2400.)
 14. [ ] Phase 6 coupled implicit RK — de-gated 2026-09-10 (Gauss-Legendre is the library's only symplectic method above order 2, Radau IIA its only no-compromise stiff method), no longer waiting on a downstream. Needs the `BlockState` product type; then it inherits the Phase 1/2/9 machinery unchanged.
-15. [ ] Phase 7 Rosenbrock-W (outright) then exponential integrators. (Rosenbrock-W **landed 2026-09-11**: ROS3P in `rosenbrock.py` — a 3-stage order-3 A-stable (not L) Rosenbrock-W method (Lang & Verwer, *BIT* 41(4) 2001), `w='jvp'`/`'fd'`/`'linear'` frozen-Jacobian selector, `f_t='fd'` one-sided time derivative, frozen-`W` adjoint (three transposed `gmres` solves + the `W^T` VJP). Gate cleared on viscous Burgers: order 3 measured for `jvp`/`fd`, and ROS3P (`w='jvp'`) is the cheapest order-3 total work-unit cost (706 < ARK3 793 < ESDIRK3 988, `viscous_burgers_demo.ipynb` §10) — with the caveat that the additive ARK3 split is cheaper per iteration in FLOPs (linear-operator matvec). `tests/test_rosenbrock.py` (18 tests), NOTES §3.14. **Exponential integrators remain the next sub-phase** (the matrix-free `phi_k(hL)v` build is the largest new piece).)
+15. [x] Phase 7 Rosenbrock-W (outright) then exponential integrators. (Rosenbrock-W **landed 2026-09-11**: ROS3P in `rosenbrock.py` — a 3-stage order-3 A-stable (not L) Rosenbrock-W method (Lang & Verwer, *BIT* 41(4) 2001), `w='jvp'`/`'fd'`/`'linear'` frozen-Jacobian selector, `f_t='fd'` one-sided time derivative, frozen-`W` adjoint (three transposed `gmres` solves + the `W^T` VJP). Gate cleared on viscous Burgers: order 3 measured for `jvp`/`fd`, and ROS3P (`w='jvp'`) is the cheapest order-3 total work-unit cost at `dt = 0.02` (706 < ARK3 793 < ESDIRK3 988, `viscous_burgers_demo.ipynb` §11) — with the caveat that the additive ARK3 split is cheaper per iteration in FLOPs (linear-operator matvec). `tests/test_rosenbrock.py` (18 tests), NOTES §3.14. **Exponential integrators landed 2026-09-12/13**: the matrix-free `krylov_phi` build + ETD2RK (order 2, exact on linear, L-stable; NOTES §3.15) and EXPRB32 (order 3, L-stable, embedded (3, 2) estimate, full frozen Jacobian via forward-mode AD, no semilinear split needed; NOTES §3.16), which closes the family's cost gate: at fixed error (rel L2 ≤ 1e-3, sine IC, largest qualifying `dt`) EXPRB32 is the cheapest order-3 method on the work-unit metric — 640 < ROS3P 706 < ESDIRK3 715 < ARK3 793, with the smallest error of the four (1.2e-4) and a fair cost class (full-Jacobian JVP Krylov matvecs, unlike ETD2RK's cheap `L`-matvecs). `tests/test_exponential.py` (20 tests), suite → 2504 passed / 344 skipped (2026-09-13).)
 
 ## Completion Definition
 

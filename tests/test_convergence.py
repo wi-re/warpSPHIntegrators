@@ -9,7 +9,8 @@ and `kepler` adds a nonlinear problem that a linear one cannot stand in for.
 
 import pytest
 
-from conftest import ORDER_TOLERANCE, order_of
+from conftest import (EXACT_ON_LINEAR_PROBLEMS, LINEAR_AUTONOMOUS_PROBLEMS,
+                      ORDER_TOLERANCE, order_of)
 
 
 #: Splitting integrators, whose registered order holds only for a *separable*
@@ -31,6 +32,11 @@ SEPARABLE_HAMILTONIAN_ONLY = {'Leap Frog', 'Velocity Verlet', 'PEFRL', 'VEFRL'}
 
 @pytest.mark.parametrize('problem_name', ['oscillator', 'forced', 'kepler'])
 def test_scheme_achieves_registered_order(scheme, problem_name, step_sizes):
+    if scheme.name in EXACT_ON_LINEAR_PROBLEMS and problem_name in LINEAR_AUTONOMOUS_PROBLEMS:
+        pytest.skip(f'{scheme.name} is exact on linear autonomous problems (the step is '
+                    f'the exact exponential flow; the error is at the roundoff floor, so '
+                    f'no order is measurable); its order is pinned on forced / kepler / '
+                    f'viscous Burgers instead')
     order, errors = order_of(scheme, problem_name, step_sizes)
     assert order is not None, f'{scheme.name} produced no usable errors on {problem_name}: {errors}'
     assert order >= scheme.order - ORDER_TOLERANCE, (
@@ -58,6 +64,10 @@ def test_splitting_schemes_need_a_separable_force(scheme, step_sizes):
     Every other scheme must still reach its registered order, so this doubles as a
     check that nothing else quietly assumes the force sees position only.
     """
+    if scheme.name in EXACT_ON_LINEAR_PROBLEMS:
+        pytest.skip(f'{scheme.name} is exact on linear autonomous problems (damped is '
+                    f'one; the error is at the roundoff floor, so no order is '
+                    f'measurable); pinned on forced / kepler / viscous Burgers instead')
     order, errors = order_of(scheme, 'damped', step_sizes)
     assert order is not None
     if scheme.name in SEPARABLE_HAMILTONIAN_ONLY:

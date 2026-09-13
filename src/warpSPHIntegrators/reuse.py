@@ -100,6 +100,10 @@ HANDROLLED_REUSE = {
     # it is not stiffly accurate (the last stage is not y^{n+1}), so there is no
     # ready-made derivative to splice in as a first stage.
     IntegrationSchemeType.etd2rk: (None, 'ETD2RK does not implement first-stage reuse (it is not stiffly accurate)'),
+    # EXPRB32: a two-stage exponential Rosenbrock method; it is not stiffly
+    # accurate (the stage U2 is not y^{n+1} -- the corrector corrects it), so
+    # there is no ready-made derivative to splice in as a first stage.
+    IntegrationSchemeType.exprb32: (None, 'EXPRB32 does not implement first-stage reuse (it is not stiffly accurate)'),
 }
 
 _TOL = 1e-12
