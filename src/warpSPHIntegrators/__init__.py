@@ -60,6 +60,7 @@ from .ark import ARK324L2SA, ARK436L2SA
 from .rkc import RKC1, RKC2, RKL2, stage_count
 from .rosenbrock import integrateROS3P as ROS3P
 from .exponential import integrateETD2RK as ETD2RK, integrateEXPRB32 as EXPRB32
+from .adaptive import estimate_error_norm, propose_dt, dormand_prince_dense_output
 
 from .util import IntegrationSchemeType
 
@@ -138,6 +139,9 @@ __all__ = [
     "ROS3P",
     "ETD2RK",
     "EXPRB32",
+    "estimate_error_norm",
+    "propose_dt",
+    "dormand_prince_dense_output",
     "StateBlend",
     "ComponentUpdateSpec",
     "PositionUpdateSpec",

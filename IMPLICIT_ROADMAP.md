@@ -6,7 +6,7 @@ This roadmap covers the remaining implicit, stiff, IMEX, stability, RHS-interfac
 
 Phases 6 (coupled fully implicit RK) and 7 (Rosenbrock-W / exponential) were de-gated 2026-09-10: they were previously "needs a downstream", but Phase 6 fills capability gaps a general ODE library has on its own (only symplectic method above order 2; only no-compromise stiff method), and Phase 7's missing consumer — a linear/nonlinear RHS split — is now scoped as Phase 14, the structured RHS interface.
 
-Adaptive timestep control *was* explicitly out of scope, on the grounds that it belongs to a problem-specific driving loop and only applies where a meaningful local error estimator is available. The second half of that reasoning has since expired: eight registered schemes now carry embedded estimators and `IntegrationResult.error` has no consumer at all. It is scoped as Phase 11 below, together with the `StepHistory`-invalidation problem that is its actual blocker.
+Adaptive timestep control *was* explicitly out of scope, on the grounds that it belongs to a problem-specific driving loop and only applies where a meaningful local error estimator is available. The second half of that reasoning has since expired: ten registered schemes now carry embedded estimators (the original "eight" predates ROS3P and EXPRB32) and `IntegrationResult.error` went from having no consumer at all to being consumed by Phase 11's `estimate_error_norm` / `propose_dt` helpers (landed 2026-09-14). The `StepHistory`-invalidation problem that was its actual blocker was resolved by decision: multistep is refused explicitly (NOTES §3.17).
 
 ## Current Baseline
 
@@ -24,6 +24,7 @@ Adaptive timestep control *was* explicitly out of scope, on the grounds that it 
 - [x] Gradient-through-step coverage for every registered scheme, implicit ones differentiated by the implicit function theorem rather than by unrolling the Newton/GMRES iteration (`tests/test_gradients.py`, Phase 9).
 - [x] First-stage reuse for the stiffly accurate DIRK tableaus with an explicit first stage — Trapezoidal, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA — lossless, saving one (cheap, explicit) RHS evaluation per step (`tests/test_dirk.py`, Phase 10).
 - [x] `viscous_burgers_demo.ipynb` — the Phase 14 viscous-Burgers semilinear benchmark (n=64, ν=0.01, T=0.4) run through every registered family (explicit / JFNK-closed implicit / IMEX) with space–time shock-formation plots (x horizontal, t vertical), measured convergence orders against an RK4 (dt=2e-3) semi-discrete reference, and a Phase 1-diagnostics cost table (RHS evaluations + GMRES iterations per run).
+- [x] Adaptive step control as helpers — `estimate_error_norm` / `propose_dt` (predictive controller, safety 0.9, clamp [0.2, 5.0]) with the caller-driven accept/reject loop, and DP5 dense output (Shampine 1986's quartic continuous extension, exact at the step endpoints, `O(dt^5)` interior); multistep refused explicitly (`StepHistory` restarts on any `dt` change) (`tests/test_adaptive.py`, `images/adaptive_benchmark.png`, NOTES §3.17, Phase 11).
 
 ## Phase 0: Keep the Public Story Accurate
 
@@ -469,41 +470,72 @@ Validation gate:
 
 ## Phase 11: Adaptive Step Control and Dense Output
 
-**Why this is no longer "out of scope".** This roadmap's header defers adaptive `dt` to
+**Why this was no longer "out of scope".** This roadmap's header deferred adaptive `dt` to
 "a problem-specific driving loop", which was the right call when almost nothing had an
-error estimator. Eight schemes now do — Bogacki-Shampine 3(2), Dormand-Prince 5(4),
-Cash-Karp 5(4), TR-BDF2, both ESDIRKs and both ARKs — and `IntegrationResult.error` is
-produced by all of them and **read by nothing**. The controller is the missing consumer,
-not a missing estimator.
+error estimator. Eight schemes then did — Bogacki-Shampine 3(2), Dormand-Prince 5(4),
+Cash-Karp 5(4), TR-BDF2, both ESDIRKs and both ARKs (ten today, with ROS3P and EXPRB32) —
+and `IntegrationResult.error` was produced by all of them and **read by nothing**. The
+controller was the missing consumer, not a missing estimator.
 
-The genuinely hard part is not the controller. It is that `StepHistory` invalidates on
+The genuinely hard part was not the controller. It was that `StepHistory` invalidates on
 any `dt` change, so adaptive stepping and the entire multistep family (BDF1-5, AM2-4,
-AB2-5, ABM2-4) are mutually exclusive today. That interaction is the real blocker and
-should be decided before any controller lands.
+AB2-5, ABM2-4) were mutually exclusive. That interaction was the real blocker and was
+decided before anything landed: **refuse the combination explicitly** (below), which
+removed the blocker without the variable-step coefficient work.
 
-- [ ] Add a PI (or predictive) step-size controller with the standard safety factor,
-  min/max growth clamps, and a rejection path that re-runs the step.
-- [ ] Decide the contract: does the driver own the loop, or does the library expose a
-  `propose_dt(error, dt, order)` helper the caller drives? The latter matches this
-  library's existing "no solver contract without a downstream" caution (NOTES §3.8).
-- [ ] Decide what adaptive `dt` means for multistep. Options: refuse the combination
-  explicitly (honest, cheap), or implement variable-step BDF/Adams coefficients
-  (correct, substantially more work, and the route CVODE/LSODA take).
-- [ ] Add dense output / interpolants, starting with Dormand-Prince's published
-  formula. Needed for output at fixed times under a varying `dt`, and for event
-  location. Nothing in the library interpolates within a step today.
-- [?] **Error-norm convention.** `fields.state_norm`'s weighted-RMS ("< 1.0 means
-  converged") is already the DIRK driver's convention; a controller should reuse it
-  rather than introduce a second scale.
+- [x] Add a PI (or predictive) step-size controller with the standard safety factor,
+  min/max growth clamps, and a rejection path that re-runs the step. — Predictive:
+  `propose_dt(error_norm, dt, order, target=1.0, safety=0.9, growth_min=0.2,
+  growth_max=5.0)` = `dt * clamp(safety * (target/error_norm)**(1/order),
+  growth_min, growth_max)`, zero error → `dt * growth_max`. The re-run path is
+  loop-side, and the demo loops apply the SciPy convention "never grow on a
+  rejection".
+- [x] Decide the contract: does the driver own the loop, or does the library expose a
+  `propose_dt(error, dt, order)` helper the caller drives? — **Helper only**: the
+  library exposes `estimate_error_norm` + `propose_dt` and the caller drives the
+  accept/reject loop, per the "no solver contract without a downstream" caution
+  (NOTES §3.8). The demo loop lives in `scripts/adaptive_benchmark.py` and
+  `tests/test_adaptive.py`, not in the library.
+- [x] Decide what adaptive `dt` means for multistep. — **Refuse explicitly**
+  (the honest-and-cheap option): `estimate_error_norm` raises for the multistep
+  family, which emits no estimate and would restart its `StepHistory` on every
+  accepted step anyway (`tests/test_groundwork.py::test_step_history_restarts_on_dt_change`).
+  Variable-step BDF/Adams coefficients (the CVODE/LSODA route) remain the future
+  work if a downstream asks for them.
+- [x] Add dense output / interpolants, starting with Dormand-Prince's published
+  formula. — `dormand_prince_dense_output(state, stages, dt, theta)`: Shampine's
+  1986 quartic continuous extension (optimum `c_6`, as implemented in SciPy's
+  `RK45`), transcribed verbatim from the local SciPy 1.18.0 source. Exact at both
+  step endpoints (`θ = 1` bit-for-bit the propagated state) and `O(dt^5)` in the
+  interior (the continuous order conditions hold through order 4) — measured
+  interior rates 4.83 → 5.00. DP5-only: the other nine emitters have no published
+  continuous extension and are refused by a stage-count check.
+- [x] **Error-norm convention.** — Reused, not a second scale:
+  `estimate_error_norm(result, rtol, atol)` = `state_norm(result.error,
+  reference=result.state)`, the weighted-RMS ("< 1.0 means at the tolerance") the
+  DIRK driver already uses.
 
 Validation gate:
 
-- [ ] A stiff problem from the Phase 8 registry completes in materially fewer steps
-  under control than at the fixed `dt` needed for the same final error.
-- [ ] Step rejection actually triggers on van der Pol at mu = 10, where the Phase 8
-  work already measured a hard explicit wall.
-- [ ] Dense output reproduces the propagated solution at the step endpoints exactly and
-  meets its advertised interpolation order in between.
+- [x] A stiff problem from the Phase 8 registry completes in materially fewer steps
+  under control than at the fixed `dt` needed for the same final error. — van der
+  Pol μ = 10, T = 5: 75 accepted steps at rtol = 1e-5 vs 312 fixed (dt = 0.016),
+  107 vs 625 (dt = 0.008) at rtol = 1e-6; the test pins `accepted < 0.75 ×` the
+  coarsest matching fixed step count.
+- [x] Step rejection actually triggers on van der Pol at mu = 10, where the Phase 8
+  work already measured a hard explicit wall. — 17–19 rejections per adaptive run,
+  out of 72–126 attempts, with the run starting at dt0 = 0.1, deliberately outside
+  the wall.
+- [x] Dense output reproduces the propagated solution at the step endpoints exactly and
+  meets its advertised interpolation order in between. — endpoint exactness is
+  pinned bit-for-bit; interior order 4 (local `O(dt^5)`) is measured on the linear
+  oscillator.
+
+(Landed 2026-09-14: `src/warpSPHIntegrators/adaptive.py` — `estimate_error_norm`,
+`propose_dt`, `dormand_prince_dense_output` + the transcribed `_DP5_DENSE_P` /
+`_DP5_B_MAIN` coefficient blocks; the ten emitters and the TR-BDF2 `q = order + 1`
+exception; the gate table; `scripts/adaptive_benchmark.py` →
+`images/adaptive_benchmark.png`; `tests/test_adaptive.py` (24 tests); NOTES §3.17.)
 
 ## Phase 12: Families Not Yet Represented
 
@@ -746,7 +778,7 @@ Validation gate:
 9. [x] Phase 10 stiffly-accurate DIRK first-stage reuse. (Landed 2026-09-10: `reuse.dirk_reuse_analysis` + the driver's `_dirk_reuses_first_stage` accept `priorStep` losslessly for Trapezoidal / TR-BDF2 / both ESDIRKs — the stiffly-accurate tableaus with an explicit first stage — while SDIRK2 and the single-stage backward Euler / midpoint still reject; the `stiffly_accurate` metadata gained its first consumer; order preserved and one explicit RHS eval/step saved within JFNK noise, `tests/test_dirk.py`; suite 2285 → 2320.)
 10. [x] Phase 13 explicit-side nonlinear stability — small, and it closes the one place where a registered scheme advertises a property nothing measures. Includes the requested general TVD classifier (verify the TVD-named schemes, scan all others; TVD is broader than SSP, 2026-09-10). (Landed 2026-09-10: `advection_problem` (upwind advection, the classifier's model problem) + `burgers_problem` in `testing.py`; `tvd_analysis.py` — rigorous SSP coefficient from the Fourier stage maps plus measured per-step TVD CFL from a trajectory sweep, and `classify_tvd`/`classify_all` over the whole registry; `scripts/tvd_classifier.py` prints the maintained verdict table (NOTES §3.11): TVD RK2/3 + SSP RK3 at the published r = 1, RK4 r = 2/3 yet TVD to CFL 1.25, Nystrom/DP5/ESDIRK/ARK r = 0 (stage maps negative at every resolvable CFL — Nystrom/DP5 by exact rational arithmetic) yet per-step TVD to 1.5, L-stable implicits to CFL 5, multistep family to a measured CFL 1.5; the stage-level gate separates classical RK3 (stage-3 row [1, -1, 1] at CFL 1) from TVD RK3 where per-step TV cannot; `tests/test_tvd.py` pins the whole table; suite 2320 → 2346.)
 11. [x] Phase 14 structured RHS interface — collapses the RHS input surface to "a plain function or a typed `RHS`", folds in the `IMEXRHS` split, and adds the `linear`/`nonlinear` accessors plus the viscous Burgers semilinear test problem. (Landed 2026-09-10: `rhs.py` — concrete `RHS` class + `provides` capabilities, `IMEXRHS`/`SemilinearRHS` constructors, `resolve` with pre-solve capability errors, `check_contracts` for the three split contracts; `ark.py`/`imex.py` moved off `isinstance`; the old `IMEXRHS` NamedTuple is gone from `specs.py`; `viscous_burgers_problem` in `testing.py` as the Phase 7 benchmark; the pre-refactor bit-identical golden over all 52 registered schemes pinned in `tests/test_rhs.py` (19 tests); NOTES §3.12; suite 2346 → 2365.)
-12. [ ] Phase 11 adaptive step control, once the multistep-vs-variable-`dt` contract is decided.
+12. [x] Phase 11 adaptive step control, once the multistep-vs-variable-`dt` contract is decided. (Landed 2026-09-14: the contract was decided first — **multistep refused explicitly** (`estimate_error_norm` raises; `StepHistory` restarts on any `dt` change, so a variable-`dt` run would throw the history away every step) — then `src/warpSPHIntegrators/adaptive.py` as **helpers, not a solver**: `estimate_error_norm` (the embedded-pair difference as a dimensionless number, in the DIRK driver's weighted-RMS convention) + `propose_dt` (predictive controller: `dt * clamp(safety * (target/error)**(1/order), 0.2, 5.0)`, safety 0.9, zero error → max growth), with the accept/reject loop left to the caller (NOTES §3.8's caution; the demo loop lives in the benchmark and the tests), plus `dormand_prince_dense_output` — Shampine's 1986 quartic continuous extension of DP5 (the optimum-`c_6` formula as implemented in SciPy's `RK45`, transcribed verbatim from the local source), exact at both step endpoints and `O(dt^5)` interior (measured rates 4.83 → 5.00), DP5-only. The ten estimate emitters and TR-BDF2's `q = order + 1 = 3` exception (its published SUNDIALS pair is the propagated branch's true `O(h^3)` local error). Gate on van der Pol μ = 10, T = 5, dt0 = 0.1: 17–19 rejections per run at the Phase 8 explicit wall, and 75 accepted steps vs 312 fixed (dt = 0.016) at rtol = 1e-5, 107 vs 625 (dt = 0.008) at rtol = 1e-6; `scripts/adaptive_benchmark.py` → `images/adaptive_benchmark.png`; `tests/test_adaptive.py` (24 tests), NOTES §3.17; suite 2504 → 2528 passed / 344 skipped.)
 13. [x] Phase 12 missing families, RKC/RKL first: it is the one candidate that directly challenges the Phase 8 cost baseline on a benchmark that already exists. (Landed 2026-09-11: RKC1 / RKC2 / RKL2 in `rkc.py` — the published recurrences, per-step stage count from `stage_count(dt·|λ_max|)`, orders 1 / 2 / 2 verified on the semi-discrete diffusion, stability pinned at the K(s) boundary; `scripts/rkc_benchmark.py` reaches max error 1e-2 at n = 16 / 32 / 64 with fewer total RHS evaluations than BE / BDF2 / TR-BDF2 under the default JFNK, and exposes BDF2's solver-limited practical stability there; `tests/test_rkc.py` (35 tests), NOTES §3.13; suite 2365 → 2400.)
 14. [ ] Phase 6 coupled implicit RK — de-gated 2026-09-10 (Gauss-Legendre is the library's only symplectic method above order 2, Radau IIA its only no-compromise stiff method), no longer waiting on a downstream. Needs the `BlockState` product type; then it inherits the Phase 1/2/9 machinery unchanged.
 15. [x] Phase 7 Rosenbrock-W (outright) then exponential integrators. (Rosenbrock-W **landed 2026-09-11**: ROS3P in `rosenbrock.py` — a 3-stage order-3 A-stable (not L) Rosenbrock-W method (Lang & Verwer, *BIT* 41(4) 2001), `w='jvp'`/`'fd'`/`'linear'` frozen-Jacobian selector, `f_t='fd'` one-sided time derivative, frozen-`W` adjoint (three transposed `gmres` solves + the `W^T` VJP). Gate cleared on viscous Burgers: order 3 measured for `jvp`/`fd`, and ROS3P (`w='jvp'`) is the cheapest order-3 total work-unit cost at `dt = 0.02` (706 < ARK3 793 < ESDIRK3 988, `viscous_burgers_demo.ipynb` §11) — with the caveat that the additive ARK3 split is cheaper per iteration in FLOPs (linear-operator matvec). `tests/test_rosenbrock.py` (18 tests), NOTES §3.14. **Exponential integrators landed 2026-09-12/13**: the matrix-free `krylov_phi` build + ETD2RK (order 2, exact on linear, L-stable; NOTES §3.15) and EXPRB32 (order 3, L-stable, embedded (3, 2) estimate, full frozen Jacobian via forward-mode AD, no semilinear split needed; NOTES §3.16), which closes the family's cost gate: at fixed error (rel L2 ≤ 1e-3, sine IC, largest qualifying `dt`) EXPRB32 is the cheapest order-3 method on the work-unit metric — 640 < ROS3P 706 < ESDIRK3 715 < ARK3 793, with the smallest error of the four (1.2e-4) and a fair cost class (full-Jacobian JVP Krylov matvecs, unlike ETD2RK's cheap `L`-matvecs). `tests/test_exponential.py` (20 tests), suite → 2504 passed / 344 skipped (2026-09-13).)

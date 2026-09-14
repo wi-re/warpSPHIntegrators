@@ -20,6 +20,7 @@ blended with a reference state", and your system object decides what that means.
 ### Key Features
 
 - **Multiple Integration Schemes**: Runge-Kutta up to 5th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; stabilized explicit super-timestepping for parabolic stiffness (RKC1/RKC2/RKL2, no nonlinear solver); diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA, Newmark) via a pluggable `NonlinearSolver`; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4); implicit multistep (BDF1–BDF5, fully implicit Adams-Moulton 2–4); additive (IMEX) RK (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA) and IMEX Euler, both through an explicit/implicit RHS split; Rosenbrock-W (ROS3P: one linear solve per stage against a frozen Jacobian, no Newton loop); and the exponential family (ETD2RK: the linear part `L` integrated exactly through matrix-free `exp(hL)` / `phi_k(hL)` Krylov builds, the nonlinear remainder quadrature; EXPRB32: order-3 exponential Rosenbrock, L-stable, full frozen Jacobian with matrix-free `phi_k` Krylov builds, embedded (3, 2) estimator, no semilinear split required)
+- **Adaptive Step Control & Dense Output**: `estimate_error_norm` + `propose_dt` turn the ten embedded-estimator schemes' `IntegrationResult.error` into a predictive step-size controller (safety factor, growth clamps, zero-error growth) with the caller-driven accept/reject loop; Dormand–Prince carries a published dense output — Shampine's 1986 quartic continuous extension, exact at the step endpoints and `O(dt^5)` in between (NOTES.md §3.17)
 - **Flexible State Management**: Custom state objects with metadata-driven field behavior (integrated, constant, copied, ephemeral, custom)
 - **Type-Safe Protocol**: Structural typing for integration systems with clear separation of concerns
 - **Fully Differentiable**: All operations preserve gradient flow for end-to-end learning
@@ -269,7 +270,10 @@ when the previous step's last stage is fed back in as `k0` — see
 
 ### Embedded pairs (error estimate + adaptive `dt`)
 
-These return a step-size-control estimate in `IntegrationResult.error`. The first two are
+These return a step-size-control estimate in `IntegrationResult.error`, consumed by
+Phase 11's adaptive helpers — `estimate_error_norm` (the estimate as a dimensionless
+number, 1.0 = at the tolerance) and `propose_dt` (the predictive controller), with the
+accept/reject loop driven by the caller (NOTES.md §3.17). The first two are
 **FSAL**, so first-stage reuse is exact and costs one evaluation less per step.
 
 | Scheme | Order | Stages | Reuse | Use Case |
@@ -277,6 +281,15 @@ These return a step-size-control estimate in `IntegrationResult.error`. The firs
 | **Bogacki–Shampine 3(2)** | 3 | 4 (3 under reuse) | 3 ✓ FSAL | Cheapest useful pair; `scipy`'s `RK23` |
 | **Dormand–Prince 5(4)** | 5 | 7 (6 under reuse) | 5 ✓ FSAL | The workhorse; `scipy`'s `RK45`, MATLAB's `ode45` |
 | **Cash–Karp 5(4)** | 5 | 6 | 1 | Well-conditioned pair when DP5 is more than needed |
+
+The implicit and stiff families above (TR-BDF2, the ESDIRKs, the ARKs, ROS3P,
+EXPRB32) also return embedded estimates, so all ten feed the same adaptive
+helpers. **Dormand–Prince additionally has published dense output**:
+`dormand_prince_dense_output` evaluates one step's quartic continuous extension
+(Shampine 1986, the formula `scipy`'s `RK45` uses) at any `θ ∈ [0, 1]` — exact at
+the step endpoints, `O(dt^5)` in between — for output at fixed times under a
+varying `dt`. The other emitters have no published interpolant
+(NOTES.md §3.17).
 
 ### Symplectic Methods
 
@@ -1081,9 +1094,13 @@ method runs.
 
 ## Known Limitations
 
-- **Adaptive step-size control not built-in** (use external error estimators; the embedded pairs'
-  `IntegrationResult.error` gives you the estimate, the driving loop and step-rejection path are not
-  written yet — NOTES.md §2.3).
+- **Adaptive step-size control is a helper, not a driver.** The ten embedded-estimator
+  schemes' `IntegrationResult.error` is consumed by `estimate_error_norm` + `propose_dt`
+  (NOTES.md §3.17), but the accept/reject loop is yours: the library ships the controller
+  and a demo loop (`scripts/adaptive_benchmark.py`, `tests/test_adaptive.py`), not a driver
+  that owns output times and event location. The multistep family is deliberately outside
+  adaptive stepping — it emits no estimate, and `StepHistory` restarts on any `dt` change —
+  and dense output exists for Dormand–Prince only.
 - **Implicit schemes differentiate by the implicit function theorem, not by unrolling.** The
     Newton/GMRES iteration runs under `torch.no_grad()`; the gradient is re-attached at the converged
     fixed point (`JFNKSolver.solve`). Two consequences worth knowing: the gradient is *exact* and
@@ -1125,7 +1142,7 @@ schemes are worth adding next and what each one costs.
 Contributions welcome! Areas of interest:
 
 - Remaining implicit schemes (fully implicit RK: Gauss, Radau, Lobatto; BDF6+; higher-order Rosenbrock-W, e.g. ROS34PW2)
-- Adaptive time stepping
+- An adaptive-stepping driver (output at fixed times, event location) and variable-step multistep coefficients (NOTES.md §3.17)
 - Better documentation and examples
 - Performance optimizations
 - Additional state field behaviors
