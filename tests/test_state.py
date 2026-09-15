@@ -120,10 +120,12 @@ def _stage_times(scheme, dt, steps, t0=0.0):
 #: implicit *at* that first stage, so it is solved at t^n + c[0]*dt, not at t^n -- true
 #: by construction for backward Euler (c[0]=1), implicit midpoint (c[0]=1/2) and SDIRK2
 #: (c[0]=gamma); trapezoidal's first stage has a[0,0]=0 (explicit) so it is exempt from
-#: this set, same as every explicit RK scheme.
+#: this set, same as every explicit RK scheme. The coupled (block) schemes sit in the
+#: same class: a[0,0] != 0 (Radau IIA s=2: 5/12, Gauss-Legendre 2: 1/4), so the block
+#: residual's first f evaluation is at t^n + c[0]*dt (NOTES S3.18).
 DRIFT_BEFORE_FIRST_EVALUATION = {
     'PEFRL', 'Backward Euler (implicit)', 'Implicit Midpoint', 'SDIRK2', 'BDF1',
-    'IMEX Euler',
+    'IMEX Euler', 'Gauss-Legendre 2', 'Radau IIA s=2',
 }
 
 

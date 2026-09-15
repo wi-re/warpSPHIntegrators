@@ -89,6 +89,11 @@ IMPLICIT_SCHEMES = [
     ('Adams-Moulton 2 (implicit)', 4),
     ('Adams-Moulton 3 (implicit)', 5),
     ('Adams-Moulton 4 (implicit)', 6),
+    # The coupled fully implicit block pair: one-step schemes, so two integration
+    # steps each. Their stage systems close with the same JFNK (JVP matvec), so
+    # they take the same implicit-function-theorem re-attachment path.
+    ('Gauss-Legendre 2', 2),
+    ('Radau IIA s=2', 2),
 ]
 
 EXPLICIT_SCHEMES = ['RK4', 'Dormand-Prince 5(4)', 'SSP RK3', 'Velocity Verlet',

@@ -356,6 +356,15 @@ EXPECTED_VERDICTS = {
     # amplification is e^{-h lambda} per mode, a contraction at every CFL) and
     # the sweep finds no TV increase up to the CFL cap.
     'EXPRB32': (None, 5.0, True),
+    # The coupled fully implicit block pair: no tableau attribute the SSP scan
+    # reads (blockTableau is not butcher/DIRK/ARK), so no ssp_cfl. Both are
+    # A-stable (|R(z)| <= 1 on the whole left half plane, |R(iy)| = 1 for
+    # Gauss-Legendre), so the per-mode amplification never exceeds 1 and the
+    # measured sweep finds no TV increase up to the CFL cap.
+    'Gauss-Legendre 2': (None, 5.0, True),
+    # Radau IIA is L-stable: |R(z)| -> 0 along the negative real axis, an even
+    # stronger contraction than A-stability gives.
+    'Radau IIA s=2': (None, 5.0, True),
 }
 
 CFLS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 5.0]

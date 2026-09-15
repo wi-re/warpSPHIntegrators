@@ -224,15 +224,13 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
 
     `norm` (below) is always this module's own Hairer-Wanner weighted-RMS
     (`fields.state_norm`, `_default_norm`) -- its own documented convention is
-    "< 1.0 means converged", *not* whatever a given solver's own `tol` default
-    means (`FixedPointSolver`'s `tol` is unset by default, opt-in only, so
-    this never mattered for it; `JFNKSolver`'s `tol` is its GMRES linear-solve
-    tolerance, always set, and a *different* convention -- see `jfnk.py`'s
-    `JFNKSolver.solve` docstring on `newton_tol`). `newton_tol=1.0` is
-    defaulted into `solver_opts` here, matching this norm's own scale, so a
-    solver that reads `newton_tol` (`JFNKSolver`) gets a correctly-paired
-    threshold without every caller needing to know this norm's convention;
-    a caller's own explicit `solver_opts['newton_tol']` still wins.
+    "< 1.0 means converged". Note that this driver does *not* inject a
+    `newton_tol` into `solver_opts`: `JFNKSolver`'s `newton_tol` falls back to
+    its own `tol` (1e-8, the GMRES linear-solve tolerance), which float64
+    solves reach and float32 ones exit through the stagnation floor instead
+    (see `jfnk.py`'s `JFNKSolver.solve` docstring on `newton_tol`); a caller
+    that wants the norm's own "< 1.0" scale as the Newton threshold passes
+    `solver_opts={'newton_tol': 1.0}` explicitly.
     """
     verbose = bool(kwargs.get('verbose', False))
     solver = solver or JFNKSolver()

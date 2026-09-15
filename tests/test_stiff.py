@@ -23,6 +23,12 @@ STATE_SPACE_IMPLICIT = [
     'BDF1',
     'BDF2',
     'IMEX Euler',
+    # Both coupled fully implicit block schemes are A-stable: at z = -10
+    # (rate 100, dt 0.1) the stiff transient decays as |R(-10)|^n -- L-stable
+    # Radau IIA to ~1e-10, Gauss-Legendre (|R(-10)| ~= 0.30) in ~4 steps --
+    # and the slow tanh component is integrated at their full order.
+    'Gauss-Legendre 2',
+    'Radau IIA s=2',
 ]
 
 
@@ -83,7 +89,9 @@ def test_higher_order_bdf_with_threaded_history_tracks_stiff_relaxation(scheme_n
 
 def test_every_tableau_is_consistent_at_the_dahlquist_origin():
     for scheme in IntegrationSchemes:
-        tableau = getattr(scheme.function, 'butcherTableau', getattr(scheme.function, 'dirkTableau', None))
+        tableau = getattr(scheme.function, 'butcherTableau',
+                          getattr(scheme.function, 'dirkTableau',
+                                  getattr(scheme.function, 'blockTableau', None)))
         if tableau is not None:
             assert rk_is_stable(tableau, 0.0), scheme.name
 

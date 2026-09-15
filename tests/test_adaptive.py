@@ -31,15 +31,20 @@ from warpSPHIntegrators.butcher import getButcherTableau
 #: The estimate emitters (tests/test_embedded.py): the (p, p-1) embedded pairs
 #: plus the built-in estimates. The power q the estimate scales as h^q is the
 #: scheme's order, except TR-BDF2, whose published SUNDIALS pair makes the
-#: estimate O(h**(order+1)).
+#: estimate O(h**(order+1)), and Gauss-Legendre 2, whose null-stage companion
+#: is only order 2 (the 2-stage-only order-2 pair is degenerate -- b itself --
+#: for both block tableaus), so the estimate is O(h**(order-1)) = h^3.
 EMBEDDED = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)', 'Cash-Karp 5(4)',
             'TR-BDF2', 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
-            'ARK3(2)4L[2]SA', 'ARK4(3)6L[2]SA', 'ROS3P', 'EXPRB32']
+            'ARK3(2)4L[2]SA', 'ARK4(3)6L[2]SA', 'ROS3P', 'EXPRB32',
+            'Gauss-Legendre 2', 'Radau IIA s=2']
 
 
 def estimate_order(scheme) -> int:
     """The power q the estimate scales as h^q (NOTES.md S3.17)."""
-    return scheme.order + 1 if scheme.name == 'TR-BDF2' else scheme.order
+    return (scheme.order + 1 if scheme.name == 'TR-BDF2'
+            else scheme.order - 1 if scheme.name == 'Gauss-Legendre 2'
+            else scheme.order)
 
 
 def run_adaptive(scheme, prob, T, dt0, *, rtol=1e-6, atol=1e-9,

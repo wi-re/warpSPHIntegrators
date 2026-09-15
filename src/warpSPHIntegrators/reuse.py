@@ -227,6 +227,12 @@ def _dirk_tableau_of(scheme):
     return getattr(fn, 'dirkTableau', None)
 
 
+def _block_tableau_of(scheme):
+    """The coupled (block) fully implicit tableau, or None if the scheme is not one."""
+    fn = getattr(scheme, 'function', scheme)
+    return getattr(fn, 'blockTableau', None)
+
+
 def step_reuse_analysis(scheme) -> ReuseAnalysis:
     """Full reuse analysis for a registered ``IntegrationScheme``."""
     tableau = _tableau_of(scheme)
@@ -237,6 +243,15 @@ def step_reuse_analysis(scheme) -> ReuseAnalysis:
     if dirk_tableau is not None:
         return dirk_reuse_analysis(
             dirk_tableau, scheme.order, getattr(scheme, 'stiffly_accurate', False))
+
+    block_tableau = _block_tableau_of(scheme)
+    if block_tableau is not None:
+        return ReuseAnalysis(
+            None, False,
+            'coupled (block) tableau: the stage equations are solved jointly as one '
+            's-by-s system, so there is no independent first stage to splice a previous '
+            "step's derivative into (pass warmStart=result.stages for the block "
+            'initial-guess analogue)')
 
     identifier = getattr(scheme, 'identifier', None)
     if identifier in HANDROLLED_REUSE:

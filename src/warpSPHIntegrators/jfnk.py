@@ -25,6 +25,7 @@ import torch
 import torch.autograd.forward_ad as fwAD
 
 from .fields import (
+    BlockState,
     _maybe_reference_state,
     flatten_integrated,
     integrated_field_names,
@@ -106,19 +107,35 @@ def jvp_matvec(step: Callable, Y) -> Callable[[torch.Tensor], torch.Tensor]:
     catching it would turn "some terms have no JVP" into a matvec that silently
     drops them instead of one that refuses to build (JFNK_PLAN.md A3).
     """
-    names = integrated_field_names(Y)
+    is_block = isinstance(_maybe_reference_state(Y), BlockState)
+    if is_block:
+        sub_refs = [_maybe_reference_state(sub) for sub in Y.states]
+        # Flat index space is substate-major, the 'i:name' order
+        # flatten_integrated uses for blocks; one entry per (substate, integrated field).
+        block_fields = [(i, name) for i in range(len(sub_refs))
+                        for name in integrated_field_names(sub_refs[i])]
+    else:
+        s = _maybe_reference_state(Y)
+        names = integrated_field_names(Y)
 
     def matvec(v: torch.Tensor) -> torch.Tensor:
         with fwAD.dual_level():
-            s = _maybe_reference_state(Y)
             values, tangents = [], []
             offset = 0
-            for name in names:
-                value = getattr(s, name)
-                n = value.numel()
-                tangents.append(v[offset:offset + n].reshape(value.shape))
-                values.append(value)
-                offset += n
+            if is_block:
+                for i, name in block_fields:
+                    value = getattr(sub_refs[i], name)
+                    n = value.numel()
+                    tangents.append(v[offset:offset + n].reshape(value.shape))
+                    values.append(value)
+                    offset += n
+            else:
+                for name in names:
+                    value = getattr(s, name)
+                    n = value.numel()
+                    tangents.append(v[offset:offset + n].reshape(value.shape))
+                    values.append(value)
+                    offset += n
 
             # A tangent slice that is exactly zero contributes nothing to the
             # JVP by linearity, so skip `make_dual` for it and leave the field
@@ -143,20 +160,37 @@ def jvp_matvec(step: Callable, Y) -> Callable[[torch.Tensor], torch.Tensor]:
             # (see JFNK_DRIVER_OVERHEAD_NOTES.md item 3); same "> 0" test,
             # same per-field result, just not one sync per field.
             live = (torch.stack([t.abs().max() for t in tangents]) > 0).tolist() if tangents else []
-            replacements = {
-                name: fwAD.make_dual(value, tangent)
-                for name, value, tangent, isLive in zip(names, values, tangents, live)
-                if isLive
-            }
-            Y_dual = replace_integrated_fields(Y, replacements)
+            if is_block:
+                per_sub = {i: {} for i in range(len(sub_refs))}
+                for (i, name), value, tangent, isLive in zip(block_fields, values, tangents, live):
+                    if isLive:
+                        per_sub[i][name] = fwAD.make_dual(value, tangent)
+                Y_dual = BlockState(tuple(
+                    replace_integrated_fields(Y.states[i], per_sub[i]) if per_sub[i] else Y.states[i]
+                    for i in range(len(sub_refs))
+                ))
+            else:
+                replacements = {
+                    name: fwAD.make_dual(value, tangent)
+                    for name, value, tangent, isLive in zip(names, values, tangents, live)
+                    if isLive
+                }
+                Y_dual = replace_integrated_fields(Y, replacements)
 
             result = step(Y_dual)
 
             result_state = _maybe_reference_state(result)
             tangent_parts = []
-            for name in names:
-                primal, tangent = fwAD.unpack_dual(getattr(result_state, name))
-                tangent_parts.append((tangent if tangent is not None else torch.zeros_like(primal)).reshape(-1))
+            if is_block:
+                for i, sub in enumerate(result_state.states):
+                    sub_s = _maybe_reference_state(sub)
+                    for name in integrated_field_names(sub_s):
+                        primal, tangent = fwAD.unpack_dual(getattr(sub_s, name))
+                        tangent_parts.append((tangent if tangent is not None else torch.zeros_like(primal)).reshape(-1))
+            else:
+                for name in names:
+                    primal, tangent = fwAD.unpack_dual(getattr(result_state, name))
+                    tangent_parts.append((tangent if tangent is not None else torch.zeros_like(primal)).reshape(-1))
             Jstep_v = torch.cat(tangent_parts)
         return v - Jstep_v
     return matvec
@@ -721,6 +755,8 @@ class JFNKSolver:
 
 def _state_requires_grad(state) -> bool:
     """True if any `integrated` field of `state` is on the autograd tape."""
+    if isinstance(_maybe_reference_state(state), BlockState):
+        return any(_state_requires_grad(sub) for sub in state.states)
     s = _maybe_reference_state(state)
     for name in integrated_field_names(state):
         value = getattr(s, name, None)

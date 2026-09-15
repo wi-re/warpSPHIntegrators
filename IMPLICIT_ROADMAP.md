@@ -152,16 +152,23 @@ Validation gate:
 
 ## Phase 6: Coupled Fully Implicit RK
 
-**Status: no longer gated (2026-09-10).** The original gate was "a downstream that
-needs order-4 symplectic accuracy or L-stable Radau damping." It is lifted on
-general-ODE-library grounds: Gauss-Legendre s=2 is the *only* route in the library to
-a symplectic method above order 2 (the registered Verlet / Forest-Ruth set is order
-2, and NOTES §3.6 measures even those collapsing to order 1 under a velocity-dependent
-force), and Radau IIA is the standard no-compromise stiff method — L-stable, stiffly
-accurate, no A(α)-cone restriction, which is exactly what BDF3-5 give up. Both fill
-capability gaps that stand on their own. The Phase 8 cost panels still quantify what
-the block solver must beat: ESDIRK6 already costs ~3× BE in RHS evaluations per step
-with per-stage solves.
+**Status: done — landed 2026-09-15.** `fullyimplicit.py` (the coupled block
+driver) + `fields.BlockState` + both tableaus registered: **Gauss-Legendre 2**
+(order 4, A-stable, symplectic for separable Hamiltonians — pinned by
+measurement, the tableau is *not* A-symmetric — not L-stable) and **Radau
+IIA s=2** (order 3, L-stable, stiffly accurate), each with a null-stage
+order-2 companion, the matrix-free JVP block matvec, the `warmStart=`
+initial-guess flag, and the 256-DOF scale gate. NOTES §3.18 has the
+coefficients, the measurement tables, and the GMRES-spectrum finding that
+shaped the gate. The original gate was "a downstream that needs order-4
+symplectic accuracy or L-stable Radau damping." It was lifted 2026-09-10 on
+general-ODE-library grounds: Gauss-Legendre s=2 is the *only* route in the
+library to a symplectic method above order 2 (the registered Verlet /
+Forest-Ruth set is order 2, and NOTES §3.6 measures even those collapsing to
+order 1 under a velocity-dependent force), and Radau IIA is the standard
+no-compromise stiff method — L-stable, stiffly accurate, no A(α)-cone
+restriction, which is exactly what BDF3-5 give up. Both fill capability gaps
+that stand on their own.
 
 **Technical dependency — a product-type state, not a raw vector.** The coupled
 `s·N`-unknown solve needs `s` stage states presented to the solver at once. Add a
@@ -175,34 +182,39 @@ solver already crosses. With that in place the coupled block `step` runs through
 preconditioner hook, and the Phase 9 implicit-function-theorem gradient path with no
 new derivation.
 
-- [ ] Add `BlockState` and extend the four `fields.py` bridge functions over `s · N`
-  unknowns; each sub-state keeps its full field structure.
-- [ ] Build the coupled stage residual `G(Y_1..Y_s)_i = Y_i − y^n − dt·Σ_j a_ij f(t_j, Y_j)`
-  as a `step` fixed point, solved by `JFNKSolver` (FD matvec first — no dense block
-  Jacobian ever formed).
-- [ ] Implement Gauss-Legendre s=2 (order 4) first.
+- [x] Add `BlockState` and extend the four `fields.py` bridge functions over `s · N`
+  unknowns; each sub-state keeps its full field structure (substate-major `'i:name'`
+  layout).
+- [x] Build the coupled stage residual `G(Y_1..Y_s)_i = Y_i − y^n − dt·Σ_j a_ij f(t_j, Y_j)`
+  as a `step` fixed point, solved by `JFNKSolver` (one solve per step, `step_fn` =
+  `s` RHS evaluations; no dense block Jacobian ever formed).
+- [x] Implement Gauss-Legendre s=2 (order 4) first.
 - [x] Validate direct symplectic-form behavior on oscillator and Kepler after tightening the default JFNK residual and finite-difference settings.
-- [ ] Implement Radau IIA s=2 (order 3, L-stable) as the first high-quality fully implicit stiff method.
-- [ ] Embedded error estimator: Radau IIA s=2 has the standard Hairer-Wanner
-  estimator; Gauss-Legendre has no cheap embedded pair, so ship it without
-  `IntegrationResult.error` first (or pair it with the s=1 midpoint as a low-order
-  companion).
-- [ ] Exact-JVP block matvec (forward-AD seeding across the `s` sub-states via
-  `replace_integrated_fields`) — a follow-on after the FD path is proven.
-- [ ] Gradient coverage: the block stage solve reattaches through
+- [x] Implement Radau IIA s=2 (order 3, L-stable) as the first high-quality fully implicit stiff method.
+- [x] Embedded error estimator — **correction to the plan**: the "standard
+  Hairer-Wanner estimator" is only the 2-stage pair, and that pair is *degenerate*
+  (it is `b` itself) for both shipped tableaus, so both ship the null-stage
+  min-norm order-2 companion over `(k0, k1, k2)` (`companion_b[0] != 0` costs one
+  extra RHS eval per step, the same cost the companion pairs already pay).
+  Measured rate exactly 3.0 for both.
+- [x] Exact-JVP block matvec (forward-AD seeding across the `s` sub-states via
+  `replace_integrated_fields`) — landed as the *default* `matvec='jvp'` path,
+  cross-checked against the FD path at 5.3e-9 relative (the FD matvec is kept as
+  the `matvec='fd'` fallback).
+- [x] Gradient coverage: the block stage solve reattaches through
   `_implicit_diff_reattach` once `flatten_integrated` / `unflatten_integrated` accept
-  a `BlockState`; add the `tests/test_gradients.py` cases.
+  a `BlockState`; both schemes added to the `tests/test_gradients.py` cases.
 - [?] Consider Gauss-Legendre s=3 and Radau IIA s=3 only after the block solver and preconditioner are proven at scale.
 - [?] Consider Lobatto IIIA-IIIB only for a concrete partitioned/separable Hamiltonian downstream (it needs the component partition, not this additive block solve).
 
 Validation gate:
 
-- [ ] Block residual and Jacobian-vector products agree with finite differences on small systems.
-- [ ] Gauss-Legendre order 4 and Radau order 3 are demonstrated on nonlinear reference problems.
-- [ ] Gauss-Legendre's symplectic-form / energy behaviour holds on oscillator and Kepler where the order-2 Verlet set drifts.
-- [ ] Radau IIA damps the negative-real-axis scalar problem where BDF3-5's A(α) cone does not.
-- [ ] No dense Jacobian allocation occurs for large state sizes.
-- [ ] Gradients flow through both schemes and match a closed form on the linear oscillator (the Phase 9 bar).
+- [x] Block residual and Jacobian-vector products agree with finite differences on small systems. (JVP == FD at 5.3e-9 relative on the 256-DOF advection block, JVP linear to 5.7e-14, and the JVP matches the hand-computed dense block Jacobian: `tests/test_fullyimplicit.py`.)
+- [x] Gauss-Legendre order 4 and Radau order 3 are demonstrated on nonlinear reference problems. (Measured 3.98 / 3.00 on the oscillator order ladder, `scripts/blockrk_benchmark.py`; kepler + forced oscillator in `test_driver_order_on_nonlinear_problems`.)
+- [x] Gauss-Legendre's symplectic-form / energy behaviour holds on oscillator and Kepler where the order-2 Verlet set drifts. (`tests/test_hamiltonian.py`: area defect 3.05e-13 under the strict solver, kepler-form 4.87e-09 at default settings, against Velocity Verlet's flat 1.00e-2 drift; the GL2-kepler default-solve energy test is documented-skipped — the drift there is JFNK stagnation noise, 6.9e-9 → 5.5e-8 in T, growth 8.0 above the 1e-8 floor, and collapses to 4.3e-12 under the strict solver.)
+- [x] Radau IIA damps the negative-real-axis scalar problem where BDF3-5's A(α) cone does not. (`test_stiff.py` STATE_SPACE_IMPLICIT at z = -10, `|R(-100)| ≈ 0.019` pinned; benchmark panel 2 shows `|R(-10)| = 0.0959` vs BDF3's 0.349 and BDF5's 0.655.)
+- [x] No dense Jacobian allocation occurs for large state sizes. (Matrix-free gate: the scale test runs the full 2-stage block at 256 DOF = 1536 unknowns with the JVP matvec only; the dense 1536x1536 Jacobian is built only in the one diagnostic that prints its spectrum.)
+- [x] Gradients flow through both schemes and match a closed form on the linear oscillator (the Phase 9 bar). (Both schemes in `tests/test_gradients.py::IMPLICIT_SCHEMES`, JVP matvec, IFT re-attachment.)
 
 ## Phase 7: Alternative Stiff Families
 
@@ -780,7 +792,7 @@ Validation gate:
 11. [x] Phase 14 structured RHS interface — collapses the RHS input surface to "a plain function or a typed `RHS`", folds in the `IMEXRHS` split, and adds the `linear`/`nonlinear` accessors plus the viscous Burgers semilinear test problem. (Landed 2026-09-10: `rhs.py` — concrete `RHS` class + `provides` capabilities, `IMEXRHS`/`SemilinearRHS` constructors, `resolve` with pre-solve capability errors, `check_contracts` for the three split contracts; `ark.py`/`imex.py` moved off `isinstance`; the old `IMEXRHS` NamedTuple is gone from `specs.py`; `viscous_burgers_problem` in `testing.py` as the Phase 7 benchmark; the pre-refactor bit-identical golden over all 52 registered schemes pinned in `tests/test_rhs.py` (19 tests); NOTES §3.12; suite 2346 → 2365.)
 12. [x] Phase 11 adaptive step control, once the multistep-vs-variable-`dt` contract is decided. (Landed 2026-09-14: the contract was decided first — **multistep refused explicitly** (`estimate_error_norm` raises; `StepHistory` restarts on any `dt` change, so a variable-`dt` run would throw the history away every step) — then `src/warpSPHIntegrators/adaptive.py` as **helpers, not a solver**: `estimate_error_norm` (the embedded-pair difference as a dimensionless number, in the DIRK driver's weighted-RMS convention) + `propose_dt` (predictive controller: `dt * clamp(safety * (target/error)**(1/order), 0.2, 5.0)`, safety 0.9, zero error → max growth), with the accept/reject loop left to the caller (NOTES §3.8's caution; the demo loop lives in the benchmark and the tests), plus `dormand_prince_dense_output` — Shampine's 1986 quartic continuous extension of DP5 (the optimum-`c_6` formula as implemented in SciPy's `RK45`, transcribed verbatim from the local source), exact at both step endpoints and `O(dt^5)` interior (measured rates 4.83 → 5.00), DP5-only. The ten estimate emitters and TR-BDF2's `q = order + 1 = 3` exception (its published SUNDIALS pair is the propagated branch's true `O(h^3)` local error). Gate on van der Pol μ = 10, T = 5, dt0 = 0.1: 17–19 rejections per run at the Phase 8 explicit wall, and 75 accepted steps vs 312 fixed (dt = 0.016) at rtol = 1e-5, 107 vs 625 (dt = 0.008) at rtol = 1e-6; `scripts/adaptive_benchmark.py` → `images/adaptive_benchmark.png`; `tests/test_adaptive.py` (24 tests), NOTES §3.17; suite 2504 → 2528 passed / 344 skipped.)
 13. [x] Phase 12 missing families, RKC/RKL first: it is the one candidate that directly challenges the Phase 8 cost baseline on a benchmark that already exists. (Landed 2026-09-11: RKC1 / RKC2 / RKL2 in `rkc.py` — the published recurrences, per-step stage count from `stage_count(dt·|λ_max|)`, orders 1 / 2 / 2 verified on the semi-discrete diffusion, stability pinned at the K(s) boundary; `scripts/rkc_benchmark.py` reaches max error 1e-2 at n = 16 / 32 / 64 with fewer total RHS evaluations than BE / BDF2 / TR-BDF2 under the default JFNK, and exposes BDF2's solver-limited practical stability there; `tests/test_rkc.py` (35 tests), NOTES §3.13; suite 2365 → 2400.)
-14. [ ] Phase 6 coupled implicit RK — de-gated 2026-09-10 (Gauss-Legendre is the library's only symplectic method above order 2, Radau IIA its only no-compromise stiff method), no longer waiting on a downstream. Needs the `BlockState` product type; then it inherits the Phase 1/2/9 machinery unchanged.
+14. [x] Phase 6 coupled implicit RK — done 2026-09-15 (de-gated 2026-09-10: Gauss-Legendre is the library's only symplectic method above order 2, Radau IIA its only no-compromise stiff method). `fullyimplicit.py` — the coupled block driver: one `JFNKSolver` call per step over a `BlockState` of `s` sub-states (`fields.py` bridge functions recurse substate-major), `step_fn` = `s` RHS evaluations, diagnostics scaled ×s, `priorStep` refused (no explicit first stage), `warmStart=` seeds the block solve from the previous step's converged stages. Tableaus hand-derived and verified (neither in SUNDIALS ARKODE v7.9.0): **Gauss-Legendre 2** (order 4, A-stable, symplectic for separable Hamiltonians — pinned by measurement at 3.05e-13 under the strict solver; its tableau is *not* A-symmetric, correcting the common claim; not L-stable, R(-100) = 2353/2653) and **Radau IIA s=2** (order 3, L-stable, stiffly accurate, |R(-100)| ≈ 0.019), each with a null-stage min-norm order-2 companion (the plan's "standard Hairer-Wanner estimator" is degenerate — it is `b` itself — for both 2-stage tableaus; measured rate 3.0 for both). The exact-JVP block matvec is the default (FD cross-check to 5.3e-9 relative); the 256-DOF = 1536-unknown scale gate is matrix-free — the gate's GMRES spectrum (128 complex pairs on a 2-D annulus, cond ≈ 89) is the reason the gate disables restarts (SciPy cross-checked). `tests/test_fullyimplicit.py` (32 tests), both schemes in the `test_hamiltonian` / `test_stiff` / `test_gradients` / `test_tvd` pins, `scripts/blockrk_benchmark.py` → `images/blockrk_benchmark.png`, NOTES §3.18; `tests/test_fullyimplicit.py` is the new file, the six other test files gained their entries.)
 15. [x] Phase 7 Rosenbrock-W (outright) then exponential integrators. (Rosenbrock-W **landed 2026-09-11**: ROS3P in `rosenbrock.py` — a 3-stage order-3 A-stable (not L) Rosenbrock-W method (Lang & Verwer, *BIT* 41(4) 2001), `w='jvp'`/`'fd'`/`'linear'` frozen-Jacobian selector, `f_t='fd'` one-sided time derivative, frozen-`W` adjoint (three transposed `gmres` solves + the `W^T` VJP). Gate cleared on viscous Burgers: order 3 measured for `jvp`/`fd`, and ROS3P (`w='jvp'`) is the cheapest order-3 total work-unit cost at `dt = 0.02` (706 < ARK3 793 < ESDIRK3 988, `viscous_burgers_demo.ipynb` §11) — with the caveat that the additive ARK3 split is cheaper per iteration in FLOPs (linear-operator matvec). `tests/test_rosenbrock.py` (18 tests), NOTES §3.14. **Exponential integrators landed 2026-09-12/13**: the matrix-free `krylov_phi` build + ETD2RK (order 2, exact on linear, L-stable; NOTES §3.15) and EXPRB32 (order 3, L-stable, embedded (3, 2) estimate, full frozen Jacobian via forward-mode AD, no semilinear split needed; NOTES §3.16), which closes the family's cost gate: at fixed error (rel L2 ≤ 1e-3, sine IC, largest qualifying `dt`) EXPRB32 is the cheapest order-3 method on the work-unit metric — 640 < ROS3P 706 < ESDIRK3 715 < ARK3 793, with the smallest error of the four (1.2e-4) and a fair cost class (full-Jacobian JVP Krylov matvecs, unlike ETD2RK's cheap `L`-matvecs). `tests/test_exponential.py` (20 tests), suite → 2504 passed / 344 skipped (2026-09-13).)
 
 ## Completion Definition

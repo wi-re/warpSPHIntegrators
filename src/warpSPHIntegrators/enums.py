@@ -90,3 +90,10 @@ class IntegrationSchemeType(Enum):
     # Exact on linear problems, L-stable for the linear part; not stiffly
     # accurate, so no first-stage reuse.
     exprb32 = 57
+    # Coupled (block) fully implicit RK (NOTES.md S3.18, Phase 6): the stage
+    # equations are solved as one s-by-s coupled system (fullyimplicit.BlockState),
+    # so first-stage reuse does not apply to either. Gauss-Legendre 2 is order 4,
+    # A-stable and symplectic; Radau IIA s=2 is order 3, L-stable, stiffly
+    # accurate.
+    gaussLegendre2 = 58
+    radauIia2 = 59

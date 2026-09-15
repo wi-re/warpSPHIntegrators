@@ -27,7 +27,15 @@ EMBEDDED = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)', 'Cash-Karp 5(4)',
             # Exponential Rosenbrock carries the embedded order-2 estimate: the
             # stage U2 (exp-Rosenbrock-Euler), so the estimate is the corrector
             # correction y - y_hat = 2 h phi_3(hJn) D2 (local error O(dt^3)).
-            'EXPRB32']
+            'EXPRB32',
+            # The coupled fully implicit block pair (NOTES.md S3.18): the
+            # estimate is the null-stage order-2 companion (k0 = f(t^n, y^n)
+            # plus the two stages). Both tableaus carry an order-2 companion,
+            # so main-minus-companion is O(dt^3) for both -- one order below
+            # the propagated branch for Gauss-Legendre 2 (order 4), exactly
+            # the propagated order for Radau IIA s=2 (order 3).
+            'Gauss-Legendre 2',
+            'Radau IIA s=2']
 
 
 @pytest.mark.parametrize('name', EMBEDDED)
@@ -70,8 +78,14 @@ def test_error_estimate_has_the_embedded_order(name):
     rates = [math.log(a / b) / math.log(2) for a, b in zip(magnitudes, magnitudes[1:])]
     # Local error of the (p-1)-order branch is O(dt^p). TR-BDF2 is the exception:
     # its published (2, 3) pair embeds a *higher*-order branch, so the difference
-    # is the propagated branch's own O(dt^3) local error.
-    expected = s.order + 1 if s.name == 'TR-BDF2' else s.order
+    # is the propagated branch's own O(dt^3) local error. Gauss-Legendre 2's
+    # null-stage companion is only order 2 (the 2-stage-only order-2 pair is
+    # degenerate -- b itself -- for both block tableaus), so its estimate is
+    # O(dt^3) = dt^(order-1), not dt^order; Radau IIA s=2 (order 3) lands on
+    # the default dt^order either way.
+    expected = (s.order + 1 if s.name == 'TR-BDF2'
+                else s.order - 1 if s.name == 'Gauss-Legendre 2'
+                else s.order)
     assert all(abs(r - expected) < 0.3 for r in rates), (
         f'{name}: error estimate scales as dt^{rates}, expected dt^{expected}'
     )

@@ -41,6 +41,7 @@ from .tvd import TVDRK3, TVDRK2
 from .ruth import PEFRL, VEFRL
 from .dirk import (backwardEuler as implicitBackwardEuler, implicitMidpoint, trapezoidal,
                    SDIRK2, TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA)
+from .fullyimplicit import gaussLegendre2, radauIia2
 from .ark import ARK324L2SA, ARK436L2SA
 from .newmark import newmark
 from .multistep import AB2, AB3, AB4, AB5, ABM2, ABM3, ABM4, AM2, AM3, AM4
@@ -126,6 +127,23 @@ IntegrationSchemes.append(IntegrationScheme(
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
 IntegrationSchemes.append(IntegrationScheme(
     ESDIRK436L2SA, 'ESDIRK4(3)6L[2]SA', IntegrationSchemeType.esdirk436l2sa, 4, True, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+# ---- Coupled (block) fully implicit RK (NOTES.md S3.18, Phase 6) ----------- #
+# The stage equations are coupled (a_ij != 0 for i != j), so they are solved as
+# one s-by-s block system (fullyimplicit.BlockState) rather than s sequential
+# stage solves -- a DIRK driver structurally cannot take these tableaus. Both
+# carry a null-stage order-2 companion (the 2-stage-only order-2 pair is
+# degenerate, i.e. b itself, for both). Neither implements first-stage reuse
+# (no explicit first stage to splice into); pass warmStart=result.stages for
+# the block-solve analogue of a good initial guess. Gauss-Legendre 2 is
+# symplectic for separable Hamiltonians (pinned by measurement in
+# tests/test_hamiltonian.py -- its tableau is NOT A-symmetric), so
+# dissipation=False like the Verlet family.
+IntegrationSchemes.append(IntegrationScheme(
+    gaussLegendre2, 'Gauss-Legendre 2', IntegrationSchemeType.gaussLegendre2, 4, False, False,
+    implicit=True, steps=1, stiffly_accurate=False, stability='A'))
+IntegrationSchemes.append(IntegrationScheme(
+    radauIia2, 'Radau IIA s=2', IntegrationSchemeType.radauIia2, 3, True, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
 # Additive (IMEX) Kennedy-Carpenter ARK pairs (NOTES.md S3.9 Phase 5). Each is an
 # explicit + implicit half; the combined method is *not* FSAL (the explicit half is
@@ -321,6 +339,8 @@ def _with_reuse_guard(scheme: IntegrationScheme) -> IntegrationScheme:
         guarded.butcherTableau = inner.butcherTableau
     if hasattr(inner, 'dirkTableau'):
         guarded.dirkTableau = inner.dirkTableau
+    if hasattr(inner, 'blockTableau'):
+        guarded.blockTableau = inner.blockTableau
     if hasattr(inner, 'arkTableau'):
         guarded.arkTableau = inner.arkTableau
     return scheme._replace(function=guarded, reuse_order=analysis.order, fsal=analysis.fsal)

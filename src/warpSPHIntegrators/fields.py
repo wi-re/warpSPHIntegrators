@@ -464,6 +464,27 @@ def _diff_dataclass(a, b):
     return type(a)(**kwargs)
 
 
+@dataclass(frozen=True)
+class BlockState:
+    """A block of substates solved simultaneously by a coupled (block) RK tableau.
+
+    A fully implicit RK scheme whose tableau has a nonzero off-diagonal entry
+    (``a_ij`` with ``i != j``) -- Gauss-Legendre 2, Radau IIA s=2 -- has stage
+    equations that reference each other, so the ``s`` stage states must be solved
+    as one coupled system rather than ``s`` sequential stage solves (NOTES.md
+    S3.18). This is the container that carries the ``s`` Newton/Picard iterates
+    through that single solve: one substate per stage, all of the same type. The
+    state machinery (``state_difference``, ``state_norm``,
+    ``integrated_field_names``, ``flatten_integrated``/``unflatten_integrated``,
+    ``replace_integrated_fields``) recurses over the substates, with the flat
+    layout substate-major: all of substate ``i``'s integrated fields, then
+    substate ``i+1``'s. ``frozen`` because the solver produces new block iterates
+    rather than mutating in place.
+    """
+
+    states: tuple
+
+
 def state_difference(state_a, state_b):
     """``a - b`` over ``integrated`` fields, as a new object of ``state_a``'s type.
 
@@ -480,6 +501,14 @@ def state_difference(state_a, state_b):
     ``get_reference_state`` on it, unlike a version that unwrapped down to the inner
     state and lost the wrapper.
     """
+    if isinstance(state_a, BlockState) or isinstance(state_b, BlockState):
+        if (not isinstance(state_a, BlockState) or not isinstance(state_b, BlockState)
+                or len(state_a.states) != len(state_b.states)):
+            raise TypeError(
+                'state_difference: a BlockState must be differenced against a BlockState '
+                f'of the same length, got {type(state_a).__name__} vs {type(state_b).__name__}')
+        return BlockState(tuple(state_difference(x, y) for x, y in zip(state_a.states, state_b.states)))
+
     try:
         ref_field = find_tagged_field(state_a, role='reference_state')
     except (LookupError, TypeError):
@@ -508,9 +537,37 @@ def state_norm(state, rtol: float = 1e-3, atol: float = 1e-6, *, reference=None)
     meaningless magnitude).
 
     Returns 0.0 for a state with no integrated tensor fields.
+
+    ``state`` may be a ``BlockState`` (a difference of a block of stage
+    iterates): the pooling runs across every substate before the root is taken,
+    and ``reference`` must then be a ``BlockState`` of the same length.
     """
-    s = _maybe_reference_state(state)
-    ref = _maybe_reference_state(reference if reference is not None else state)
+    if isinstance(state, BlockState) or isinstance(reference, BlockState):
+        if (not isinstance(state, BlockState) or not isinstance(reference, BlockState)
+                or len(state.states) != len(reference.states)):
+            raise TypeError(
+                'state_norm: a BlockState (a difference of a block of stage iterates) '
+                'must be normalized against a BlockState reference of the same length, '
+                f'got {type(state).__name__} vs {type(reference).__name__}')
+        total_sq = 0.0
+        total_n = 0
+        for sub, ref_sub in zip(state.states, reference.states):
+            sq, n = _integrated_norm_parts(sub, ref_sub, rtol, atol)
+            total_sq += sq
+            total_n += n
+    else:
+        s = _maybe_reference_state(state)
+        ref = _maybe_reference_state(reference if reference is not None else state)
+        total_sq, total_n = _integrated_norm_parts(s, ref, rtol, atol)
+    if total_n == 0:
+        return 0.0
+    return math.sqrt(total_sq / total_n)
+
+
+def _integrated_norm_parts(s, ref, rtol: float, atol: float):
+    """The pooled ``(sum of squares, element count)`` behind ``state_norm``, one state level."""
+    s = _maybe_reference_state(s)
+    ref = _maybe_reference_state(ref)
     total_sq = 0.0
     total_n = 0
     for f in dataclasses.fields(s):
@@ -524,9 +581,7 @@ def state_norm(state, rtol: float = 1e-3, atol: float = 1e-6, *, reference=None)
         weighted = value / scale
         total_sq += float((weighted ** 2).sum())
         total_n += weighted.numel()
-    if total_n == 0:
-        return 0.0
-    return math.sqrt(total_sq / total_n)
+    return total_sq, total_n
 
 
 def integrated_field_names(state) -> List[str]:
@@ -537,8 +592,21 @@ def integrated_field_names(state) -> List[str]:
     ``dataclasses.fields``'s stable declaration order is what keeps flattening and
     unflattening in sync without either side needing to record field names
     explicitly.
+
+    For a ``BlockState`` the names are ``'i:name'`` (substate-major: all of
+    substate ``i``'s integrated fields before substate ``i+1``'s), so the layout
+    is stable across block iterates of the same shape and the flat index space
+    the block solve's GMRES operates on is unambiguous.
     """
     s = _maybe_reference_state(state)
+    if isinstance(s, BlockState):
+        names = []
+        for i, sub in enumerate(s.states):
+            sub_s = _maybe_reference_state(sub)
+            for f in dataclasses.fields(sub_s):
+                if field_behavior(f) == 'integrated' and isinstance(getattr(sub_s, f.name), torch.Tensor):
+                    names.append(f'{i}:{f.name}')
+        return names
     return [f.name for f in dataclasses.fields(s)
             if field_behavior(f) == 'integrated' and isinstance(getattr(s, f.name), torch.Tensor)]
 
@@ -550,11 +618,21 @@ def flatten_integrated(state) -> torch.Tensor:
     dot products, and linear combinations all live in this flat space.
     ``unflatten_integrated`` is the inverse, turning a flat vector back into a real
     state so a scheme's ``step_fn`` can be called on it.
+
+    A ``BlockState`` flattens substate-major (``'i:name'`` order): every
+    integrated field of substate 0, then every integrated field of substate 1,
+    and so on.
     """
+    s = _maybe_reference_state(state)
+    if isinstance(s, BlockState):
+        parts = [flatten_integrated(sub) for sub in s.states]
+        parts = [p for p in parts if p.numel() > 0]
+        if not parts:
+            return torch.empty(0)
+        return torch.cat(parts)
     names = integrated_field_names(state)
     if not names:
         return torch.empty(0)
-    s = _maybe_reference_state(state)
     return torch.cat([getattr(s, name).reshape(-1) for name in names])
 
 
@@ -570,7 +648,25 @@ def replace_integrated_fields(template, replacements: dict):
     ``torch.autograd.forward_ad.make_dual``, in ``jfnk.py``) -- both need "swap in
     new tensors for the solved-for fields, keep the rest," just with different
     replacement values.
+
+    A ``BlockState`` template takes ``'i:name'`` keys (the layout
+    ``integrated_field_names`` reports for it) and recurses per substate; a
+    substate with no replacements is returned unchanged, not re-cloned.
     """
+    if isinstance(template, BlockState):
+        per_sub = {i: {} for i in range(len(template.states))}
+        for key, value in replacements.items():
+            sub_idx, _, name = key.partition(':')
+            if not sub_idx.isdigit() or int(sub_idx) >= len(template.states):
+                raise ValueError(
+                    f"replace_integrated_fields: a BlockState template takes 'i:name' keys "
+                    f"with i < {len(template.states)}, got {key!r}")
+            per_sub[int(sub_idx)][name] = value
+        return BlockState(tuple(
+            replace_integrated_fields(sub, per_sub[i]) if per_sub[i] else sub
+            for i, sub in enumerate(template.states)
+        ))
+
     try:
         ref_field = find_tagged_field(template, role='reference_state')
     except (LookupError, TypeError):
@@ -605,6 +701,22 @@ def unflatten_integrated(flat: torch.Tensor, template):
     shapes (to know how to slice ``flat`` back apart) and every non-integrated
     field (cloned unchanged, via ``replace_integrated_fields``).
     """
+    t = _maybe_reference_state(template)
+    if isinstance(t, BlockState):
+        sizes = [flatten_integrated(sub).numel() for sub in t.states]
+        total = sum(sizes)
+        if flat.numel() != total:
+            raise ValueError(
+                f'unflatten_integrated: flat vector has {flat.numel()} elements, '
+                f'the BlockState template needs {total} across its {len(t.states)} substates'
+            )
+        subs = []
+        offset = 0
+        for sub, n in zip(t.states, sizes):
+            subs.append(unflatten_integrated(flat[offset:offset + n], sub))
+            offset += n
+        return BlockState(tuple(subs))
+
     s = _maybe_reference_state(template)
     names = integrated_field_names(template)
     sizes = [getattr(s, name).numel() for name in names]

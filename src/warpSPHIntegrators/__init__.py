@@ -21,6 +21,7 @@ from .specs import (
 from .protocol import IntegrationSystem, BaseIntegrationSystem
 from .fields import (
     BaseState,
+    BlockState,
     integrated,
     constant,
     copied,
@@ -56,6 +57,7 @@ from .rhs import (RHS, IMEXRHS, SemilinearRHS, resolve, ResolvedRHS,
                  check_contracts, add_updates, sub_updates, CAPABILITIES)
 from .newmark import newmark, newmark_average_acceleration, newmark_linear_acceleration
 from .dirk import TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA
+from .fullyimplicit import gaussLegendre2, radauIia2, BlockTableau
 from .ark import ARK324L2SA, ARK436L2SA
 from .rkc import RKC1, RKC2, RKL2, stage_count
 from .rosenbrock import integrateROS3P as ROS3P
@@ -79,6 +81,7 @@ __version__ = "0.5.0"
 __all__ = [
     "verbosePrint",
     "BaseState",
+    "BlockState",
     "integrated",
     "constant",
     "copied",
@@ -130,6 +133,9 @@ __all__ = [
     "TRBDF2",
     "ESDIRK324L2SA",
     "ESDIRK436L2SA",
+    "gaussLegendre2",
+    "radauIia2",
+    "BlockTableau",
     "ARK324L2SA",
     "ARK436L2SA",
     "RKC1",

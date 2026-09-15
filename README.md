@@ -19,8 +19,8 @@ blended with a reference state", and your system object decides what that means.
 
 ### Key Features
 
-- **Multiple Integration Schemes**: Runge-Kutta up to 5th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; stabilized explicit super-timestepping for parabolic stiffness (RKC1/RKC2/RKL2, no nonlinear solver); diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA, Newmark) via a pluggable `NonlinearSolver`; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4); implicit multistep (BDF1–BDF5, fully implicit Adams-Moulton 2–4); additive (IMEX) RK (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA) and IMEX Euler, both through an explicit/implicit RHS split; Rosenbrock-W (ROS3P: one linear solve per stage against a frozen Jacobian, no Newton loop); and the exponential family (ETD2RK: the linear part `L` integrated exactly through matrix-free `exp(hL)` / `phi_k(hL)` Krylov builds, the nonlinear remainder quadrature; EXPRB32: order-3 exponential Rosenbrock, L-stable, full frozen Jacobian with matrix-free `phi_k` Krylov builds, embedded (3, 2) estimator, no semilinear split required)
-- **Adaptive Step Control & Dense Output**: `estimate_error_norm` + `propose_dt` turn the ten embedded-estimator schemes' `IntegrationResult.error` into a predictive step-size controller (safety factor, growth clamps, zero-error growth) with the caller-driven accept/reject loop; Dormand–Prince carries a published dense output — Shampine's 1986 quartic continuous extension, exact at the step endpoints and `O(dt^5)` in between (NOTES.md §3.17)
+- **Multiple Integration Schemes**: Runge-Kutta up to 5th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; stabilized explicit super-timestepping for parabolic stiffness (RKC1/RKC2/RKL2, no nonlinear solver); diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA, Newmark) via a pluggable `NonlinearSolver`; coupled fully implicit RK (Gauss-Legendre 2, Radau IIA s=2) via one coupled JFNK block solve per step; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4); implicit multistep (BDF1–BDF5, fully implicit Adams-Moulton 2–4); additive (IMEX) RK (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA) and IMEX Euler, both through an explicit/implicit RHS split; Rosenbrock-W (ROS3P: one linear solve per stage against a frozen Jacobian, no Newton loop); and the exponential family (ETD2RK: the linear part `L` integrated exactly through matrix-free `exp(hL)` / `phi_k(hL)` Krylov builds, the nonlinear remainder quadrature; EXPRB32: order-3 exponential Rosenbrock, L-stable, full frozen Jacobian with matrix-free `phi_k` Krylov builds, embedded (3, 2) estimator, no semilinear split required)
+- **Adaptive Step Control & Dense Output**: `estimate_error_norm` + `propose_dt` turn the twelve embedded-estimator schemes' `IntegrationResult.error` into a predictive step-size controller (safety factor, growth clamps, zero-error growth) with the caller-driven accept/reject loop; Dormand–Prince carries a published dense output — Shampine's 1986 quartic continuous extension, exact at the step endpoints and `O(dt^5)` in between (NOTES.md §3.17)
 - **Flexible State Management**: Custom state objects with metadata-driven field behavior (integrated, constant, copied, ephemeral, custom)
 - **Type-Safe Protocol**: Structural typing for integration systems with clear separation of concerns
 - **Fully Differentiable**: All operations preserve gradient flow for end-to-end learning
@@ -283,8 +283,10 @@ accept/reject loop driven by the caller (NOTES.md §3.17). The first two are
 | **Cash–Karp 5(4)** | 5 | 6 | 1 | Well-conditioned pair when DP5 is more than needed |
 
 The implicit and stiff families above (TR-BDF2, the ESDIRKs, the ARKs, ROS3P,
-EXPRB32) also return embedded estimates, so all ten feed the same adaptive
-helpers. **Dormand–Prince additionally has published dense output**:
+EXPRB32, and the coupled block pair Gauss–Legendre 2 / Radau IIA s=2) also
+return embedded estimates, so all twelve feed the same adaptive helpers
+(the block pair's companion is the null-stage order-2 quadrature, so both
+report `q = 3`). **Dormand–Prince additionally has published dense output**:
 `dormand_prince_dense_output` evaluates one step's quartic continuous extension
 (Shampine 1986, the formula `scipy`'s `RK45` uses) at any `θ ∈ [0, 1]` — exact at
 the step endpoints, `O(dt^5)` in between — for output at fixed times under a
@@ -310,6 +312,7 @@ order**. Symplectic Euler does not; it keeps second order either way.
 | **Leap-Frog** | 2 (1 if `f` sees velocity) | 1 | Synchronised form |
 | **PEFRL** | 4 (1 if `f` sees velocity) | refused | High-order Forest–Ruth, position-first |
 | **VEFRL** | 4 (1 if `f` sees velocity) | refused | Velocity-first variant |
+| **Gauss-Legendre 2** | 4 | refused | Coupled 2-stage Gauss collocation, one block JFNK solve per step; the library's only symplectic method above order 2 — pinned by measurement, since its tableau is *not* A-symmetric |
 
 ### TVD and Conservative Schemes
 
@@ -419,6 +422,47 @@ walkthrough — solver-interface experiments 1–4 on the 1-D standing wave plus
 experiments 5–6 showing this preconditioner setup at the `gmres` level,
 end-to-end through `JFNKSolver`, and on the registered 2-D
 `waveEquationCase` — is [jfnk_wave_equation.ipynb](jfnk_wave_equation.ipynb).
+
+### Coupled (Block) Fully Implicit RK — Gauss–Legendre 2 and Radau IIA s=2
+
+The DIRK driver solves its `s` stage equations as `s` *sequential* solves
+because `a_ij == 0` for `i != j`. A *coupled* fully implicit tableau has
+nonzero off-diagonal entries, so the `s` stage equations form one `s`-by-`s`
+system that a single `JFNKSolver` call solves: the unknown is a block of `s`
+stage states, one map evaluation is `s` RHS evaluations (the step's
+diagnostics are scaled ×s to keep the cost comparison honest), and the
+Jacobian-vector product is the exact forward-mode JVP by default
+(`matvec='fd'` remains as the cross-check). First-stage reuse is refused for
+every coupled tableau — there is no explicit first stage to splice a previous
+step's derivative into — and the `warmStart=` flag takes the previous step's
+converged stage *states* as the block solve's initial guess instead. Both
+schemes carry a null-stage order-2 companion for `IntegrationResult.error`
+(the 2-stage-only order-2 pair is degenerate — it is `b` itself — for both).
+Neither tableau is published in SUNDIALS ARKODE, so the coefficients are
+hand-derived from collocation and verified (order conditions, stability
+function, symplecticity):
+
+| Scheme | Order | Stability | Use Case |
+|--------|-------|-----------|----------|
+| **Gauss-Legendre 2** | 4 | A, not L, symplectic (measured) | The library's only symplectic method above order 2. Its tableau is *not* A-symmetric (`a_12 != a_21`), so the symplecticity is pinned by measurement — phase-area defect 3.05e-13 under the strict solve — not by a coefficient symmetry; not L-stable (`R(-100) = 0.887`, `R(z) -> 1` as `z -> -inf`) |
+| **Radau IIA s=2** | 3 | L, stiffly accurate | The no-compromise stiff workhorse: damps the whole negative real axis (`|R(-100)| ≈ 0.019`) with no A(α)-cone restriction, stiffly accurate so the endpoint stage is `f(t^{n+1}, y^{n+1})` |
+
+```python
+from warpSPHIntegrators import getIntegrator
+
+for name in ('Gauss-Legendre 2', 'Radau IIA s=2'):
+    scheme = getIntegrator(name)
+    result = scheme(system, dt=dt, f=rhs)
+```
+
+At `dt = 0.1` on the 1-D oscillator, Gauss-Legendre 2 keeps the energy inside
+a flat ~1e-10 band (against the JFNK solve's own noise) where Velocity Verlet
+drifts at 1e-2 and RK4 accumulates linearly in `T`; Radau IIA s=2 damps the
+scalar test equation to `|R(-10)| = 0.096` in one step where BDF5 only
+reaches 0.655 (its A(α) cone is 51.84°).
+[`scripts/blockrk_benchmark.py`](scripts/blockrk_benchmark.py),
+![Block-RK benchmark](images/blockrk_benchmark.png),
+[NOTES §3.18](NOTES.md#318-phase-6-coupled-fully-implicit-rk-gauss-legendre-2-radau-iiia-s2--done-2026-09-15).
 
 ### Explicit Multistep (Adams-Bashforth / Adams-Bashforth-Moulton)
 
@@ -599,6 +643,8 @@ position-only Hamiltonian.
 | ESDIRK3(2)4L[2]SA | 3 | DIRK | L-stable, stiffly accurate, explicit first stage | no |
 | ESDIRK4(3)6L[2]SA | 4 | DIRK | L-stable, stiffly accurate, explicit first stage | no |
 | Newmark | 2 | Implicit second-order | Average acceleration is oscillator-unconditionally stable | linear only |
+| Gauss-Legendre 2 | 4 | Coupled block RK | A-stable, not L-stable; one 2xN JFNK block solve per step; symplectic for separable Hamiltonians (measured — tableau not A-symmetric) | yes, conditional |
+| Radau IIA s=2 | 3 | Coupled block RK | L-stable, stiffly accurate; one 2xN JFNK block solve per step; damps the whole negative real axis | no |
 | BDF1 | 1 | Implicit multistep | L-stable | no |
 | BDF2 | 2 | Implicit multistep | A-stable | no |
 | BDF3 | 3 | Implicit multistep | Sectorial A(alpha) stability | no |
@@ -1115,10 +1161,12 @@ method runs.
     The unpreconditioned GMRES iteration count grows with the stage operator's eigenvalue spread, so
     at particle scale a problem-specific operator-based preconditioner (the
     `JFNKSolver(preconditioner=...)` hook, DIRK section above) is what keeps the Krylov count flat.
-- **Fully implicit RK is not implemented.** Gauss, Radau, and Lobatto methods need a coupled
-    `s·N`-unknown solve rather than the sequential DIRK solve. BDF1–BDF5 and the fully implicit
-    Adams-Moulton correctors AM2–AM4 are available; the coupled-RK family remains planned — scoped in
-    [NOTES.md §3.6](NOTES.md#36-valid-schemes-and-what-each-costs).
+- **The coupled (block) fully implicit RK family is partial.** Gauss-Legendre s=2
+    (order 4, A-stable, symplectic for separable Hamiltonians) and Radau IIA s=2 (order 3,
+    L-stable, stiffly accurate) are implemented in `fullyimplicit.py` — one coupled `s·N`-unknown
+    JFNK block solve per step, exact-JVP matvec by default (NOTES.md §3.18). The Lobatto
+    IIIA/IIIB and s=3 tableaus remain planned. BDF1–BDF5 and the fully implicit Adams-Moulton
+    correctors AM2–AM4 are available as well.
 - **Only two additive (IMEX) pairs are shipped.** The Kennedy–Carpenter
     ARK3(2)4L[2]SA and ARK4(3)6L[2]SA are implemented (with embedded estimators and the
     `IMEXRHS` split); higher-stage ARK and Radau-type additive schemes remain planned
@@ -1131,8 +1179,9 @@ method runs.
 Explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4), implicit multistep
 (BDF1–BDF5, fully implicit Adams-Moulton 2–4), seven DIRK schemes (Backward Euler, Implicit
 Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA), two
-additive IMEX pairs (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA), one Rosenbrock-W scheme (ROS3P), and
-two exponential integrators (ETD2RK, EXPRB32) *are* implemented — see the sections above.
+additive IMEX pairs (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA), one Rosenbrock-W scheme (ROS3P),
+two exponential integrators (ETD2RK, EXPRB32), and two coupled fully implicit RK schemes
+(Gauss-Legendre 2, Radau IIA s=2) *are* implemented — see the sections above.
 Everything still open
 is scoped and costed in [NOTES.md §3](NOTES.md#3-multistep-and-implicit-methods), including which
 schemes are worth adding next and what each one costs.
@@ -1141,7 +1190,7 @@ schemes are worth adding next and what each one costs.
 
 Contributions welcome! Areas of interest:
 
-- Remaining implicit schemes (fully implicit RK: Gauss, Radau, Lobatto; BDF6+; higher-order Rosenbrock-W, e.g. ROS34PW2)
+- Remaining implicit schemes (coupled block RK: Lobatto IIIA/IIIB, Gauss s=3, Radau s=3; BDF6+; higher-order Rosenbrock-W, e.g. ROS34PW2)
 - An adaptive-stepping driver (output at fixed times, event location) and variable-step multistep coefficients (NOTES.md §3.17)
 - Better documentation and examples
 - Performance optimizations
