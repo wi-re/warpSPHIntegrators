@@ -153,7 +153,7 @@ def applyQuantityUpdate(systemState, systemUpdate, spec: ComponentUpdateSpec, **
 from enum import Enum
 import torch
 
-from .enums import IntegrationSchemeType
+from .enums import IntegrationSchemeType, SCHEME_FAMILY
 from typing import Callable
 class IntegrationScheme(NamedTuple):
     function: Callable
@@ -205,6 +205,16 @@ class IntegrationScheme(NamedTuple):
     def supports_reuse(self) -> bool:
         """True iff `priorStep` reuse costs this scheme no convergence order."""
         return self.reuse_order is not None and self.reuse_order >= self.order
+
+    @property
+    def family(self):
+        """The family enum class this scheme belongs to (e.g. `ExplicitRK`, `DIRK`).
+
+        One of the `enums.FAMILY_ENUMS` views of `IntegrationSchemeType` — the
+        same fact as `SCHEME_FAMILY[self.identifier]`, on the registered
+        scheme object.
+        """
+        return SCHEME_FAMILY[self.identifier]
 
     def __call__(self, state, dt, f, *args, **kwargs):
         return self.function(state, dt, f, *args, **kwargs)

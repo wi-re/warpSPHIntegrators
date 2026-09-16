@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 # NOTE: this module is deliberately free of torch. It used to carry a
 # `@torch.jit.script` decorator on the enum, which is a no-op at the Python level
 # (`type(IntegrationSchemeType)` is still `enum.EnumType`) but forced a torch import
@@ -113,3 +112,216 @@ class IntegrationSchemeType(Enum):
     # barrier for explicit RK bites (order 4 needs 5+ stages). Explicit
     # single-step, so no first-stage reuse.
     ssprk104 = 63
+
+
+# --------------------------------------------------------------------------- #
+# Family views of IntegrationSchemeType                                        #
+# --------------------------------------------------------------------------- #
+#
+# IntegrationSchemeType is the single enum that captures every registered
+# scheme, but a 64-member flat list does not tell a user which entry is an
+# explicit scheme and which is an implicit one. The family enums below are
+# thin VIEWS of the same members: every member keeps the same name and the
+# same int value as its IntegrationSchemeType counterpart, so all four lookup
+# forms below return the same scheme,
+#
+#     getIntegrator(ExplicitRK.rungeKutta4)
+#     getIntegrator(IntegrationSchemeType.rungeKutta4)
+#     getIntegrator('RK4')
+#     getIntegrator('rungeKutta4')
+#
+# and the families are exhaustive and disjoint over the 64 members (pinned in
+# tests/test_family_enums.py). `SCHEME_FAMILY` maps a scheme's identifier to
+# the family enum class it belongs to; IntegrationScheme.family is the same
+# fact on the registered scheme object.
+class ExplicitRK(Enum):
+    """One-step explicit RK-family schemes (no stage solve).
+
+    Classical RK, the SSP and TVD variants, the embedded pairs, and the
+    position/velocity (second-order-ODE) baselines `explicitEuler` and
+    `nystrom5th`. Driver: the generic RK path (Butcher tableaus in
+    `butcher.py`); `epec`/`epecModified` are PECE variants of the same form.
+    """
+    forwardEuler = IntegrationSchemeType.forwardEuler.value
+    explicitEuler = IntegrationSchemeType.explicitEuler.value
+    rungeKutta2 = IntegrationSchemeType.rungeKutta2.value
+    heunsMethod = IntegrationSchemeType.heunsMethod.value
+    ralston2nd = IntegrationSchemeType.ralston2nd.value
+    rungeKutta3 = IntegrationSchemeType.rungeKutta3.value
+    heunsMethod3rd = IntegrationSchemeType.heunsMethod3rd.value
+    ralston3rd = IntegrationSchemeType.ralston3rd.value
+    wray3rd = IntegrationSchemeType.wray3rd.value
+    sspRK3 = IntegrationSchemeType.sspRK3.value
+    ssprk104 = IntegrationSchemeType.ssprk104.value
+    rungeKutta4 = IntegrationSchemeType.rungeKutta4.value
+    rungeKutta4alt = IntegrationSchemeType.rungeKutta4alt.value
+    nystrom5th = IntegrationSchemeType.nystrom5th.value
+    bogackiShampine = IntegrationSchemeType.bogackiShampine.value
+    dormandPrince = IntegrationSchemeType.dormandPrince.value
+    cashKarp = IntegrationSchemeType.cashKarp.value
+    epec = IntegrationSchemeType.epec.value
+    epecModified = IntegrationSchemeType.epecModified.value
+    tvdRK3 = IntegrationSchemeType.tvdRK3.value
+    tvdRK2 = IntegrationSchemeType.tvdRK2.value
+
+
+class Symplectic(Enum):
+    """Geometric integrators for the position/velocity (second-order-ODE) form.
+
+    Symplectic Euler and the symplectic splitting family (Leap Frog, Velocity
+    Verlet, the Forest-Ruth PEFRL/VEFRL). Symplectic for separable
+    Hamiltonians (force depending on position alone) -- with a
+    velocity-dependent force the order-2+ members drop to first order
+    (NOTES.md, 'Still open').
+    """
+    semiImplicitEuler = IntegrationSchemeType.semiImplicitEuler.value
+    symplecticEuler = IntegrationSchemeType.symplecticEuler.value
+    leapFrog = IntegrationSchemeType.leapFrog.value
+    velocityVerlet = IntegrationSchemeType.velocityVerlet.value
+    pefrl = IntegrationSchemeType.pefrl.value
+    vefrl = IntegrationSchemeType.vefrl.value
+
+
+class RelaxedChebyshev(Enum):
+    """Relaxed Chebyshev / Lobatto super-timestepping (`rkc.py`).
+
+    Explicit, matrix-free, real-axis stability interval [-K(s), 0] growing
+    O(s^2) in the per-step stage count (pass `s=` or `lambda_max=`): RKC1
+    K = 2s^2, RKC2 K = 2(s^2-1)/3, RKL2 K = (s^2+s-2)/2.
+    """
+    rkc1 = IntegrationSchemeType.rkc1.value
+    rkc2 = IntegrationSchemeType.rkc2.value
+    rkl2 = IntegrationSchemeType.rkl2.value
+
+
+class MultistepExplicit(Enum):
+    """Explicit linear multistep (Adams family, `multistep.py`).
+
+    Adams-Bashforth 2-5 (pure predictor, one evaluation after startup) and
+    the Adams-Bashforth-Moulton 2-4 PECE predictor-correctors (two
+    evaluations after startup). All carry state-bearing `StepHistory`.
+    """
+    ab2 = IntegrationSchemeType.ab2.value
+    ab3 = IntegrationSchemeType.ab3.value
+    ab4 = IntegrationSchemeType.ab4.value
+    ab5 = IntegrationSchemeType.ab5.value
+    abm2 = IntegrationSchemeType.abm2.value
+    abm3 = IntegrationSchemeType.abm3.value
+    abm4 = IntegrationSchemeType.abm4.value
+
+
+class DIRK(Enum):
+    """Diagonally implicit Runge-Kutta (`dirk.py`, JFNK-closed by default).
+
+    Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2 and the
+    two ESDIRKs (explicit first stage + L[2] damping). The stiffly accurate
+    tableaus with an explicit first stage accept lossless `priorStep` reuse.
+    """
+    backwardEuler = IntegrationSchemeType.backwardEuler.value
+    implicitMidpoint = IntegrationSchemeType.implicitMidpoint.value
+    trapezoidal = IntegrationSchemeType.trapezoidal.value
+    sdirk2 = IntegrationSchemeType.sdirk2.value
+    trbdf2 = IntegrationSchemeType.trbdf2.value
+    esdirk324l2sa = IntegrationSchemeType.esdirk324l2sa.value
+    esdirk436l2sa = IntegrationSchemeType.esdirk436l2sa.value
+
+
+class CoupledRK(Enum):
+    """Coupled (block) fully implicit RK (`fullyimplicit.py`).
+
+    Non-triangular tableaus (a_ij != 0 for i != j), so the s stage equations
+    are one s-by-s JFNK block solve over a BlockState, not s sequential stage
+    solves. Gauss-Legendre 2 (order 4, A-stable, symplectic by measurement)
+    and Radau IIA s=2 (order 3, L-stable, stiffly accurate).
+    """
+    gaussLegendre2 = IntegrationSchemeType.gaussLegendre2.value
+    radauIia2 = IntegrationSchemeType.radauIia2.value
+
+
+class MultistepImplicit(Enum):
+    """Implicit linear multistep (BDF family, `bdf.py`/`multistep.py`).
+
+    BDF1-BDF5 (A-stable through BDF2, A(alpha) cones 86.03/73.35/51.84 deg
+    for BDF3-5) and the JFNK-corrected Adams-Moulton AM2-AM4. State-snapshot
+    `StepHistory`; Dormand-Prince cold start until the history is full.
+    """
+    bdf1 = IntegrationSchemeType.bdf1.value
+    bdf2 = IntegrationSchemeType.bdf2.value
+    bdf3 = IntegrationSchemeType.bdf3.value
+    bdf4 = IntegrationSchemeType.bdf4.value
+    bdf5 = IntegrationSchemeType.bdf5.value
+    am2 = IntegrationSchemeType.am2.value
+    am3 = IntegrationSchemeType.am3.value
+    am4 = IntegrationSchemeType.am4.value
+
+
+class IMEX(Enum):
+    """Additive IMEX schemes on an explicit/implicit split (`imex.py` and friends).
+
+    IMEX Euler (one stage), the ARK3/4 Kennedy-Carpenter pairs (ERK + ESDIRK
+    halves), and the IMEX linear multistep family SBDF2/SBDF3/CNAB2 (BDF /
+    trapezoidal implicit backbone + explicit endpoint extrapolation). A plain
+    callable runs the pure-implicit limit; pass an IMEXRHS to activate the
+    split.
+    """
+    imexEuler = IntegrationSchemeType.imexEuler.value
+    ark324l2sa = IntegrationSchemeType.ark324l2sa.value
+    ark436l2sa = IntegrationSchemeType.ark436l2sa.value
+    sbdf2 = IntegrationSchemeType.sbdf2.value
+    sbdf3 = IntegrationSchemeType.sbdf3.value
+    cnab2 = IntegrationSchemeType.cnab2.value
+
+
+class LinearlyImplicit(Enum):
+    """Rosenbrock-W (linearly implicit, semilinear split, `rosenbrock.py`).
+
+    Each stage is one GMRES solve against a frozen operator W -- no outer
+    Newton loop. ROS3P is order 3, A-stable (R(inf) = 1 - sqrt(3)), not
+    L-stable.
+    """
+    ros3p = IntegrationSchemeType.ros3p.value
+
+
+class Exponential(Enum):
+    """Exponential integrators (`exponential.py`).
+
+    Integrate the stiff part through the matrix exponential / phi_k
+    functions, applied matrix-free via Krylov (Arnoldi). ETD2RK (order 2)
+    needs the `linear` accessor (SemilinearRHS); EXPRB32 (order 3) freezes
+    the full RHS Jacobian and runs on plain callables.
+    """
+    etd2rk = IntegrationSchemeType.etd2rk.value
+    exprb32 = IntegrationSchemeType.exprb32.value
+
+
+class Newmark(Enum):
+    """Newmark beta/gamma integration for the position/velocity form (`newmark.py`).
+
+    The average-acceleration (beta=1/4) variant is oscillator-unconditionally
+    stable; JFNK-closed by default.
+    """
+    newmark = IntegrationSchemeType.newmark.value
+
+
+FAMILY_ENUMS = (
+    ExplicitRK,
+    Symplectic,
+    RelaxedChebyshev,
+    MultistepExplicit,
+    DIRK,
+    CoupledRK,
+    MultistepImplicit,
+    IMEX,
+    LinearlyImplicit,
+    Exponential,
+    Newmark,
+)
+
+#: Maps each IntegrationSchemeType member to the family enum class it belongs
+#: to. Exhaustive and disjoint: every member of IntegrationSchemeType appears
+#: in exactly one family (pinned in tests/test_family_enums.py).
+SCHEME_FAMILY = {
+    IntegrationSchemeType(member.value): family
+    for family in FAMILY_ENUMS
+    for member in family
+}

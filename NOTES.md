@@ -72,12 +72,15 @@ are gone.
   landed with zero comparable surprises — the "reuse `_weighted_update`, bootstrap
   from Dormand-Prince, thread `StepHistory`" design didn't need new machinery that
   could itself be wrong, and the full suite (1103 → 1380 passing tests) went green on
-  the first run after fixing one pre-existing test's exclusion criteria. What remains
-  open in this area — BDF6 and variable-step multistep coefficients, plus Phase 12's
-  never-represented families (generalized-alpha / HHT-alpha, high-order symplectic
-  composition, one-step RKN) — is each individually scoped in §3.6/§3.4
-  and gated on a concrete downstream need, per the recommendation at the end of §3.8;
-  none of it is a groundwork gap the way Phase 0 was. (High-order IMEX/ARK landed as
+  the first run after fixing one pre-existing test's exclusion criteria. What
+  remains open in this area — BDF6 and the BDF3-5 cold-start ceiling, the coupled-block
+  s=3 pair (Gauss-Legendre / Radau IIA s=3) and Lobatto IIIA-IIIB, the remaining Phase 12
+  families (generalized-alpha / HHT-alpha, SSPRK(5,4), high-order symplectic composition,
+  one-step RKN), and the Phase 9/10 warm-start and cold-start-gradient items — is tracked
+  with per-item triggers in `IMPLICIT_ROADMAP.md` (open-items-only since 2026-09-15);
+  each is individually scoped (see the sections cited above) and gated on a concrete
+  downstream need, per the recommendation at the end of §3.8; none of it is a groundwork
+  gap the way Phase 0 was. (High-order IMEX/ARK landed as
   Phase 5 on 2026-09-09 — `ark.py`, see §3.6. Preconditioned JFNK landed as Phase 2
   on 2026-09-09 — left/right-preconditioned `gmres`, the 3-arg
   `preconditioner(v, state, context)` hook on `JFNKSolver`, identity/diagonal

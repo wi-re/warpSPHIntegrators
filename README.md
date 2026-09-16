@@ -682,6 +682,9 @@ position-only Hamiltonian.
 | EPEC Modified | 2 | Explicit RK | Heun-style PECE | no |
 | TVD RK2 | 2 | Explicit TVD RK | Conservative/TVD form | no |
 | TVD RK3 | 3 | Explicit TVD RK | Shu-Osher SSP form | no |
+| RKC1 | 1 | Relaxed Chebyshev | Matrix-free super-timestepping, real axis to $-K(s)$, $K = 2s^2$; `s=` or `lambda_max=` per step | no |
+| RKC2 | 2 | Relaxed Chebyshev | Legendre recurrence, $K = 2(s^2-1)/3$; `s=` or `lambda_max=` per step | no |
+| RKL2 | 2 | Relaxed Chebyshev | Lobatto recurrence, $K = (s^2+s-2)/2$; `s=` or `lambda_max=` per step | no |
 | Backward Euler (implicit) | 1 | DIRK | L-stable | no |
 | Implicit Midpoint | 2 | DIRK | A-stable; strict solve for geometry | yes |
 | Trapezoidal (Crank-Nicolson) | 2 | DIRK | A-stable and symmetric | linear only |
@@ -716,6 +719,49 @@ position-only Hamiltonian.
 | Adams-Moulton 2 (implicit) | 2 | Implicit multistep | JFNK-corrected trapezoidal rule; A-stable | no |
 | Adams-Moulton 3 (implicit) | 3 | Implicit multistep | JFNK-corrected AM3; bounded stability region | no |
 | Adams-Moulton 4 (implicit) | 4 | Implicit multistep | JFNK-corrected AM4; bounded stability region | no |
+
+## Family enums
+
+The registry's single `IntegrationSchemeType` enum captures all 64 schemes, but
+a flat list of members does not tell a user which entry is an explicit scheme
+and which is an implicit one. The library therefore also ships one enum per
+driver family — `ExplicitRK`, `Symplectic`, `RelaxedChebyshev`,
+`MultistepExplicit`, `DIRK`, `CoupledRK`, `MultistepImplicit`, `IMEX`,
+`LinearlyImplicit`, `Exponential`, `Newmark` (all in `enums.FAMILY_ENUMS`).
+Each family member keeps the same name and value as its
+`IntegrationSchemeType` counterpart, so every lookup form resolves to the same
+registered scheme:
+
+```python
+from warpSPHIntegrators import getIntegrator, ExplicitRK, DIRK
+
+getIntegrator(ExplicitRK.rungeKutta4)   # -> the 'RK4' scheme
+getIntegrator(DIRK.backwardEuler)       # -> 'Backward Euler (implicit)'
+getIntegrator('RK4')                    # same scheme, by display name
+```
+
+Every scheme knows its family, so family-wide queries are one line:
+
+```python
+from warpSPHIntegrators import IntegrationSchemes, DIRK
+
+[s.name for s in IntegrationSchemes if s.family is DIRK]
+# ['Backward Euler (implicit)', 'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)', ...]
+```
+
+| Family enum | Schemes | Driver |
+|---|---|---|
+| `ExplicitRK` | Forward/Explicit Euler, RK2-RK4, SSP RK3, SSPRK(10,4), TVD RK2/3, embedded pairs, Nystrom, EPEC | Butcher tableaus (`butcher.py`) |
+| `Symplectic` | Symplectic Euler, Leap Frog, Velocity Verlet, PEFRL, VEFRL | position/velocity splitting (`verlet.py`, `ruth.py`) |
+| `RelaxedChebyshev` | RKC1, RKC2, RKL2 | Chebyshev recurrences (`rkc.py`) |
+| `MultistepExplicit` | AB2-5, ABM2-4 (PECE) | Adams linear multistep (`multistep.py`) |
+| `DIRK` | Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3/4 | diagonally implicit, JFNK-closed (`dirk.py`) |
+| `CoupledRK` | Gauss-Legendre 2, Radau IIA s=2 | coupled s-by-s block solve (`fullyimplicit.py`) |
+| `MultistepImplicit` | BDF1-5, Adams-Moulton 2-4 (implicit) | implicit linear multistep (`bdf.py`, `multistep.py`) |
+| `IMEX` | IMEX Euler, ARK3/4, SBDF2/3, CNAB2 | additive split (`imex.py`, `ark.py`, `imexmultistep.py`) |
+| `LinearlyImplicit` | ROS3P | Rosenbrock-W (`rosenbrock.py`) |
+| `Exponential` | ETD2RK, EXPRB32 | matrix-free `phi_k` (`exponential.py`) |
+| `Newmark` | Newmark | position/velocity, JFNK-closed (`newmark.py`) |
 
 ## First-stage reuse (`priorStep`)
 
@@ -1247,13 +1293,31 @@ Everything still open
 is scoped and costed in [NOTES.md §3](NOTES.md#3-multistep-and-implicit-methods), including which
 schemes are worth adding next and what each one costs.
 
+## Documentation
+
+The [docs/](docs/index.md) wiki covers each integrator family — description,
+equations, Butcher tableaus, stability, and citations — plus the nonlinear-solver
+stack (JFNK/GMRES, preconditioning, adaptive step control). It is plain MyST
+markdown built with Sphinx (no autodoc, no torch needed for the build):
+
+```bash
+pip install -e '.[docs]'
+sphinx-build docs docs/_build
+# open docs/_build/index.html
+```
+
+The [Supported Integrators](#supported-integrators) table above is the short
+reference; `NOTES.md` is the detailed measurement record; the notebooks
+(`integrators.ipynb`, `viscous_burgers_demo.ipynb`, `jfnk_wave_equation.ipynb`)
+are the interactive examples.
+
 ## Contributing
 
 Contributions welcome! Areas of interest:
 
-- Remaining implicit schemes (coupled block RK: Lobatto IIIA/IIIB, Gauss s=3, Radau s=3; BDF6+; higher-order Rosenbrock-W, e.g. ROS34PW2)
+- Remaining schemes and families — see [IMPLICIT_ROADMAP.md](IMPLICIT_ROADMAP.md) (open items only): BDF6, the coupled block s=3 pair, Lobatto IIIA-IIIB, SSPRK(5,4), generalized-alpha, symplectic composition, one-step RKN, higher-order Rosenbrock-W
 - An adaptive-stepping driver (output at fixed times, event location) and variable-step multistep coefficients (NOTES.md §3.17)
-- Better documentation and examples
+- Extending the [docs/](docs/index.md) wiki (new families, new schemes)
 - Performance optimizations
 - Additional state field behaviors
 

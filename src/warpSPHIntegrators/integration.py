@@ -1,5 +1,8 @@
 import functools
+import difflib
 import warnings
+
+from enum import Enum
 
 from .util import IntegrationScheme, updateStateEuler, updateStateSemiImplicitEuler
 from .util import applyStateUpdate, applyPositionUpdate, applyVelocityUpdate, applyQuantityUpdate
@@ -385,13 +388,32 @@ def getPreferredScheme(order):
 
 
 def getIntegrator(integrator):
-    """Look a scheme up by display name, enum member, or enum member name."""
+    """Look a scheme up by display name, enum member, or enum member name.
+
+    `integrator` may be a display name ('RK4'), an enum member name
+    ('rungeKutta4'), an `IntegrationSchemeType` member, or a member of any of
+    the family enums (`ExplicitRK`, `DIRK`, ... in `enums.FAMILY_ENUMS`) —
+    the family members keep the same names and values, so every form
+    resolves to the same registered scheme.
+    """
     for scheme in IntegrationSchemes:
         if (scheme.name == integrator
                 or scheme.identifier == integrator
-                or scheme.identifier.name == integrator):
+                or scheme.identifier.name == integrator
+                or (isinstance(integrator, Enum)
+                    and scheme.identifier.value == integrator.value)):
             return scheme
-    raise ValueError(f"Unknown integrator {integrator}")
+    if isinstance(integrator, str):
+        close = difflib.get_close_matches(
+            integrator,
+            [scheme.name for scheme in IntegrationSchemes]
+            + [member.name for member in IntegrationSchemeType],
+            n=3)
+        hint = f" Did you mean: {', '.join(close)}?" if close else ""
+    else:
+        hint = (" (valid: a display name, an enum member name, an "
+                "IntegrationSchemeType member, or a family-enum member)")
+    raise ValueError(f"Unknown integrator {integrator!r}.{hint}")
 
 
 def getIntegrationEnum(integrator):

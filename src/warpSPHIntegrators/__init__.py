@@ -66,6 +66,21 @@ from .exponential import integrateETD2RK as ETD2RK, integrateEXPRB32 as EXPRB32
 from .adaptive import estimate_error_norm, propose_dt, dormand_prince_dense_output
 
 from .util import IntegrationSchemeType
+from .enums import (
+    ExplicitRK,
+    Symplectic,
+    RelaxedChebyshev,
+    MultistepExplicit,
+    DIRK,
+    CoupledRK,
+    MultistepImplicit,
+    IMEX,
+    LinearlyImplicit,
+    Exponential,
+    Newmark,
+    FAMILY_ENUMS,
+    SCHEME_FAMILY,
+)
 
 from .integration import (getPreferredScheme, getIntegrator, getIntegrationEnum, IntegrationSchemes)
 from .reuse import (
@@ -174,6 +189,19 @@ __all__ = [
     "IntegrationSystem",
     "BaseIntegrationSystem",
     "IntegrationSchemeType",
+    "ExplicitRK",
+    "Symplectic",
+    "RelaxedChebyshev",
+    "MultistepExplicit",
+    "DIRK",
+    "CoupledRK",
+    "MultistepImplicit",
+    "IMEX",
+    "LinearlyImplicit",
+    "Exponential",
+    "Newmark",
+    "FAMILY_ENUMS",
+    "SCHEME_FAMILY",
     "getPreferredScheme",
     "getIntegrator",
     "getIntegrationEnum",
