@@ -32,8 +32,8 @@ from .fields import (
 )
 from .euler import integrateExplicitEuler, integrateSemiImplicitEuler
 from .butcher import (
-    forwardEuler, RungeKutta2, midPoint, heunsMethod, ralston2nd, RungeKutta3,
-    heunsMethod3rd, ralston3rd, Wray3rd, SSPRK3, RungeKutta4, RungeKutta4alt,
+    forwardEuler, RungeKutta2, heunsMethod, ralston2nd, RungeKutta3,
+    heunsMethod3rd, ralston3rd, Wray3rd, SSPRK3, SSPRK104, RungeKutta4, RungeKutta4alt,
     Nystrom5th, BogackiShampine, DormandPrince, CashKarp, EPEC, EPECmodified,
 )
 from .verlet import leapFrog, symplecticEuler, velocityVerlet
@@ -60,48 +60,47 @@ IntegrationSchemes = []
 
 from .util import IntegrationSchemeType
 
-# The two boolean flags are (dissipation, nonLagrangian).
-#
-# `dissipation` is set to False exactly for the symplectic schemes (the Verlet
-# family and the Forest-Ruth variants), which conserve a shadow Hamiltonian and so
-# do not drift in energy secularly, and True for the plain Runge-Kutta schemes,
-# which do. That is the only reading of the flag consistent with the values that
-# were already recorded, and it removes the copy-paste inconsistencies noted in
+# The `dissipation` flag is set to False exactly for the symplectic schemes (the
+# Verlet family and the Forest-Ruth variants), which conserve a shadow Hamiltonian
+# and so do not drift in energy secularly, and True for the plain Runge-Kutta
+# schemes, which do. That is the only reading of the flag consistent with the values
+# that were already recorded, and it removes the copy-paste inconsistencies noted in
 # NOTES.md 2.13 (symplecticEuler was True while leapFrog was False; PEFRL was False
 # while VEFRL was True).
 #
-# `nonLagrangian` now agrees with `dissipation` for every registered scheme, i.e. it
-# carries no information. Nothing in the codebase reads either flag. Keep them for
-# API compatibility, but `nonLagrangian` is a candidate for removal.
+# The former `nonLagrangian` flag agreed with `dissipation` for every registered
+# scheme, carried no information, and nothing read it, so it was removed
+# (housekeeping, 2026-09-15).
 
-IntegrationSchemes.append(IntegrationScheme(forwardEuler, 'Forward Euler', IntegrationSchemeType.forwardEuler, 1, True, True))
-IntegrationSchemes.append(IntegrationScheme(RungeKutta2,  'Midpoint',      IntegrationSchemeType.rungeKutta2, 2, True, True))
-IntegrationSchemes.append(IntegrationScheme(heunsMethod,  'Heun\'s Method (2nd order)', IntegrationSchemeType.heunsMethod, 2, True, True))
-IntegrationSchemes.append(IntegrationScheme(ralston2nd,   'Ralston\'s Method (2nd order)', IntegrationSchemeType.ralston2nd, 2, True, True))
-IntegrationSchemes.append(IntegrationScheme(RungeKutta3,  'RK3',           IntegrationSchemeType.rungeKutta3, 3, True, True))
-IntegrationSchemes.append(IntegrationScheme(heunsMethod3rd, 'Heun\'s Method (3rd order)', IntegrationSchemeType.heunsMethod3rd, 3, True, True))
-IntegrationSchemes.append(IntegrationScheme(ralston3rd,   'Ralston\'s Method (3rd order)', IntegrationSchemeType.ralston3rd, 3, True, True))
-IntegrationSchemes.append(IntegrationScheme(Wray3rd,      'Wray\'s Method (3rd order)', IntegrationSchemeType.wray3rd, 3, True, True))
-IntegrationSchemes.append(IntegrationScheme(SSPRK3,       'SSP RK3',       IntegrationSchemeType.sspRK3, 3, True, True))
-IntegrationSchemes.append(IntegrationScheme(RungeKutta4,  'RK4',           IntegrationSchemeType.rungeKutta4, 4, True, True))
-IntegrationSchemes.append(IntegrationScheme(RungeKutta4alt, 'RK4 (alternative)', IntegrationSchemeType.rungeKutta4alt, 4, True, True))
-IntegrationSchemes.append(IntegrationScheme(Nystrom5th,   'Nystrom 5th order', IntegrationSchemeType.nystrom5th, 5, True, True))
-IntegrationSchemes.append(IntegrationScheme(BogackiShampine, 'Bogacki-Shampine 3(2)', IntegrationSchemeType.bogackiShampine, 3, True, True))
-IntegrationSchemes.append(IntegrationScheme(DormandPrince, 'Dormand-Prince 5(4)', IntegrationSchemeType.dormandPrince, 5, True, True))
-IntegrationSchemes.append(IntegrationScheme(CashKarp,     'Cash-Karp 5(4)', IntegrationSchemeType.cashKarp, 5, True, True))
-IntegrationSchemes.append(IntegrationScheme(leapFrog, 'Leap Frog', IntegrationSchemeType.leapFrog, 2, False, False))
-IntegrationSchemes.append(IntegrationScheme(symplecticEuler, 'Symplectic Euler', IntegrationSchemeType.symplecticEuler, 2, False, False))
-IntegrationSchemes.append(IntegrationScheme(velocityVerlet, 'Velocity Verlet', IntegrationSchemeType.velocityVerlet, 2, False, False))
-IntegrationSchemes.append(IntegrationScheme(PEFRL, 'PEFRL', IntegrationSchemeType.pefrl, 4, False, False))
-IntegrationSchemes.append(IntegrationScheme(VEFRL, 'VEFRL', IntegrationSchemeType.vefrl, 4, False, False))
-IntegrationSchemes.append(IntegrationScheme(EPEC, 'EPEC', IntegrationSchemeType.epec, 2, True, True))
-IntegrationSchemes.append(IntegrationScheme(EPECmodified, 'EPEC Modified', IntegrationSchemeType.epecModified, 2, True, True))
-IntegrationSchemes.append(IntegrationScheme(TVDRK3, 'TVD RK3', IntegrationSchemeType.tvdRK3, 3, True, True))
-IntegrationSchemes.append(IntegrationScheme(TVDRK2, 'TVD RK2', IntegrationSchemeType.tvdRK2, 2, True, True))
+IntegrationSchemes.append(IntegrationScheme(forwardEuler, 'Forward Euler', IntegrationSchemeType.forwardEuler, 1, True))
+IntegrationSchemes.append(IntegrationScheme(RungeKutta2,  'Midpoint',      IntegrationSchemeType.rungeKutta2, 2, True))
+IntegrationSchemes.append(IntegrationScheme(heunsMethod,  'Heun\'s Method (2nd order)', IntegrationSchemeType.heunsMethod, 2, True))
+IntegrationSchemes.append(IntegrationScheme(ralston2nd,   'Ralston\'s Method (2nd order)', IntegrationSchemeType.ralston2nd, 2, True))
+IntegrationSchemes.append(IntegrationScheme(RungeKutta3,  'RK3',           IntegrationSchemeType.rungeKutta3, 3, True))
+IntegrationSchemes.append(IntegrationScheme(heunsMethod3rd, 'Heun\'s Method (3rd order)', IntegrationSchemeType.heunsMethod3rd, 3, True))
+IntegrationSchemes.append(IntegrationScheme(ralston3rd,   'Ralston\'s Method (3rd order)', IntegrationSchemeType.ralston3rd, 3, True))
+IntegrationSchemes.append(IntegrationScheme(Wray3rd,      'Wray\'s Method (3rd order)', IntegrationSchemeType.wray3rd, 3, True))
+IntegrationSchemes.append(IntegrationScheme(SSPRK3,       'SSP RK3',       IntegrationSchemeType.sspRK3, 3, True))
+IntegrationSchemes.append(IntegrationScheme(SSPRK104,     'SSPRK(10,4)',   IntegrationSchemeType.ssprk104, 4, True))
+IntegrationSchemes.append(IntegrationScheme(RungeKutta4,  'RK4',           IntegrationSchemeType.rungeKutta4, 4, True))
+IntegrationSchemes.append(IntegrationScheme(RungeKutta4alt, 'RK4 (alternative)', IntegrationSchemeType.rungeKutta4alt, 4, True))
+IntegrationSchemes.append(IntegrationScheme(Nystrom5th,   'Nystrom 5th order', IntegrationSchemeType.nystrom5th, 5, True))
+IntegrationSchemes.append(IntegrationScheme(BogackiShampine, 'Bogacki-Shampine 3(2)', IntegrationSchemeType.bogackiShampine, 3, True))
+IntegrationSchemes.append(IntegrationScheme(DormandPrince, 'Dormand-Prince 5(4)', IntegrationSchemeType.dormandPrince, 5, True))
+IntegrationSchemes.append(IntegrationScheme(CashKarp,     'Cash-Karp 5(4)', IntegrationSchemeType.cashKarp, 5, True))
+IntegrationSchemes.append(IntegrationScheme(leapFrog, 'Leap Frog', IntegrationSchemeType.leapFrog, 2, False))
+IntegrationSchemes.append(IntegrationScheme(symplecticEuler, 'Symplectic Euler', IntegrationSchemeType.symplecticEuler, 2, False))
+IntegrationSchemes.append(IntegrationScheme(velocityVerlet, 'Velocity Verlet', IntegrationSchemeType.velocityVerlet, 2, False))
+IntegrationSchemes.append(IntegrationScheme(PEFRL, 'PEFRL', IntegrationSchemeType.pefrl, 4, False))
+IntegrationSchemes.append(IntegrationScheme(VEFRL, 'VEFRL', IntegrationSchemeType.vefrl, 4, False))
+IntegrationSchemes.append(IntegrationScheme(EPEC, 'EPEC', IntegrationSchemeType.epec, 2, True))
+IntegrationSchemes.append(IntegrationScheme(EPECmodified, 'EPEC Modified', IntegrationSchemeType.epecModified, 2, True))
+IntegrationSchemes.append(IntegrationScheme(TVDRK3, 'TVD RK3', IntegrationSchemeType.tvdRK3, 3, True))
+IntegrationSchemes.append(IntegrationScheme(TVDRK2, 'TVD RK2', IntegrationSchemeType.tvdRK2, 2, True))
 # Semi-implicit (symplectic) Euler is first order, not second: it is one force
 # evaluation per step, and measures 1.0 (see NOTES.md 2.13).
-IntegrationSchemes.append(IntegrationScheme(semiImplicitEuler, 'Semi-Implicit Euler', IntegrationSchemeType.semiImplicitEuler, 1, False, False))
-IntegrationSchemes.append(IntegrationScheme(explicitEuler, 'Explicit Euler', IntegrationSchemeType.explicitEuler, 1, True, True))
+IntegrationSchemes.append(IntegrationScheme(semiImplicitEuler, 'Semi-Implicit Euler', IntegrationSchemeType.semiImplicitEuler, 1, False))
+IntegrationSchemes.append(IntegrationScheme(explicitEuler, 'Explicit Euler', IntegrationSchemeType.explicitEuler, 1, True))
 
 # ---- Diagonally implicit (NOTES.md S3.6 Phase 2) -------------------------- #
 # JFNK is the default nonlinear solve, so these flags describe the converged method
@@ -109,25 +108,25 @@ IntegrationSchemes.append(IntegrationScheme(explicitEuler, 'Explicit Euler', Int
 # symplectic Gauss-Legendre s=1 method once its stage equation is solved; the other
 # implicit schemes retain their ordinary dissipative classifications.
 IntegrationSchemes.append(IntegrationScheme(
-    implicitBackwardEuler, 'Backward Euler (implicit)', IntegrationSchemeType.backwardEuler, 1, True, True,
+    implicitBackwardEuler, 'Backward Euler (implicit)', IntegrationSchemeType.backwardEuler, 1, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
 IntegrationSchemes.append(IntegrationScheme(
-    implicitMidpoint, 'Implicit Midpoint', IntegrationSchemeType.implicitMidpoint, 2, False, False,
+    implicitMidpoint, 'Implicit Midpoint', IntegrationSchemeType.implicitMidpoint, 2, False,
     implicit=True, steps=1, stiffly_accurate=False, stability='A'))
 IntegrationSchemes.append(IntegrationScheme(
-    trapezoidal, 'Trapezoidal (Crank-Nicolson)', IntegrationSchemeType.trapezoidal, 2, True, True,
+    trapezoidal, 'Trapezoidal (Crank-Nicolson)', IntegrationSchemeType.trapezoidal, 2, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='A'))
 IntegrationSchemes.append(IntegrationScheme(
-    SDIRK2, 'SDIRK2', IntegrationSchemeType.sdirk2, 2, True, True,
+    SDIRK2, 'SDIRK2', IntegrationSchemeType.sdirk2, 2, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
 IntegrationSchemes.append(IntegrationScheme(
-    TRBDF2, 'TR-BDF2', IntegrationSchemeType.trbdf2, 2, True, True,
+    TRBDF2, 'TR-BDF2', IntegrationSchemeType.trbdf2, 2, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
 IntegrationSchemes.append(IntegrationScheme(
-    ESDIRK324L2SA, 'ESDIRK3(2)4L[2]SA', IntegrationSchemeType.esdirk324l2sa, 3, True, True,
+    ESDIRK324L2SA, 'ESDIRK3(2)4L[2]SA', IntegrationSchemeType.esdirk324l2sa, 3, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
 IntegrationSchemes.append(IntegrationScheme(
-    ESDIRK436L2SA, 'ESDIRK4(3)6L[2]SA', IntegrationSchemeType.esdirk436l2sa, 4, True, True,
+    ESDIRK436L2SA, 'ESDIRK4(3)6L[2]SA', IntegrationSchemeType.esdirk436l2sa, 4, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
 # ---- Coupled (block) fully implicit RK (NOTES.md S3.18, Phase 6) ----------- #
 # The stage equations are coupled (a_ij != 0 for i != j), so they are solved as
@@ -141,10 +140,10 @@ IntegrationSchemes.append(IntegrationScheme(
 # tests/test_hamiltonian.py -- its tableau is NOT A-symmetric), so
 # dissipation=False like the Verlet family.
 IntegrationSchemes.append(IntegrationScheme(
-    gaussLegendre2, 'Gauss-Legendre 2', IntegrationSchemeType.gaussLegendre2, 4, False, False,
+    gaussLegendre2, 'Gauss-Legendre 2', IntegrationSchemeType.gaussLegendre2, 4, False,
     implicit=True, steps=1, stiffly_accurate=False, stability='A'))
 IntegrationSchemes.append(IntegrationScheme(
-    radauIia2, 'Radau IIA s=2', IntegrationSchemeType.radauIia2, 3, True, True,
+    radauIia2, 'Radau IIA s=2', IntegrationSchemeType.radauIia2, 3, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
 # Additive (IMEX) Kennedy-Carpenter ARK pairs (NOTES.md S3.9 Phase 5). Each is an
 # explicit + implicit half; the combined method is *not* FSAL (the explicit half is
@@ -152,35 +151,35 @@ IntegrationSchemes.append(IntegrationScheme(
 # order is the *combined* additive order (3 / 4); pass an IMEXRHS to activate the
 # split, or an ordinary RHS for the pure-implicit (ESDIRK) limit.
 IntegrationSchemes.append(IntegrationScheme(
-    ARK324L2SA, 'ARK3(2)4L[2]SA', IntegrationSchemeType.ark324l2sa, 3, True, True,
+    ARK324L2SA, 'ARK3(2)4L[2]SA', IntegrationSchemeType.ark324l2sa, 3, True,
     implicit=True, steps=1, stiffly_accurate=False, stability='L'))
 IntegrationSchemes.append(IntegrationScheme(
-    ARK436L2SA, 'ARK4(3)6L[2]SA', IntegrationSchemeType.ark436l2sa, 4, True, True,
+    ARK436L2SA, 'ARK4(3)6L[2]SA', IntegrationSchemeType.ark436l2sa, 4, True,
     implicit=True, steps=1, stiffly_accurate=False, stability='L'))
 IntegrationSchemes.append(IntegrationScheme(
-    newmark, 'Newmark', IntegrationSchemeType.newmark, 2, True, True,
+    newmark, 'Newmark', IntegrationSchemeType.newmark, 2, True,
     implicit=True, steps=1, stiffly_accurate=False, stability='A'))
 IntegrationSchemes.append(IntegrationScheme(
-    BDF1, 'BDF1', IntegrationSchemeType.bdf1, 1, True, True,
+    BDF1, 'BDF1', IntegrationSchemeType.bdf1, 1, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L', startup_order=1))
 IntegrationSchemes.append(IntegrationScheme(
-    BDF2, 'BDF2', IntegrationSchemeType.bdf2, 2, True, True,
+    BDF2, 'BDF2', IntegrationSchemeType.bdf2, 2, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='A', startup_order=1))
 IntegrationSchemes.append(IntegrationScheme(
-    BDF3, 'BDF3', IntegrationSchemeType.bdf3, 3, True, True,
+    BDF3, 'BDF3', IntegrationSchemeType.bdf3, 3, True,
     implicit=True, steps=2, stiffly_accurate=True, stability='A(alpha)', startup_order=3))
 # BDF4/5: same JFNK-closed multistep residual, one state snapshot per past step.
 # A(alpha), not A-stable -- the stability region is a lobe whose closest approach
 # to the negative real axis is 73.35 deg (BDF4) and 51.84 deg (BDF5) from it, so
 # stiff oscillatory modes outside those cones are not damped (tests/test_bdf.py).
 IntegrationSchemes.append(IntegrationScheme(
-    BDF4, 'BDF4', IntegrationSchemeType.bdf4, 4, True, True,
+    BDF4, 'BDF4', IntegrationSchemeType.bdf4, 4, True,
     implicit=True, steps=3, stiffly_accurate=True, stability='A(alpha)', startup_order=4))
 IntegrationSchemes.append(IntegrationScheme(
-    BDF5, 'BDF5', IntegrationSchemeType.bdf5, 5, True, True,
+    BDF5, 'BDF5', IntegrationSchemeType.bdf5, 5, True,
     implicit=True, steps=4, stiffly_accurate=True, stability='A(alpha)', startup_order=5))
 IntegrationSchemes.append(IntegrationScheme(
-    IMEXEuler, 'IMEX Euler', IntegrationSchemeType.imexEuler, 1, True, True,
+    IMEXEuler, 'IMEX Euler', IntegrationSchemeType.imexEuler, 1, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='A'))
 # ---- IMEX linear multistep (NOTES.md S3.19, Phase 12) ---------------------- #
 # BDF / trapezoidal implicit backbone for the stiff part, explicit endpoint
@@ -194,13 +193,13 @@ IntegrationSchemes.append(IntegrationScheme(
 # priorStep is refused: multistep reuse is the history= mechanism, not
 # first-stage splicing.
 IntegrationSchemes.append(IntegrationScheme(
-    SBDF2, 'SBDF2', IntegrationSchemeType.sbdf2, 2, True, True,
+    SBDF2, 'SBDF2', IntegrationSchemeType.sbdf2, 2, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L', startup_order=2))
 IntegrationSchemes.append(IntegrationScheme(
-    SBDF3, 'SBDF3', IntegrationSchemeType.sbdf3, 3, True, True,
+    SBDF3, 'SBDF3', IntegrationSchemeType.sbdf3, 3, True,
     implicit=True, steps=2, stiffly_accurate=True, stability='A(alpha)', startup_order=3))
 IntegrationSchemes.append(IntegrationScheme(
-    CNAB2, 'CNAB2', IntegrationSchemeType.cnab2, 2, True, True,
+    CNAB2, 'CNAB2', IntegrationSchemeType.cnab2, 2, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='A', startup_order=2))
 
 # ---- Explicit linear multistep (NOTES.md S3.6 Phase 1) -------------------- #
@@ -214,25 +213,25 @@ IntegrationSchemes.append(IntegrationScheme(
 # confirmed empirically (`tests/test_multistep.py`), not assumed from the starter's
 # order alone.
 IntegrationSchemes.append(IntegrationScheme(
-    AB2, 'Adams-Bashforth 2', IntegrationSchemeType.ab2, 2, True, True,
+    AB2, 'Adams-Bashforth 2', IntegrationSchemeType.ab2, 2, True,
     implicit=False, steps=1, startup_order=2))
 IntegrationSchemes.append(IntegrationScheme(
-    AB3, 'Adams-Bashforth 3', IntegrationSchemeType.ab3, 3, True, True,
+    AB3, 'Adams-Bashforth 3', IntegrationSchemeType.ab3, 3, True,
     implicit=False, steps=2, startup_order=3))
 IntegrationSchemes.append(IntegrationScheme(
-    AB4, 'Adams-Bashforth 4', IntegrationSchemeType.ab4, 4, True, True,
+    AB4, 'Adams-Bashforth 4', IntegrationSchemeType.ab4, 4, True,
     implicit=False, steps=3, startup_order=4))
 IntegrationSchemes.append(IntegrationScheme(
-    AB5, 'Adams-Bashforth 5', IntegrationSchemeType.ab5, 5, True, True,
+    AB5, 'Adams-Bashforth 5', IntegrationSchemeType.ab5, 5, True,
     implicit=False, steps=4, startup_order=5))
 IntegrationSchemes.append(IntegrationScheme(
-    ABM2, 'Adams-Bashforth-Moulton 2 (PECE)', IntegrationSchemeType.abm2, 2, True, True,
+    ABM2, 'Adams-Bashforth-Moulton 2 (PECE)', IntegrationSchemeType.abm2, 2, True,
     implicit=False, steps=1, startup_order=2))
 IntegrationSchemes.append(IntegrationScheme(
-    ABM3, 'Adams-Bashforth-Moulton 3 (PECE)', IntegrationSchemeType.abm3, 3, True, True,
+    ABM3, 'Adams-Bashforth-Moulton 3 (PECE)', IntegrationSchemeType.abm3, 3, True,
     implicit=False, steps=2, startup_order=3))
 IntegrationSchemes.append(IntegrationScheme(
-    ABM4, 'Adams-Bashforth-Moulton 4 (PECE)', IntegrationSchemeType.abm4, 4, True, True,
+    ABM4, 'Adams-Bashforth-Moulton 4 (PECE)', IntegrationSchemeType.abm4, 4, True,
     implicit=False, steps=3, startup_order=4))
 
 # ---- Fully implicit Adams-Moulton (NOTES.md S3.8 Phase 4) ------------------ #
@@ -243,13 +242,13 @@ IntegrationSchemes.append(IntegrationScheme(
 # `update` of each entry); a matching Adams-Bashforth predictor is the default
 # initial guess (`predictor=False` starts the solve from the known part).
 IntegrationSchemes.append(IntegrationScheme(
-    AM2, 'Adams-Moulton 2 (implicit)', IntegrationSchemeType.am2, 2, True, True,
+    AM2, 'Adams-Moulton 2 (implicit)', IntegrationSchemeType.am2, 2, True,
     implicit=True, steps=1, stiffly_accurate=False, stability='A', startup_order=2))
 IntegrationSchemes.append(IntegrationScheme(
-    AM3, 'Adams-Moulton 3 (implicit)', IntegrationSchemeType.am3, 3, True, True,
+    AM3, 'Adams-Moulton 3 (implicit)', IntegrationSchemeType.am3, 3, True,
     implicit=True, steps=2, stiffly_accurate=False, startup_order=3))
 IntegrationSchemes.append(IntegrationScheme(
-    AM4, 'Adams-Moulton 4 (implicit)', IntegrationSchemeType.am4, 4, True, True,
+    AM4, 'Adams-Moulton 4 (implicit)', IntegrationSchemeType.am4, 4, True,
     implicit=True, steps=3, stiffly_accurate=False, startup_order=4))
 
 # ---- Stabilised explicit super-timestepping (NOTES.md S3.13, Phase 12) ---- #
@@ -262,13 +261,13 @@ IntegrationSchemes.append(IntegrationScheme(
 # is no single region to advertise. RKL2 is Meyer/Balsara/Aslam 2014; RKC2 is the same
 # construction with Chebyshev in place of Legendre; RKC1 is the order-1 limit.
 IntegrationSchemes.append(IntegrationScheme(
-    RKC1, 'RKC1', IntegrationSchemeType.rkc1, 1, True, True,
+    RKC1, 'RKC1', IntegrationSchemeType.rkc1, 1, True,
     implicit=False, steps=1, stiffly_accurate=False, stability=None))
 IntegrationSchemes.append(IntegrationScheme(
-    RKC2, 'RKC2', IntegrationSchemeType.rkc2, 2, True, True,
+    RKC2, 'RKC2', IntegrationSchemeType.rkc2, 2, True,
     implicit=False, steps=1, stiffly_accurate=False, stability=None))
 IntegrationSchemes.append(IntegrationScheme(
-    RKL2, 'RKL2', IntegrationSchemeType.rkl2, 2, True, True,
+    RKL2, 'RKL2', IntegrationSchemeType.rkl2, 2, True,
     implicit=False, steps=1, stiffly_accurate=False, stability=None))
 
 # ---- Rosenbrock-W (NOTES.md S3.14, Phase 7) --------------------------------- #
@@ -282,7 +281,7 @@ IntegrationSchemes.append(IntegrationScheme(
 # `w=` ('jvp' exact / 'fd' finite-difference / 'linear' the L part only -- the
 # latter is order 3 only when f is linear in the state, first order otherwise).
 IntegrationSchemes.append(IntegrationScheme(
-    integrateROS3P, 'ROS3P', IntegrationSchemeType.ros3p, 3, True, True,
+    integrateROS3P, 'ROS3P', IntegrationSchemeType.ros3p, 3, True,
     implicit=True, steps=1, stiffly_accurate=False, stability='A'))
 
 
@@ -298,7 +297,7 @@ IntegrationSchemes.append(IntegrationScheme(
 # rejected. Pass a SemilinearRHS (or an RHS providing `linear`); a plain
 # callable has no linear part and is rejected before the solve.
 IntegrationSchemes.append(IntegrationScheme(
-    integrateETD2RK, 'ETD2RK', IntegrationSchemeType.etd2rk, 2, True, True,
+    integrateETD2RK, 'ETD2RK', IntegrationSchemeType.etd2rk, 2, True,
     implicit=False, steps=1, stiffly_accurate=False, stability='L'))
 
 
@@ -315,7 +314,7 @@ IntegrationSchemes.append(IntegrationScheme(
 # `linear` part is needed; the frozen operator is selected with `w=` ('jvp'
 # exact / 'fd' finite-difference) and the time derivative with `f_t=`.
 IntegrationSchemes.append(IntegrationScheme(
-    integrateEXPRB32, 'EXPRB32', IntegrationSchemeType.exprb32, 3, True, True,
+    integrateEXPRB32, 'EXPRB32', IntegrationSchemeType.exprb32, 3, True,
     implicit=False, steps=1, stiffly_accurate=False, stability='L'))
 
 

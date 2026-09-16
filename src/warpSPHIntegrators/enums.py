@@ -105,3 +105,11 @@ class IntegrationSchemeType(Enum):
     sbdf2 = 60
     sbdf3 = 61
     cnab2 = 62
+    # Higher-order SSP explicit RK (Phase 12 follow-up, 2026-09-15): Shu's
+    # 10-stage order-4 SSP method (measured SSP coefficient 6.0 -- stage 2's
+    # constant coefficient 1 - mu/6 is the binding constraint -- with a
+    # negative real-axis stability interval of [-13.916, 0]). The bundled
+    # SSP/TVD set previously stopped at order 3, exactly where the SSP
+    # barrier for explicit RK bites (order 4 needs 5+ stages). Explicit
+    # single-step, so no first-stage reuse.
+    ssprk104 = 63

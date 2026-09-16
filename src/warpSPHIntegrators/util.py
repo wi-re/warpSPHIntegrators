@@ -162,7 +162,6 @@ class IntegrationScheme(NamedTuple):
     order: int
 
     dissipation: bool = False
-    nonLagrangian: bool = False
 
     #: Convergence order retained when `priorStep` reuse is used, or None when the
     #: scheme does not implement reuse at all. Filled in at registration time from

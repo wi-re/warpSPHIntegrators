@@ -33,6 +33,16 @@ FSAL_SCHEMES = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)',
                 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA']
 
 
+#: On the linear autonomous oscillator, SSPRK(10,4)'s a[-1] weights satisfy the
+#: stability-polynomial third-order condition w . (a . c) = 1/6 exactly (they fail
+#: only the node-value condition w . c^2 = 11/36 != 1/3), so the stale k0 sits
+#: O(dt^5) away from f(t^{n+1}, y^{n+1}) there and reuse measures a full 4.00 --
+#: one above the (guaranteed) prediction of 3. The prediction is sharp where the
+#: node-value defect is visible: 3.00 on the forced non-autonomous problem and
+#: 2.98 on Kepler, so the degrading-reuse warning is not needless.
+REUSE_EXACT_ON_LINEAR_AUTONOMOUS = {'SSPRK(10,4)'}
+
+
 @pytest.mark.parametrize('problem_name', ['oscillator', 'forced'])
 def test_measured_reuse_order_matches_prediction(scheme, problem_name, step_sizes):
     if scheme.reuse_order is None:
@@ -50,6 +60,9 @@ def test_reuse_prediction_is_not_pessimistic(scheme, problem_name, step_sizes):
     """A prediction below the truth would warn users off a reuse that is actually free."""
     if scheme.reuse_order is None or scheme.reuse_order >= scheme.order:
         pytest.skip(f'{scheme.name} loses no order under reuse')
+    if scheme.name in REUSE_EXACT_ON_LINEAR_AUTONOMOUS and problem_name == 'oscillator':
+        pytest.skip(f'{scheme.name} reuses losslessly on the linear autonomous problem '
+                    '(see REUSE_EXACT_ON_LINEAR_AUTONOMOUS)')
     order, _ = order_of(scheme, problem_name, step_sizes, reuse=True)
     assert order < scheme.reuse_order + 1 - ORDER_TOLERANCE, (
         f'{scheme.name} on {problem_name}: predicted {scheme.reuse_order} under reuse but '

@@ -264,6 +264,7 @@ when the previous step's last stage is fed back in as `k0` — see
 | **Ralston 2nd** | 2 | 2 | 1 | Minimises the local error constant |
 | **RK3**, **Heun 3rd**, **Ralston 3rd**, **Wray 3rd** | 3 | 3 | 1–2 | Third order in 3 evaluations |
 | **SSP-RK3** | 3 | 3 | 1 | Conservation laws; strong-stability-preserving |
+| **SSPRK(10,4)** | 4 | 10 | 3 | Order-4 SSP (Shu 2001); exact SSP coefficient 6.0, real axis [−13.9, 0]; 10 evals/step |
 | **RK4 (Classic)** | 4 | 4 | 3 | High accuracy; the usual default |
 | **RK4 (alternative)** | 4 | 4 | 2 | 3/8 rule |
 | **Nyström 5th** | 5 | 6 | 1 | Fifth order without step control |
@@ -489,6 +490,7 @@ cost every step rather than getting a wrong answer.
 | Scheme | Order | Evaluations/step | History needed | Use Case |
 |--------|-------|-------------------|-----------------|----------|
 | **Adams-Bashforth 2–5** | 2–5 | **1** | order − 1 | One force evaluation per step regardless of order — the real prize of multistep |
+| **Adams-Bashforth-Moulton 2–4 (PECE)** | 2–4 | 2 | order − 1 | Predict-Evaluate-Correct-Evaluate; a fixed (uniterated) correction |
 
 ### Implicit Multistep (BDF)
 
@@ -639,8 +641,6 @@ members run at a smaller `dt` than the ARK pairs on such problems
 (`viscous_burgers_demo.ipynb` §7: `dt = 0.008` (SBDF2, CNAB2) and `0.004`
 (SBDF3) against the ARK pair's `0.02`).
 
-| **Adams-Bashforth-Moulton 2–4 (PECE)** | 2–4 | 2 | order − 1 | Predict-Evaluate-Correct-Evaluate; a fixed (uniterated) correction |
-
 No linear multistep method is symplectic for a general Hamiltonian (Tang, 1993); all seven measure
 `dissipation=True`. None implement `priorStep` reuse — that is a different, single-entry-lookback
 mechanism `history=`'s multi-entry `StepHistory` generalizes past, not an alternative spelling of it.
@@ -665,6 +665,7 @@ position-only Hamiltonian.
 | Ralston's Method (3rd order) | 3 | Explicit RK | General third-order RK | no |
 | Wray's Method (3rd order) | 3 | Explicit RK | General third-order RK | no |
 | SSP RK3 | 3 | Explicit SSP RK | Strong-stability-preserving | no |
+| SSPRK(10,4) | 4 | Explicit SSP RK | Shu's order-4 SSP; exact SSP coefficient 6.0, real axis [−13.916, 0] | no |
 | RK4 | 4 | Explicit RK | Classical fourth-order RK | no |
 | RK4 (alternative) | 4 | Explicit RK | 3/8-rule fourth-order RK | no |
 | Nystrom 5th order | 5 | Explicit RK | Fifth-order reference method | no |
@@ -900,7 +901,10 @@ condition, `testing.advection_problem`) with two independent measurements:
 
 Results (n = 64, tested to CFL 5): the TVD-named schemes — TVD RK2, TVD RK3, and
 SSP RK3, together with every second- and third-order explicit RK scheme — have
-the published $r = 1$ and measure TVD to CFL 1. TVD is strictly broader than SSP:
+the published $r = 1$ and measure TVD to CFL 1. The order-4 SSP method
+SSPRK(10,4) certifies $r = 4.0$ from the stage maps (the scanner's cap; the
+exact convex-combination limit is 6.0, NOTES.md §3.20) and measures per-step TVD
+to the tested CFL 5. TVD is strictly broader than SSP:
 classical RK3 has $r = 1/2$ yet a per-step TVD CFL of 1 (RK4: $r = 2/3$, TVD to
 1.25); Nystrom 5th order and Dormand–Prince 5(4) have $r = 0$ — their stage maps
 leave the convex hull at *any* CFL, verified by exact rational arithmetic — and
@@ -1116,7 +1120,7 @@ myScheme = butcherScheme('myTableau')
 # in enums.py, then integration.py
 IntegrationSchemes.append(IntegrationScheme(myScheme, 'My Scheme',
                                             IntegrationSchemeType.myScheme, order,
-                                            dissipation, nonLagrangian))
+                                            dissipation))
 ```
 
 `reuse_order` and `fsal` are derived automatically from the tableau; do not set them by
@@ -1221,10 +1225,12 @@ method runs.
     embedded estimators and the `IMEXRHS` split), and the IMEX multistep family —
     SBDF2/SBDF3 (BDF2/BDF3 implicit backbone + explicit endpoint extrapolation)
     and CNAB2 (trapezoidal backbone + AB2 increment), orders 2/3/2 — is
-    implemented as well (NOTES.md §3.19); higher-stage ARK, Radau-type additive
-    schemes, and the remaining Phase 12 families (generalized-alpha/HHT-alpha,
-    SSPRK order 4, high-order symplectic composition, one-step RKN) remain
-    planned (NOTES.md §3.6). The Rosenbrock-W family has one member, `ROS3P` (NOTES.md §3.14).
+    implemented as well (NOTES.md §3.19); the order-4 SSP method SSPRK(10,4)
+    (exact SSP coefficient 6.0, real axis [−13.916, 0]) is implemented too
+    (NOTES.md §3.20); higher-stage ARK, Radau-type additive schemes, and the
+    remaining Phase 12 families (generalized-alpha/HHT-alpha, SSPRK(5,4),
+    high-order symplectic composition, one-step RKN) remain planned
+    (NOTES.md §3.6). The Rosenbrock-W family has one member, `ROS3P` (NOTES.md §3.14).
     The exponential-integrator family has two members: `ETD2RK` (order 2, L-stable
     for the linear part, needs the `SemilinearRHS` `linear` accessor) and `EXPRB32`
     (order 3, L-stable, full frozen Jacobian, embedded (3, 2) estimator, runs on

@@ -26,6 +26,7 @@ for every registered scheme. This file pins the load-bearing numbers:
 
 import math
 
+import numpy as np
 import pytest
 import torch
 
@@ -88,6 +89,10 @@ def test_named_tvd_schemes_have_ssp_coefficient_one(tableau_name):
     ('CashKarp', 5.0 / 12.0),
     ('Nystrom5', 0.0),
     ('DormandPrince', 0.0),
+    # Shu's 10-stage order-4 SSP method: the true SSP coefficient is 6, beyond
+    # the scan's default cap, so it is pinned with an explicit mu_max in
+    # test_ssprk104_ssp_boundary_and_real_axis_interval.
+    ('SSPRK104', 4.0),
 ])
 def test_explicit_ssp_coefficients(name, expected):
     r = tvd_analysis.convex_combination_cfl(getButcherTableau(name))
@@ -108,6 +113,30 @@ def test_implicit_ssp_coefficients(name, expected):
     r = tvd_analysis.convex_combination_cfl(getDIRKTableau(name))
     assert r == pytest.approx(expected, abs=2e-3), (
         f'{name}: measured SSP coefficient {r:.4g}, expected {expected:g}')
+
+
+def test_ssprk104_ssp_boundary_and_real_axis_interval():
+    """SSPRK(10,4)'s exact SSP boundary and negative real-axis stability limit.
+
+    The true SSP coefficient is exactly 6: stage 2's shift-basis constant
+    coefficient is 1 - mu/6, and every later stage map stays non-negative up to
+    the same point (verified in exact rational arithmetic). The real-axis
+    stability interval is [-13.916, 0] (OrdinaryDiffEq.jl records 13.917).
+    """
+    tableau = getButcherTableau('SSPRK104')
+    r = tvd_analysis.convex_combination_cfl(tableau, mu_max=10.0)
+    assert r == pytest.approx(6.0, abs=5e-3), (
+        f'SSPRK(10,4): exact SSP boundary {r:.4g}, expected 6')
+
+    a, b = tableau.a, tableau.b
+    z = np.linspace(-14.5, 0.0, 20001)
+    identity = np.eye(len(a))
+    solves = np.linalg.solve(np.stack([identity - zz * a for zz in z]),
+                             np.ones((len(z), len(a), 1)))
+    amplification = np.abs(1.0 + z * (solves[:, :, 0] @ b))
+    left = z[amplification <= 1.0 + 1e-9].min()
+    assert left == pytest.approx(-13.916, abs=5e-3), (
+        f'SSPRK(10,4) real-axis interval {left:.4g}, expected -13.916')
 
 
 # --------------------------------------------------------------------------- #
@@ -296,6 +325,13 @@ EXPECTED_VERDICTS = {
     "Ralston's Method (3rd order)": (1.0, 1.0, False),
     "Wray's Method (3rd order)": (1.0, 1.0, False),
     'SSP RK3': (1.0, 1.0, False),
+    # Shu's 10-stage order-4 SSP method: the convex-combination scan hits the
+    # registered cap 4.0 (the true boundary is exactly 6 -- stage 2's constant
+    # coefficient, 1 - mu/6, crosses zero there, pinned in
+    # test_ssprk104_ssp_boundary_and_real_axis_interval below). The negative
+    # real-axis stability interval [-13.916, 0] keeps every per-mode
+    # amplification <= 1, so the sweep finds no TV increase up to the CFL cap.
+    'SSPRK(10,4)': (4.0, 5.0, True),
     'RK4': (2.0 / 3.0, 1.25, False),
     'RK4 (alternative)': (1.0 / 3.0, 1.25, False),
     'Nystrom 5th order': (0.0, 1.5, False),

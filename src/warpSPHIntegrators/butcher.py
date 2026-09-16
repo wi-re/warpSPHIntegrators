@@ -243,11 +243,34 @@ def getButcherTableau(scheme, alpha = 1/2, beta = 2/3):
         )
     elif scheme == 'SSPRK3':
         return butcherTableau(
-            a = np.array([[0, 0, 0], 
+            a = np.array([[0, 0, 0],
                           [1, 0, 0],
                           [1/4, 1/4, 0]]),
             b = np.array([1/6, 1/6, 2/3]),
             c = np.array([0, 1, 1/2])
+        )
+    elif scheme == 'SSPRK104':
+        # Shu's 10-stage order-4 SSP method (Shu, "Total variation diminishing
+        # Runge-Kutta time discretizations", J. Comput. Phys. 169 (2001)
+        # 208-228, Sec. 4.2): a 5+5 stage cascade, full step (c[-1] = 1).
+        # Measured: order 4 on all three test problems, exact SSP coefficient
+        # 6.0 (stage 2's constant coefficient 1 - mu/6 is the binding
+        # constraint), and a negative real-axis stability interval of
+        # [-13.916, 0] (OrdinaryDiffEq.jl records 13.917). Row sums == c;
+        # tests/test_tvd.py pins the SSP boundary and the real-axis interval.
+        return butcherTableau(
+            a = np.array([[0,       0,       0,       0,       0,       0,       0,       0,       0,       0],
+                          [1/6,     0,       0,       0,       0,       0,       0,       0,       0,       0],
+                          [1/6,     1/6,     0,       0,       0,       0,       0,       0,       0,       0],
+                          [1/6,     1/6,     1/6,     0,       0,       0,       0,       0,       0,       0],
+                          [1/6,     1/6,     1/6,     1/6,     0,       0,       0,       0,       0,       0],
+                          [1/15,    1/15,    1/15,    1/15,    1/15,    0,       0,       0,       0,       0],
+                          [1/15,    1/15,    1/15,    1/15,    1/15,    1/6,     0,       0,       0,       0],
+                          [1/15,    1/15,    1/15,    1/15,    1/15,    1/6,     1/6,     0,       0,       0],
+                          [1/15,    1/15,    1/15,    1/15,    1/15,    1/6,     1/6,     1/6,     0,       0],
+                          [1/15,    1/15,    1/15,    1/15,    1/15,    1/6,     1/6,     1/6,     1/6,     0]]),
+            b = np.array([1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10]),
+            c = np.array([0, 1/6, 1/3, 1/2, 2/3, 1/3, 1/2, 2/3, 5/6, 1])
         )
     elif scheme == 'RK4':
         return butcherTableau(
@@ -365,6 +388,7 @@ heunsMethod3rd  = butcherScheme('Heun3')
 ralston3rd      = butcherScheme('ralston3')
 Wray3rd         = butcherScheme('Wray3')
 SSPRK3          = butcherScheme('SSPRK3')
+SSPRK104        = butcherScheme('SSPRK104')
 RungeKutta4     = butcherScheme('RK4')
 RungeKutta4alt  = butcherScheme('RK4alt')
 Nystrom5th      = butcherScheme('Nystrom5')
