@@ -53,6 +53,7 @@ from .jfnk import (JFNKSolver, fd_matvec, jvp_matvec, gmres,
 from .bdf import BDF1, BDF2, BDF3, BDF4, BDF5
 from .multistep import AM2, AM3, AM4
 from .imex import IMEXEuler
+from .imexmultistep import SBDF2, SBDF3, CNAB2
 from .rhs import (RHS, IMEXRHS, SemilinearRHS, resolve, ResolvedRHS,
                  check_contracts, add_updates, sub_updates, CAPABILITIES)
 from .newmark import newmark, newmark_average_acceleration, newmark_linear_acceleration
@@ -124,6 +125,9 @@ __all__ = [
     "BDF4",
     "BDF5",
     "IMEXEuler",
+    "SBDF2",
+    "SBDF3",
+    "CNAB2",
     "AM2",
     "AM3",
     "AM4",

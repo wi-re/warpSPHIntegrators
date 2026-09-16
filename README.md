@@ -19,7 +19,7 @@ blended with a reference state", and your system object decides what that means.
 
 ### Key Features
 
-- **Multiple Integration Schemes**: Runge-Kutta up to 5th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; stabilized explicit super-timestepping for parabolic stiffness (RKC1/RKC2/RKL2, no nonlinear solver); diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA, Newmark) via a pluggable `NonlinearSolver`; coupled fully implicit RK (Gauss-Legendre 2, Radau IIA s=2) via one coupled JFNK block solve per step; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4); implicit multistep (BDF1–BDF5, fully implicit Adams-Moulton 2–4); additive (IMEX) RK (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA) and IMEX Euler, both through an explicit/implicit RHS split; Rosenbrock-W (ROS3P: one linear solve per stage against a frozen Jacobian, no Newton loop); and the exponential family (ETD2RK: the linear part `L` integrated exactly through matrix-free `exp(hL)` / `phi_k(hL)` Krylov builds, the nonlinear remainder quadrature; EXPRB32: order-3 exponential Rosenbrock, L-stable, full frozen Jacobian with matrix-free `phi_k` Krylov builds, embedded (3, 2) estimator, no semilinear split required)
+- **Multiple Integration Schemes**: Runge-Kutta up to 5th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; stabilized explicit super-timestepping for parabolic stiffness (RKC1/RKC2/RKL2, no nonlinear solver); diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA, Newmark) via a pluggable `NonlinearSolver`; coupled fully implicit RK (Gauss-Legendre 2, Radau IIA s=2) via one coupled JFNK block solve per step; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4); implicit multistep (BDF1–BDF5, fully implicit Adams-Moulton 2–4); additive (IMEX) RK (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA), IMEX Euler, and IMEX multistep (SBDF2/SBDF3: BDF2/BDF3 implicit backbone with explicit endpoint extrapolation; CNAB2: trapezoidal backbone with the AB2 increment), all through an explicit/implicit RHS split; Rosenbrock-W (ROS3P: one linear solve per stage against a frozen Jacobian, no Newton loop); and the exponential family (ETD2RK: the linear part `L` integrated exactly through matrix-free `exp(hL)` / `phi_k(hL)` Krylov builds, the nonlinear remainder quadrature; EXPRB32: order-3 exponential Rosenbrock, L-stable, full frozen Jacobian with matrix-free `phi_k` Krylov builds, embedded (3, 2) estimator, no semilinear split required)
 - **Adaptive Step Control & Dense Output**: `estimate_error_norm` + `propose_dt` turn the twelve embedded-estimator schemes' `IntegrationResult.error` into a predictive step-size controller (safety factor, growth clamps, zero-error growth) with the caller-driven accept/reject loop; Dormand–Prince carries a published dense output — Shampine's 1986 quartic continuous extension, exact at the step endpoints and `O(dt^5)` in between (NOTES.md §3.17)
 - **Flexible State Management**: Custom state objects with metadata-driven field behavior (integrated, constant, copied, ephemeral, custom)
 - **Type-Safe Protocol**: Structural typing for integration systems with clear separation of concerns
@@ -187,7 +187,7 @@ def my_rhs(system: MySystem, dt: float, verbose: bool = False) -> tuple:
 
 This plain callable is all most schemes need. Split methods take a
 **structured RHS** instead: `IMEXRHS(explicit=, implicit=)` for the additive
-split `f = f_E + f_I` (IMEX Euler, ARK3/ARK4), or `SemilinearRHS(linear=,
+split `f = f_E + f_I` (IMEX Euler, ARK3/ARK4, SBDF2/3, CNAB2), or `SemilinearRHS(linear=,
 nonlinear=)` for the semilinear split `f = L·y + N`. Both remain callable as
 the combined `f`, so a scheme that only needs the full right-hand side treats
 the split as fully implicit; a scheme that needs a split the RHS does not
@@ -593,6 +593,52 @@ come from the implicit buffer. Each carries an embedded (3, 2) / (4, 3) error
 estimate, and their two-parameter stability region is in
 [NOTES.md §3.6](NOTES.md#36-valid-schemes-and-what-each-costs) and
 `images/imex_stability_slices.png`.
+
+### IMEX Multistep — SBDF2, SBDF3, CNAB2
+
+The multistep extension of the same split: a BDF2 / BDF3 / trapezoidal *implicit*
+backbone for the stiff part, with the smooth part extrapolated explicitly to the
+endpoint from its own previous endpoint values — SBDF2/SBDF3 use the `p`-point
+Lagrange extrapolation (weights `[2, −1]` / `[3, −3, 1]`), CNAB2 the AB2
+increment `3Nⁿ/2 − Nⁿ⁻¹/2`. In SBDF2/3 the BDF derivative weight `β`
+(3/2, 12/5) scales the *whole* endpoint derivative, implicit and extrapolated
+explicit part alike; dropping it from the extrapolation makes the combined
+method first order — measured and pinned as a regression guard
+([NOTES.md §3.19](NOTES.md#319-phase-12-imex-linear-multistep-sbdf2-sbdf3-cnab2--done-2026-09-15)
+has the form and the measurement).
+
+Like IMEX Euler and the ARK pairs, they take the `IMEXRHS` split — an ordinary
+RHS runs the pure-implicit limit, **bit-exact against the registered BDF2/BDF3**
+(SBDF2/3) and to solver tolerance against the registered trapezoidal scheme
+(CNAB2). They need `history=` like the BDF family (state snapshots of the
+previous `order − 1` steps, Dormand–Prince cold start, re-bootstrap on a `dt`
+change); `priorStep` is refused.
+
+| Scheme | Order | Implicit backbone | Explicit extrapolation | Use Case |
+|--------|-------|-------------------|------------------------|----------|
+| **SBDF2** | 2 | BDF2 (L-stable) | `2Nⁿ − Nⁿ⁻¹` | Order-2 split at one nonlinear solve per step |
+| **SBDF3** | 3 | BDF3 (A(α) 86.03°) | `3Nⁿ − 3Nⁿ⁻¹ + Nⁿ⁻²` | Order-3 split at one nonlinear solve per step |
+| **CNAB2** | 2 | trapezoidal (A, not L) | AB2 increment | Order-2 split with the trapezoidal `dt/2` weights |
+
+```python
+from warpSPHIntegrators import IMEXRHS, getIntegrator, StepHistory
+
+scheme = getIntegrator('SBDF3')   # or 'SBDF2', 'CNAB2'
+rhs = IMEXRHS(explicit=transport_rhs, implicit=diffusion_rhs)
+history = StepHistory(maxlen=2)   # order - 1 state snapshots
+result = scheme(system, dt=dt, f=rhs, history=history)
+```
+
+**The explicit half caps the step size.** The pure-explicit limit (the scheme
+with the implicit part zeroed) has a narrow stability lobe — exact
+negative-real-axis boundaries 4/3 (SBDF2), 20/21 (SBDF3), 1 (CNAB2), and the
+imaginary axis only in a weak whisker — so a problem whose explicit part is
+convective (spectrum along the imaginary axis) needs `dt·max|λ_E| ≲ 0.5`, well
+below the ARK pair's explicit-stage allowance. That is why the multistep
+members run at a smaller `dt` than the ARK pairs on such problems
+(`viscous_burgers_demo.ipynb` §7: `dt = 0.008` (SBDF2, CNAB2) and `0.004`
+(SBDF3) against the ARK pair's `0.02`).
+
 | **Adams-Bashforth-Moulton 2–4 (PECE)** | 2–4 | 2 | order − 1 | Predict-Evaluate-Correct-Evaluate; a fixed (uniterated) correction |
 
 No linear multistep method is symplectic for a general Hamiltonian (Tang, 1993); all seven measure
@@ -653,6 +699,9 @@ position-only Hamiltonian.
 | IMEX Euler | 1 | IMEX | Explicit/implicit split, JFNK implicit side | no |
 | ARK3(2)4L[2]SA | 3 | Additive IMEX RK | L[2]-stable split (ERK + ESDIRK half); embedded (3, 2); not FSAL | no |
 | ARK4(3)6L[2]SA | 4 | Additive IMEX RK | L[2]-stable split (ERK + ESDIRK half); embedded (4, 3); not FSAL | no |
+| SBDF2 | 2 | IMEX multistep | BDF2 implicit backbone + explicit endpoint extrapolation; pure-implicit limit is the registered BDF2; `history=` state snapshots | no |
+| SBDF3 | 3 | IMEX multistep | BDF3 implicit backbone + explicit endpoint extrapolation; pure-implicit limit is the registered BDF3; `history=` state snapshots | no |
+| CNAB2 | 2 | IMEX multistep | Trapezoidal implicit backbone + AB2 explicit increment; pure-implicit limit is the registered trapezoidal scheme; `history=` state snapshots | no |
 | ROS3P | 3 | Rosenbrock-W | A-stable ($R(\infty)=1-\sqrt{3}$), not L-stable; 3 stages, 3 GMRES solves/step, frozen Jacobian; embedded (3, 2) | no |
 | ETD2RK | 2 | Exponential | L-stable for the linear part; 2 stages, 2 `N` evals/step + 3 matrix-free `phi_k(hL)` Krylov builds/step; integrates `L` exactly via `exp(hL)`/`phi_1`/`phi_2`; needs the `linear` accessor (`SemilinearRHS`) | no |
 | EXPRB32 | 3 | Exponential | L-stable; 2 stages, 3-4 full-`f` evals/step + up to 3 matrix-free `phi_k(h·Jn)` Krylov builds/step on the full frozen Jacobian (`w='jvp'`/`'fd'`); embedded (3, 2) estimate; runs on plain callables (no semilinear split needed) | no |
@@ -1167,10 +1216,15 @@ method runs.
     JFNK block solve per step, exact-JVP matvec by default (NOTES.md §3.18). The Lobatto
     IIIA/IIIB and s=3 tableaus remain planned. BDF1–BDF5 and the fully implicit Adams-Moulton
     correctors AM2–AM4 are available as well.
-- **Only two additive (IMEX) pairs are shipped.** The Kennedy–Carpenter
-    ARK3(2)4L[2]SA and ARK4(3)6L[2]SA are implemented (with embedded estimators and the
-    `IMEXRHS` split); higher-stage ARK and Radau-type additive schemes remain planned
-    (NOTES.md §3.6). The Rosenbrock-W family has one member, `ROS3P` (NOTES.md §3.14).
+- **The additive (IMEX) family ships two RK pairs and the multistep trio.** The
+    Kennedy–Carpenter ARK3(2)4L[2]SA and ARK4(3)6L[2]SA are implemented (with
+    embedded estimators and the `IMEXRHS` split), and the IMEX multistep family —
+    SBDF2/SBDF3 (BDF2/BDF3 implicit backbone + explicit endpoint extrapolation)
+    and CNAB2 (trapezoidal backbone + AB2 increment), orders 2/3/2 — is
+    implemented as well (NOTES.md §3.19); higher-stage ARK, Radau-type additive
+    schemes, and the remaining Phase 12 families (generalized-alpha/HHT-alpha,
+    SSPRK order 4, high-order symplectic composition, one-step RKN) remain
+    planned (NOTES.md §3.6). The Rosenbrock-W family has one member, `ROS3P` (NOTES.md §3.14).
     The exponential-integrator family has two members: `ETD2RK` (order 2, L-stable
     for the linear part, needs the `SemilinearRHS` `linear` accessor) and `EXPRB32`
     (order 3, L-stable, full frozen Jacobian, embedded (3, 2) estimator, runs on
@@ -1179,9 +1233,10 @@ method runs.
 Explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4), implicit multistep
 (BDF1–BDF5, fully implicit Adams-Moulton 2–4), seven DIRK schemes (Backward Euler, Implicit
 Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA), two
-additive IMEX pairs (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA), one Rosenbrock-W scheme (ROS3P),
-two exponential integrators (ETD2RK, EXPRB32), and two coupled fully implicit RK schemes
-(Gauss-Legendre 2, Radau IIA s=2) *are* implemented — see the sections above.
+additive IMEX pairs (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA), three IMEX multistep schemes
+(SBDF2, SBDF3, CNAB2), one Rosenbrock-W scheme (ROS3P), two exponential integrators
+(ETD2RK, EXPRB32), and two coupled fully implicit RK schemes (Gauss-Legendre 2,
+Radau IIA s=2) *are* implemented — see the sections above.
 Everything still open
 is scoped and costed in [NOTES.md §3](NOTES.md#3-multistep-and-implicit-methods), including which
 schemes are worth adding next and what each one costs.

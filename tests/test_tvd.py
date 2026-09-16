@@ -365,6 +365,15 @@ EXPECTED_VERDICTS = {
     # Radau IIA is L-stable: |R(z)| -> 0 along the negative real axis, an even
     # stronger contraction than A-stability gives.
     'Radau IIA s=2': (None, 5.0, True),
+    # The IMEX multistep family (NOTES.md S3.19): no tableau attribute the SSP
+    # scan reads, so no ssp_cfl. The measured 1.5 is the shared Dormand-Prince
+    # cold start's imaginary-axis boundary (the bootstrap is explicit and
+    # unstable once CFL*2 >~ 3.4), NOT the backbones' TVD limits -- exactly
+    # the cap the BDF/AB/AM family carries. The one-step trapezoidal DIRK
+    # scheme skips the startup and reaches 5.0.
+    'SBDF2': (None, 1.5, False),
+    'SBDF3': (None, 1.5, False),
+    'CNAB2': (None, 1.5, False),
 }
 
 CFLS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 5.0]

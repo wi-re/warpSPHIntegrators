@@ -133,7 +133,8 @@ def test_estimate_error_norm_scales_the_difference_against_the_propagated_state(
 def test_estimate_error_norm_raises_for_schemes_without_estimates():
     # RK4: a one-step scheme with no embedded pair. BDF2: the multistep family
     # (no estimate, and a variable step would restart its history anyway).
-    for name in ('RK4', 'BDF2'):
+    # SBDF2/3 and CNAB2: the IMEX multistep family, same convention.
+    for name in ('RK4', 'BDF2', 'SBDF2', 'SBDF3', 'CNAB2'):
         s = getIntegrator(name)
         prob = testing.PROBLEMS['oscillator']()
         result = s(prob.initial(), dt=0.1, f=prob.rhs)

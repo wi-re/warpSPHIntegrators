@@ -94,6 +94,12 @@ IMPLICIT_SCHEMES = [
     # they take the same implicit-function-theorem re-attachment path.
     ('Gauss-Legendre 2', 2),
     ('Radau IIA s=2', 2),
+    # The IMEX multistep family: history threaded through the same IFT path,
+    # with enough steps to be past the Dormand-Prince cold start (the BDF
+    # family's convention: startup count + implicit steps).
+    ('SBDF2', 4),
+    ('SBDF3', 5),
+    ('CNAB2', 4),
 ]
 
 EXPLICIT_SCHEMES = ['RK4', 'Dormand-Prince 5(4)', 'SSP RK3', 'Velocity Verlet',

@@ -29,6 +29,12 @@ STATE_SPACE_IMPLICIT = [
     # and the slow tanh component is integrated at their full order.
     'Gauss-Legendre 2',
     'Radau IIA s=2',
+    # SBDF2: one Dormand-Prince startup step (like BDF2) plus the BDF2
+    # backbone, so it damps the z = -10 transient the same way BDF2 does
+    # (measured |x - tanh(1)| = 8e-4). SBDF3 and CNAB2 need two and one
+    # startup steps respectively, and are pinned at the rates their shared
+    # explicit startup can absorb (the tests below).
+    'SBDF2',
 ]
 
 
@@ -60,9 +66,10 @@ def test_implicit_state_space_schemes_remain_bounded_on_nonlinear_stiff_relaxati
     assert abs(x - math.tanh(1.0)) < 0.2
 
 
-@pytest.mark.parametrize('scheme_name', ['BDF3', 'BDF4', 'BDF5'])
+@pytest.mark.parametrize('scheme_name', ['BDF3', 'BDF4', 'BDF5', 'SBDF3'])
 def test_higher_order_bdf_with_threaded_history_tracks_stiff_relaxation(scheme_name):
-    """BDF3-5 at a rate their *explicit* Dormand-Prince startup can absorb.
+    """BDF3-5 (and SBDF3, whose implicit backbone is BDF3) at a rate their
+    *explicit* Dormand-Prince startup can absorb.
 
     rate=10 (stiff scale z = 1): the startup steps are stable and the threaded
     history drives the full BDF formula. rate=100 (like the test above) is out of
@@ -79,6 +86,26 @@ def test_higher_order_bdf_with_threaded_history_tracks_stiff_relaxation(scheme_n
     scheme = getIntegrator(scheme_name)
     system = testing.PROBLEMS['oscillator']().initial()
     history = StepHistory(maxlen=max(1, scheme.steps))
+    for _ in range(10):
+        result = scheme(system, dt=0.1, f=_stiff_relaxation_rhs(rate=10.0), history=history)
+        system, history = result.state, result.history
+    x = float(get_reference_state(system).x[0])
+    assert math.isfinite(x)
+    assert abs(x - math.tanh(1.0)) < 0.2
+
+
+def test_cnab2_with_threaded_history_tracks_stiff_relaxation():
+    """CNAB2 at rate=10 (z = 1): one Dormand-Prince startup step (the
+    trapezoidal backbone damps |R(-1)| = 1/3 per step, so the startup
+    transient is gone quickly) plus the full CNAB2 formula. It is out of the
+    z = -10 list above for a startup-only reason: the one-step trapezoidal
+    DIRK scheme there skips the startup entirely, while CNAB2 pays one DP5
+    step (~1e3 amplification at z = -10) that the trapezoidal rule's mild
+    real-axis damping (|R(-10)| = 2/3) cannot undo in nine more steps.
+    Measured |x - tanh(1)| = 6e-5 at rate=10."""
+    scheme = getIntegrator('CNAB2')
+    system = testing.PROBLEMS['oscillator']().initial()
+    history = StepHistory(maxlen=1)
     for _ in range(10):
         result = scheme(system, dt=0.1, f=_stiff_relaxation_rhs(rate=10.0), history=history)
         system, history = result.state, result.history

@@ -47,6 +47,7 @@ from .newmark import newmark
 from .multistep import AB2, AB3, AB4, AB5, ABM2, ABM3, ABM4, AM2, AM3, AM4
 from .bdf import BDF1, BDF2, BDF3, BDF4, BDF5
 from .imex import IMEXEuler
+from .imexmultistep import SBDF2, SBDF3, CNAB2
 from .rkc import RKC1, RKC2, RKL2
 from .rosenbrock import integrateROS3P
 from .exponential import integrateETD2RK, integrateEXPRB32
@@ -181,6 +182,26 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     IMEXEuler, 'IMEX Euler', IntegrationSchemeType.imexEuler, 1, True, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='A'))
+# ---- IMEX linear multistep (NOTES.md S3.19, Phase 12) ---------------------- #
+# BDF / trapezoidal implicit backbone for the stiff part, explicit endpoint
+# extrapolation for the smooth part (imexmultistep.py). Pass an IMEXRHS to
+# activate the split; an ordinary RHS runs the pure-implicit limit (BDF2 /
+# BDF3 / the trapezoidal rule), exactly as the ARK pairs and IMEX Euler do.
+# `steps` is the history depth (order - 1), the BDF family's convention; cold
+# calls bootstrap from Dormand-Prince 5(4). `stability` describes the implicit
+# backbone (the pure-implicit limit) -- the explicit part carries the matching
+# AB-like real-axis restriction, measured in tests/test_imexmultistep.py.
+# priorStep is refused: multistep reuse is the history= mechanism, not
+# first-stage splicing.
+IntegrationSchemes.append(IntegrationScheme(
+    SBDF2, 'SBDF2', IntegrationSchemeType.sbdf2, 2, True, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L', startup_order=2))
+IntegrationSchemes.append(IntegrationScheme(
+    SBDF3, 'SBDF3', IntegrationSchemeType.sbdf3, 3, True, True,
+    implicit=True, steps=2, stiffly_accurate=True, stability='A(alpha)', startup_order=3))
+IntegrationSchemes.append(IntegrationScheme(
+    CNAB2, 'CNAB2', IntegrationSchemeType.cnab2, 2, True, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='A', startup_order=2))
 
 # ---- Explicit linear multistep (NOTES.md S3.6 Phase 1) -------------------- #
 # `dissipation=True` for all seven, measured directly (max relative energy error on

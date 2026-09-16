@@ -97,3 +97,11 @@ class IntegrationSchemeType(Enum):
     # accurate.
     gaussLegendre2 = 58
     radauIia2 = 59
+    # IMEX linear multistep (NOTES.md S3.19, Phase 12): a BDF / trapezoidal
+    # implicit backbone for the stiff part plus explicit endpoint extrapolation
+    # for the smooth part (imexmultistep.py). A plain callable degenerates to
+    # the pure-implicit limit (BDF2 / BDF3 / trapezoidal), so no first-stage
+    # reuse for any of them (multistep reuse is the history= mechanism).
+    sbdf2 = 60
+    sbdf3 = 61
+    cnab2 = 62
