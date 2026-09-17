@@ -76,6 +76,16 @@ and the git history; the pre-2026-09-15 text of this file remains in git.
   (Stormer-Cowell) and Gauss-Jackson as not-done, but not one-step RKN. Same
   separability caveat as the composition methods.
 
+### Infrastructure
+
+- [ ] **Shorten CI.** A full suite run is ~30 min per Python version on a
+  2-vCPU GitHub runner (3-version matrix); the `push: [main]` trigger was
+  disabled 2026-09-17 (compute cost per push, and the same duration was slowing
+  local development) — `tests.yml` now runs on `pull_request` only. Options to
+  evaluate when picked up: a fast smoke subset on PR (full suite on merge or a
+  schedule), caching the CPU-torch wheel / pip environment, sharding the suite
+  across parallel runners, or reducing the version matrix.
+
 ## Completed phases (index)
 
 | Phase | Content | Landed | Record |

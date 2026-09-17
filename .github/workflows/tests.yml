@@ -1,8 +1,10 @@
 name: tests
 
 on:
-  push:
-    branches: [main]
+  # push trigger disabled 2026-09-17: a full run is ~30 min per Python
+  # version (x3 matrix) on a 2-vCPU runner, which was too much compute per
+  # push and was slowing local development. Kept on pull_request as the gate.
+  # Improving CI time is an open item (IMPLICIT_ROADMAP.md, Infrastructure).
   pull_request:
 
 jobs:
