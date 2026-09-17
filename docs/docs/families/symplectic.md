@@ -7,7 +7,7 @@ force depending on position alone — the splits are exactly symplectic and the
 methods conserve a shadow Hamiltonian: no secular energy drift, only bounded
 oscillation around the true energy.
 
-:::{note}
+:::note
 The separability caveat is load-bearing and measured, not folklore: with a
 **velocity-dependent** force the order-2+ members drop to first order
 (NOTES.md, "Still open"). The order-1 members are unaffected by definition.
@@ -21,15 +21,19 @@ accepted where the last stage is the next step's first force evaluation
 
 ## Explicit Euler (position/velocity form)
 
-$$x^{n+1} = x^n + \mathrm{dt}\, v^n, \qquad v^{n+1} = v^n + \mathrm{dt}\, a(t^n, x^n).$$
+$$
+x^{n+1} = x^n + \mathrm{dt}\, v^n, \qquad v^{n+1} = v^n + \mathrm{dt}\, a(t^n, x^n).
+$$
 
 Order 1. The baseline for the position/velocity form (it is in the `ExplicitRK`
-family — see [explicit-rk](explicit-rk.md); listed here because it is the
+family — see [explicit-rk](explicit-rk); listed here because it is the
 order-1 limit of this family's update pattern).
 
 ## Semi-Implicit Euler (kick-then-drift)
 
-$$v^{n+1} = v^n + \mathrm{dt}\, a(t^n, x^n), \qquad x^{n+1} = x^n + \mathrm{dt}\, v^{n+1}.$$
+$$
+v^{n+1} = v^n + \mathrm{dt}\, a(t^n, x^n), \qquad x^{n+1} = x^n + \mathrm{dt}\, v^{n+1}.
+$$
 
 Order 1, symplectic. The lowest-cost geometric method: one evaluation, no
 half-step bookkeeping. (`euler.integrateSemiImplicitEuler`; the `Symplectic`
@@ -87,7 +91,9 @@ Communications* 146 (2002) 188, cond-mat/0110585). Drift substep fractions
 $\xi,\ \chi,\ 1 - 2(\chi+\xi),\ \chi,\ \xi$ with kick fractions
 $\frac{1-2\lambda}{2},\ \lambda,\ \lambda,\ \frac{1-2\lambda}{2}$:
 
-$$\lambda = -0.2123418310626054, \qquad \xi = +0.1786178958448091, \qquad \chi = -0.06626458266981849.$$
+$$
+\lambda = -0.2123418310626054, \qquad \xi = +0.1786178958448091, \qquad \chi = -0.06626458266981849.
+$$
 
 Four force evaluations per step. Order 4, symplectic for separable Hamiltonians.
 Time is treated as an extra coordinate advancing with the drift substeps (which
@@ -111,7 +117,7 @@ grows **linearly in $T$** (secular), while Velocity Verlet and PEFRL stay flat
 $\sim 10^{-13}$ (strict solve). On Kepler, the Verlet family's action-area
 defect is $\sim 10^{-9}$ (default solve) vs. $\sim 10^{-13}$ strict
 (`images/kepler_orbits.png`). The library's only symplectic method **above
-order 2** is Gauss-Legendre 2 — see [coupled-rk](coupled-rk.md).
+order 2** is Gauss-Legendre 2 — see [coupled-rk](coupled-rk).
 
 ## References
 

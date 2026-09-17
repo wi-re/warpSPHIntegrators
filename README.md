@@ -1295,21 +1295,25 @@ schemes are worth adding next and what each one costs.
 
 ## Documentation
 
-The [docs/](docs/index.md) wiki covers each integrator family — description,
-equations, Butcher tableaus, stability, and citations — plus the nonlinear-solver
-stack (JFNK/GMRES, preconditioning, adaptive step control). It is plain MyST
-markdown built with Sphinx (no autodoc, no torch needed for the build):
+The [scheme wiki](https://fluids.dev/warpSPHIntegrators/) covers each integrator
+family — description, equations, Butcher tableaus, stability, and citations —
+plus the nonlinear-solver stack (JFNK/GMRES, preconditioning, adaptive step
+control). It is a [Docusaurus](https://docusaurus.io/) site built from the
+markdown under `docs/docs/` (the content never imports the package, so no
+torch needed for the build):
 
 ```bash
-pip install -e '.[docs]'
-sphinx-build docs docs/_build
-# open docs/_build/index.html
+cd docs
+npm install
+npm run build    # static site in docs/build/
+npm run serve    # local preview
 ```
 
-The [Supported Integrators](#supported-integrators) table above is the short
-reference; `NOTES.md` is the detailed measurement record; the notebooks
-(`integrators.ipynb`, `viscous_burgers_demo.ipynb`, `jfnk_wave_equation.ipynb`)
-are the interactive examples.
+Every push to `main` rebuilds and redeploys the site
+(`.github/workflows/docs.yml`). The [Supported Integrators](#supported-integrators)
+table above is the short reference; `NOTES.md` is the detailed measurement
+record; the notebooks (`integrators.ipynb`, `viscous_burgers_demo.ipynb`,
+`jfnk_wave_equation.ipynb`) are the interactive examples.
 
 ## Contributing
 

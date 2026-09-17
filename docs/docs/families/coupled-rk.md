@@ -38,7 +38,7 @@ Driver conventions (NOTES.md §3.18):
   costs one extra RHS evaluation per step; the embedded rate measures 3.0 for
   both schemes. `IntegrationResult.error` is the state-shaped difference
   `state_difference(y_main, y_embed)` (the same convention the adaptive
-  helpers use; [solver.md](../solver.md)).
+  helpers use; [solver](../solver)).
 
 ## Gauss-Legendre 2 (`Gauss-Legendre 2`)
 
@@ -53,8 +53,10 @@ $$
 Order **4**. A-stable with $|R(iy)| = 1$ on the imaginary axis; **not
 L-stable**:
 
-$$R(z) = \frac{1 + z/2 + z^2/12}{1 - z/2 + z^2/12}, \qquad
-R(-100) = \frac{2353}{2653} \approx 0.887, \qquad R(z) \to +1 \text{ as } z \to -\infty.$$
+$$
+R(z) = \frac{1 + z/2 + z^2/12}{1 - z/2 + z^2/12}, \qquad
+R(-100) = \frac{2353}{2653} \approx 0.887, \qquad R(z) \to +1 \text{ as } z \to -\infty.
+$$
 
 Not stiffly accurate ($c_2 \neq 1$). Companion:
 $\bar b = (1/6,\ (5-\sqrt3)/12,\ (5+\sqrt3)/12)$.
@@ -88,8 +90,10 @@ $$
 
 Order **3**, A- and **L-stable**, **stiffly accurate**:
 
-$$R(z) = \frac{1 + z/3}{1 - 2z/3 + z^2/6}, \qquad
-|R(-10)| = 0.095890, \qquad R(-100) \approx 0.019.$$
+$$
+R(z) = \frac{1 + z/3}{1 - 2z/3 + z^2/6}, \qquad
+|R(-10)| = 0.095890, \qquad R(-100) \approx 0.019.
+$$
 
 Companion: $\bar b = (2/7,\ 9/28,\ 11/28)$. Not symplectic (measured: linear
 area defect $2.44\times10^{-2}$; absent from the symplectic sets in

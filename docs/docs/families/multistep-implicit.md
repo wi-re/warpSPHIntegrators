@@ -47,7 +47,7 @@ $$
 
 with the corrector weights (newest first, predicted point first — the same
 weights the explicit PECE family uses, see
-[multistep-explicit](multistep-explicit.md)): AM2 $(1/2, 1/2)$ (AM2 is the
+[multistep-explicit](multistep-explicit)): AM2 $(1/2, 1/2)$ (AM2 is the
 trapezoidal rule — A-stable, symmetric), AM3 $(5/12, 8/12, -1/12)$, AM4
 $(9/24, 19/24, -5/24, 1/24)$. The known part of the formula can optionally be
 predicted with the matching Adams-Bashforth weights (the `predictor` flag),

@@ -52,21 +52,21 @@ Every scheme in the registry belongs to exactly one family enum (see the
 
 | Family | Enum | Schemes | One line | Page |
 |---|---|---|---|---|
-| Explicit RK | `ExplicitRK` | 21 | Butcher-tableau one-step explicit RK, classical/SSP/TVD/embedded | [explicit-rk](families/explicit-rk.md) |
-| Symplectic | `Symplectic` | 6 | Geometric position/velocity splitting for second-order ODEs | [symplectic](families/symplectic.md) |
-| Relaxed Chebyshev | `RelaxedChebyshev` | 3 | Matrix-free super-timestepping, real-axis stability $O(s^2)$ in stages | [relaxed-chebyshev](families/relaxed-chebyshev.md) |
-| Multistep explicit | `MultistepExplicit` | 7 | Adams-Bashforth and PECE Adams-Bashforth-Moulton | [multistep-explicit](families/multistep-explicit.md) |
-| DIRK | `DIRK` | 7 | Diagonally implicit RK, one JFNK solve per implicit stage | [dirk](families/dirk.md) |
-| Coupled RK | `CoupledRK` | 2 | Gauss-Legendre 2, Radau IIA s=2 — one $s\times s$ JFNK block solve | [coupled-rk](families/coupled-rk.md) |
-| Multistep implicit | `MultistepImplicit` | 8 | BDF1-5 and JFNK-corrected Adams-Moulton | [multistep-implicit](families/multistep-implicit.md) |
-| IMEX | `IMEX` | 6 | Additive explicit/implicit splits (IMEX Euler, ARK, SBDF/CNAB) | [imex](families/imex.md) |
-| Linearly implicit | `LinearlyImplicit` | 1 | Rosenbrock-W (ROS3P): frozen-operator GMRES per stage | [rosenbrock](families/rosenbrock.md) |
-| Exponential | `Exponential` | 2 | ETD2RK, EXPRB32 — matrix-free `phi_k` Krylov | [exponential](families/exponential.md) |
-| Newmark | `Newmark` | 1 | Newmark beta/gamma for second-order dynamics | [newmark](families/newmark.md) |
+| Explicit RK | `ExplicitRK` | 21 | Butcher-tableau one-step explicit RK, classical/SSP/TVD/embedded | [explicit-rk](/docs/families/explicit-rk) |
+| Symplectic | `Symplectic` | 6 | Geometric position/velocity splitting for second-order ODEs | [symplectic](/docs/families/symplectic) |
+| Relaxed Chebyshev | `RelaxedChebyshev` | 3 | Matrix-free super-timestepping, real-axis stability $O(s^2)$ in stages | [relaxed-chebyshev](/docs/families/relaxed-chebyshev) |
+| Multistep explicit | `MultistepExplicit` | 7 | Adams-Bashforth and PECE Adams-Bashforth-Moulton | [multistep-explicit](/docs/families/multistep-explicit) |
+| DIRK | `DIRK` | 7 | Diagonally implicit RK, one JFNK solve per implicit stage | [dirk](/docs/families/dirk) |
+| Coupled RK | `CoupledRK` | 2 | Gauss-Legendre 2, Radau IIA s=2 — one $s\times s$ JFNK block solve | [coupled-rk](/docs/families/coupled-rk) |
+| Multistep implicit | `MultistepImplicit` | 8 | BDF1-5 and JFNK-corrected Adams-Moulton | [multistep-implicit](/docs/families/multistep-implicit) |
+| IMEX | `IMEX` | 6 | Additive explicit/implicit splits (IMEX Euler, ARK, SBDF/CNAB) | [imex](/docs/families/imex) |
+| Linearly implicit | `LinearlyImplicit` | 1 | Rosenbrock-W (ROS3P): frozen-operator GMRES per stage | [rosenbrock](/docs/families/rosenbrock) |
+| Exponential | `Exponential` | 2 | ETD2RK, EXPRB32 — matrix-free `phi_k` Krylov | [exponential](/docs/families/exponential) |
+| Newmark | `Newmark` | 1 | Newmark beta/gamma for second-order dynamics | [newmark](/docs/families/newmark) |
 
 The machinery underneath the implicit families:
 
-- [Nonlinear solver, preconditioning, adaptive step control](solver.md)
+- [Nonlinear solver, preconditioning, adaptive step control](/docs/solver)
 
 ## Reading a scheme page
 
@@ -75,21 +75,3 @@ then per scheme the defining equation or Butcher tableau, the stability, the
 cost per step, the citation, and the test file(s) that pin the claims. Numbers
 quoted as *measured* come from those tests or the benchmark scripts under
 `scripts/`; derivations live in NOTES.md (linked per scheme).
-
-```{toctree}
-:maxdepth: 1
-:caption: Families
-
-families/explicit-rk
-families/symplectic
-families/relaxed-chebyshev
-families/multistep-explicit
-families/dirk
-families/coupled-rk
-families/multistep-implicit
-families/imex
-families/rosenbrock
-families/exponential
-families/newmark
-solver
-```

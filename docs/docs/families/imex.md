@@ -24,7 +24,7 @@ Euler. One evaluation + one solve per step.
 Kennedy-Carpenter's additive RK pair: 4 stages, **implicit half order 3,
 explicit half order 2, L[2]-stable**. The implicit half ($a_{\text{imp}}, b,
 d$) is identical in $a/b/c$ to the registered
-[ESDIRK3(2)4L[2]SA](dirk.md); the explicit half is the matching
+[ESDIRK3(2)4L\[2\]SA](dirk); the explicit half is the matching
 $a_{\text{exp}}$ (full matrices in `ark.getARKTableau`), and both halves share
 the single embedded $d$ vector. Stiffly accurate on the implicit side only —
 the explicit half is **not** stiffly accurate, so `priorStep` is refused

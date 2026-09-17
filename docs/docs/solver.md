@@ -8,7 +8,9 @@ error estimates turn into step-size proposals.
 
 Every stage equation in this library is written as a fixed-point problem
 
-$$Y = G(Y), \qquad G(Y) = \text{base} + \text{(diagonal term evaluated at } Y\text{)},$$
+$$
+Y = G(Y), \qquad G(Y) = \text{base} + \text{(diagonal term evaluated at } Y\text{)},
+$$
 
 and closed by a `NonlinearSolver.solve(step_fn, y0, norm, **opts) -> SolveResult`
 (`solvers.py` / `jfnk.py`). Three implementations:
@@ -24,7 +26,9 @@ and closed by a `NonlinearSolver.solve(step_fn, y0, norm, **opts) -> SolveResult
 `'tolerance'`/`'stagnation'`, `line_search_backtracks`). The Phase 1
 **work-unit invariant** holds for every step:
 
-$$\text{total step evaluations} \;=\; \texttt{rhs\_evaluations} + \texttt{gmres\_iterations}.$$
+$$
+\text{total step evaluations} \;=\; \texttt{rhs\_evaluations} + \texttt{gmres\_iterations}.
+$$
 
 ## JFNK (`JFNKSolver`)
 
@@ -104,7 +108,7 @@ the caller disposes. `adaptive.py` exposes:
   polynomial through the DP5(4) stages, for output at times between steps.
 
 The embedded pairs that feed these are listed on the
-[explicit-rk](families/explicit-rk.md) and [dirk](families/dirk.md) pages
+[explicit-rk](families/explicit-rk) and [dirk](families/dirk) pages
 (twelve registered schemes in total, including the two coupled-block
 companion pairs). Multistep schemes **refuse** adaptive control: varying
 `dt` would desynchronize their history (NOTES.md §3.17). A full

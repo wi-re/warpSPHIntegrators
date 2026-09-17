@@ -3,11 +3,13 @@
 One-step methods on a **triangular** Butcher tableau driven by `dirk.DIRK`:
 each stage with a nonzero diagonal $a_{ii}$ is closed as one nonlinear solve
 
-$$Y_i = y^n + \mathrm{dt}\,\sum_{j<i} a_{ij}k_j \;+\; \mathrm{dt}\,a_{ii}\, k_i(Y_i), \qquad k_i = f(t^n + c_i\,\mathrm{dt},\, Y_i),$$
+$$
+Y_i = y^n + \mathrm{dt}\,\sum_{j<i} a_{ij}k_j \;+\; \mathrm{dt}\,a_{ii}\, k_i(Y_i), \qquad k_i = f(t^n + c_i\,\mathrm{dt},\, Y_i),
+$$
 
 i.e. the fixed point of $G(Y) = \text{base} + \mathrm{dt}\,a_{ii}\,f(\cdot, Y)$,
 solved by `JFNKSolver` by default (a fixed-count Picard `FixedPointSolver` is
-an explicit low-overhead override; see [solver.md](../solver.md)). Stages with
+an explicit low-overhead override; see [solver](../solver)). Stages with
 $a_{ii} = 0$ are explicit. The driver reuses the explicit-RK machinery for the
 explicit part, the $b$-weighted final update, and embedded-pair error
 estimation; the only new piece is the stage solve.
@@ -109,7 +111,7 @@ $$
 
 Order 2, **L-stable and stiffly accurate**. Carries an embedded (2, 3) pair —
 SUNDIALS ARKODE's published `d` vector, an $O(\mathrm{dt}^3)$ estimate, so it
-feeds the adaptive helpers (see [solver.md](../solver.md)). Explicit first
+feeds the adaptive helpers (see [solver](../solver)). Explicit first
 stage + stiffly accurate $\Rightarrow$ lossless `priorStep` reuse.
 
 ### ESDIRK3(2)4L[2]SA (`ESDIRK324L2SA`)
@@ -119,7 +121,9 @@ stage, **A- and L-stable with L[2] damping** (stiff modes decay like
 $O(z^{-2})$ as $z \to -\infty$), stiffly accurate. The single $\gamma$-type
 node is
 
-$$g = 0.4358665215084589994160194511935568425293,$$
+$$
+g = 0.4358665215084589994160194511935568425293,
+$$
 
 with $c = (0, 2g, 0.6, 1)$; the full $a$ matrix and the (3, 2) embedded pair
 are in `dirk.py` (Kennedy-Carpenter coefficients as published in SUNDIALS

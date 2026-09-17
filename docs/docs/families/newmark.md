@@ -38,8 +38,8 @@ $\mathrm{dt}\,\omega$); the linear-acceleration variant adds the standard
 numerical damping. Newmark is **not** symplectic in general (measured
 dissipative in the Hamiltonian test suite — it is absent from the symplectic
 sets in `tests/test_hamiltonian.py`; the geometric alternatives for
-conservative dynamics are the [symplectic family](symplectic.md) and
-Gauss-Legendre 2, [coupled-rk](coupled-rk.md)).
+conservative dynamics are the [symplectic family](symplectic) and
+Gauss-Legendre 2, [coupled-rk](coupled-rk)).
 
 The step's cost is one nonlinear solve (plus the endpoint evaluation recorded
 for the history) and the standard `SolveDiagnostics` entry. `priorStep` is

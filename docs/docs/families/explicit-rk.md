@@ -10,7 +10,7 @@ solve, no matrix — this is the family for non-stiff dynamics.
 Tableaus are stored as `butcherTableau` NamedTuples (`.a`, `.b`, `.c`); embedded
 pairs store `.b` as a tuple `(b_main, b_embedded)` and the step returns the pair
 difference as `IntegrationResult.error` for step-size control (see
-[solver.md](../solver.md)). Every tableau below is the one in `butcher.py`,
+[solver](../solver)). Every tableau below is the one in `butcher.py`,
 transcribed exactly.
 
 ## Order 1

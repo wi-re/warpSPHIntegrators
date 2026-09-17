@@ -31,10 +31,10 @@ license = {file = "license.md"}
 
 [project.optional-dependencies]
 test = ["pytest"]
-docs = ["sphinx>=7.0", "myst-parser>=3.0"]
 
 [project.urls]
 Repository = "https://github.com/wi-re/warpSPHIntegrators"
+Documentation = "https://fluids.dev/warpSPHIntegrators/"
 Issues = "https://github.com/wi-re/warpSPHIntegrators"
 
 [build-system]

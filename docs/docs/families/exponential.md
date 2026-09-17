@@ -75,7 +75,7 @@ never inverted). Cost: **two** full $f$ evaluations, one $J_n$ application,
 **two** $\phi$-Krylov builds (three with the non-autonomous $v_n$ term). There
 is deliberately **no** `w='linear'` option: a $J = L$-only frozen operator is
 only first order on a genuinely nonlinear problem — the same order drop the
-[Rosenbrock](rosenbrock.md) driver documents.
+[Rosenbrock](rosenbrock) driver documents.
 
 ## Matrix-free $\phi_k(\mathrm{dt}\,L)\,v$
 

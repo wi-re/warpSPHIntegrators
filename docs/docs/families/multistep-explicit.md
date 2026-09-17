@@ -47,7 +47,7 @@ order-dependent) stability region on the real axis; and a cold start.
    stored) — a second evaluation.
 
 So ABM costs **2 evaluations per step** — the same cost as the *implicit*
-Adams-Moulton of the same order ([multistep-implicit](multistep-implicit.md)),
+Adams-Moulton of the same order ([multistep-implicit](multistep-implicit)),
 but with a wider (explicit) stability region and no solve. The pairing of the
 order-$p$ AB predictor with the order-$p$ AM corrector is what makes the PECE
 scheme order $p$ (NOTES.md §3.6).
