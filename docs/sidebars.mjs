@@ -2,6 +2,8 @@
 const sidebars = {
   wiki: [
     'index',
+    'quickstart',
+    'selection',
     {
       type: 'category',
       label: 'Families',
@@ -20,6 +22,7 @@ const sidebars = {
       ],
     },
     'solver',
+    'api',
   ],
 };
 

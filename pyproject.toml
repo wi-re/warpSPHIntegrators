@@ -1,6 +1,6 @@
 [project]
 name = "warpSPHIntegrators"
-version = "0.5.0"
+version = "0.6.0"
 authors = [
   { name="Rene Winchenbach", email="contact@fluids.dev" },
 ]
@@ -20,13 +20,17 @@ classifiers = [
   # Indicate who your project is intended for
   "Intended Audience :: Developers",
 
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
 ]
 dependencies = [
   "torch", "numpy"
 ]
+# The CI matrix is the supported floor: 3.11-3.13 (see .github/workflows/tests.yml).
+requires-python = ">=3.11"
 license = {file = "license.md"}
 
 [project.optional-dependencies]
