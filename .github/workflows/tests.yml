@@ -11,10 +11,10 @@ on:
 # suite, so no test is dropped from the gate. The two heavy cross-family nets
 # (convergence, stability) each get a shard of their own; the family shards are
 # balanced by wall time (per-file timings, 2026-09-17). Push runs Python 3.13
-# only (re-enabled 2026-09-17 now that a push is one shard sweep of ~5-6 min
-# instead of ~30 min per version); pull requests keep the full 3.11/3.12/3.13
-# matrix. 6 shards x 3 versions = 18 jobs, inside the public-repo concurrency
-# cap of 20.
+# only (re-enabled 2026-09-17 now that a push is one shard sweep of ~8 min
+# instead of ~31 min; first measured push ran 8:14); pull requests keep the
+# full 3.11/3.12/3.13 matrix. 6 shards x 3 versions = 18 jobs, inside the
+# public-repo concurrency cap of 20.
 jobs:
   pytest:
     runs-on: ubuntu-latest

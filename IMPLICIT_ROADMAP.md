@@ -83,8 +83,8 @@ and the git history; the pre-2026-09-15 text of this file remains in git.
   rails table in the README) and `tests.yml` runs six balanced shards in
   parallel — the convergence and stability nets each get a shard of their own,
   `-n 2` per 2-vCPU job. Push runs Python 3.13 only (re-enabled 2026-09-17, one
-  shard sweep ≈ 5–6 min instead of ~30 min per version); pull requests keep the
-  full 3.11/3.12/3.13 gate. The union of the shards is the full suite, so the
+  shard sweep ≈ 8 min — first measured push 8:14 — instead of ~31 min); pull
+  requests keep the full 3.11/3.12/3.13 gate. The union of the shards is the full suite, so the
   gate's coverage is unchanged; locally, `pytest -n auto` (pytest-xdist is in
   the `test` extra) runs the whole suite in ~3 min instead of ~10. Remaining
   only if CI time bites again: a fast smoke subset on PR (full suite on merge
