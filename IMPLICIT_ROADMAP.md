@@ -78,13 +78,17 @@ and the git history; the pre-2026-09-15 text of this file remains in git.
 
 ### Infrastructure
 
-- [ ] **Shorten CI.** A full suite run is ~30 min per Python version on a
-  2-vCPU GitHub runner (3-version matrix); the `push: [main]` trigger was
-  disabled 2026-09-17 (compute cost per push, and the same duration was slowing
-  local development) — `tests.yml` now runs on `pull_request` only. Options to
-  evaluate when picked up: a fast smoke subset on PR (full suite on merge or a
-  schedule), caching the CPU-torch wheel / pip environment, sharding the suite
-  across parallel runners, or reducing the version matrix.
+- [x] **Shorten CI** (2026-09-17). The suite is categorised per test file
+  (`CATEGORIES` in `tests/conftest.py`, auto-assigned as `pytest -m` markers;
+  rails table in the README) and `tests.yml` runs six balanced shards in
+  parallel — the convergence and stability nets each get a shard of their own,
+  `-n 2` per 2-vCPU job. Push runs Python 3.13 only (re-enabled 2026-09-17, one
+  shard sweep ≈ 5–6 min instead of ~30 min per version); pull requests keep the
+  full 3.11/3.12/3.13 gate. The union of the shards is the full suite, so the
+  gate's coverage is unchanged; locally, `pytest -n auto` (pytest-xdist is in
+  the `test` extra) runs the whole suite in ~3 min instead of ~10. Remaining
+  only if CI time bites again: a fast smoke subset on PR (full suite on merge
+  or a schedule), or caching the CPU-torch wheel.
 
 ## Completed phases (index)
 

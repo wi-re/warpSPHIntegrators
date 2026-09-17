@@ -5,6 +5,58 @@ import pytest
 from warpSPHIntegrators import testing
 from warpSPHIntegrators.integration import IntegrationSchemes
 
+#: Test categories, as marker name -> test files. Every test file belongs to
+#: exactly one category; the marker is assigned at collection time by
+#: `pytest_collection_modifyitems` below (no per-file annotation). Categories
+#: are the unit of parallel execution -- locally via pytest-xdist
+#: (`pytest -m <category> -n auto`) and in CI as the shard matrix of
+#: `.github/workflows/tests.yml`. The cross-category net (convergence,
+#: stability, gradients, rhs) runs every registered scheme and is the safety
+#: net for changes that touch more than one family.
+CATEGORIES = {
+    # State machinery, field semantics, registry metadata, backend dispatch.
+    'core': [
+        'test_backend_dispatch.py',
+        'test_copied_fields.py',
+        'test_family_enums.py',
+        'test_groundwork.py',
+        'test_kwargs_passthrough.py',
+        'test_state.py',
+    ],
+    # The JFNK / GMRES solver core and its preconditioning hooks.
+    'solvers': [
+        'test_jfnk.py',
+        'test_preconditioner.py',
+    ],
+    # Family-specific drivers and tableaus.
+    'dirk': ['test_dirk.py'],
+    'bdf': ['test_bdf.py'],
+    'am': ['test_am.py'],
+    'multistep': ['test_multistep.py'],
+    'ark': ['test_ark.py'],
+    'imex': ['test_imex.py', 'test_imexmultistep.py'],
+    'fullyimplicit': ['test_fullyimplicit.py'],
+    'exponential': ['test_exponential.py'],
+    'rosenbrock': ['test_rosenbrock.py'],
+    'rkc': ['test_rkc.py'],
+    'newmark': ['test_newmark.py'],
+    # Cross-family properties over the whole registry.
+    'convergence': ['test_convergence.py', 'test_embedded.py', 'test_step_reuse.py'],
+    'stability': ['test_benchmarks.py', 'test_hamiltonian.py', 'test_stiff.py', 'test_tvd.py'],
+    'gradients': ['test_adaptive.py', 'test_gradients.py'],
+    'rhs': ['test_rhs.py'],
+}
+
+#: Reverse of CATEGORIES: test file -> category marker.
+_FILE_MARKER = {f: marker for marker, files in CATEGORIES.items() for f in files}
+
+
+def pytest_collection_modifyitems(config, items):
+    for item in items:
+        marker = _FILE_MARKER.get(item.fspath.basename)
+        if marker:
+            item.add_marker(getattr(pytest.mark, marker))
+
 
 #: Schemes that take a per-step stage count (`s=`, or `lambda_max=`) the generic
 #: one-step-callable tests do not provide (NOTES.md S3.13, Phase 12). They are

@@ -1,19 +1,34 @@
 name: tests
 
 on:
-  # push trigger disabled 2026-09-17: a full run is ~30 min per Python
-  # version (x3 matrix) on a 2-vCPU runner, which was too much compute per
-  # push and was slowing local development. Kept on pull_request as the gate.
-  # Improving CI time is an open item (IMPLICIT_ROADMAP.md, Infrastructure).
+  push:
+    branches: [main]
   pull_request:
 
+# Test categories are assigned per test file in tests/conftest.py (CATEGORIES)
+# and registered in pyproject.toml. Each job runs one balanced shard -- a small
+# OR-expression of category markers -- and the union of the shards is the full
+# suite, so no test is dropped from the gate. The two heavy cross-family nets
+# (convergence, stability) each get a shard of their own; the family shards are
+# balanced by wall time (per-file timings, 2026-09-17). Push runs Python 3.13
+# only (re-enabled 2026-09-17 now that a push is one shard sweep of ~5-6 min
+# instead of ~30 min per version); pull requests keep the full 3.11/3.12/3.13
+# matrix. 6 shards x 3 versions = 18 jobs, inside the public-repo concurrency
+# cap of 20.
 jobs:
   pytest:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.11', '3.12', '3.13']
+        python-version: ${{ github.event_name == 'pull_request' && fromJSON('["3.11", "3.12", "3.13"]') || fromJSON('["3.13"]') }}
+        shard:
+          - 'core or solvers or rhs'
+          - 'dirk or fullyimplicit or newmark or ark'
+          - 'bdf or am or multistep or imex'
+          - 'rkc or rosenbrock or exponential'
+          - 'convergence or gradients'
+          - 'stability'
 
     steps:
       - uses: actions/checkout@v4
@@ -32,4 +47,13 @@ jobs:
           python -m pip install -e ".[test]"
 
       - name: Run tests
-        run: pytest -q
+        # Two xdist workers on the 2-vCPU runner, one BLAS thread each (no
+        # oversubscription). The suite is xdist-safe: no test writes files or
+        # relies on cross-file execution order (verified 2026-09-17).
+        env:
+          OMP_NUM_THREADS: 1
+          OPENBLAS_NUM_THREADS: 1
+          MKL_NUM_THREADS: 1
+          VECLIB_MAXIMUM_THREADS: 1
+          NUMEXPR_NUM_THREADS: 1
+        run: pytest -q -n 2 -m "${{ matrix.shard }}"

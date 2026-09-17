@@ -1170,9 +1170,10 @@ IntegrationSchemes.append(IntegrationScheme(myScheme, 'My Scheme',
 ```
 
 `reuse_order` and `fsal` are derived automatically from the tableau; do not set them by
-hand. Running `pytest` then holds the new scheme to its declared order on three problems,
-checks its reuse order against the prediction, and checks its `dissipation` flag against
-its actual energy behaviour.
+hand. Running `pytest` (or just `pytest -m convergence` for the order net — see
+[Running the tests](#running-the-tests)) then holds the new scheme to its declared order
+on three problems, checks its reuse order against the prediction, and checks its
+`dissipation` flag against its actual energy behaviour.
 
 For a hand-rolled scheme with no tableau:
 
@@ -1314,6 +1315,63 @@ Every push to `main` rebuilds and redeploys the site
 table above is the short reference; `NOTES.md` is the detailed measurement
 record; the notebooks (`integrators.ipynb`, `viscous_burgers_demo.ipynb`,
 `jfnk_wave_equation.ipynb`) are the interactive examples.
+
+## Running the tests
+
+The suite (~3,200 tests, 30 files) is organised into **categories**. Each test
+file is auto-marked with its category at collection time (`CATEGORIES` in
+`tests/conftest.py`, markers registered in `pyproject.toml`), so a category is
+just a `-m` expression:
+
+```bash
+pytest -m dirk                      # one family
+pytest -m "core or solvers or rhs"  # several categories
+pytest -m convergence -n 4          # a category, in parallel
+```
+
+The suite is safe under [pytest-xdist](https://pytest-xdist.readthedocs.io/)
+(no test writes files or depends on cross-file execution order), so on a
+multi-core machine `pytest -n auto` runs the whole thing in ~3 min instead of
+~10 min sequential. Cap the BLAS threads (e.g. `OMP_NUM_THREADS=4
+OPENBLAS_NUM_THREADS=4`) so the workers don't oversubscribe the machine.
+
+| category | what it pins |
+|---|---|
+| `core` | state machinery, field semantics, registry metadata, backend dispatch |
+| `solvers` | the JFNK/GMRES solver core and its preconditioning hooks |
+| `dirk`, `bdf`, `am`, `multistep`, `ark`, `imex`, `fullyimplicit`, `exponential`, `rosenbrock`, `rkc`, `newmark` | one family's driver and tableaus each |
+| `convergence` | order, embedded pairs, first-stage reuse — across every scheme |
+| `stability` | stiffness, Hamiltonian/energy, TVD-SSP landscape, benchmarks |
+| `gradients` | autodiff through every scheme, adaptive-step helpers |
+| `rhs` | the structured `RHS` / `IMEXRHS` / `SemilinearRHS` interface |
+
+**Which tests to rerun after a change** (the full suite is the union of the
+CI shards below and what the gate runs; for a single-family change the pair
+is usually enough locally):
+
+| you changed | rerun |
+|---|---|
+| one family module (`dirk.py`, `bdf.py`, ...) | `-m <that family>` + `-m convergence` |
+| solver code (`jfnk.py`, `solvers.py`, `preconditioning.py`) | `-m solvers` + the implicit families + `-m convergence` |
+| core state (`state.py`, `fields.py`, the enums/registry) | the full suite |
+| `rhs.py` | the full suite (the golden master is the interface contract) |
+| docs / notes only | nothing |
+
+**CI** (`.github/workflows/tests.yml`) runs the suite as six balanced shards
+in parallel — the union of the shards is the full suite, so the gate's
+coverage is unchanged:
+
+| shard | categories |
+|---|---|
+| machinery | `core`, `solvers`, `rhs` |
+| one-step implicit | `dirk`, `fullyimplicit`, `newmark`, `ark` |
+| multistep | `bdf`, `am`, `multistep`, `imex` |
+| stiff & exponential | `rkc`, `rosenbrock`, `exponential` |
+| convergence | `convergence`, `gradients` |
+| stability | `stability` |
+
+Push to `main` runs all six shards on Python 3.13; pull requests run them on
+3.11, 3.12 and 3.13.
 
 ## Contributing
 

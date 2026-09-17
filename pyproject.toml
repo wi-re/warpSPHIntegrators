@@ -30,7 +30,7 @@ dependencies = [
 license = {file = "license.md"}
 
 [project.optional-dependencies]
-test = ["pytest"]
+test = ["pytest", "pytest-xdist"]
 
 [project.urls]
 Repository = "https://github.com/wi-re/warpSPHIntegrators"
@@ -52,3 +52,25 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["tests"]
+# Test categories, assigned automatically per test file (CATEGORIES in
+# tests/conftest.py). Run a category with `pytest -m <name>`, e.g.
+# `pytest -m dirk -n auto` for the DIRK tests in parallel.
+markers = [
+  "core: state machinery, field semantics, registry metadata, backend dispatch",
+  "solvers: JFNK / GMRES solver core and preconditioning hooks",
+  "dirk: DIRK driver and tableaus",
+  "bdf: BDF1-5 and TR-BDF2",
+  "am: JFNK-corrected Adams-Moulton AM2-AM4",
+  "multistep: explicit / implicit Adams-Bashforth multistep (PECE)",
+  "ark: additive IMEX RK tableaus",
+  "imex: IMEX Euler and IMEX linear multistep (SBDF2/3, CNAB2)",
+  "fullyimplicit: coupled Gauss-Legendre / Radau IIA block driver",
+  "exponential: ETD2RK and EXPRB32 exponential integrators",
+  "rosenbrock: Rosenbrock-W (ROS3P)",
+  "rkc: RKC1/RKC2 and RKL2 stabilised explicit methods",
+  "newmark: Newmark-beta scheme",
+  "convergence: cross-family order, embedded pairs, first-stage reuse",
+  "stability: cross-family stiffness, Hamiltonian, TVD/SSP, benchmarks",
+  "gradients: cross-family gradient and adaptive-step helper tests",
+  "rhs: structured RHS interface (RHS / IMEXRHS / SemilinearRHS)",
+]
