@@ -1,3 +1,7 @@
+---
+sidebar_label: Coupled RK
+---
+
 # Coupled (block) fully implicit RK (`CoupledRK`) — 2 schemes
 
 The fully implicit RK family, driven by `fullyimplicit.py`: Gauss-Legendre 2

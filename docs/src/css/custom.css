@@ -1,3 +1,15 @@
+/* KaTeX's own stylesheet — without it, $$...$$ blocks render as unstyled
+   spans (fractions/arrays collapse onto one line instead of stacking). */
+@import 'katex/dist/katex.min.css';
+
+/* A wide display equation (long tableau, multi-clause $$...$$ block) must
+   scroll within its own box, not force the whole page to scroll sideways. */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+}
+
 /* Primary palette (matches the repo's matplotlib accent). */
 :root {
   --ifm-color-primary: #2563eb;

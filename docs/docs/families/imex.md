@@ -1,3 +1,7 @@
+---
+sidebar_label: IMEX
+---
+
 # Additive (IMEX) methods (`IMEX`) — 6 schemes
 
 For the **split right-hand side** $y' = f_E(t, y) + f_I(t, y)$: the smooth

@@ -1,3 +1,7 @@
+---
+sidebar_label: DIRK
+---
+
 # Diagonally implicit RK (`DIRK`) — 7 schemes
 
 One-step methods on a **triangular** Butcher tableau driven by `dirk.DIRK`:

@@ -1,3 +1,7 @@
+---
+sidebar_label: Overview
+---
+
 # warpSPHIntegrators — scheme wiki
 
 Differentiable ODE integration for PyTorch (and, eventually, NVIDIA Warp):

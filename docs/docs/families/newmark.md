@@ -1,3 +1,7 @@
+---
+sidebar_label: Newmark
+---
+
 # Newmark beta/gamma (`Newmark`) — 1 scheme
 
 The classical **Newmark** time integrator for second-order dynamics

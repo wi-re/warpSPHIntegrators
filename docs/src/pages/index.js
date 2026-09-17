@@ -8,7 +8,7 @@ export default () => (
     description="Differentiable ODE integrators for PyTorch: 64 schemes across 11 families, matrix-free implicit machinery, end-to-end autograd."
   >
     <header className="hero hero--primary">
-      <div className="container text-center">
+      <div className="container text--center">
         <h1>
           warpSPHIntegrators
           <span className="heroSubtitle">scheme wiki</span>

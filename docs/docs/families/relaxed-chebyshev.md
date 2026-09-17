@@ -1,3 +1,7 @@
+---
+sidebar_label: Relaxed Chebyshev
+---
+
 # Relaxed Chebyshev / Lobatto super-timestepping (`RelaxedChebyshev`) — 3 schemes
 
 Stabilised **explicit** methods for stiff *parabolic* (diffusive) right-hand

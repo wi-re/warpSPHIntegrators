@@ -1,3 +1,7 @@
+---
+sidebar_label: Rosenbrock-W
+---
+
 # Linearly implicit — Rosenbrock-W (`LinearlyImplicit`) — ROS3P
 
 The single linearly-implicit scheme: **ROS3P**, a 3-stage, order-3,

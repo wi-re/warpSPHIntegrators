@@ -1,3 +1,7 @@
+---
+sidebar_label: Explicit RK
+---
+
 # Explicit Runge-Kutta (`ExplicitRK`) — 21 schemes
 
 One-step explicit RK on the generic Butcher tableau, driven by the single

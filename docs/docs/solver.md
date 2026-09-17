@@ -1,3 +1,7 @@
+---
+sidebar_label: Solver stack
+---
+
 # Nonlinear solver, preconditioning, adaptive step control
 
 The machinery underneath every implicit family: how a stage equation is closed,

@@ -1,3 +1,7 @@
+---
+sidebar_label: Multistep (implicit)
+---
+
 # Implicit linear multistep — BDF & Adams-Moulton (`MultistepImplicit`) — 8 schemes
 
 The implicit multistep family: **BDF1-BDF5** (`bdf.py`) and the

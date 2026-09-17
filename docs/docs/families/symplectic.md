@@ -1,3 +1,7 @@
+---
+sidebar_label: Symplectic
+---
+
 # Symplectic / geometric position-velocity methods (`Symplectic`) — 6 schemes
 
 Integrators for the **second-order-ODE form** $x'' = f(t, x, v)$ written as the

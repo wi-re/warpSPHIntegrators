@@ -1,3 +1,7 @@
+---
+sidebar_label: Exponential
+---
+
 # Exponential integrators (`Exponential`) — 2 schemes
 
 Exponential integrators integrate the **linear part of a stiff problem

@@ -1,3 +1,7 @@
+---
+sidebar_label: Multistep (explicit)
+---
+
 # Explicit linear multistep — Adams-Bashforth & PECE (`MultistepExplicit`) — 7 schemes
 
 The explicit linear multistep family, driven by `multistep.py`:
