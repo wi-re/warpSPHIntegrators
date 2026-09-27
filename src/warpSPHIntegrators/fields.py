@@ -756,6 +756,11 @@ class BaseState:
 from .specs import ComponentUpdateSpec, PositionUpdateSpec
 
 
+def _hostTimeDeferred() -> bool:
+    from .util import hostTimeDeferred   # lazy: util imports this module
+    return hostTimeDeferred()
+
+
 def _resolve_state(system, system_role='reference_state'):
     return get_tagged_attr(system, role=system_role)
 def _resolve_delta(update, derivative_tag):
@@ -804,7 +809,9 @@ def update_position(
     if blend.reference_state is not None:
         reference_state = _resolve_state(blend.reference_state, system_role)
         value = value + blend.reference_weight * get_tagged_attr(reference_state, tag=position_tag)
-    if has_derivative and spec.derivative_dt:
+    # a device-tensor dt is only truth-tested on the host (a sync) outside a
+    # whole-step graph capture (util.deferHostTime); inside it, it is nonzero
+    if has_derivative and (spec.derivative_dt is not None if _hostTimeDeferred() else spec.derivative_dt):
         delta = _resolve_delta(update, position_derivative_tag)
         value = _accumulate(value, delta, spec.derivative_dt)
     if hasattr(spec, 'current_velocity_dt') and spec.current_velocity_dt is not None:

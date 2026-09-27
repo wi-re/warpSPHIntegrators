@@ -7,6 +7,7 @@ from .util import (
     initializeSystem,
     unpack_prior_step,
     updateStep,
+    hostTime,
 )
 from .specs import explicit_step, semi_implicit_position_step, verlet_position_step, IntegrationResult, StageResult
 from torch.profiler import record_function
@@ -73,7 +74,7 @@ def symplecticEuler(state, dt, f, *args, **kwargs):
             if priorStep is None:
                 with record_function("[Integration] Symplectic Euler: Current State Initialization"):
                     currentState = state.initializeNewState(*args, **kwargs)
-                    currentState.t = float(state.t)
+                    currentState.t = hostTime(state.t)
                 if verbose:
                     print(f"[Integrator] No priorStep provided, computing k0 and r0 using updateStep.")
                 k0, r0 = updateStep(state, currentState, dt/2, f, *args, **kwargs)
@@ -82,7 +83,7 @@ def symplecticEuler(state, dt, f, *args, **kwargs):
             with record_function("[Integration] Symplectic Euler: Half State Initialization"):
                 halfState = state.initializeNewState(*args, **kwargs)
             applyStateUpdate(halfState, k0, explicit_step(dt / 2), **kwargs)
-            halfState.t = float(state.t + dt / 2)
+            halfState.t = hostTime(state.t + dt / 2)
 
         with record_function("[Integration] Symplectic Euler: k1"):
             k1, r1 = updateStep(state, halfState, dt / 2, f, *args, **kwargs)
@@ -113,7 +114,7 @@ def symplecticEuler(state, dt, f, *args, **kwargs):
             # that needs density handled differently should express it through the
             # field-behavior metadata or its own apply_quantity_update.
             applyQuantityUpdate(finalState, k1, explicit_step(dt), **kwargs)
-            finalState.t = float(state.t + dt)
+            finalState.t = hostTime(state.t + dt)
 
             rs = [r0, r1]
             ks = [k0, k1]

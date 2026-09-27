@@ -270,3 +270,34 @@ def updateStep(initialState, currentState, dt, f, *args, **kwargs):
     
 
 # from warpSPHIntegrators.integration import *
+
+
+# --- host-time deferral (CUDA-graph capture of a whole step) -----------------
+# A step captured into a CUDA graph must not read device values back to the
+# host. The integrators keep stage times as Python floats (`float(state.t +
+# dt)`), which syncs whenever `dt` is a device tensor. Inside
+# `deferHostTime()` those conversions are skipped (the time stays a tensor);
+# the capturing caller restores the host-side time itself after each replay.
+# Outside the context behaviour is unchanged.
+import contextlib as _contextlib
+
+_DEFER_HOST_TIME = [False]
+
+
+@_contextlib.contextmanager
+def deferHostTime():
+    prev = _DEFER_HOST_TIME[0]
+    _DEFER_HOST_TIME[0] = True
+    try:
+        yield
+    finally:
+        _DEFER_HOST_TIME[0] = prev
+
+
+def hostTime(value):
+    """`float(value)`, unless inside `deferHostTime()` (then `value` as is)."""
+    return value if _DEFER_HOST_TIME[0] else float(value)
+
+
+def hostTimeDeferred() -> bool:
+    return _DEFER_HOST_TIME[0]
