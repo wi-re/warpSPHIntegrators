@@ -10,6 +10,17 @@ from .util import (
     hostTime,
 )
 from .specs import explicit_step, semi_implicit_position_step, verlet_position_step, IntegrationResult, StageResult
+from .drift import (
+    acceleration_of,
+    add_to_drift_fields,
+    drift_fields_active,
+    drift_rates,
+    kinematic_part,
+    nonkinematic_part,
+    set_drift_fields,
+    velocity_of,
+    without_kinematic,
+)
 from torch.profiler import record_function
 
 
@@ -39,6 +50,15 @@ def leapFrog(state, dt, f, *args, **kwargs):
                 verlet_position_step(dt, update_velocity_dt=0.5 * dt**2),
             )
             driftedState.t = float(state.t + dt)
+            drift = drift_fields_active(state, **kwargs)
+            if drift:
+                # The positions drift with v_h = v^n + dt/2 a^n (that is what
+                # dt v^n + dt^2/2 a^n is); drift fields (drift.py) do the same, and
+                # the second evaluation has to see them drifted.
+                vHalf = velocity_of(state) + 0.5 * dt * acceleration_of(k0)
+                kinStart = drift_rates(currentState, vHalf, r0, **kwargs)
+                nonKin0 = nonkinematic_part(state, k0)
+                set_drift_fields(driftedState, state, (dt, kinStart), (dt, nonKin0))
 
         with record_function("[Integration] Leap Frog: k1"):
             k1, r1 = updateStep(state, driftedState, dt / 2, f, *args, **kwargs)
@@ -51,7 +71,15 @@ def leapFrog(state, dt, f, *args, **kwargs):
                 verlet_position_step(dt, update_velocity_dt=0.5 * dt**2),
             )
             applyVelocityUpdate(finalState, [k0, k1], explicit_step([0.5 * dt, 0.5 * dt]))
-            applyQuantityUpdate(finalState, [k0, k1], explicit_step([0.5 * dt, 0.5 * dt]))
+            if drift:
+                # trapezoid over the drift; k1 ran at v^n, not v_h, so the end
+                # point's velocity-linear rate is one more evaluation
+                kinEnd = drift_rates(driftedState, vHalf, r1, **kwargs)
+                set_drift_fields(finalState, state,
+                                 (dt / 2, kinStart), (dt / 2, kinEnd),
+                                 (dt / 2, nonKin0), (dt / 2, nonkinematic_part(state, k1)))
+            else:
+                applyQuantityUpdate(finalState, [k0, k1], explicit_step([0.5 * dt, 0.5 * dt]))
             finalState.t = float(state.t + dt)
             
             rs = [r0, r1]
@@ -114,6 +142,16 @@ def symplecticEuler(state, dt, f, *args, **kwargs):
             # that needs density handled differently should express it through the
             # field-behavior metadata or its own apply_quantity_update.
             applyQuantityUpdate(finalState, k1, explicit_step(dt), **kwargs)
+            if drift_fields_active(state, **kwargs):
+                # Drift fields (drift.py) move like the positions, i.e. with
+                # (v^n + v^{n+1})/2, not with the predictor velocity k1 was
+                # evaluated at: q^{n+1} = q^n + dt [k1 - kin(k1)] + dt K(x_h, v_bar).
+                # One velocity-linear evaluation at the half state; for the
+                # (rho, v) pair this is Stormer-Verlet instead of explicit midpoint.
+                vBar = 0.5 * (velocity_of(state) + velocity_of(finalState))
+                add_to_drift_fields(finalState,
+                                    (dt, drift_rates(halfState, vBar, r1, **kwargs)),
+                                    (-dt, kinematic_part(state, k1)))
             finalState.t = hostTime(state.t + dt)
 
             rs = [r0, r1]
@@ -152,6 +190,15 @@ def velocityVerlet(state, dt, f, *args, **kwargs):
             applyVelocityUpdate(driftedState, k0, explicit_step(dt / 2))
             applyPositionUpdate(driftedState, k0, semi_implicit_position_step(dt))
             driftedState.t = float(state.t + dt)
+            drift = drift_fields_active(state, **kwargs)
+            if drift:
+                # Drift fields (drift.py) move with the drift velocity v_h, so the
+                # end-of-step evaluation must already see them drifted (with the
+                # start configuration's rate; the trapezoid below completes it).
+                vHalf = velocity_of(driftedState)
+                kinStart = drift_rates(currentState if priorStep is None else state, vHalf, r0, **kwargs)
+                nonKin0 = nonkinematic_part(state, k0)
+                set_drift_fields(driftedState, state, (dt, kinStart), (dt, nonKin0))
 
         with record_function("[Integration] Velocity Verlet: k1"):
             k1, r1 = updateStep(state, driftedState, dt / 2, f, *args, **kwargs)
@@ -159,7 +206,14 @@ def velocityVerlet(state, dt, f, *args, **kwargs):
         with record_function("[Integration] Velocity Verlet: Update"):
             finalState = driftedState.initializeNewState(*args, **kwargs)
             applyVelocityUpdate(finalState, k1, explicit_step(dt / 2))
-            applyQuantityUpdate(finalState, k1, explicit_step(dt))
+            if drift:
+                # trapezoid over the drift: k1 ran at (x^{n+1}, v_h), so its
+                # velocity-linear rate is the end point for free
+                set_drift_fields(finalState, state,
+                                 (dt / 2, kinStart), (dt / 2, kinematic_part(state, k1)),
+                                 (dt / 2, nonKin0), (dt / 2, nonkinematic_part(state, k1)))
+            else:
+                applyQuantityUpdate(finalState, k1, explicit_step(dt))
 
             finalState.t = float(state.t + dt)
             rs = [r0, r1]

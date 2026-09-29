@@ -49,8 +49,19 @@ def integrated(
     role=None,
     tags=None,
     metadata=None,
+    drift_key: Optional[str] = None,
 ):
-    """Updated via integrateQ. Cloned in initializeNewState."""
+    """Updated via integrateQ. Cloned in initializeNewState.
+
+    ``drift_key`` declares a *drift field* (``drift.py``): a configuration
+    quantity whose rate ``update.<update_key>`` contains a part that is linear in
+    the velocity, reported separately as ``update.<drift_key>`` -- the continuity
+    density ``drho/dt = -rho div v`` is the case this exists for. The Verlet-family
+    schemes advance that part with the drifts (the velocity the positions move
+    with) rather than with the kicks, and the rest with the kicks as before; every
+    other scheme ignores the declaration. Only takes effect for a system that
+    implements ``drift_rates`` (``protocol.py``).
+    """
     kwargs = {
         'metadata': _field_metadata(
             behavior='integrated',
@@ -59,6 +70,7 @@ def integrated(
             metadata=metadata,
             update_key=update_key,
             fluid_only=fluid_only,
+            **({'drift_key': drift_key} if drift_key is not None else {}),
         )
     }
     if default is not MISSING:

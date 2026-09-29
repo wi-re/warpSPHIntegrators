@@ -4,6 +4,38 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 0.6.0 lives in the git log; the per-phase measurement record lives in
 [NOTES.md](NOTES.md).
 
+## [Unreleased]
+
+### Added — drift fields (`drift.py`)
+
+- `integrated(update_key, drift_key=...)` declares a **drift field**: a
+  configuration quantity whose rate has a velocity-linear part (the
+  weakly-compressible continuity density `drho/dt = -rho div v`), reported on
+  the update object under `drift_key`. A system opts in with
+  `drift_rates(velocities, aux=None, **kwargs)` (that part at its own
+  configuration for a given velocity field) and, optionally,
+  `drift_fields_enabled(**kwargs)`.
+- The Verlet-family schemes (Symplectic Euler, Velocity Verlet, Leap Frog,
+  Semi-Implicit Euler, PEFRL, VEFRL) then advance that part with the **drifts**
+  (the velocity the positions move with) and only the rest with the kicks. Cost:
+  one velocity-linear evaluation per step (Symplectic Euler, Velocity Verlet,
+  Semi-Implicit Euler), two (Leap Frog), six (PEFRL), four (VEFRL). Every other
+  scheme ignores the declaration; systems that do not opt in are unchanged.
+- Why: with the quantity updated alongside the kicks, every Verlet scheme
+  amplifies the linear acoustic pair at every step size — Symplectic Euler
+  (explicit midpoint on the pair) by `1 + (omega dt)^4/4` per step, Velocity
+  Verlet by `~1 + h^2/2`, Leap Frog / Semi-Implicit Euler / PEFRL / VEFRL by
+  `~1 + h^2` — and Velocity Verlet, Leap Frog, PEFRL and VEFRL drop to first
+  order for such a field. With the drift path the pair is a symplectic map
+  (bounded energy) and the field is second order (first for Semi-Implicit
+  Euler; PEFRL/VEFRL reach 2, not 4, for it).
+- `testing.DriftSystem`, `testing.acoustic_problem`,
+  `testing.drift_oscillator_problem` (`testing.DRIFT_PROBLEMS`) and
+  `tests/test_drift_fields.py` pin all of the above, including the legacy
+  growth rates.
+- Known limit: a drift field's *non*-velocity rate still rides the kicks, and
+  PEFRL/VEFRL are first order for that part (as they were for any quantity).
+
 ## [0.6.0] — 2026-09-17
 
 The implicit-integration release: 38 new schemes (26 → 64), a Jacobian-free

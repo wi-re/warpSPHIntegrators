@@ -27,6 +27,19 @@ A user-facing system only needs to implement two things:
 All lifecycle hooks (``initialize``, ``preprocess``, ``postprocess``,
 ``finalize``) are optional — subclass ``BaseIntegrationSystem`` to get no-op
 defaults so you only override what you need.
+
+Drift fields (optional, ``drift.py``): a system whose state declares a field
+``integrated(update_key, drift_key=...)`` -- a configuration quantity with a
+velocity-linear rate, like the continuity density -- implements
+
+  * ``drift_rates(velocities, aux=None, **kwargs)`` -> an object carrying the
+    ``drift_key`` rates at this system's configuration for the given velocity
+    field (must not mutate the system; ``aux`` is the stage's auxiliary return
+    or None), and optionally
+  * ``drift_fields_enabled(**kwargs) -> bool`` to switch it per run.
+
+The Verlet-family schemes then advance those fields with the drifts instead of
+the kicks; every other scheme ignores the declaration.
 """
 
 from typing import Any, List, Protocol, Union, runtime_checkable

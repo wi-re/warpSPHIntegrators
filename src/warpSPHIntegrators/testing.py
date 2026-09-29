@@ -720,6 +720,173 @@ PROBLEMS = {
 
 
 # --------------------------------------------------------------------------- #
+# Drift-field reference system (drift.py)                                      #
+# --------------------------------------------------------------------------- #
+
+@dataclass
+class DriftParticleState(BaseState):
+    """Position, velocity, and a *drift field* ``q``: a configuration quantity
+    whose rate has a velocity-linear part (``drift.py``) -- the continuity
+    density's structure, ``drho/dt = -rho div v``, in miniature."""
+
+    x: torch.Tensor = integrated('dxdt', tags=('position',))
+    u: torch.Tensor = integrated('dudt', tags=('velocity',))
+    q: torch.Tensor = integrated('dqdt', tags=('quantity',), drift_key='dqdt_kin')
+
+
+@dataclass
+class DriftUpdate:
+    dxdt: torch.Tensor = tagged(tags=('position_derivative',))
+    dudt: torch.Tensor = tagged(tags=('velocity_derivative',))
+    dqdt: torch.Tensor = tagged(tags=('quantity_derivative',))
+    #: the velocity-linear part of ``dqdt`` (the drift field's ``drift_key``)
+    dqdt_kin: torch.Tensor = tagged(default=None)
+
+
+@dataclass
+class DriftSystem(BaseIntegrationSystem):
+    """``ParticleSystem`` with a drift field. ``kinematic(x, v)`` is the problem's
+    velocity-linear rate; ``drift=False`` switches the drift-field path off
+    (``drift_fields_enabled``) so the same problem runs the legacy kick path."""
+
+    state: DriftParticleState = reference_state(tags=('particles',))
+    t: float = 0.0
+    kinematic: Optional[Callable] = None
+    drift: bool = True
+
+    def initializeNewState(self, *args, **kwargs):
+        return DriftSystem(state=get_reference_state(self).initializeNewState(), t=self.t,
+                           kinematic=self.kinematic, drift=self.drift)
+
+    def drift_fields_enabled(self, **kwargs):
+        return self.drift
+
+    def drift_rates(self, velocities, aux=None, **kwargs):
+        return DriftUpdate(dxdt=None, dudt=None, dqdt=None,
+                           dqdt_kin=self.kinematic(get_reference_state(self).x, velocities))
+
+    def apply_position_update(self, update, spec: PositionUpdateSpec, **kwargs):
+        return update_position(self, update, spec, 'position', 'position_derivative',
+                               'velocity', 'velocity_derivative')
+
+    def apply_velocity_update(self, update, spec: ComponentUpdateSpec, **kwargs):
+        return update_component(self, update, spec, 'velocity', 'velocity_derivative')
+
+    def apply_quantity_update(self, update, spec: ComponentUpdateSpec, **kwargs):
+        return update_component(self, update, spec, 'quantity', 'quantity_derivative')
+
+    def apply_state_update(self, update, spec: ComponentUpdateSpec, **kwargs):
+        self.apply_position_update(
+            update, PositionUpdateSpec(derivative_dt=spec.derivative_dt, blend=spec.blend), **kwargs)
+        self.apply_velocity_update(update, spec, **kwargs)
+        self.apply_quantity_update(update, spec, **kwargs)
+        return self
+
+
+def acoustic_problem(n: int = 16, c: float = 1.0, rho0: float = 1.0, mode: int = 4,
+                     amplitude: float = 1e-3, drift: bool = True) -> Problem:
+    """Linear acoustics on a periodic 1-D grid, density as a drift field.
+
+    ``u' = -(c^2/rho0) G rho``, ``rho' = -rho0 D u`` with the forward difference
+    ``G`` and the backward difference ``D = -G^T``: the weakly-compressible
+    (rho, v) pair with an exactly skew coupling, so the semi-discrete energy
+    ``1/2 |u|^2 + c^2/(2 rho0^2) |rho - rho0|^2`` is conserved and the spectrum is
+    ``+-i omega_m``, ``omega_m = (2c/h) sin(pi m / n)`` (``acoustic_omega``).
+    Starts at rest on one standing mode. ``x`` is carried (it drifts with ``u``)
+    but does not enter the rates, so the geometry question is switched off: this
+    problem isolates the time integration of the pair.
+    """
+    h = 1.0 / n
+    grid = torch.arange(n, dtype=torch.float64) * h
+
+    def G(f):
+        return (torch.roll(f, -1) - f) / h
+
+    def D(f):
+        return (f - torch.roll(f, 1)) / h
+
+    def kinematic(x, v):
+        return -rho0 * D(v)
+
+    def rhs(system, dt, **kwargs):
+        s = get_reference_state(system)
+        kin = kinematic(s.x, s.u)
+        return DriftUpdate(dxdt=s.u.clone(), dudt=-(c ** 2 / rho0) * G(s.q),
+                           dqdt=kin.clone(), dqdt_kin=kin), None
+
+    def initial():
+        rho = rho0 + amplitude * torch.cos(2 * math.pi * mode * grid)
+        return DriftSystem(state=DriftParticleState(x=grid.clone(), u=torch.zeros(n, dtype=torch.float64),
+                                                    q=rho), t=0.0, kinematic=kinematic, drift=drift)
+
+    def energy(state):
+        return float(0.5 * (state.u ** 2).sum() + c ** 2 / (2 * rho0 ** 2) * ((state.q - rho0) ** 2).sum())
+
+    def exact(t):
+        raise NotImplementedError('acoustic: measure the energy (acoustic_omega gives the phase)')
+
+    return Problem('acoustic',
+                   f'linear acoustics, periodic n={n}, mode {mode}, density as a drift field '
+                   f'(drift={drift})', rhs, initial, exact, energy, autonomous=True)
+
+
+def acoustic_omega(n: int = 16, c: float = 1.0, mode: int = 4) -> float:
+    """Frequency of ``acoustic_problem``'s mode: ``(2c/h) sin(pi m / n)``."""
+    return 2.0 * c * n * math.sin(math.pi * mode / n)
+
+
+def drift_oscillator_problem(kappa: float = 0.5, gamma: float = 0.0, drift: bool = True) -> Problem:
+    """``x' = u``, ``u' = -x - kappa q``, ``q' = beta(x) u - gamma q`` with
+    ``beta(x) = 1 + x^2/2``: a drift field whose velocity-linear rate depends on
+    the *position*, so the configuration at which a scheme evaluates it matters for
+    the order of accuracy. ``gamma`` adds a rate that is not velocity-driven (it
+    stays with the kicks). With ``gamma = 0``, ``q - B(x)`` (``B = x + x^3/6``) is
+    constant, so ``E = u^2/2 + (1+kappa) x^2/2 + kappa x^4/24 + kappa c x`` with
+    ``c = q0 - B(x0)`` is an exact invariant. No closed form: accuracy is
+    measured against a fine RK4 reference (RK ignores the declaration).
+    """
+    def beta(x):
+        return 1.0 + 0.5 * x * x
+
+    def kinematic(x, v):
+        return beta(x) * v
+
+    def rhs(system, dt, **kwargs):
+        s = get_reference_state(system)
+        kin = kinematic(s.x, s.u)
+        return DriftUpdate(dxdt=s.u.clone(), dudt=-s.x - kappa * s.q,
+                           dqdt=kin - gamma * s.q, dqdt_kin=kin), None
+
+    x0, u0, q0 = 1.0, 0.0, 0.2
+
+    def initial():
+        return DriftSystem(state=DriftParticleState(x=_vec(x0), u=_vec(u0), q=_vec(q0)), t=0.0,
+                           kinematic=kinematic, drift=drift)
+
+    cInv = q0 - (x0 + x0 ** 3 / 6)
+
+    def energy(state):
+        x, u = state.x, state.u
+        return float((0.5 * u * u + 0.5 * (1 + kappa) * x * x + kappa * x ** 4 / 24 + kappa * cInv * x).sum())
+
+    def exact(t):
+        raise NotImplementedError('driftOscillator: compare against a fine RK4 run')
+
+    return Problem('driftOscillator',
+                   f'drift field with a position-dependent velocity-linear rate, kappa={kappa}, '
+                   f'gamma={gamma} (drift={drift})', rhs, initial, exact,
+                   energy if gamma == 0.0 else None, autonomous=True)
+
+
+#: Problems whose state carries a drift field (``DriftSystem``); kept apart from
+#: ``PROBLEMS``, whose systems are all ``ParticleSystem``.
+DRIFT_PROBLEMS = {
+    'acoustic': acoustic_problem,
+    'driftOscillator': drift_oscillator_problem,
+}
+
+
+# --------------------------------------------------------------------------- #
 # viscousBurgers reference (Phase 7)                                           #
 # --------------------------------------------------------------------------- #
 
