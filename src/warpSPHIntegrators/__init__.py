@@ -93,7 +93,7 @@ from .reuse import (
 from .util import unpack_prior_step
 from .drift import DriftField, drift_fields, drift_fields_active
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 __all__ = [
     "verbosePrint",
