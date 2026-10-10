@@ -2,6 +2,7 @@ import inspect
 from typing import Union, Tuple, NamedTuple
 from .util import (
     finalizeSystem,
+    hostTime,
     initializeSystem,
     unpack_prior_step,
     updateStateEuler,
@@ -63,7 +64,7 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
         # Stage 0 sits at t^n. The user's initializeNewState is not required to
         # forward `t`, so set it explicitly rather than inheriting whatever came
         # back (see NOTES.md 2.3).
-        currentState.t = float(initialState.t)
+        currentState.t = hostTime(initialState.t)
         if verbose:
             if priorStep is not None:
                 print(f"[Integrator] Using prior step as k0")
@@ -88,7 +89,7 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
                         if verbose:
                             print(f"[Integrator] Updating state for k{ic+1} with a={a:.4f} and dt={dt:.4f} using k{i}")
                         currentState = updateStateEuler(currentState, ks[i], a * dt, copyState = False, **kwargs)
-                currentState.t = float(initialState.t + c * dt)
+                currentState.t = hostTime(initialState.t + c * dt)
             with record_function(f"[Integration] Butcher: k{ic+1}"):
                 if verbose:
                     print(f"[Integrator] Computing k{ic+1} with c={c:.4f} and a={current_as}")
@@ -106,14 +107,14 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
             def _next_history(new_state):
                 if history is None:
                     return None
-                entry = HistoryEntry(t=float(initialState.t), dt=dt, update=ks[-1], aux=rs[-1])
+                entry = HistoryEntry(t=hostTime(initialState.t), dt=dt, update=ks[-1], aux=rs[-1])
                 return history.pushed(entry)
 
             if not isinstance(butcherTableau.b, tuple):
                 if verbose:
                     print(f"[Integrator] Updating state with b={butcherTableau.b} and dt={dt:.4f}")
                 new_state = _weighted_update(initialState, ks, butcherTableau.b, dt, *args, **kwargs)
-                new_state.t = float(initialState.t + dt)
+                new_state.t = hostTime(initialState.t + dt)
                 if verbose:
                     print(f"[Integrator] Finalizing state at t={new_state.t:.4f} with b={butcherTableau.b} and dt={dt:.4f}")
                 finalizeSystem(new_state, initialState, dt, rs, ks, butcherTableau.b,
@@ -127,7 +128,7 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
             if verbose:
                 print(f"[Integrator] Embedded pair: propagating b={b_main}, error estimate against b={b_embedded}")
             new_state = _weighted_update(initialState, ks, b_main, dt, *args, **kwargs)
-            new_state.t = float(initialState.t + dt)
+            new_state.t = hostTime(initialState.t + dt)
             error = _error_estimate(initialState, ks, b_main, b_embedded, dt, *args, **kwargs)
             finalizeSystem(new_state, initialState, dt, rs, ks, b_main,
                            *args, lastStageSystem=lastStageState, **kwargs)
@@ -166,7 +167,7 @@ def _error_estimate(initialState, ks, b_main, b_embedded, dt, *args, **kwargs):
     y_main = _weighted_update(initialState, ks, b_main, dt, *args, **kwargs)
     y_embedded = _weighted_update(initialState, ks, b_embedded, dt, *args, **kwargs)
     error = state_difference(y_main, y_embedded)
-    error.t = float(initialState.t + dt)
+    error.t = hostTime(initialState.t + dt)
     return error
 
 
