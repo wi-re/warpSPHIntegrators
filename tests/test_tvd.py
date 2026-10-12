@@ -113,6 +113,15 @@ def test_named_tvd_schemes_have_ssp_coefficient_one(tableau_name):
     # ODE's published 0.8417 is the paper's DG-context coefficient, not the
     # upwind-model stage-map convexity CFL (1.8939).
     ('KYK2014DGSSPRK_3S2', 1.8939),
+    # Wave-2 ODE SSPRK tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12): the 3(2)
+    # pairs SSPRK43/SSPRK432 agree with ODE's published ssp_coefficient (2.0)
+    # in the upwind model. SSPRK932's true SSP boundary 6.0 is beyond the
+    # scan cap, so the scan reports the cap (a lower bound); the exact
+    # boundary is pinned in
+    # test_expanded_ssprk_ssp_boundaries_and_real_axis_intervals.
+    ('SSPRK43', 2.0),
+    ('SSPRK432', 2.0),
+    ('SSPRK932', 4.0),
 ])
 def test_explicit_ssp_coefficients(name, expected):
     r = tvd_analysis.convex_combination_cfl(getButcherTableau(name))
@@ -162,10 +171,10 @@ def test_ssprk104_ssp_boundary_and_real_axis_interval():
 @pytest.mark.parametrize('name,ssp_boundary,real_axis_left', [
     # (name, exact SSP convex-combination boundary, real-axis interval left
     # end) as measured by tvd_analysis. The boundary is scanned to CFL 8, past
-    # the default cap 4.0 that clips SSPRK73/SSPRK83 in the landscape table
-    # (the same cap the SSPRK(10,4) pin above uses). For every method the
-    # negative real-axis interval is a single [left, 0] interval (|R(z)| does
-    # not re-enter the unit disk for z < left).
+    # the default cap 4.0 that clips SSPRK73/SSPRK83/SSPRK932 in the landscape
+    # table (the same cap the SSPRK(10,4) pin above uses). For every method
+    # the negative real-axis interval is a single [left, 0] interval (|R(z)|
+    # does not re-enter the unit disk for z < left).
     ('SSPRK53', 2.6506, -6.21361),
     ('SSPRK63', 3.5184, -7.21303),
     ('SSPRK73', 4.2879, -8.88769),
@@ -173,18 +182,28 @@ def test_ssprk104_ssp_boundary_and_real_axis_interval():
     ('SSPRK54', 1.7693, -5.33147),
     ('KYKSSPRK42', 2.2838, -4.95391),
     ('KYK2014DGSSPRK_3S2', 1.8939, -4.26688),
+    # Wave 2 (SCHEME_EXPANSION_PLAN, 2026-10-12): SSPRK43/SSPRK432 share the
+    # same (a, c, b_main), so the same boundary and interval; SSPRK932's exact
+    # boundary 6.0 is the reason this scan goes to CFL 8 (the default cap 4.0
+    # would clip it).
+    ('SSPRK43', 2.0, -5.14940),
+    ('SSPRK432', 2.0, -5.14940),
+    ('SSPRK932', 6.0, -13.28960),
 ])
 def test_expanded_ssprk_ssp_boundaries_and_real_axis_intervals(
         name, ssp_boundary, real_axis_left):
-    """The wave-1 ODE SSPRK tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12): the
-    exact SSP convex-combination boundary and the negative real-axis stability
-    limit of each, mirroring the SSPRK(10,4) pin above."""
+    """The wave 1/2 ODE SSPRK tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12):
+    the exact SSP convex-combination boundary and the negative real-axis
+    stability limit of each, mirroring the SSPRK(10,4) pin above."""
     tableau = getButcherTableau(name)
     r = tvd_analysis.convex_combination_cfl(tableau, mu_max=8.0)
     assert r == pytest.approx(ssp_boundary, abs=5e-3), (
         f'{name}: SSP boundary {r:.4g}, expected {ssp_boundary:g}')
 
     a, b = tableau.a, tableau.b
+    # Embedded pairs (wave-2 SSPRK43/SSPRK432) store `b` as a (main, embedded)
+    # tuple; the real-axis interval is defined for the propagated branch.
+    b = b[0] if isinstance(b, tuple) else b
     z = np.linspace(real_axis_left - 1.5, 0.0, 20001)
     identity = np.eye(len(a))
     solves = np.linalg.solve(np.stack([identity - zz * a for zz in z]),
@@ -400,6 +419,14 @@ EXPECTED_VERDICTS = {
     'SSPRK54': (1.7693, 2.0, False),
     'KYKSSPRK42': (2.2838, 2.0, False),
     'KYK2014DGSSPRK_3S2': (1.8939, 1.5, False),
+    # The wave-2 ODE SSPRK tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12).
+    # SSPRK932's ssp is the scan cap 4.0 (the exact boundary is 6.0, pinned in
+    # test_expanded_ssprk_ssp_boundaries_and_real_axis_intervals); its real-axis
+    # interval [-13.290, 0] keeps every per-mode amplification <= 1, so the
+    # sweep finds no TV increase up to the CFL cap (unconditional).
+    'SSPRK43': (2.0, 2.0, False),
+    'SSPRK432': (2.0, 2.0, False),
+    'SSPRK932': (4.0, 5.0, True),
     'RK4': (2.0 / 3.0, 1.25, False),
     'RK4 (alternative)': (1.0 / 3.0, 1.25, False),
     'Nystrom 5th order': (0.0, 1.5, False),

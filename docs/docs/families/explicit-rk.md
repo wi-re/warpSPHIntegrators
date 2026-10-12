@@ -2,7 +2,7 @@
 sidebar_label: Explicit RK
 ---
 
-# Explicit Runge-Kutta (`ExplicitRK`) — 28 schemes
+# Explicit Runge-Kutta (`ExplicitRK`) — 31 schemes
 
 One-step explicit RK on the generic Butcher tableau, driven by the single
 `butcher.RungeKuttaB` path: a stage $k_i = f(t^n + c_i\,\mathrm{dt},
@@ -193,6 +193,57 @@ published `ssp_coefficient` agrees with the measured $r$ to within 6.3e-4:
 Full tableaus in `butcher.py`; not FSAL. SSPRK73's coefficients inherit a
 1e-6 slack: ODE stores alpha73/alpha76 at 6 digits.
 
+### SSPRK43 and SSPRK432 (the 3(2) pairs)
+
+The 4-stage order-3 SSP method of Kraaijevanger (Kraaijevanger, *BIT* 31.3
+(1991) 482-528) with an embedded order-2 estimate (Conde, Fekete & Shadid,
+arXiv:1806.08693; coefficients as stored by OrdinaryDiffEq v7.8.1). One
+$(a, c, b)$, two choices of embedded weight:
+
+$$
+\begin{array}{c|cccc}
+0 & 0 & 0 & 0 & 0 \\
+1/2 & 1/2 & 0 & 0 & 0 \\
+1 & 1/2 & 1/2 & 0 & 0 \\
+1/2 & 1/6 & 1/6 & 1/6 & 0 \\
+\hline
+& 1/6 & 1/6 & 1/6 & 1/2
+\end{array}
+$$
+
+SSPRK43's embedded weight is $\hat b = (1/4, 1/4, 1/4, 1/4)$ and
+SSPRK432's $\hat b = (1/3, 1/3, 1/3, 0)$ — both order 2
+($\sum \hat b_i = 1$, $\sum_i \hat b_i c_i = 1/2$), so in both the
+propagated-minus-embedded difference is the embedded branch's
+$O(\mathrm{dt}^3)$ local error and both drive the adaptive controller
+(`tests/test_adaptive.py::test_adaptive_loop_smoke_on_new_ssprk_pairs`).
+Stage 3 is evaluated at $t + \mathrm{dt}$ — the node ordering is
+$c = (0, 1/2, 1, 1/2)$, not monotone. Measured: exact SSP coefficient
+$r = 2.0$ (matching ODE's published value) and real-axis interval
+$[-5.149, 0]$ for both; not FSAL. These are the registry's SSP 3(2) pairs —
+adaptive step-size control on a strongly-stability-preserving step, for
+problems where Dormand-Prince's $r = 0$ is unacceptable.
+
+### SSPRK932 (9-stage order 3, fixed step)
+
+The 9-stage order-3 SSP method of Gottlieb–Ketcheson–Shu (Gottlieb,
+Ketcheson & Shu, *Strong Stability Preserving Runge–Kutta and Multistep
+Time Discretizations*, World Scientific, 2011; coefficients as stored by
+OrdinaryDiffEq v7.8.1): a six-stage $dt/6$ forward-Euler cascade
+($c = 0, 1/6, 1/3, 1/2, 2/3, 5/6$), a blend
+$u_6^* = (3u_0 + (dt/2)k_1 + 2u_6)/5$, then three more $dt/6$ steps
+(stages 7-9 at $c = 1/2, 2/3, 5/6$). Measured: exact SSP coefficient
+$r = 6.0$ (matching ODE's published value; it is why the boundary scan in
+`tests/test_tvd.py` goes to CFL 8 — the default cap 4.0 would clip it) and
+real-axis interval $[-13.290, 0]$; not FSAL ($c_9 = 5/6$). Registered
+**fixed-step only**: ODE's adaptive estimate computes an extra evaluation
+$k = f(u_6, t + dt)$, sets $\tilde u = (u_0 + 6u_6 + 6\,\mathrm{dt}\, k)/7$, and
+uses $\tilde u - u^{n+1}$ as the error — but that estimate is
+$(5/7)\,\mathrm{dt}\,u'(t) + O(\mathrm{dt}^2)$ (the coefficients $1/7, 6/7, 6/7$
+do not sum to 1; measured scaling 1.058, NOTES.md §3.22), $O(\mathrm{dt})$
+instead of the $O(\mathrm{dt}^3)$ a 3(2) pair must have. ODE's own docstring
+says "Consider using `SSPRK43` instead". Full tableau in `butcher.py`.
+
 ## Order 4
 
 ### Classical RK4 (`RungeKutta4`)
@@ -311,6 +362,7 @@ The registry-wide classification from `scripts/tvd_classifier.py`
 | Nystrom 5th, Dormand-Prince 5(4) | **0** | 1.5 |
 | SSPRK(10,4) | 4 (scan cap; exact 6) | 5 (tested limit) |
 | SSPRK53 / SSPRK63 / SSPRK73 / SSPRK83 / SSPRK54 / KYKSSPRK42 / KYK2014DGSSPRK_3S2 | 2.651 / 3.518 / 4 / 4 / 1.769 / 2.284 / 1.894 (SSPRK73/83 at the scan cap; exact 4.2879 / 5.1071) | 2 / 3 / 3 / 5 / 2 / 2 / 1.5 |
+| SSPRK43 / SSPRK432 / SSPRK932 | 2.0 / 2.0 / 4 (scan cap; exact 6.0) | 2 / 2 / 5 (SSPRK932 unconditional) |
 
 TVD is strictly broader than SSP: RK4 is per-step TVD past where its internal
 stages leave the convex hull, and Nystrom/Dormand-Prince are TVD to CFL 1.5
@@ -324,6 +376,8 @@ CFL 1; TVD RK3's stage rows stay non-negative).
 - Shu, *Total variation diminishing Runge-Kutta time discretizations*, J. Comput. Phys. 169 (2001) 208-228 — SSPRK(10,4).
 - Ruuth, *Global optimization of explicit strong-stability-preserving Runge-Kutta methods*, Mathematics of Computation 75.253 (2006) 183-207 — SSPRK53/63/73/83, SSPRK54.
 - Kubatko, Yeager & Ketcheson, *Optimal strong-stability-preserving Runge-Kutta time discretizations for discontinuous Galerkin methods*, J. Sci. Comput. 60 (2014) 313-344 — KYKSSPRK42, KYK2014DGSSPRK_3S2.
+- Kraaijevanger, *Contractivity of Runge-Kutta methods*, BIT 31.3 (1991) 482-528 — SSPRK43 main method; Conde, Fekete & Shadid, arXiv:1806.08693 (2018) — the SSPRK43 embedded pair.
+- Gottlieb, Ketcheson & Shu, *Strong Stability Preserving Runge–Kutta and Multistep Time Discretizations*, World Scientific (2011) — SSPRK432 (Example 6.1), SSPRK932.
 - Shu & Osher, *Efficient implementation of essentially non-oscillatory shock capturing schemes*, J. Comput. Phys. 79 (1989) 500-512 — SSP/TVD RK2, RK3.
 - Bogacki & Shampine, *A 3(2) pair of Runge-Kutta formulas*, BIT 35 (1995) 232-248.
 - Dormand & Prince, J. Comput. Appl. Math. 8 (1981) 15-28; Cash & Karp, NASA TM-100035 (1990).

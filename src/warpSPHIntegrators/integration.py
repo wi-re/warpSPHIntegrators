@@ -37,7 +37,8 @@ from .euler import integrateExplicitEuler, integrateSemiImplicitEuler
 from .butcher import (
     forwardEuler, RungeKutta2, heunsMethod, ralston2nd, RungeKutta3,
     heunsMethod3rd, ralston3rd, Wray3rd, SSPRK3, SSPRK104, SSPRK53, SSPRK63,
-    SSPRK73, SSPRK83, SSPRK54, KYKSSPRK42, KYK2014DGSSPRK3S2, RungeKutta4,
+    SSPRK73, SSPRK83, SSPRK54, KYKSSPRK42, KYK2014DGSSPRK3S2, SSPRK43, SSPRK432,
+    SSPRK932, RungeKutta4,
     RungeKutta4alt, Nystrom5th, BogackiShampine, DormandPrince, CashKarp, EPEC,
     EPECmodified,
 )
@@ -96,6 +97,12 @@ IntegrationSchemes.append(IntegrationScheme(SSPRK83,      'SSPRK83',       Integ
 IntegrationSchemes.append(IntegrationScheme(SSPRK54,      'SSPRK54',       IntegrationSchemeType.ssprk54, 4, True))
 IntegrationSchemes.append(IntegrationScheme(KYKSSPRK42,   'KYKSSPRK42',    IntegrationSchemeType.kykssprk42, 2, True))
 IntegrationSchemes.append(IntegrationScheme(KYK2014DGSSPRK3S2, 'KYK2014DGSSPRK_3S2', IntegrationSchemeType.kyk2014dgssprk3s2, 2, True))
+# The OrdinaryDiffEq wave-2 SSP tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12);
+# display names are ODE's verbatim. SSPRK43/SSPRK432 are 3(2) embedded pairs
+# (order-3 main, order-2 estimate); SSPRK932 is fixed-step order 3.
+IntegrationSchemes.append(IntegrationScheme(SSPRK43,      'SSPRK43',       IntegrationSchemeType.ssprk43, 3, True))
+IntegrationSchemes.append(IntegrationScheme(SSPRK432,     'SSPRK432',      IntegrationSchemeType.ssprk432, 3, True))
+IntegrationSchemes.append(IntegrationScheme(SSPRK932,     'SSPRK932',      IntegrationSchemeType.ssprk932, 3, True))
 IntegrationSchemes.append(IntegrationScheme(RungeKutta4,  'RK4',           IntegrationSchemeType.rungeKutta4, 4, True))
 IntegrationSchemes.append(IntegrationScheme(RungeKutta4alt, 'RK4 (alternative)', IntegrationSchemeType.rungeKutta4alt, 4, True))
 IntegrationSchemes.append(IntegrationScheme(Nystrom5th,   'Nystrom 5th order', IntegrationSchemeType.nystrom5th, 5, True))

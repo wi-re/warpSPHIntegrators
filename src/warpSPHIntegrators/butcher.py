@@ -381,9 +381,76 @@ def getButcherTableau(scheme, alpha = 1/2, beta = 2/3):
             b = np.array([0.3384803991135379, 0.3156535616530465, 0.345866039233415]),
             c = np.array([0.0, 0.528005024856522, 0.9637642772679866])
         )
+    # The OrdinaryDiffEq wave-2 SSP tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12):
+    # the embedded 3(2) pairs SSPRK43 and SSPRK432 (order-3 main / order-2
+    # estimate, 4 stages) and the high-stage SSPRK932 (order 3, 9 stages,
+    # fixed-step only here). Coefficients transcribed from OrdinaryDiffEq v7.8.1
+    # (OrdinaryDiffEqSSPRK/ssprk_perform_step.jl recurrences), which are already
+    # in Butcher form here (exact rationals; c = row sums of a).
+    #   SSPRK43   -- Kraaijevanger, "Contractivity of Runge-Kutta methods", BIT
+    #                31.3 (1991) 482-528 (main); Conde, Fekete & Shadid,
+    #                arXiv:1806.08693 (embedded pair).
+    #   SSPRK432  -- Gottlieb, Ketcheson & Shu, "Strong Stability Preserving
+    #                Runge-Kutta and Multistep Time Discretizations", World
+    #                Scientific (2011), Example 6.1 (low-storage 3(2) variant).
+    #   SSPRK932  -- same GKS (2011) book; ODE's docstring suggests SSPRK43
+    #                instead. Registered FIXED-STEP only: ODE's adaptive
+    #                estimate (uprev + 6*u6 + 6*dt*k)/7 - u_final has leading
+    #                term (5/7)*dt*u'(t) (the 1/7, 6/7, 6/7 coefficients sum
+    #                to 13/7 -- utilde is not an embedded solution), i.e.
+    #                O(dt) instead of the O(dt^3) a 3(2) pair would need, so
+    #                the library does not register it as an error estimate.
+    # All three are non-FSAL (no first-stage reuse). tests/test_tvd.py pins each
+    # SSP boundary and real-axis interval; the 3(2) pairs get estimate-rate and
+    # adaptive tests via tests/test_embedded.py.
+    elif scheme == 'SSPRK43':
+        # 3(2) pair. Measured: order 3 (estimate O(h^3)), SSP coefficient 2.0
+        # (ODE publishes 2.0), real-axis interval [-5.149, 0]. b = (b_main,
+        # b_embed) with b_embed = (1/4, 1/4, 1/4, 1/4). Row sums == c.
+        return butcherTableau(
+            a = np.array([[0.0, 0.0, 0.0, 0.0],
+                          [1/2, 0.0, 0.0, 0.0],
+                          [1/2, 1/2, 0.0, 0.0],
+                          [1/6, 1/6, 1/6, 0.0]]),
+            b = (np.array([1/6, 1/6, 1/6, 1/2]),
+                 np.array([1/4, 1/4, 1/4, 1/4])),
+            c = np.array([0.0, 1/2, 1.0, 1/2])
+        )
+    elif scheme == 'SSPRK432':
+        # 3(2) pair, low-storage variant of SSPRK43 (same a, c, b_main).
+        # Measured: order 3 (estimate O(h^3)), SSP coefficient 2.0 (ODE
+        # publishes 2.0), real-axis interval [-5.149, 0]. b_embed =
+        # (1/3, 1/3, 1/3, 0). Row sums == c.
+        return butcherTableau(
+            a = np.array([[0.0, 0.0, 0.0, 0.0],
+                          [1/2, 0.0, 0.0, 0.0],
+                          [1/2, 1/2, 0.0, 0.0],
+                          [1/6, 1/6, 1/6, 0.0]]),
+            b = (np.array([1/6, 1/6, 1/6, 1/2]),
+                 np.array([1/3, 1/3, 1/3, 0.0])),
+            c = np.array([0.0, 1/2, 1.0, 1/2])
+        )
+    elif scheme == 'SSPRK932':
+        # Order-3, 9 stages, FIXED-STEP (no embedded b: see group comment).
+        # Measured: order 3, SSP coefficient 6.0 (ODE publishes 6.0), real-axis
+        # interval [-13.290, 0]. A 6-stage dt/6 cascade followed by three
+        # recovery stages. Row sums == c.
+        return butcherTableau(
+            a = np.array([[0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
+                          [1/6,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
+                          [1/6,  1/6,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
+                          [1/6,  1/6,  1/6,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
+                          [1/6,  1/6,  1/6,  1/6,  0.0,  0.0,  0.0,  0.0,  0.0],
+                          [1/6,  1/6,  1/6,  1/6,  1/6,  0.0,  0.0,  0.0,  0.0],
+                          [1/6,  1/15, 1/15, 1/15, 1/15, 1/15, 0.0,  0.0,  0.0],
+                          [1/6,  1/15, 1/15, 1/15, 1/15, 1/15, 1/6,  0.0,  0.0],
+                          [1/6,  1/15, 1/15, 1/15, 1/15, 1/15, 1/6,  1/6,  0.0]]),
+            b = np.array([1/6, 1/15, 1/15, 1/15, 1/15, 1/15, 1/6, 1/6, 1/6]),
+            c = np.array([0.0, 1/6, 1/3, 1/2, 2/3, 5/6, 1/2, 2/3, 5/6])
+        )
     elif scheme == 'RK4':
         return butcherTableau(
-            a = np.array([[0, 0, 0, 0], 
+            a = np.array([[0, 0, 0, 0],
                           [1/2, 0, 0, 0],
                           [0, 1/2, 0, 0],
                           [0, 0, 1, 0]]),
@@ -505,6 +572,9 @@ SSPRK83          = butcherScheme('SSPRK83')
 SSPRK54          = butcherScheme('SSPRK54')
 KYKSSPRK42       = butcherScheme('KYKSSPRK42')
 KYK2014DGSSPRK3S2 = butcherScheme('KYK2014DGSSPRK_3S2')
+SSPRK43          = butcherScheme('SSPRK43')
+SSPRK432         = butcherScheme('SSPRK432')
+SSPRK932         = butcherScheme('SSPRK932')
 RungeKutta4      = butcherScheme('RK4')
 RungeKutta4alt  = butcherScheme('RK4alt')
 Nystrom5th      = butcherScheme('Nystrom5')

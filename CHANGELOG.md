@@ -23,6 +23,25 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
   stability interval; the verdict table gains seven entries (SSPRK83 measures
   unconditionally TVD to the CFL-5 cap).
 
+### Added — schemes (71 → 74): the wave-2 SSPRK 3(2) pairs and SSPRK932
+
+- Three more OrdinaryDiffEq v7.8.1 SSP tableaus on the generic Butcher
+  driver (wave 2 of `SCHEME_EXPANSION_PLAN.md`): SSPRK43 and SSPRK432
+  (4-stage order 3 with an embedded order-2 estimate — the registry's first
+  SSP 3(2) pairs; measured SSP coefficient 2.0, real axis [-5.149, 0] for
+  both) and SSPRK932 (9-stage order 3; exact SSP coefficient 6.0, real axis
+  [-13.290, 0]).
+- All three reproduce ODE's verbatim stage recurrences to ~2.5e-16 under
+  exact-rational verification, and ODE's published SSP coefficients match
+  the library's all-stage measurements exactly (NOTES.md §3.22).
+- SSPRK932 is registered fixed-step only: ODE's adaptive estimate
+  `(uprev + 6*u6 + 6*dt*k)/7 - u_final` is `(5/7)*dt*u'(t) + O(dt^2)`
+  (measured scaling 1.058), not a valid 3(2) embedded solution; SSPRK43 /
+  SSPRK432 provide the SSP 3(2) adaptive capability.
+- `tests/test_tvd.py` pins the SSP boundaries and real-axis intervals
+  (now 48 tests); `tests/test_embedded.py` and `tests/test_adaptive.py`
+  cover the new pairs' estimate scaling and the adaptive loop.
+
 ### Added — drift fields (`drift.py`)
 
 - `integrated(update_key, drift_key=...)` declares a **drift field**: a

@@ -124,6 +124,14 @@ class IntegrationSchemeType(Enum):
     ssprk54 = 68
     kykssprk42 = 69
     kyk2014dgssprk3s2 = 70
+    # The OrdinaryDiffEq SSPRK wave 2 (SCHEME_EXPANSION_PLAN, 2026-10-12):
+    # the embedded 3(2) pairs ssprk43 / ssprk432 (order-3 main, order-2
+    # estimate) and the high-stage ssprk932 (order 3, 9 stages, registered
+    # fixed-step: ODE's adaptive estimate is O(dt), not a valid 3(2) pair).
+    # Exact-rational tableaus on the generic RK driver; none are FSAL.
+    ssprk43 = 71
+    ssprk432 = 72
+    ssprk932 = 73
 
 
 # --------------------------------------------------------------------------- #
@@ -131,7 +139,7 @@ class IntegrationSchemeType(Enum):
 # --------------------------------------------------------------------------- #
 #
 # IntegrationSchemeType is the single enum that captures every registered
-# scheme, but a 71-member flat list does not tell a user which entry is an
+# scheme, but a 74-member flat list does not tell a user which entry is an
 # explicit scheme and which is an implicit one. The family enums below are
 # thin VIEWS of the same members: every member keeps the same name and the
 # same int value as its IntegrationSchemeType counterpart, so all four lookup
@@ -142,7 +150,7 @@ class IntegrationSchemeType(Enum):
 #     getIntegrator('RK4')
 #     getIntegrator('rungeKutta4')
 #
-# and the families are exhaustive and disjoint over the 71 members (pinned in
+# and the families are exhaustive and disjoint over the 74 members (pinned in
 # tests/test_family_enums.py). `SCHEME_FAMILY` maps a scheme's identifier to
 # the family enum class it belongs to; IntegrationScheme.family is the same
 # fact on the registered scheme object.
@@ -172,6 +180,9 @@ class ExplicitRK(Enum):
     ssprk54 = IntegrationSchemeType.ssprk54.value
     kykssprk42 = IntegrationSchemeType.kykssprk42.value
     kyk2014dgssprk3s2 = IntegrationSchemeType.kyk2014dgssprk3s2.value
+    ssprk43 = IntegrationSchemeType.ssprk43.value
+    ssprk432 = IntegrationSchemeType.ssprk432.value
+    ssprk932 = IntegrationSchemeType.ssprk932.value
     rungeKutta4 = IntegrationSchemeType.rungeKutta4.value
     rungeKutta4alt = IntegrationSchemeType.rungeKutta4alt.value
     nystrom5th = IntegrationSchemeType.nystrom5th.value

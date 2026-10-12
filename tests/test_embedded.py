@@ -19,6 +19,10 @@ from warpSPHIntegrators.butcher import getButcherTableau
 # ESDIRK and ARK pairs are (3, 2) and (4, 3): the estimate is the embedded branch's
 # local error, O(dt^p) = dt^order.
 EMBEDDED = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)', 'Cash-Karp 5(4)',
+            # The wave-2 ODE SSPRK 3(2) pairs (SCHEME_EXPANSION_PLAN, 2026-10-12):
+            # order-3 main, order-2 estimate, so the estimate is the embedded
+            # branch's local error, O(dt^3) = dt^order.
+            'SSPRK43', 'SSPRK432',
             'TR-BDF2', 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
             'ARK3(2)4L[2]SA', 'ARK4(3)6L[2]SA',
             # Rosenbrock-W carries the built-in order-2 embedded estimate
@@ -95,6 +99,8 @@ def test_error_estimate_has_the_embedded_order(name):
     'Bogacki-Shampine 3(2)',
     'Dormand-Prince 5(4)',
     'Cash-Karp 5(4)',
+    'SSPRK43',
+    'SSPRK432',
     'TR-BDF2',
     'ESDIRK3(2)4L[2]SA',
     'ESDIRK4(3)6L[2]SA',
@@ -139,7 +145,8 @@ def test_propagated_solution_is_the_high_order_branch(name):
     assert order >= s.order - 0.15
 
 
-@pytest.mark.parametrize('name', ['BogackiShampine', 'DormandPrince', 'CashKarp'])
+@pytest.mark.parametrize('name', ['BogackiShampine', 'DormandPrince', 'CashKarp',
+                                  'SSPRK43', 'SSPRK432'])
 def test_tableau_is_consistent(name):
     """Row sums of `a` must equal `c`, and both weight vectors must sum to 1."""
     tab = getButcherTableau(name)
