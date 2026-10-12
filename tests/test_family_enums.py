@@ -1,9 +1,9 @@
 """Family enums: the per-class views of IntegrationSchemeType.
 
-The single 64-member enum does not tell a user which entry is an explicit
+The single 71-member enum does not tell a user which entry is an explicit
 scheme and which is an implicit one, so the library also ships one enum per
 driver family (enums.FAMILY_ENUMS). These tests pin the contract those views
-must keep: exhaustive and disjoint over the 64 members, same name and value
+must keep: exhaustive and disjoint over the 71 members, same name and value
 as the canonical members, `getIntegrator` accepting every lookup form, and
 `IntegrationScheme.family` reporting the right class.
 """
@@ -32,7 +32,7 @@ from warpSPHIntegrators.integration import IntegrationSchemes
 
 # The member count per family, in FAMILY_ENUMS order. A count change means a
 # scheme moved families or a new one was registered -- both worth a look.
-EXPECTED_FAMILY_SIZES = (21, 6, 3, 7, 7, 2, 8, 6, 1, 2, 1)
+EXPECTED_FAMILY_SIZES = (28, 6, 3, 7, 7, 2, 8, 6, 1, 2, 1)
 
 IMPLICIT_FAMILIES = (DIRK, CoupledRK, MultistepImplicit, IMEX, LinearlyImplicit, Newmark)
 EXPLICIT_FAMILIES = (ExplicitRK, Symplectic, RelaxedChebyshev, MultistepExplicit, Exponential)
@@ -40,12 +40,12 @@ EXPLICIT_FAMILIES = (ExplicitRK, Symplectic, RelaxedChebyshev, MultistepExplicit
 
 def test_families_are_exhaustive_and_disjoint():
     members = list(IntegrationSchemeType)
-    assert len(members) == 64
+    assert len(members) == 71
     seen = []
     for family in FAMILY_ENUMS:
         for member in family:
             seen.append(IntegrationSchemeType(member.value))
-    assert len(seen) == len(set(seen)) == 64, "a member appears in more than one family"
+    assert len(seen) == len(set(seen)) == 71, "a member appears in more than one family"
     assert set(seen) == set(members), "a canonical member is missing from every family"
     assert len(FAMILY_ENUMS) == 11
     assert tuple(len(list(family)) for family in FAMILY_ENUMS) == EXPECTED_FAMILY_SIZES
@@ -60,7 +60,7 @@ def test_family_members_match_the_canonical_enum():
 
 
 def test_every_registered_scheme_has_a_family():
-    assert len(IntegrationSchemes) == 64
+    assert len(IntegrationSchemes) == 71
     for scheme in IntegrationSchemes:
         assert scheme.family is SCHEME_FAMILY[scheme.identifier]
         assert scheme.family in FAMILY_ENUMS

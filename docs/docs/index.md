@@ -56,7 +56,7 @@ Every scheme in the registry belongs to exactly one family enum (see the
 
 | Family | Enum | Schemes | One line | Page |
 |---|---|---|---|---|
-| Explicit RK | `ExplicitRK` | 21 | Butcher-tableau one-step explicit RK, classical/SSP/TVD/embedded | [explicit-rk](/docs/families/explicit-rk) |
+| Explicit RK | `ExplicitRK` | 28 | Butcher-tableau one-step explicit RK, classical/SSP/TVD/embedded | [explicit-rk](/docs/families/explicit-rk) |
 | Symplectic | `Symplectic` | 6 | Geometric position/velocity splitting for second-order ODEs | [symplectic](/docs/families/symplectic) |
 | Relaxed Chebyshev | `RelaxedChebyshev` | 3 | Matrix-free super-timestepping, real-axis stability $O(s^2)$ in stages | [relaxed-chebyshev](/docs/families/relaxed-chebyshev) |
 | Multistep explicit | `MultistepExplicit` | 7 | Adams-Bashforth and PECE Adams-Bashforth-Moulton | [multistep-explicit](/docs/families/multistep-explicit) |

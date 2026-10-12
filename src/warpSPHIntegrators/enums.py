@@ -112,6 +112,18 @@ class IntegrationSchemeType(Enum):
     # barrier for explicit RK bites (order 4 needs 5+ stages). Explicit
     # single-step, so no first-stage reuse.
     ssprk104 = 63
+    # The OrdinaryDiffEq SSPRK wave (SCHEME_EXPANSION_PLAN wave 1, 2026-10-12):
+    # Ruuth's globally optimized SSP methods (ssprk53/63/73/83 order 3, ssprk54
+    # order 4) and the two Kubatko-Yeager-Ketcheson DG-optimized methods
+    # (order 2). Plain tableaus on the generic RK driver; none are FSAL, so no
+    # first-stage reuse.
+    ssprk53 = 64
+    ssprk63 = 65
+    ssprk73 = 66
+    ssprk83 = 67
+    ssprk54 = 68
+    kykssprk42 = 69
+    kyk2014dgssprk3s2 = 70
 
 
 # --------------------------------------------------------------------------- #
@@ -119,7 +131,7 @@ class IntegrationSchemeType(Enum):
 # --------------------------------------------------------------------------- #
 #
 # IntegrationSchemeType is the single enum that captures every registered
-# scheme, but a 64-member flat list does not tell a user which entry is an
+# scheme, but a 71-member flat list does not tell a user which entry is an
 # explicit scheme and which is an implicit one. The family enums below are
 # thin VIEWS of the same members: every member keeps the same name and the
 # same int value as its IntegrationSchemeType counterpart, so all four lookup
@@ -130,7 +142,7 @@ class IntegrationSchemeType(Enum):
 #     getIntegrator('RK4')
 #     getIntegrator('rungeKutta4')
 #
-# and the families are exhaustive and disjoint over the 64 members (pinned in
+# and the families are exhaustive and disjoint over the 71 members (pinned in
 # tests/test_family_enums.py). `SCHEME_FAMILY` maps a scheme's identifier to
 # the family enum class it belongs to; IntegrationScheme.family is the same
 # fact on the registered scheme object.
@@ -153,6 +165,13 @@ class ExplicitRK(Enum):
     wray3rd = IntegrationSchemeType.wray3rd.value
     sspRK3 = IntegrationSchemeType.sspRK3.value
     ssprk104 = IntegrationSchemeType.ssprk104.value
+    ssprk53 = IntegrationSchemeType.ssprk53.value
+    ssprk63 = IntegrationSchemeType.ssprk63.value
+    ssprk73 = IntegrationSchemeType.ssprk73.value
+    ssprk83 = IntegrationSchemeType.ssprk83.value
+    ssprk54 = IntegrationSchemeType.ssprk54.value
+    kykssprk42 = IntegrationSchemeType.kykssprk42.value
+    kyk2014dgssprk3s2 = IntegrationSchemeType.kyk2014dgssprk3s2.value
     rungeKutta4 = IntegrationSchemeType.rungeKutta4.value
     rungeKutta4alt = IntegrationSchemeType.rungeKutta4alt.value
     nystrom5th = IntegrationSchemeType.nystrom5th.value

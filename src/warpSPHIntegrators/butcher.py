@@ -273,6 +273,114 @@ def getButcherTableau(scheme, alpha = 1/2, beta = 2/3):
             b = np.array([1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10]),
             c = np.array([0, 1/6, 1/3, 1/2, 2/3, 1/3, 1/2, 2/3, 5/6, 1])
         )
+    # The OrdinaryDiffEq wave-1 SSP tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12):
+    # Ruuth's globally optimized methods SSPRK53/63/73/83 (order 3) and SSPRK54
+    # (order 4) -- Ruuth, "Global optimization of explicit strong-stability-
+    # preserving Runge-Kutta methods", Mathematics of Computation 75.253 (2006)
+    # 183-207 -- plus the Kubatko-Yeager-Ketcheson DG-optimized methods
+    # KYKSSPRK42 and KYK2014DGSSPRK_3S2 (order 2) -- "Optimal strong-stability-
+    # preserving Runge-Kutta time discretizations for discontinuous Galerkin
+    # methods", J. Sci. Comput. 60 (2014) 313-344. Coefficients transcribed from
+    # OrdinaryDiffEq v7.8.1 (OrdinaryDiffEqSSPRK/ssprk_caches.jl alphas/betas,
+    # ssprk_perform_step.jl recurrences), converted from the Shu-Osher form to
+    # Butcher form (stage states as (u_i - u^n)/dt; c = row sums of a, which
+    # match ODE's stored c to 1e-13). All are plain single-step methods, none
+    # FSAL, so no first-stage reuse. tests/test_tvd.py pins each SSP boundary
+    # and real-axis interval.
+    elif scheme == 'SSPRK53':
+        # Measured: order 3, SSP coefficient 2.6506 (ODE publishes 2.65),
+        # real-axis interval [-6.214, 0]. Row sums == c.
+        return butcherTableau(
+            a = np.array([[0.0, 0.0, 0.0, 0.0, 0.0],
+                          [0.377268915331368, 0.0, 0.0, 0.0, 0.0],
+                          [0.377268915331368, 0.377268915331368, 0.0, 0.0, 0.0],
+                          [0.24299522053739583, 0.24299522053739583, 0.242995220537396, 0.0, 0.0],
+                          [0.15358906769512648, 0.15358906769512648, 0.1535890676951266, 0.23845893284629, 0.0]]),
+            b = np.array([0.20673402086480447, 0.20673402086480447, 0.11709725184184414, 0.18180256012013943, 0.287632146308408]),
+            c = np.array([0.0, 0.377268915331368, 0.754537830662736, 0.7289856616121877, 0.6992261359316696])
+        )
+    elif scheme == 'SSPRK63':
+        # Measured: order 3, SSP coefficient 3.5184 (ODE publishes 3.518),
+        # real-axis interval [-7.213, 0]. Row sums == c.
+        return butcherTableau(
+            a = np.array([[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                          [0.284220721334261, 0.0, 0.0, 0.0, 0.0, 0.0],
+                          [0.284220721334261, 0.284220721334261, 0.0, 0.0, 0.0, 0.0],
+                          [0.284220721334261, 0.284220721334261, 0.284220721334261, 0.0, 0.0, 0.0],
+                          [0.1487128616603831, 0.12071378576592966, 0.12071378576592966, 0.12071378576593, 0.0, 0.0],
+                          [0.1487128616603831, 0.12071378576592966, 0.12071378576592966, 0.12071378576593, 0.284220721334261, 0.0]]),
+            b = np.array([0.16974662234923632, 0.14609361068522916, 0.10197638641686799, 0.10197638641686826, 0.24010349706589984, 0.2401034970659]),
+            c = np.array([0.0, 0.284220721334261, 0.568441442668522, 0.852662164002783, 0.5108542189581724, 0.7950749402924334])
+        )
+    elif scheme == 'SSPRK73':
+        # Measured: order 3, SSP coefficient 4.2879 (ODE publishes 4.2879; ODE
+        # stores alpha73/alpha76 at 6 digits, so its coefficients carry that
+        # slack), real-axis interval [-8.888, 0]. Row sums == c.
+        return butcherTableau(
+            a = np.array([[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                          [0.233213863663009, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                          [0.233213863663009, 0.233213863663009, 0.0, 0.0, 0.0, 0.0, 0.0],
+                          [0.233213863663009, 0.233213863663009, 0.233213863663009, 0.0, 0.0, 0.0, 0.0],
+                          [0.19007802386584471, 0.19007802386584471, 0.19007802386584471, 0.190078023865845, 0.0, 0.0, 0.0],
+                          [0.16930787981247397, 0.0958849178781437, 0.0958849178781437, 0.09588491787814384, 0.117644805593912, 0.0, 0.0],
+                          [0.16930787981247397, 0.0958849178781437, 0.0958849178781437, 0.09588491787814384, 0.117644805593912, 0.233213863663009, 0.0]]),
+            b = np.array([0.17698931516532443, 0.11239171983253872, 0.11239171983253872, 0.08435964663410883, 0.10350401760632937, 0.205181790464579, 0.205181790464579]),
+            c = np.array([0.0, 0.233213863663009, 0.466427727326018, 0.699641590989027, 0.7603120954633792, 0.5746074390408172, 0.8078213027038262])
+        )
+    elif scheme == 'SSPRK83':
+        # Measured: order 3, SSP coefficient 5.1071 (ODE publishes 5.107),
+        # real-axis interval [-10.986, 0]. Row sums == c.
+        return butcherTableau(
+            a = np.array([[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                          [0.195804015330143, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                          [0.195804015330143, 0.195804015330143, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                          [0.195804015330143, 0.195804015330143, 0.195804015330143, 0.0, 0.0, 0.0, 0.0, 0.0],
+                          [0.195804015330143, 0.195804015330143, 0.195804015330143, 0.195804015330143, 0.0, 0.0, 0.0, 0.0],
+                          [0.1132986712473457, 0.11213375462167291, 0.11213375462167291, 0.11213375462167291, 0.112133754621673, 0.0, 0.0, 0.0],
+                          [0.11364964986110604, 0.11165673643345277, 0.11165673643345277, 0.11165673643345277, 0.11165673643345285, 0.194971062960412, 0.0, 0.0],
+                          [0.14221023579187003, 0.14091014951805214, 0.12047209837964422, 0.07283978741985271, 0.07283978741985275, 0.12719027290864166, 0.127733653231944, 0.0]]),
+            b = np.array([0.14221023579187003, 0.14091014951805214, 0.12047209837964422, 0.07283978741985271, 0.07283978741985275, 0.12719027290864166, 0.127733653231944, 0.195804015330143]),
+            c = np.array([0.0, 0.195804015330143, 0.391608030660286, 0.587412045990429, 0.783216061320572, 0.5618336897340375, 0.7552476585553292, 0.8041959846698575])
+        )
+    elif scheme == 'SSPRK54':
+        # Measured: order 4, SSP coefficient 1.7693 (all-stage upwind model; the
+        # final map alone is convex to 1.8611), real-axis interval [-5.331, 0].
+        # ODE's published 1.508 is the paper's coefficient, which the library's
+        # stage-map convexity measurement does not reproduce. Row sums == c.
+        return butcherTableau(
+            a = np.array([[0.0, 0.0, 0.0, 0.0, 0.0],
+                          [0.39175222657189, 0.0, 0.0, 0.0, 0.0],
+                          [0.2176690962611688, 0.368410593050371, 0.0, 0.0, 0.0],
+                          [0.0826920866578106, 0.13995850219189537, 0.251891774271694, 0.0, 0.0],
+                          [0.06796628363711477, 0.11503469850463158, 0.20703489859738564, 0.544974750228521, 0.0]]),
+            b = np.array([0.1468118760847866, 0.2484829094449762, 0.10425883033198097, 0.2744389009013507, 0.226007483236906]),
+            c = np.array([0.0, 0.39175222657189, 0.5860796893115398, 0.47454236312139997, 0.935010630967653])
+        )
+    elif scheme == 'KYKSSPRK42':
+        # Measured: order 2, SSP coefficient 2.2838 (all-stage upwind model),
+        # real-axis interval [-4.954, 0]. ODE's published 2.459 matches the
+        # FINAL-map-only convexity CFL (2.4595), not the stage maps, which are
+        # the binding constraint here. Row sums == c.
+        return butcherTableau(
+            a = np.array([[0.0, 0.0, 0.0, 0.0],
+                          [0.406584463657504, 0.0, 0.0, 0.0],
+                          [0.24606229845682182, 0.246062298456822, 0.0, 0.0],
+                          [0.25901120328686006, 0.24537398664540927, 0.405447122055692, 0.0]]),
+            b = np.array([0.20997096222437225, 0.1833284972503433, 0.30292539407757624, 0.303775146447707]),
+            c = np.array([0.0, 0.406584463657504, 0.4921245969136438, 0.9098323119879613])
+        )
+    elif scheme == 'KYK2014DGSSPRK_3S2':
+        # Measured: order 2, SSP coefficient 1.8939, real-axis interval
+        # [-4.267, 0]. ODE's published 0.8417 is the paper's DG-context
+        # coefficient, not the upwind-model stage-map convexity CFL. Row sums
+        # == c.
+        return butcherTableau(
+            a = np.array([[0.0, 0.0, 0.0],
+                          [0.528005024856522, 0.0, 0.0],
+                          [0.4818821386339936, 0.481882138633993, 0.0]]),
+            b = np.array([0.3384803991135379, 0.3156535616530465, 0.345866039233415]),
+            c = np.array([0.0, 0.528005024856522, 0.9637642772679866])
+        )
     elif scheme == 'RK4':
         return butcherTableau(
             a = np.array([[0, 0, 0, 0], 
@@ -388,9 +496,16 @@ RungeKutta3     = butcherScheme('RK3')
 heunsMethod3rd  = butcherScheme('Heun3')
 ralston3rd      = butcherScheme('ralston3')
 Wray3rd         = butcherScheme('Wray3')
-SSPRK3          = butcherScheme('SSPRK3')
-SSPRK104        = butcherScheme('SSPRK104')
-RungeKutta4     = butcherScheme('RK4')
+SSPRK3           = butcherScheme('SSPRK3')
+SSPRK104         = butcherScheme('SSPRK104')
+SSPRK53          = butcherScheme('SSPRK53')
+SSPRK63          = butcherScheme('SSPRK63')
+SSPRK73          = butcherScheme('SSPRK73')
+SSPRK83          = butcherScheme('SSPRK83')
+SSPRK54          = butcherScheme('SSPRK54')
+KYKSSPRK42       = butcherScheme('KYKSSPRK42')
+KYK2014DGSSPRK3S2 = butcherScheme('KYK2014DGSSPRK_3S2')
+RungeKutta4      = butcherScheme('RK4')
 RungeKutta4alt  = butcherScheme('RK4alt')
 Nystrom5th      = butcherScheme('Nystrom5')
 BogackiShampine = butcherScheme('BogackiShampine')

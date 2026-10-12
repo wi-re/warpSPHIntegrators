@@ -93,6 +93,26 @@ def test_named_tvd_schemes_have_ssp_coefficient_one(tableau_name):
     # the scan's default cap, so it is pinned with an explicit mu_max in
     # test_ssprk104_ssp_boundary_and_real_axis_interval.
     ('SSPRK104', 4.0),
+    # The wave-1 ODE SSPRK tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12): the
+    # library's upwind-model all-stage convex-combination CFL at the default
+    # scan cap 4.0. SSPRK53/63/73/83 agree with ODE's published
+    # ssp_coefficient (2.65/3.518/4.2879/5.107) to <= 6.3e-4.
+    ('SSPRK53', 2.65),
+    ('SSPRK63', 3.518),
+    # True SSP boundary 4.2879 is beyond the scan cap, so the scan reports
+    # the cap (a lower bound); the exact boundary is pinned in
+    # test_expanded_ssprk_ssp_boundaries_and_real_axis_intervals.
+    ('SSPRK73', 4.0),
+    ('SSPRK83', 4.0),
+    # ODE's published 1.508 is the paper's coefficient; the library's
+    # all-stage measurement is 1.7693.
+    ('SSPRK54', 1.7693),
+    # ODE's published 2.459 matches the final-map-only convexity CFL (2.4595);
+    # the stage maps bind at 2.2838 in the upwind model.
+    ('KYKSSPRK42', 2.2838),
+    # ODE's published 0.8417 is the paper's DG-context coefficient, not the
+    # upwind-model stage-map convexity CFL (1.8939).
+    ('KYK2014DGSSPRK_3S2', 1.8939),
 ])
 def test_explicit_ssp_coefficients(name, expected):
     r = tvd_analysis.convex_combination_cfl(getButcherTableau(name))
@@ -137,6 +157,42 @@ def test_ssprk104_ssp_boundary_and_real_axis_interval():
     left = z[amplification <= 1.0 + 1e-9].min()
     assert left == pytest.approx(-13.916, abs=5e-3), (
         f'SSPRK(10,4) real-axis interval {left:.4g}, expected -13.916')
+
+
+@pytest.mark.parametrize('name,ssp_boundary,real_axis_left', [
+    # (name, exact SSP convex-combination boundary, real-axis interval left
+    # end) as measured by tvd_analysis. The boundary is scanned to CFL 8, past
+    # the default cap 4.0 that clips SSPRK73/SSPRK83 in the landscape table
+    # (the same cap the SSPRK(10,4) pin above uses). For every method the
+    # negative real-axis interval is a single [left, 0] interval (|R(z)| does
+    # not re-enter the unit disk for z < left).
+    ('SSPRK53', 2.6506, -6.21361),
+    ('SSPRK63', 3.5184, -7.21303),
+    ('SSPRK73', 4.2879, -8.88769),
+    ('SSPRK83', 5.1071, -10.98619),
+    ('SSPRK54', 1.7693, -5.33147),
+    ('KYKSSPRK42', 2.2838, -4.95391),
+    ('KYK2014DGSSPRK_3S2', 1.8939, -4.26688),
+])
+def test_expanded_ssprk_ssp_boundaries_and_real_axis_intervals(
+        name, ssp_boundary, real_axis_left):
+    """The wave-1 ODE SSPRK tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12): the
+    exact SSP convex-combination boundary and the negative real-axis stability
+    limit of each, mirroring the SSPRK(10,4) pin above."""
+    tableau = getButcherTableau(name)
+    r = tvd_analysis.convex_combination_cfl(tableau, mu_max=8.0)
+    assert r == pytest.approx(ssp_boundary, abs=5e-3), (
+        f'{name}: SSP boundary {r:.4g}, expected {ssp_boundary:g}')
+
+    a, b = tableau.a, tableau.b
+    z = np.linspace(real_axis_left - 1.5, 0.0, 20001)
+    identity = np.eye(len(a))
+    solves = np.linalg.solve(np.stack([identity - zz * a for zz in z]),
+                             np.ones((len(z), len(a), 1)))
+    amplification = np.abs(1.0 + z * (solves[:, :, 0] @ b))
+    left = z[amplification <= 1.0 + 1e-9].min()
+    assert left == pytest.approx(real_axis_left, abs=5e-3), (
+        f'{name} real-axis interval {left:.4g}, expected {real_axis_left:g}')
 
 
 # --------------------------------------------------------------------------- #
@@ -332,6 +388,18 @@ EXPECTED_VERDICTS = {
     # real-axis stability interval [-13.916, 0] keeps every per-mode
     # amplification <= 1, so the sweep finds no TV increase up to the CFL cap.
     'SSPRK(10,4)': (4.0, 5.0, True),
+    # The wave-1 ODE SSPRK tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12): the
+    # upwind-model all-stage convex-combination CFL at the scan cap 4.0.
+    # SSPRK73/SSPRK83 sit beyond the cap (exact boundaries 4.2879 / 5.1071,
+    # pinned in test_expanded_ssprk_ssp_boundaries_and_real_axis_intervals),
+    # so their ssp values are lower bounds.
+    'SSPRK53': (2.65, 2.0, False),
+    'SSPRK63': (3.518, 3.0, False),
+    'SSPRK73': (4.0, 3.0, False),
+    'SSPRK83': (4.0, 5.0, True),
+    'SSPRK54': (1.7693, 2.0, False),
+    'KYKSSPRK42': (2.2838, 2.0, False),
+    'KYK2014DGSSPRK_3S2': (1.8939, 1.5, False),
     'RK4': (2.0 / 3.0, 1.25, False),
     'RK4 (alternative)': (1.0 / 3.0, 1.25, False),
     'Nystrom 5th order': (0.0, 1.5, False),

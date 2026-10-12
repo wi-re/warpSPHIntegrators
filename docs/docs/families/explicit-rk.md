@@ -2,7 +2,7 @@
 sidebar_label: Explicit RK
 ---
 
-# Explicit Runge-Kutta (`ExplicitRK`) — 21 schemes
+# Explicit Runge-Kutta (`ExplicitRK`) — 28 schemes
 
 One-step explicit RK on the generic Butcher tableau, driven by the single
 `butcher.RungeKuttaB` path: a stage $k_i = f(t^n + c_i\,\mathrm{dt},
@@ -39,9 +39,9 @@ $x^{n+1} = x^n + \mathrm{dt}\,v^n$, $v^{n+1} = v^n + \mathrm{dt}\,f(t^n, x^n)$
 for systems in position/velocity form (`euler.integrateExplicitEuler`); the
 "baseline alias" of Forward Euler for that state shape. One evaluation.
 
-## Order 2 (three-stage-free: two evaluations)
+## Order 2
 
-All three two-stage order-2 tableaus below share the stability function
+The three two-stage order-2 tableaus below share the stability function
 $R(z) = 1 + z + z^2/2$ (real-axis interval $[-2, 0]$); they differ only in
 node placement.
 
@@ -83,6 +83,22 @@ $$
 `EPEC` and `EPECmodified` (the pySPH *evaluate–predict–evaluate–correct*
 spelling) are the same two tableaus under different names: EPEC ≡ Midpoint,
 EPEC Modified ≡ Heun 2.
+
+### KYKSSPRK42 and KYK2014DGSSPRK_3S2
+
+The two Kubatko–Yeager–Ketcheson DG-optimized SSP methods (Kubatko, Yeager &
+Ketcheson, *J. Sci. Comput.* 60 (2014) 313-344; coefficients as stored by
+OrdinaryDiffEq v7.8.1). 3–4 stages, so their stability functions are not the
+shared order-2 one above; ODE's published SSP coefficients are the
+DG-context values of the paper, and the library's upwind-model measurements
+(which the tests pin) differ:
+
+| Method | Stages | SSP $r$ (measured) | Real axis |
+|---|---|---|---|
+| KYKSSPRK42 | 4 | 2.2838 (ODE publishes 2.459 = the final-map-only CFL) | $[-4.954, 0]$ |
+| KYK2014DGSSPRK_3S2 | 3 | 1.8939 (ODE publishes 0.8417, the paper's DG-context value) | $[-4.267, 0]$ |
+
+Full tableaus in `butcher.py`; not FSAL.
 
 ## Order 3 (three evaluations)
 
@@ -159,6 +175,24 @@ conservative/TVD update (no tableau object; algebraically identical — pinned t
 the actual driver by `tests/test_tvd.py`). **TVD RK2** is the two-stage
 Shu-Osher form, likewise hand-rolled.
 
+### Ruuth's optimized SSP methods (SSPRK53, SSPRK63, SSPRK73, SSPRK83)
+
+Ruuth's globally optimized order-3 SSP methods (Ruuth, *Mathematics of
+Computation* 75.253 (2006) 183-207; coefficients as stored by OrdinaryDiffEq
+v7.8.1). 5–8 stages — more than the three-evaluation tableaus above — with
+the largest SSP coefficients in the registry short of SSPRK(10,4); ODE's
+published `ssp_coefficient` agrees with the measured $r$ to within 6.3e-4:
+
+| Method | Stages | SSP $r$ (measured) | Real axis |
+|---|---|---|---|
+| SSPRK53 | 5 | 2.6506 | $[-6.214, 0]$ |
+| SSPRK63 | 6 | 3.5184 | $[-7.213, 0]$ |
+| SSPRK73 | 7 | 4.2879 (beyond the landscape scan cap; the table below reports 4) | $[-8.888, 0]$ |
+| SSPRK83 | 8 | 5.1071 (beyond the landscape scan cap; the table below reports 4) | $[-10.986, 0]$ |
+
+Full tableaus in `butcher.py`; not FSAL. SSPRK73's coefficients inherit a
+1e-6 slack: ODE stores alpha73/alpha76 at 6 digits.
+
 ## Order 4
 
 ### Classical RK4 (`RungeKutta4`)
@@ -191,6 +225,15 @@ $$
 $$
 
 Same stability function as RK4 (all order-4 4-stage RKs share it).
+
+### SSPRK54
+
+Ruuth's 5-stage order-4 SSP method (Ruuth, *Mathematics of Computation*
+75.253 (2006) 183-207; coefficients as stored by OrdinaryDiffEq v7.8.1).
+Measured: SSP coefficient $r = 1.7693$ (ODE publishes the paper's 1.508,
+which the library's all-stage upwind-model measurement does not reproduce;
+the final map alone is convex to 1.8611) and real-axis interval
+$[-5.331, 0]$; not FSAL. The full tableau is in `butcher.py`.
 
 ### SSPRK(10,4) (`SSPRK104`)
 
@@ -266,6 +309,8 @@ The registry-wide classification from `scripts/tvd_classifier.py`
 | RK4 (alternative) | 1/3 | 1.25 |
 | Cash-Karp 5(4) | 5/12 | 1.5 |
 | Nystrom 5th, Dormand-Prince 5(4) | **0** | 1.5 |
+| SSPRK(10,4) | 4 (scan cap; exact 6) | 5 (tested limit) |
+| SSPRK53 / SSPRK63 / SSPRK73 / SSPRK83 / SSPRK54 / KYKSSPRK42 / KYK2014DGSSPRK_3S2 | 2.651 / 3.518 / 4 / 4 / 1.769 / 2.284 / 1.894 (SSPRK73/83 at the scan cap; exact 4.2879 / 5.1071) | 2 / 3 / 3 / 5 / 2 / 2 / 1.5 |
 
 TVD is strictly broader than SSP: RK4 is per-step TVD past where its internal
 stages leave the convex hull, and Nystrom/Dormand-Prince are TVD to CFL 1.5
@@ -277,6 +322,8 @@ CFL 1; TVD RK3's stage rows stay non-negative).
 
 - Hairer, Nørsett, Wanner, *Solving Ordinary Differential Equations I* (1993) — RK theory, stability, embedded pairs.
 - Shu, *Total variation diminishing Runge-Kutta time discretizations*, J. Comput. Phys. 169 (2001) 208-228 — SSPRK(10,4).
+- Ruuth, *Global optimization of explicit strong-stability-preserving Runge-Kutta methods*, Mathematics of Computation 75.253 (2006) 183-207 — SSPRK53/63/73/83, SSPRK54.
+- Kubatko, Yeager & Ketcheson, *Optimal strong-stability-preserving Runge-Kutta time discretizations for discontinuous Galerkin methods*, J. Sci. Comput. 60 (2014) 313-344 — KYKSSPRK42, KYK2014DGSSPRK_3S2.
 - Shu & Osher, *Efficient implementation of essentially non-oscillatory shock capturing schemes*, J. Comput. Phys. 79 (1989) 500-512 — SSP/TVD RK2, RK3.
 - Bogacki & Shampine, *A 3(2) pair of Runge-Kutta formulas*, BIT 35 (1995) 232-248.
 - Dormand & Prince, J. Comput. Appl. Math. 8 (1981) 15-28; Cash & Karp, NASA TM-100035 (1990).

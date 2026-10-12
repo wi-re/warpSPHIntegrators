@@ -36,8 +36,10 @@ from .fields import (
 from .euler import integrateExplicitEuler, integrateSemiImplicitEuler
 from .butcher import (
     forwardEuler, RungeKutta2, heunsMethod, ralston2nd, RungeKutta3,
-    heunsMethod3rd, ralston3rd, Wray3rd, SSPRK3, SSPRK104, RungeKutta4, RungeKutta4alt,
-    Nystrom5th, BogackiShampine, DormandPrince, CashKarp, EPEC, EPECmodified,
+    heunsMethod3rd, ralston3rd, Wray3rd, SSPRK3, SSPRK104, SSPRK53, SSPRK63,
+    SSPRK73, SSPRK83, SSPRK54, KYKSSPRK42, KYK2014DGSSPRK3S2, RungeKutta4,
+    RungeKutta4alt, Nystrom5th, BogackiShampine, DormandPrince, CashKarp, EPEC,
+    EPECmodified,
 )
 from .verlet import leapFrog, symplecticEuler, velocityVerlet
 from .tvd import TVDRK3, TVDRK2
@@ -85,6 +87,15 @@ IntegrationSchemes.append(IntegrationScheme(ralston3rd,   'Ralston\'s Method (3r
 IntegrationSchemes.append(IntegrationScheme(Wray3rd,      'Wray\'s Method (3rd order)', IntegrationSchemeType.wray3rd, 3, True))
 IntegrationSchemes.append(IntegrationScheme(SSPRK3,       'SSP RK3',       IntegrationSchemeType.sspRK3, 3, True))
 IntegrationSchemes.append(IntegrationScheme(SSPRK104,     'SSPRK(10,4)',   IntegrationSchemeType.ssprk104, 4, True))
+# The OrdinaryDiffEq wave-1 SSP tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12);
+# display names are ODE's verbatim.
+IntegrationSchemes.append(IntegrationScheme(SSPRK53,      'SSPRK53',       IntegrationSchemeType.ssprk53, 3, True))
+IntegrationSchemes.append(IntegrationScheme(SSPRK63,      'SSPRK63',       IntegrationSchemeType.ssprk63, 3, True))
+IntegrationSchemes.append(IntegrationScheme(SSPRK73,      'SSPRK73',       IntegrationSchemeType.ssprk73, 3, True))
+IntegrationSchemes.append(IntegrationScheme(SSPRK83,      'SSPRK83',       IntegrationSchemeType.ssprk83, 3, True))
+IntegrationSchemes.append(IntegrationScheme(SSPRK54,      'SSPRK54',       IntegrationSchemeType.ssprk54, 4, True))
+IntegrationSchemes.append(IntegrationScheme(KYKSSPRK42,   'KYKSSPRK42',    IntegrationSchemeType.kykssprk42, 2, True))
+IntegrationSchemes.append(IntegrationScheme(KYK2014DGSSPRK3S2, 'KYK2014DGSSPRK_3S2', IntegrationSchemeType.kyk2014dgssprk3s2, 2, True))
 IntegrationSchemes.append(IntegrationScheme(RungeKutta4,  'RK4',           IntegrationSchemeType.rungeKutta4, 4, True))
 IntegrationSchemes.append(IntegrationScheme(RungeKutta4alt, 'RK4 (alternative)', IntegrationSchemeType.rungeKutta4alt, 4, True))
 IntegrationSchemes.append(IntegrationScheme(Nystrom5th,   'Nystrom 5th order', IntegrationSchemeType.nystrom5th, 5, True))

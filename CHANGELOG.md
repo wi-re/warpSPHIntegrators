@@ -6,6 +6,23 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ## [Unreleased]
 
+### Added — schemes (64 → 71): the wave-1 SSPRK tableaus
+
+- Seven plain SSP tableaus from OrdinaryDiffEq v7.8.1 on the generic Butcher
+  driver (wave 1 of `SCHEME_EXPANSION_PLAN.md`): SSPRK53, SSPRK63, SSPRK73,
+  SSPRK83 (Ruuth's globally optimized order-3 methods; measured SSP
+  coefficients 2.6506 / 3.5184 / 4.2879 / 5.1071), SSPRK54 (order 4;
+  1.7693), KYKSSPRK42 (4-stage order 2; 2.2838) and KYK2014DGSSPRK_3S2
+  (3-stage order 2; 1.8939) — the last two Kubatko–Yeager–Ketcheson
+  DG-optimized methods.
+- Coefficients transcribed from ODE's Shu–Osher alphas/betas and stage
+  recurrences and converted to Butcher form: row sums equal ODE's stored c to
+  1e-16, measured order at or above the registered order for all seven, none
+  FSAL (NOTES.md §3.21).
+- `tests/test_tvd.py` pins each SSP boundary (scanned to CFL 8) and real-axis
+  stability interval; the verdict table gains seven entries (SSPRK83 measures
+  unconditionally TVD to the CFL-5 cap).
+
 ### Added — drift fields (`drift.py`)
 
 - `integrated(update_key, drift_key=...)` declares a **drift field**: a
