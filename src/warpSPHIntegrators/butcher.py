@@ -22,6 +22,21 @@ class butcherTableau(NamedTuple):
 
 
 def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
+    """Explicit Runge-Kutta step (see `_RungeKuttaBOnce`), with one optional second pass.
+
+    A system whose `finalize` cannot complete from what the stages stored (the compatible-energy update of
+    CompSPH / CRKSPH when the pair list changed between stages) sets `rerunRequest` on the new state. The whole
+    step is then run again from the untouched `initialState`, and the request is handed to
+    `initialState.initialize(dt, rerun=request)` so the second pass can use what the first one found out (the
+    half-step velocity). The stage trajectory must not depend on it; the system is responsible for that."""
+    result = _RungeKuttaBOnce(initialState, dt, f, butcherTableau, *args, **kwargs)
+    request = getattr(result.state, 'rerunRequest', None)
+    if request is None:
+        return result
+    return _RungeKuttaBOnce(initialState, dt, f, butcherTableau, *args, _initExtra={'rerun': request}, **kwargs)
+
+
+def _RungeKuttaBOnce(initialState, dt, f, butcherTableau, *args, _initExtra=None, **kwargs):
     verbose = True if 'verbose' in kwargs and kwargs['verbose'] else False
 
     with record_function("[Integration] Butcher"):
@@ -56,7 +71,12 @@ def RungeKuttaB(initialState, dt, f, butcherTableau, *args, **kwargs):
 
         if verbose:
             print(f"[Integrator] Running Runge-Kutta with dt={dt:.4f} and scheme={butcherTableau}")
-        initializeSystem(initialState, dt, *args, **kwargs)
+        # `stageWeights`: the weights the propagated solution combines the stages with, for a system whose
+        # stage function folds its stage into a running sum (CompSPH's compatible energy). Only to `initialize`,
+        # never to the stage function.
+        _bMain = butcherTableau.b[0] if isinstance(butcherTableau.b, tuple) else butcherTableau.b
+        initializeSystem(initialState, dt, *args, stageWeights=tuple(float(b) for b in _bMain),
+                         **(_initExtra or {}), **kwargs)
 
         if verbose:
             print(f"[Integrator] Butcher: Starting with initial state at t={initialState.t:.4f}")
