@@ -17,7 +17,7 @@ import pytest
 from warpSPHIntegrators import getIntegrator, is_fsal, step_reuse_order, supports_step_reuse, testing
 from warpSPHIntegrators.reuse import step_reuse_analysis
 
-from conftest import ORDER_TOLERANCE, order_of, problem
+from conftest import ORDER_TOLERANCE, dts_for, order_of, problem
 
 
 #: The FSAL tableaus. Reuse on these is exact, not merely harmless: the reused stage
@@ -29,6 +29,13 @@ from conftest import ORDER_TOLERANCE, order_of, problem
 #: than the ~1e-14 the all-explicit FSAL pairs reach -- hence the exactness tolerance
 #: in `test_fsal_reuse_is_free` is sized for the JFNK level.
 FSAL_SCHEMES = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)',
+                # The wave-6 ODE tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13):
+                # the six embedded pairs are FSAL (c_s == 1, a[-1] == b_main),
+                # and so are the three fixed-step MSRK5/MSRK6/SIR54 (their last
+                # row IS the weight vector).
+                'Tsit5 5(4)', 'OwrenZen3 3(2)', 'OwrenZen4 4(3)', 'OwrenZen5 5(4)',
+                'BS5 5(4)', 'Stepanov5 5(4)',
+                'MSRK5', 'MSRK6', 'SIR54',
                 'Trapezoidal (Crank-Nicolson)', 'TR-BDF2',
                 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA']
 
@@ -47,7 +54,7 @@ REUSE_EXACT_ON_LINEAR_AUTONOMOUS = {'SSPRK(10,4)'}
 def test_measured_reuse_order_matches_prediction(scheme, problem_name, step_sizes):
     if scheme.reuse_order is None:
         pytest.skip(f'{scheme.name} does not implement reuse')
-    order, errors = order_of(scheme, problem_name, step_sizes, reuse=True)
+    order, errors = order_of(scheme, problem_name, dts_for(scheme.name, problem_name, step_sizes), reuse=True)
     assert order is not None, f'{scheme.name} produced no usable errors: {errors}'
     assert order >= scheme.reuse_order - ORDER_TOLERANCE, (
         f'{scheme.name} on {problem_name} with reuse: predicted order {scheme.reuse_order}, '
@@ -63,7 +70,7 @@ def test_reuse_prediction_is_not_pessimistic(scheme, problem_name, step_sizes):
     if scheme.name in REUSE_EXACT_ON_LINEAR_AUTONOMOUS and problem_name == 'oscillator':
         pytest.skip(f'{scheme.name} reuses losslessly on the linear autonomous problem '
                     '(see REUSE_EXACT_ON_LINEAR_AUTONOMOUS)')
-    order, _ = order_of(scheme, problem_name, step_sizes, reuse=True)
+    order, _ = order_of(scheme, problem_name, dts_for(scheme.name, problem_name, step_sizes), reuse=True)
     assert order < scheme.reuse_order + 1 - ORDER_TOLERANCE, (
         f'{scheme.name} on {problem_name}: predicted {scheme.reuse_order} under reuse but '
         f'measured {order:.2f}. The prediction is too pessimistic; it will warn needlessly.'
@@ -78,8 +85,10 @@ def test_fsal_reuse_is_free(name, problem_name, step_sizes):
     assert is_fsal(s), f'{name} should be detected as FSAL from its tableau'
     assert supports_step_reuse(s)
 
-    order_off, errors_off = order_of(s, problem_name, step_sizes)
-    order_on, errors_on = order_of(s, problem_name, step_sizes, reuse=True)
+    dts = dts_for(name, problem_name, step_sizes)
+    order_off, errors_off = order_of(s, problem_name, dts)
+    order_on, errors_on = order_of(s, problem_name, dts, reuse=True)
+    assert order_on is not None, f'{name} on {problem_name}: no usable errors with reuse: {errors_on}'
     assert order_on >= order_off - ORDER_TOLERANCE
 
     # Not just the same order: with c_s == 1 and a[-1] == b the reused stage is the

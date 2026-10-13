@@ -39,6 +39,9 @@ from .butcher import (
     heunsMethod3rd, ralston3rd, Wray3rd, SSPRK3, SSPRK104, SSPRK53, SSPRK63,
     SSPRK73, SSPRK83, SSPRK54, KYKSSPRK42, KYK2014DGSSPRK3S2, SSPRK43, SSPRK432,
     SSPRK932, SSPRK53_2N1, SSPRK53_2N2, SSPRK53_H,
+    Tsit5, OwrenZen3, OwrenZen4, OwrenZen5, BS5, Stepanov5, Alshina2, Alshina3,
+    Alshina6, MSRK5, MSRK6, SIR54, Ralston4, RKO65, RKM, PSRK4p7q6, PSRK3p6q5,
+    PSRK3p5q4,
     RungeKutta4,
     RungeKutta4alt, Nystrom5th, BogackiShampine, DormandPrince, CashKarp, EPEC,
     EPECmodified,
@@ -118,6 +121,31 @@ IntegrationSchemes.append(IntegrationScheme(Nystrom5th,   'Nystrom 5th order', I
 IntegrationSchemes.append(IntegrationScheme(BogackiShampine, 'Bogacki-Shampine 3(2)', IntegrationSchemeType.bogackiShampine, 3, True))
 IntegrationSchemes.append(IntegrationScheme(DormandPrince, 'Dormand-Prince 5(4)', IntegrationSchemeType.dormandPrince, 5, True))
 IntegrationSchemes.append(IntegrationScheme(CashKarp,     'Cash-Karp 5(4)', IntegrationSchemeType.cashKarp, 5, True))
+# The OrdinaryDiffEq wave-6 tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13):
+# Tsit5 (Tsitouras 5(4), ODE's recommended default) and the LowOrderRK
+# workhorses. Tsit5 / OwrenZen3 / OwrenZen4 / OwrenZen5 / BS5 / Stepanov5 /
+# Alshina2 are (p, p-1) embedded pairs on the generic RK driver (the main
+# weight vector propagates, the embedded one is the local error estimate);
+# the rest are fixed-step plain tableaus. All one-step explicit and
+# dissipative: plain Runge-Kutta, no shadow-Hamiltonian conservation.
+IntegrationSchemes.append(IntegrationScheme(Tsit5,        'Tsit5 5(4)',    IntegrationSchemeType.tsit5, 5, True))
+IntegrationSchemes.append(IntegrationScheme(OwrenZen3,    'OwrenZen3 3(2)', IntegrationSchemeType.owrenzen3, 3, True))
+IntegrationSchemes.append(IntegrationScheme(OwrenZen4,    'OwrenZen4 4(3)', IntegrationSchemeType.owrenzen4, 4, True))
+IntegrationSchemes.append(IntegrationScheme(OwrenZen5,    'OwrenZen5 5(4)', IntegrationSchemeType.owrenzen5, 5, True))
+IntegrationSchemes.append(IntegrationScheme(BS5,          'BS5 5(4)',      IntegrationSchemeType.bs5, 5, True))
+IntegrationSchemes.append(IntegrationScheme(Stepanov5,    'Stepanov5 5(4)', IntegrationSchemeType.stefanov5, 5, True))
+IntegrationSchemes.append(IntegrationScheme(Alshina2,     'Alshina2 2(1)', IntegrationSchemeType.arushina2, 2, True))
+IntegrationSchemes.append(IntegrationScheme(Alshina3,     'Alshina3',      IntegrationSchemeType.arushina3, 3, True))
+IntegrationSchemes.append(IntegrationScheme(Alshina6,     'Alshina6',      IntegrationSchemeType.arushina6, 6, True))
+IntegrationSchemes.append(IntegrationScheme(MSRK5,        'MSRK5',         IntegrationSchemeType.msrk5, 5, True))
+IntegrationSchemes.append(IntegrationScheme(MSRK6,        'MSRK6',         IntegrationSchemeType.msrk6, 6, True))
+IntegrationSchemes.append(IntegrationScheme(SIR54,        'SIR54',         IntegrationSchemeType.sir54, 5, True))
+IntegrationSchemes.append(IntegrationScheme(Ralston4,     'Ralston4',      IntegrationSchemeType.raston4, 4, True))
+IntegrationSchemes.append(IntegrationScheme(RKO65,        'RKO65',         IntegrationSchemeType.rko65, 5, True))
+IntegrationSchemes.append(IntegrationScheme(RKM,          'RKM',           IntegrationSchemeType.rkm, 3, True))
+IntegrationSchemes.append(IntegrationScheme(PSRK4p7q6,    'PSRK4p7q6',     IntegrationSchemeType.psrk4p7q6, 4, True))
+IntegrationSchemes.append(IntegrationScheme(PSRK3p6q5,    'PSRK3p6q5',     IntegrationSchemeType.psrk3p6q5, 3, True))
+IntegrationSchemes.append(IntegrationScheme(PSRK3p5q4,    'PSRK3p5q4',     IntegrationSchemeType.psrk3p5q4, 3, True))
 IntegrationSchemes.append(IntegrationScheme(leapFrog, 'Leap Frog', IntegrationSchemeType.leapFrog, 2, False))
 IntegrationSchemes.append(IntegrationScheme(symplecticEuler, 'Symplectic Euler', IntegrationSchemeType.symplecticEuler, 2, False))
 IntegrationSchemes.append(IntegrationScheme(velocityVerlet, 'Velocity Verlet', IntegrationSchemeType.velocityVerlet, 2, False))

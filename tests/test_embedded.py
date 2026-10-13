@@ -23,6 +23,12 @@ EMBEDDED = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)', 'Cash-Karp 5(4)',
             # order-3 main, order-2 estimate, so the estimate is the embedded
             # branch's local error, O(dt^3) = dt^order.
             'SSPRK43', 'SSPRK432',
+            # The wave-6 ODE embedded pairs (SCHEME_EXPANSION_PLAN, 2026-10-13):
+            # each is (p, p-1), so the estimate is the embedded branch's local
+            # error, O(dt^(p-1+1)) = dt^order. BS5's embedded branch is ODE's
+            # bhat (order 4), not btilde (invalid).
+            'Tsit5 5(4)', 'OwrenZen3 3(2)', 'OwrenZen4 4(3)', 'OwrenZen5 5(4)',
+            'BS5 5(4)', 'Stepanov5 5(4)', 'Alshina2 2(1)',
             'TR-BDF2', 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
             'ARK3(2)4L[2]SA', 'ARK4(3)6L[2]SA',
             # Rosenbrock-W carries the built-in order-2 embedded estimate
@@ -146,7 +152,9 @@ def test_propagated_solution_is_the_high_order_branch(name):
 
 
 @pytest.mark.parametrize('name', ['BogackiShampine', 'DormandPrince', 'CashKarp',
-                                  'SSPRK43', 'SSPRK432'])
+                                  'SSPRK43', 'SSPRK432',
+                                  'Tsit5', 'OwrenZen3', 'OwrenZen4', 'OwrenZen5',
+                                  'BS5', 'Stepanov5', 'Alshina2'])
 def test_tableau_is_consistent(name):
     """Row sums of `a` must equal `c`, and both weight vectors must sum to 1."""
     tab = getButcherTableau(name)
@@ -157,7 +165,9 @@ def test_tableau_is_consistent(name):
         assert weights.sum() == pytest.approx(1.0, abs=1e-13)
 
 
-@pytest.mark.parametrize('name', ['BogackiShampine', 'DormandPrince'])
+@pytest.mark.parametrize('name', ['BogackiShampine', 'DormandPrince',
+                                  'Tsit5', 'OwrenZen3', 'OwrenZen4', 'OwrenZen5',
+                                  'BS5', 'Stepanov5'])
 def test_fsal_property_holds_in_the_tableau(name):
     tab = getButcherTableau(name)
     assert tab.c[-1] == pytest.approx(1.0)

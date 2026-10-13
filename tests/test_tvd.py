@@ -129,6 +129,27 @@ def test_named_tvd_schemes_have_ssp_coefficient_one(tableau_name):
     ('SSPRK53_2N1', 2.18),
     ('SSPRK53_2N2', 2.148),
     ('SSPRK53_H', 2.65),
+    # Wave-6 ODE tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13): Tsit5 and the
+    # LowOrderRK workhorses, measured on the propagated branch (the embedded
+    # pairs store `b` as a tuple; the scan reads the main weights).
+    ('Tsit5', 0.0),
+    ('OwrenZen3', 0.7813),
+    ('OwrenZen4', 0.6444),
+    ('OwrenZen5', 0.0),
+    ('BS5', 0.5237),
+    ('Stepanov5', 0.0),
+    ('Alshina2', 1.0),
+    ('Alshina3', 1.0),
+    ('Alshina6', 0.0),
+    ('MSRK5', 0.3226),
+    ('MSRK6', 0.1009),
+    ('SIR54', 0.0),
+    ('Ralston4', 0.7209),
+    ('RKO65', 0.0),
+    ('RKM', 0.7531),
+    ('PSRK4p7q6', 0.0),
+    ('PSRK3p6q5', 0.0),
+    ('PSRK3p5q4', 0.0),
 ])
 def test_explicit_ssp_coefficients(name, expected):
     r = tvd_analysis.convex_combination_cfl(getButcherTableau(name))
@@ -204,12 +225,34 @@ def test_ssprk104_ssp_boundary_and_real_axis_interval():
     ('SSPRK53_2N1', 2.1808, -5.52779),
     ('SSPRK53_2N2', 2.1487, -7.26303),
     ('SSPRK53_H', 2.6506, -6.21351),
+    # Wave 6 (SCHEME_EXPANSION_PLAN, 2026-10-13): the Tsit5 + LowOrderRK
+    # workhorses. PSRK4p7q6 (Aubry-Chartier pseudo-symplectic) has the
+    # largest real-axis interval of the wave ([-11.41, 0]).
+    ('Tsit5', 0.0, -3.506),
+    ('OwrenZen3', 0.7813, -2.512),
+    ('OwrenZen4', 0.6444, -2.872),
+    ('OwrenZen5', 0.0, -3.192),
+    ('BS5', 0.5237, -3.986),
+    ('Stepanov5', 0.0, -3.496),
+    ('Alshina2', 1.0, -2.0),
+    ('Alshina3', 1.0, -2.512),
+    ('Alshina6', 0.0, -2.904),
+    ('MSRK5', 0.3226, -4.366),
+    ('MSRK6', 0.1009, -4.164),
+    ('SIR54', 0.0, -3.512),
+    ('Ralston4', 0.7209, -2.784),
+    ('RKO65', 0.0, -4.164),
+    ('RKM', 0.7531, -3.224),
+    ('PSRK4p7q6', 0.0, -11.41),
+    ('PSRK3p6q5', 0.0, -3.548),
+    ('PSRK3p5q4', 0.0, -2.784),
 ])
 def test_expanded_ssprk_ssp_boundaries_and_real_axis_intervals(
         name, ssp_boundary, real_axis_left):
-    """The wave 1/2 ODE SSPRK tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12):
-    the exact SSP convex-combination boundary and the negative real-axis
-    stability limit of each, mirroring the SSPRK(10,4) pin above."""
+    """The wave 1/2/6 ODE SSPRK + Tsit5/LowOrderRK tableaus
+    (SCHEME_EXPANSION_PLAN, 2026-10-12/13): the exact SSP convex-combination
+    boundary and the negative real-axis stability limit of each, mirroring the
+    SSPRK(10,4) pin above."""
     tableau = getButcherTableau(name)
     r = tvd_analysis.convex_combination_cfl(tableau, mu_max=8.0)
     assert r == pytest.approx(ssp_boundary, abs=5e-3), (
@@ -455,6 +498,27 @@ EXPECTED_VERDICTS = {
     'Bogacki-Shampine 3(2)': (1.0, 1.0, False),
     'Dormand-Prince 5(4)': (0.0, 1.5, False),
     'Cash-Karp 5(4)': (5.0 / 12.0, 1.5, False),
+    # The wave-6 ODE tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13): Tsit5 and
+    # the LowOrderRK workhorses. The embedded pairs' ssp values are measured
+    # on the propagated (main) branch, as in test_explicit_ssp_coefficients.
+    'Tsit5 5(4)': (0.0, 1.5, False),
+    'OwrenZen3 3(2)': (0.7813, 1.0, False),
+    'OwrenZen4 4(3)': (0.6444, 1.25, False),
+    'OwrenZen5 5(4)': (0.0, 1.5, False),
+    'BS5 5(4)': (0.5237, 1.5, False),
+    'Stepanov5 5(4)': (0.0, 1.5, False),
+    'Alshina2 2(1)': (1.0, 1.0, False),
+    'Alshina3': (1.0, 1.0, False),
+    'Alshina6': (0.0, 1.25, False),
+    'MSRK5': (0.3226, 2.0, False),
+    'MSRK6': (0.1009, 2.0, False),
+    'SIR54': (0.0, 1.5, False),
+    'Ralston4': (0.7209, 1.25, False),
+    'RKO65': (0.0, 2.0, False),
+    'RKM': (0.7531, 1.5, False),
+    'PSRK4p7q6': (0.0, 2.0, False),
+    'PSRK3p6q5': (0.0, 1.5, False),
+    'PSRK3p5q4': (0.0, 1.25, False),
     'Leap Frog': (None, None, False),
     'Symplectic Euler': (None, None, False),
     'Velocity Verlet': (None, None, False),

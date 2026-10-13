@@ -2,7 +2,7 @@
 sidebar_label: Explicit RK
 ---
 
-# Explicit Runge-Kutta (`ExplicitRK`) — 34 schemes
+# Explicit Runge-Kutta (`ExplicitRK`) — 52 schemes
 
 One-step explicit RK on the generic Butcher tableau, driven by the single
 `butcher.RungeKuttaB` path: a stage $k_i = f(t^n + c_i\,\mathrm{dt},
@@ -99,6 +99,16 @@ DG-context values of the paper, and the library's upwind-model measurements
 | KYK2014DGSSPRK_3S2 | 3 | 1.8939 (ODE publishes 0.8417, the paper's DG-context value) | $[-4.267, 0]$ |
 
 Full tableaus in `butcher.py`; not FSAL.
+
+### Alshina 2(1) (`Alshina2`)
+
+Order 2 / embedded 1, 2 stages (Alshina, Zaks & Kalitkin, *Computational
+Mathematics and Mathematical Physics* 48.3 (2008) 395-405; coefficients as
+stored by OrdinaryDiffEq v7.8.1): $a$-rows $(0), (2/3, 0)$,
+$b = (1/4, 3/4)$, $\hat b = (1, 0)$, $c = (0, 2/3)$. The embedded branch is
+exactly Euler, so the estimate is the embedded branch's $O(\mathrm{dt}^2)$
+local error. Measured: SSP coefficient $r = 1$ and real-axis interval
+$[-2, 0]$; not FSAL ($c_2 = 2/3$).
 
 ## Order 3 (three evaluations)
 
@@ -271,6 +281,30 @@ shares SSPRK53's first two nodes $c_1, c_2$ but has distinct later stages).
 SSPRK53_2N1's stage 3 sits at $c_3 = 1.0053 > 1$ (evaluated just past the
 step end, as ODE does).
 
+### OwrenZen 3(2) and the wave-6 order-3 workhorses
+
+| Method | Stages | Embedded | SSP $r$ (measured) | Real axis | FSAL |
+|---|---|---|---|---|---|
+| OwrenZen3 (`OwrenZen3`) | 4 | 2nd (free interpolant) | 0.7813 | $[-2.512, 0]$ | yes |
+| Alshina3 (`Alshina3`) | 3 | — (fixed step) | 1.0 | $[-2.512, 0]$ | no |
+| RKM (`RKM`) | 6 | — (fixed step) | 0.7531 | $[-3.224, 0]$ | no |
+| PSRK3p6q5 (`PSRK3p6q5`) | 5 | — (fixed step) | 0.0 | $[-3.548, 0]$ | no |
+| PSRK3p5q4 (`PSRK3p5q4`) | 4 | — (fixed step) | 0.0 | $[-2.784, 0]$ | no |
+
+**OwrenZen3** is the Owren–Zennaro optimized interpolation 3/2 pair (Owren &
+Zennaro, *SIAM J. Sci. Stat. Comput.* 13.6 (1992) 1488-1501) with a free
+order-3 interpolant. **Alshina3** is the 3rd-order member of Alshina, Zaks &
+Kalitkin's optimal 1st–6th order family; registered **fixed-step only**:
+ODE's stored $\tilde b$ sums to $5/9 \ne 1$, so ODE's own estimate is not a
+valid companion (NOTES.md §3.26). **RKM** is the Mead–Renaut method designed
+for good stability on pseudospectral discretizations of hyperbolic PDEs
+(Mead & Renaut, *J. Comput. Phys.* 152.1 (1999) 404-419); the registered
+order is the measured 3. **PSRK3p6q5 / PSRK3p5q4** are Aubry–Chartier
+pseudo-symplectic order-3 methods (Aubry & Chartier, *BIT* 38 (1998) 439-461;
+Capuano et al., *J. Comput. Phys.* 328 (2017) 86-94) with improved
+energy-conservation properties; $r = 0$ (not convex-combination steps).
+Full tableaus in `butcher.py`.
+
 ## Order 4
 
 ### Classical RK4 (`RungeKutta4`)
@@ -324,6 +358,22 @@ $[-13.916, 0]$. The tableau is the 5+5 cascade in `butcher.py`
 (`getButcherTableau('SSPRK104')`); the final row is
 $b = (1/10)\,\mathbf{1}$, $c = (0, 1/6, 1/3, 1/2, 2/3, 1/3, 1/2, 2/3, 5/6, 1)$.
 
+### OwrenZen 4(3), Ralston 4 and PSRK4p7q6
+
+| Method | Stages | Embedded | SSP $r$ (measured) | Real axis | FSAL |
+|---|---|---|---|---|---|
+| OwrenZen4 (`OwrenZen4`) | 6 | 3rd (free interpolant) | 0.6444 | $[-2.872, 0]$ | yes |
+| Ralston4 (`Ralston4`) | 4 | — | 0.7209 | $[-2.784, 0]$ | no |
+| PSRK4p7q6 (`PSRK4p7q6`) | 6 | — | 0.0 | $[-11.41, 0]$ | no |
+
+**OwrenZen4** is the Owren–Zennaro optimized interpolation 4/3 pair (Owren &
+Zennaro 1992, the same paper as OwrenZen3). **Ralston4** is Ralston's
+4-stage minimum-truncation-error order-4 method (Ralston, *Mathematics of
+Computation* 16.80 (1962) 431-437). **PSRK4p7q6** is the 6-stage
+pseudo-symplectic order-4 method (Aubry & Chartier 1998; Capuano et al.
+2017) — the largest real-axis interval of the whole wave 6, $[-11.41, 0]$,
+at the cost of $r = 0$. Full tableaus in `butcher.py`.
+
 ## Order 5 and the embedded pairs
 
 ### Nystrom 5th (`Nystrom5th`)
@@ -365,13 +415,79 @@ negative for all $\mu > 0$; NOTES.md §3.11), yet per-step TVD to CFL 1.5.
 This is also the **cold-start scheme** the multistep families bootstrap from
 (NOTES.md §3.7).
 
+### Tsit5 5(4) and the wave-6 order-5 methods
+
+| Method | Stages | Embedded | SSP $r$ (measured) | Real axis | FSAL |
+|---|---|---|---|---|---|
+| Tsit5 (`Tsit5`) | 7 | 4th (free interpolant) | 0.0 | $[-3.506, 0]$ | yes |
+| OwrenZen5 (`OwrenZen5`) | 8 | 4th (free interpolant) | 0.0 | $[-3.192, 0]$ | yes |
+| BS5 (`BS5`) | 8 | 4th (ODE's $\hat b$, not $\tilde b$) | 0.5237 | $[-3.986, 0]$ | yes |
+| Stepanov5 (`Stepanov5`) | 7 | 4th | 0.0 | $[-3.496, 0]$ | yes |
+| MSRK5 (`MSRK5`) | 9 | — (8 + FSAL) | 0.3226 | $[-4.366, 0]$ | yes |
+| SIR54 (`SIR54`) | 8 | — (fixed step) | 0.0 | $[-3.512, 0]$ | yes |
+| RKO65 (`RKO65`) | 6 | — | 0.0 | $[-4.164, 0]$ | no (free first stage) |
+
+- **Tsit5** — Tsitouras 5(4) (Tsitouras, *Computers & Mathematics with
+  Applications* 62.2 (2011) 770-775): a 5(4) pair satisfying only the first
+  column simplifying assumption, with a free order-4 interpolant — ODE's
+  recommended default for non-stiff problems of unknown stiffness.
+- **OwrenZen5** — the Owren–Zennaro optimized interpolation 5/4 pair (Owren
+  & Zennaro 1992); ODE stores $a_{43} = 1$ in-code.
+- **BS5** — Bogacki–Shampine's efficient (4, 5) pair (Bogacki & Shampine,
+  *Computers & Mathematics with Applications* 32.6 (1996) 15-28) — a
+  different algorithm from Dormand-Prince above. Registered with ODE's
+  $\hat b$ as the embedded branch: $\tilde b$ is invalid (it does not sum
+  to 1), so $\hat b$ is the order-4 companion.
+- **Stepanov5** — Stepanov's embedded (4, 5) pair of 7-stage FSAL methods
+  (Stepanov, *Calcolo* 59 (2021)).
+- **MSRK5** — Stepanov's 9-stage order-5 method (Stepanov,
+  arXiv:2202.08443, Figure 3): 8 working stages + the FSAL stage.
+- **SIR54** — the Kovalnogov–Simos–Tsitouras 5(4) pair for SIR-type
+  epidemic models (Math. Methods Appl. Sci. 44 (2020) 5210-5216); FSAL
+  (last row $= b$). Registered **fixed-step only**: ODE's stored
+  $\tilde b$ sums to 7.854, not 1, so ODE's own estimate is not a valid
+  companion (NOTES.md §3.26).
+- **RKO65** — Tsitouras' Runge–Kutta–Oliver 6-stage 5th-order "starting
+  integration" method (Tsitouras, *Applied Mathematics and Computation*
+  354 (2019) 353-364). Its first stage is **free**: $c_1 = 2/3$ with a zero
+  $a$-row and $b_1 = 0$, so no order condition involves $c_1$ — the stage
+  may be evaluated at any time (the driver's $t^n$ convention, shared with
+  every other registered stage 0, is one valid choice; ODE's stored
+  $c_1 = 2/3$ is another). Row-sum consistency therefore holds for rows
+  $2..s$ as usual but not for row 1 (structural, pinned by the residual),
+  and reuse is **lossless** — see the First-stage reuse section.
+
+Full tableaus in `butcher.py`.
+
+## Order 6
+
+### Alshina 6 and MSRK6
+
+| Method | Stages | Embedded | SSP $r$ (measured) | Real axis | FSAL |
+|---|---|---|---|---|---|
+| Alshina6 (`Alshina6`) | 7 | — (fixed step) | 0.0 | $[-2.904, 0]$ | no |
+| MSRK6 (`MSRK6`) | 9 | — (8 + FSAL) | 0.1009 | $[-4.164, 0]$ | yes |
+
+**Alshina6** is the 6th-order member of Alshina, Zaks & Kalitkin's optimal
+family (2008). **MSRK6** is Stepanov's 9-stage order-6 method
+(arXiv:2202.08443, Table 4): 8 working stages + the FSAL stage. Together
+with each other these are the highest-order one-step explicit methods in the
+registry. Full tableaus in `butcher.py`.
+
 ## First-stage reuse
 
 `priorStep=result.stages[-1]` feeds the previous step's last stage as this
 step's first stage, saving one evaluation. It is lossless exactly for the FSAL
-tableaus (Bogacki-Shampine, Dormand-Prince — and Forward Euler); for every
-other tableau it costs order (the reuse analysis in `reuse.step_reuse_analysis`
-reports the exact reuse order per scheme; pinned in `tests/test_step_reuse.py`).
+tableaus — Bogacki-Shampine, Dormand-Prince, and the wave-6
+Tsit5 / OwrenZen3 / OwrenZen4 / OwrenZen5 / BS5 / Stepanov5 pairs plus
+MSRK5 / MSRK6 / SIR54 — and, one case beyond FSAL, for RKO65: with $b_1 = 0$
+its stale k0 reaches the update only through the stage equations, and the
+one-stage paths carry the common coefficient $(b^\top a)_1 = 0$ as well, so
+`reuse.step_reuse_analysis` reports a lossless order 5 for it (NOTES.md
+§3.26). For every other tableau reuse costs order (the analysis reports the
+exact reuse order per scheme; pinned in `tests/test_step_reuse.py`);
+single-stage tableaus (Forward Euler) refuse it outright, since the reuse
+would be the lagged two-step map with no imaginary-axis stability region.
 Multistep and implicit families use different mechanisms — see their pages.
 
 ## SSP / TVD landscape (measured)
@@ -391,6 +507,7 @@ The registry-wide classification from `scripts/tvd_classifier.py`
 | SSPRK53 / SSPRK63 / SSPRK73 / SSPRK83 / SSPRK54 / KYKSSPRK42 / KYK2014DGSSPRK_3S2 | 2.651 / 3.518 / 4 / 4 / 1.769 / 2.284 / 1.894 (SSPRK73/83 at the scan cap; exact 4.2879 / 5.1071) | 2 / 3 / 3 / 5 / 2 / 2 / 1.5 |
 | SSPRK43 / SSPRK432 / SSPRK932 | 2.0 / 2.0 / 4 (scan cap; exact 6.0) | 2 / 2 / 5 (SSPRK932 unconditional) |
 | SSPRK53_2N1 / SSPRK53_2N2 / SSPRK53_H | 2.181 / 2.149 / 2.651 | 2 / 2 / 2 |
+| Tsit5 5(4) / OwrenZen3 3(2) / OwrenZen4 4(3) / OwrenZen5 5(4) / BS5 5(4) / Stepanov5 5(4) / Alshina2 2(1) / Alshina3 / Alshina6 / MSRK5 / MSRK6 / SIR54 / Ralston4 / RKO65 / RKM / PSRK4p7q6 / PSRK3p6q5 / PSRK3p5q4 (wave 6) | 0 / 0.7813 / 0.6444 / 0 / 0.5237 / 0 / 1 / 1 / 0 / 0.3226 / 0.1009 / 0 / 0.7209 / 0 / 0.7531 / 0 / 0 / 0 | 1.5 / 1 / 1.25 / 1.5 / 1.5 / 1.5 / 1 / 1 / 1.25 / 2 / 2 / 1.5 / 1.25 / 2 / 1.5 / 2 / 1.5 / 1.25 |
 
 TVD is strictly broader than SSP: RK4 is per-step TVD past where its internal
 stages leave the convex hull, and Nystrom/Dormand-Prince are TVD to CFL 1.5
@@ -436,6 +553,16 @@ register, so they live alongside the registry (NOTES.md §3.24).
 - Kraaijevanger, *Contractivity of Runge-Kutta methods*, BIT 31.3 (1991) 482-528 — SSPRK43 main method; Conde, Fekete & Shadid, arXiv:1806.08693 (2018) — the SSPRK43 embedded pair.
 - Gottlieb, Ketcheson & Shu, *Strong Stability Preserving Runge–Kutta and Multistep Time Discretizations*, World Scientific (2011) — SSPRK432 (Example 6.1), SSPRK932.
 - Higueras & Roldán, *New third order low-storage SSP explicit Runge–Kutta methods*, arXiv:1809.04807 (2018) — SSPRK53_2N1 / SSPRK53_2N2 / SSPRK53_H.
+- Tsitouras, *Runge–Kutta pairs of order 5 (4) satisfying only the first column simplifying assumption*, Computers & Mathematics with Applications 62.2 (2011) 770-775 — Tsit5.
+- Owren & Zennaro, *Derivation of efficient, continuous, explicit Runge–Kutta methods*, SIAM Journal on Scientific Computing 13.6 (1992) 1488-1501 — OwrenZen3 / OwrenZen4 / OwrenZen5.
+- Bogacki & Shampine, *An efficient runge-kutta (4, 5) pair*, Computers & Mathematics with Applications 32.6 (1996) 15-28 — BS5.
+- Stepanov, *Embedded (4, 5) pairs of explicit 7-stage Runge–Kutta methods with FSAL property*, Calcolo 59 (2021) — Stepanov5; Stepanov, arXiv:2202.08443 (2022) — MSRK5 (Figure 3) / MSRK6 (Table 4).
+- Kovalnogov, Simos & Tsitouras, *Runge–Kutta pairs suited for SIR‐type epidemic models*, Mathematical Methods in the Applied Sciences 44 (2020) 5210-5216 — SIR54.
+- Alshina, Zaks & Kalitkin, *Optimal first- to sixth-order accurate Runge–Kutta schemes*, Computational Mathematics and Mathematical Physics 48.3 (2008) 395-405 — Alshina2 / Alshina3 / Alshina6.
+- Ralston, *Runge-Kutta methods with minimum error bounds*, Mathematics of Computation 16.80 (1962) 431-437 — Ralston4.
+- Tsitouras, *Explicit Runge–Kutta methods for starting integration of Lane–Emden problem*, Applied Mathematics and Computation 354 (2019) 353-364 — RKO65.
+- Mead & Renaut, *Optimal Runge–Kutta methods for first order pseudospectral operators*, Journal of Computational Physics 152.1 (1999) 404-419 — RKM.
+- Aubry & Chartier, *Pseudo-symplectic Runge–Kutta methods*, BIT 38 (1998) 439-461; Capuano et al., *Pseudo-symplectic Runge–Kutta methods: revisiting the optimal coefficients*, Journal of Computational Physics 328 (2017) 86-94 — PSRK4p7q6 / PSRK3p6q5 / PSRK3p5q4.
 - Shu & Osher, *Efficient implementation of essentially non-oscillatory shock capturing schemes*, J. Comput. Phys. 79 (1989) 500-512 — SSP/TVD RK2, RK3.
 - Bogacki & Shampine, *A 3(2) pair of Runge-Kutta formulas*, BIT 35 (1995) 232-248.
 - Dormand & Prince, J. Comput. Appl. Math. 8 (1981) 15-28; Cash & Karp, NASA TM-100035 (1990).

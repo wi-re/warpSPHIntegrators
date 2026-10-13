@@ -1,6 +1,7 @@
 # Scheme expansion plan — OrdinaryDiffEq gap (staged by family and complexity)
 
-**Status: PLAN ONLY (2026-10-12), not started.** No code written against this plan yet.
+**Status: waves 1–6 done (2026-10-13); waves 7–16 not started.** Registry at 97
+schemes (64 at planning time).
 
 Scope: the schemes present in local **OrdinaryDiffEq v7.8.1** but missing from this
 library, staged into 16 waves ordered by complexity. Waves 1–5 cover the SSPRK gap;
@@ -118,6 +119,17 @@ propagated-order/stages/embedded-order — verify structure from source), SplitE
 our registry (`symplecticEuler`); document the duplicate, do not register. The
 remaining LowOrderRK members (Euler, Heun, Midpoint, Ralston, RK4, DP5, BS3) are
 already ours. **Gate:** standard checklist + embedded-rate tests for the pairs.
+
+**Done 2026-10-13 — 18 registered (registry 79 → 97), one bundled commit.**
+Anas5(w) and FRK65(omega) deferred: parameter-dependent tableaus (a free
+w / omega trades SSP against accuracy) — the pRRK situation, not fixed
+tableaus. SplitEuler confirmed the `symplecticEuler` duplicate (documented,
+not registered). The PSRK* names read as propagated-order/stages/
+embedded-order, but none is actually embedded — plain fixed-step methods.
+RKO65's first stage is free (a₁ = b₁ = 0: no order condition involves c₁)
+and its reuse is lossless ((bᵀa)₁ = 0) — first consumer of the new gain-3
+branch in `reuse.tableau_reuse_analysis`. RKM registers at its formal order
+3 (pseudospectral stability design). NOTES.md §3.26.
 
 ### Wave 7 — order 6+ high-order tableaus (~12+ methods)
 

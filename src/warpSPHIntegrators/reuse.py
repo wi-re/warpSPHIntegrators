@@ -161,6 +161,14 @@ def tableau_reuse_analysis(tableau, nominal_order: int) -> ReuseAnalysis:
     gain = 2 if abs(b[0]) < _TOL else 1
     if gain == 2:
         why += '; b[0] == 0, so the stale k0 only enters through the stage equations'
+        if abs(float(b @ a[:, 0])) < _TOL:
+            # The one-stage paths from k0 to the update carry the common
+            # coefficient (b^T a)_0; when it vanishes the stale k0 reaches the
+            # update only through two-stage paths, one more power of dt. RKO65
+            # (wave 6, free first stage) is the first registered tableau with
+            # this property: reuse measures a full p, not p - 1.
+            gain = 3
+            why += '; (b^T a)_0 == 0, so the stale k0 only enters through two-stage paths'
     return ReuseAnalysis(min(nominal_order, q + gain), False, why)
 
 

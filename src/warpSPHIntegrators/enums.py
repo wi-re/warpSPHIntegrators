@@ -152,6 +152,31 @@ class IntegrationSchemeType(Enum):
     ssprk53_2n1 = 76
     ssprk53_2n2 = 77
     ssprk53_h = 78
+    # The OrdinaryDiffEq wave-6 tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13):
+    # Tsit5 (Tsitouras 5(4), ODE's recommended default) and the LowOrderRK
+    # workhorses. The embedded pairs (tsit5, owrenzen3/4/5, bs5, stefanov5,
+    # arushina2) store `b` as a (main, embedded) tuple on the generic RK
+    # driver; the rest are fixed-step plain tableaus. FSAL: tsit5,
+    # owrenzen3/4/5, bs5, stefanov5, sir54, msrk5, msrk6. One-step explicit
+    # throughout, so all sit in the ExplicitRK family below.
+    tsit5 = 79
+    owrenzen3 = 80
+    owrenzen4 = 81
+    owrenzen5 = 82
+    bs5 = 83
+    stefanov5 = 84
+    arushina2 = 85
+    arushina3 = 86
+    arushina6 = 87
+    msrk5 = 88
+    msrk6 = 89
+    sir54 = 90
+    raston4 = 91
+    rko65 = 92
+    rkm = 93
+    psrk4p7q6 = 94
+    psrk3p6q5 = 95
+    psrk3p5q4 = 96
 
 
 # --------------------------------------------------------------------------- #
@@ -159,7 +184,7 @@ class IntegrationSchemeType(Enum):
 # --------------------------------------------------------------------------- #
 #
 # IntegrationSchemeType is the single enum that captures every registered
-# scheme, but a 79-member flat list does not tell a user which entry is an
+# scheme, but a 97-member flat list does not tell a user which entry is an
 # explicit scheme and which is an implicit one. The family enums below are
 # thin VIEWS of the same members: every member keeps the same name and the
 # same int value as its IntegrationSchemeType counterpart, so all four lookup
@@ -170,7 +195,7 @@ class IntegrationSchemeType(Enum):
 #     getIntegrator('RK4')
 #     getIntegrator('rungeKutta4')
 #
-# and the families are exhaustive and disjoint over the 79 members (pinned in
+# and the families are exhaustive and disjoint over the 97 members (pinned in
 # tests/test_family_enums.py). `SCHEME_FAMILY` maps a scheme's identifier to
 # the family enum class it belongs to; IntegrationScheme.family is the same
 # fact on the registered scheme object.
@@ -206,6 +231,24 @@ class ExplicitRK(Enum):
     ssprk53_2n1 = IntegrationSchemeType.ssprk53_2n1.value
     ssprk53_2n2 = IntegrationSchemeType.ssprk53_2n2.value
     ssprk53_h = IntegrationSchemeType.ssprk53_h.value
+    tsit5 = IntegrationSchemeType.tsit5.value
+    owrenzen3 = IntegrationSchemeType.owrenzen3.value
+    owrenzen4 = IntegrationSchemeType.owrenzen4.value
+    owrenzen5 = IntegrationSchemeType.owrenzen5.value
+    bs5 = IntegrationSchemeType.bs5.value
+    stefanov5 = IntegrationSchemeType.stefanov5.value
+    arushina2 = IntegrationSchemeType.arushina2.value
+    arushina3 = IntegrationSchemeType.arushina3.value
+    arushina6 = IntegrationSchemeType.arushina6.value
+    msrk5 = IntegrationSchemeType.msrk5.value
+    msrk6 = IntegrationSchemeType.msrk6.value
+    sir54 = IntegrationSchemeType.sir54.value
+    raston4 = IntegrationSchemeType.raston4.value
+    rko65 = IntegrationSchemeType.rko65.value
+    rkm = IntegrationSchemeType.rkm.value
+    psrk4p7q6 = IntegrationSchemeType.psrk4p7q6.value
+    psrk3p6q5 = IntegrationSchemeType.psrk3p6q5.value
+    psrk3p5q4 = IntegrationSchemeType.psrk3p5q4.value
     rungeKutta4 = IntegrationSchemeType.rungeKutta4.value
     rungeKutta4alt = IntegrationSchemeType.rungeKutta4alt.value
     nystrom5th = IntegrationSchemeType.nystrom5th.value

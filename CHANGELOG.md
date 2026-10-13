@@ -119,6 +119,45 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
   (expanded test, mu_max = 8) and the verdict table gains three entries
   (all `(ssp, 2.0, False)` — the same per-step TVD CFL as SSPRK53).
 
+### Added — schemes (79 → 97): the wave-6 Tsit5 + LowOrderRK workhorses
+
+- 18 OrdinaryDiffEq v7.8.1 tableaus on the generic Butcher driver (wave 6 of
+  `SCHEME_EXPANSION_PLAN.md`): the Tsit5 5(4) pair (ODE's recommended default
+  for unknown stiffness) and the LowOrderRK workhorses — OwrenZen3 3(2) /
+  OwrenZen4 4(3) / OwrenZen5 5(4) (Owren–Zennaro embedded pairs), BS5 5(4)
+  (Bogacki–Shampine), Stepanov5 5(4) (7-stage FSAL pair), Alshina2 2(1) /
+  Alshina3 / Alshina6 (Alshina–Zaks–Kalitkin), MSRK5 / MSRK6 (minimum-storage
+  5th/6th-order, Stepanov arXiv:2202.08443), SIR54 (Kovalnogov–Simos–Tsitouras
+  SIR-model pair), Ralston4, RKO65 (Tsitouras's free-first-stage 5th-order
+  starter), RKM (Mead–Renaut pseudospectral), and the pseudo-symplectic
+  PSRK4p7q6 / PSRK3p6q5 / PSRK3p5q4.
+- All one-step explicit and dissipative; the seven embedded pairs are Tsit5 /
+  OwrenZen3 / OwrenZen4 / OwrenZen5 / BS5 / Stepanov5 / Alshina2, the other
+  ten register fixed-step only. RKM's ODE "estimate", Alshina3's `b2tilde`
+  (sums to 5/9) and SIR54's `btilde` (sums to 7.854) are derivative
+  estimates, not embedded solutions (NOTES.md §3.26).
+- RKO65 is the registry's first **free-first-stage** method: with
+  `a[0] = b[0] = 0` no order condition of any order involves `c[0]` (ODE's
+  `2/3` is decorative), and with `(b^T a)[0] = 0` the stale reused k0 reaches
+  the update only through two-stage paths — first-stage reuse therefore
+  measures the full order 5, not 4. `reuse.tableau_reuse_analysis` gained
+  the matching gain-3 branch (RKO65 is its first consumer; FSAL methods and
+  Midpoint/EPEC unchanged).
+- Every tableau was cross-checked against ODE with a one-step run:
+  max |diff| = 0.0 for all 18 (the ODE sources give exact fractions and the
+  perform_step recurrences reproduce the Butcher rows exactly). Measured: 9
+  FSAL tableaus (the six embedded pairs + MSRK5/MSRK6/SIR54, whose last row
+  IS the weight vector); SSP coefficients 0 / 0.7813 / 0.6444 / 0 / 0.5237 /
+  0 / 1 / 1 / 0 / 0.3226 / 0.1009 / 0 / 0.7209 / 0 / 0.7531 / 0 / 0 / 0;
+  real-axis intervals out to −11.41 (PSRK4p7q6).
+- `tests/test_tvd.py` pins the SSP boundaries, real-axis intervals and the
+  18 verdict entries; `tests/test_embedded.py` covers the seven pairs
+  (estimate rate, consistency, FSAL); `tests/test_step_reuse.py` extends the
+  FSAL set by nine.
+- Deferred (documented, not registered): Anas5(w) and FRK65(omega) —
+  parameter-dependent tableaus (the pRRK situation); SplitEuler is the
+  registered `symplecticEuler` duplicate.
+
 ### Added — drift fields (`drift.py`)
 
 - `integrated(update_key, drift_key=...)` declares a **drift field**: a

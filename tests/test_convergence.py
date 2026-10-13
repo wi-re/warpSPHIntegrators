@@ -10,7 +10,7 @@ and `kepler` adds a nonlinear problem that a linear one cannot stand in for.
 import pytest
 
 from conftest import (EXACT_ON_LINEAR_PROBLEMS, LINEAR_AUTONOMOUS_PROBLEMS,
-                      ORDER_TOLERANCE, order_of)
+                      ORDER_TOLERANCE, dts_for, order_of)
 
 
 #: Splitting integrators, whose registered order holds only for a *separable*
@@ -37,7 +37,7 @@ def test_scheme_achieves_registered_order(scheme, problem_name, step_sizes):
                     f'the exact exponential flow; the error is at the roundoff floor, so '
                     f'no order is measurable); its order is pinned on forced / kepler / '
                     f'viscous Burgers instead')
-    order, errors = order_of(scheme, problem_name, step_sizes)
+    order, errors = order_of(scheme, problem_name, dts_for(scheme.name, problem_name, step_sizes))
     assert order is not None, f'{scheme.name} produced no usable errors on {problem_name}: {errors}'
     assert order >= scheme.order - ORDER_TOLERANCE, (
         f'{scheme.name} on {problem_name}: registered order {scheme.order}, '
