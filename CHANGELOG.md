@@ -65,6 +65,31 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
   the TVD verdict table records `(None, 1.5, False)` for both (the shared
   Dormand-Prince cold-start limit, not the steady-state SSP bound).
 
+### Added — parametric-relaxation pRRK (`prrk.py`, not registered)
+
+- pRRK22 / pRRK33 / pRRK54 (Liu, Burchard, Kuzmin & Shang 2023) —
+  parametric-relaxation variants of Heun / SSP RK3 / SSPRK54 with a free
+  `κ` parameter that trades the SSP (TVD) constant for a much larger
+  negative-real-axis stability interval (wave 4 of
+  `SCHEME_EXPANSION_PLAN.md`).
+- **Not registered** in `IntegrationSchemes`: the relaxation parameter is
+  `z = κ·dt`, so the tableau depends on both `κ` and `dt` (not a fixed
+  tableau), and at `κ = 0` the methods duplicate already-registered schemes.
+  They are exposed as standalone drivers
+  (`from warpSPHIntegrators import pRRK33`); the registered scheme count
+  stays 76.
+- The one-step map is exactly `u^{n+1} = u^n + dt·Σ bⱼ kⱼ` (the Shu–Osher
+  relaxation unfolds to a standard Butcher tableau because every modified
+  α-row sums to 1 for all `z`), but `(a, b, c)` is recomputed from the
+  caller's `(κ, dt)` on every step and fed to the shared `RungeKuttaB` — a
+  `butcherScheme` factory (tableau built once) cannot express it (NOTES.md
+  §3.24).
+- `κ = 0` reduces exactly to the base method (machine precision); the formal
+  order (2 / 3 / 4) is preserved for every `κ`; the real-axis interval is
+  bounded at `κ = 0` ([-2, 0] / [-2.51, 0] / [-5.33, 0]) and unbounded
+  (A-stable, `R → 1` from below, not L-stable) for `κ ≥ 0.5`.
+  `tests/test_prrk.py` (16 tests) pins all of it.
+
 ### Added — drift fields (`drift.py`)
 
 - `integrated(update_key, drift_key=...)` declares a **drift field**: a

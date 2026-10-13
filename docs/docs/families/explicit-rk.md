@@ -370,6 +370,35 @@ despite $r = 0$. The stage-level separation is what distinguishes RK3 from TVD
 RK3 (RK3's stage-3 map $1 + \zeta + \zeta^2$ has a negative circulant entry at
 CFL 1; TVD RK3's stage rows stay non-negative).
 
+## Parametric-relaxation pRRK (`prrk.py`) — not registered
+
+pRRK22 / pRRK33 / pRRK54 (Liu, Burchard, Kuzmin & Shang 2023) are
+*parametric-relaxation* variants of Heun / SSP RK3 / SSPRK54. A free
+relaxation parameter $\kappa$ trades the SSP (TVD) constant for a much larger
+negative-real-axis stability interval. They are **not registered** in
+`IntegrationSchemes` (see below) and are exposed as standalone drivers:
+
+```python
+from warpSPHIntegrators import pRRK33
+result = pRRK33(system, dt, rhs, kappa=1.0)
+```
+
+**Why not registered:** the relaxation parameter is $z = \kappa \Delta t$, so
+the Butcher tableau $(a, b, c)$ depends on *both* $\kappa$ and $\Delta t$ —
+it is not a fixed tableau, and at $\kappa = 0$ the methods duplicate
+already-registered schemes. There is no single fixed order or identifier to
+register, so they live alongside the registry (NOTES.md §3.24).
+
+**Behaviour (measured, `tests/test_prrk.py`):**
+- $\kappa = 0$ reduces *exactly* to the base method (Heun / SSP RK3 /
+  SSPRK54), to machine precision.
+- The formal order (2 / 3 / 4) is preserved for every $\kappa$.
+- Negative-real-axis stability interval: bounded at $\kappa = 0$
+  ($[-2, 0]$ / $[-2.51, 0]$ / $[-5.33, 0]$), **unbounded (A-stable)** for
+  $\kappa \ge 0.5$ — $R \to 1$ from below as $\Delta t \to \infty$ (A-stable,
+  not L-stable). There is no imaginary-axis stability (a general SSPRK
+  limitation), so the enlargement is a stiff/parabolic property.
+
 ## References
 
 - Hairer, Nørsett, Wanner, *Solving Ordinary Differential Equations I* (1993) — RK theory, stability, embedded pairs.
@@ -381,6 +410,7 @@ CFL 1; TVD RK3's stage rows stay non-negative).
 - Shu & Osher, *Efficient implementation of essentially non-oscillatory shock capturing schemes*, J. Comput. Phys. 79 (1989) 500-512 — SSP/TVD RK2, RK3.
 - Bogacki & Shampine, *A 3(2) pair of Runge-Kutta formulas*, BIT 35 (1995) 232-248.
 - Dormand & Prince, J. Comput. Appl. Math. 8 (1981) 15-28; Cash & Karp, NASA TM-100035 (1990).
+- Liu, Burchard, Kuzmin & Shang, *Parametric relaxation Runge-Kutta methods* (2023) — pRRK22/33/54 (not registered).
 
 **Tests:** `tests/test_convergence.py` (orders), `tests/test_step_reuse.py`
 (reuse orders), `tests/test_tvd.py` (the table above),
