@@ -2,9 +2,10 @@
 sidebar_label: Multistep (explicit)
 ---
 
-# Explicit linear multistep — Adams-Bashforth & PECE (`MultistepExplicit`) — 7 schemes
+# Explicit linear multistep — Adams-Bashforth, PECE & SSPRKMSVS (`MultistepExplicit`) — 9 schemes
 
-The explicit linear multistep family, driven by `multistep.py`:
+The explicit linear multistep family, driven by `multistep.py` (the Adams
+family) and `ssprkmsvs.py` (Shu's SSP multistep, below):
 
 $$
 y^{n+1} = y^n + \mathrm{dt}\, \sum_{j=0}^{p-1} \beta_j\, f^{n-j},
@@ -56,6 +57,32 @@ but with a wider (explicit) stability region and no solve. The pairing of the
 order-$p$ AB predictor with the order-$p$ AM corrector is what makes the PECE
 scheme order $p$ (NOTES.md §3.6).
 
+## SSP multistep (SSPRKMSVS32 / SSPRKMSVS43)
+
+Shu's strong-stability-preserving multistep methods (`ssprkmsvs.py`, NOTES.md
+§3.23), wave 3 of the scheme expansion. Unlike the Adams methods, the
+steady-state step is a **convex combination of forward-Euler substeps across
+past states**, so the `StepHistory` carries a state snapshot plus the
+step-start derivative (the same `HistoryEntry.state` mechanism BDF uses):
+
+| Scheme | `steps` | order | SSP $C$ | steady-state step |
+|---|---|---|---|---|
+| `SSPRKMSVS32` | 2 | 2 | 1/2 | $u^{n+1} = \tfrac{3}{4}(u^n + 2\,\mathrm{dt}\, f^n) + \tfrac{1}{4} u^{n-2}$ |
+| `SSPRKMSVS43` | 3 | 3 | 1/3 | $u^{n+1} = \tfrac{16}{27}(u^n + 3\,\mathrm{dt}\, f^n) + \tfrac{11}{27}(u^{n-3} + \tfrac{12}{11}\,\mathrm{dt}\, f^{n-3})$ |
+
+Cost: **1 evaluation per step** after the cold start (the past derivative is
+reused from the history). Each bracketed term is one Euler substep, so the
+step is a convex combination of stable maps — strongly stability preserving,
+with $C$ set by the longest substep. Note `steps == order` here (2 / 3), not
+`order - 1` as for the Adams family. Fixed-step only: there is no embedded
+error estimate.
+
+The tight SSP bounds ($C = 1/2$, $1/3$) are a *structural* property of the
+steady-state convex combination. The measured per-step TVD sweep records
+$1.5$ for both — the shared Dormand-Prince cold-start limit (the sweep does
+not thread history, so the driver re-runs its starter every step), the same
+cap the whole multistep family carries (NOTES.md §3.23).
+
 ## History and cold start
 
 The schemes carry derivative history in a `StepHistory` (NOTES.md S2): a cold
@@ -84,6 +111,10 @@ implicit (NOTES.md §3.11).
   RHS is expensive to evaluate (one evaluation per step).
 - **ABM2-4**: same cost as the implicit Adams-Moulton, no solve, wider
   stability region — the default choice when an implicit solve is not worth it.
+- **SSPRKMSVS32/43**: order 2 / 3 at one evaluation per step *and* a
+  strong-stability-preserving (convex-combination) step — the choice when the
+  step size is set by a CFL/TVD limit and you want an SSP multistep method
+  (fixed-step; the tight SSP bound is $C = 1/2$ / $1/3$).
 - Not for stiff problems: the real-axis stability intervals shrink with order,
   and nothing here is A-stable.
 
@@ -91,6 +122,9 @@ implicit (NOTES.md §3.11).
 
 - Hairer, Nørsett, Wanner, *Solving ODEs I* (1993), Ch. 4 — Adams methods, PECE.
 - Lambert, *Computational Methods in Ordinary Differential Equations* (1991).
+- Shu, *Efficient time integration for parabolic and hyperbolic PDEs*,
+  J. Comput. Phys. 169 (2001) 201-228 — SSPRKMSVS32/43.
 
 **Tests:** `tests/test_multistep.py` (orders, the startup, the PECE cost
-accounting, stability).
+accounting, the SSPRKMSVS one-evaluation steady state and fixed-step contract,
+stability).

@@ -42,6 +42,29 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
   (now 48 tests); `tests/test_embedded.py` and `tests/test_adaptive.py`
   cover the new pairs' estimate scaling and the adaptive loop.
 
+### Added — schemes (74 → 76): the wave-3 SSPRKMSVS multistep methods
+
+- Shu's strong-stability-preserving *multistep* methods from OrdinaryDiffEq
+  v7.8.1 (wave 3 of `SCHEME_EXPANSION_PLAN.md`), in a new driver
+  `ssprkmsvs.py`: SSPRKMSVS32 (3-step, order 2, SSP C = 1/2) and
+  SSPRKMSVS43 (4-step, order 3, SSP C = 1/3). The first non-Adams multistep
+  schemes in the registry: the steady-state formula is a convex combination
+  of forward-Euler substeps across past states, so the `StepHistory` carries
+  a state snapshot plus the step-start derivative (BDF's mechanism).
+- One right-hand-side evaluation per step once past the cold start (the past
+  derivative is reused from the history). Cold start is the uniform
+  Dormand-Prince 5(4) starter, not ODE's 2nd-order Heun self-start: a fixed
+  `k-1`-step bootstrap of a `q`-order starter accumulates only `O(dt^{q+1})`
+  starting error, so Heun is the minimum for the 3rd-order method and the
+  full order is reached with either (NOTES.md §3.23).
+- Fixed-step only (no embedded estimate; `result.error is None`), and
+  `steps == order` (2 / 3), not `order - 1` as for the Adams family — the
+  multistep tests now size their `StepHistory` from `scheme.steps`.
+- `tests/test_multistep.py` gains the two schemes' order, one-evaluation
+  steady state, fixed-step contract, and dt-restart coverage (now 87 tests);
+  the TVD verdict table records `(None, 1.5, False)` for both (the shared
+  Dormand-Prince cold-start limit, not the steady-state SSP bound).
+
 ### Added — drift fields (`drift.py`)
 
 - `integrated(update_key, drift_key=...)` declares a **drift field**: a

@@ -132,6 +132,15 @@ class IntegrationSchemeType(Enum):
     ssprk43 = 71
     ssprk432 = 72
     ssprk932 = 73
+    # The OrdinaryDiffEq SSPRK wave 3 (SCHEME_EXPANSION_PLAN, 2026-10-13): Shu's
+    # strong-stability-preserving *multistep* methods (ssprkmsvs.py). Convex
+    # combinations of forward-Euler substeps across past states: ssprkmsvs32 is
+    # 3-step / order 2 / SSP C = 1/2, ssprkmsvs43 is 4-step / order 3 / SSP
+    # C = 1/3. Fixed-step only (no embedded estimate); the history carries state
+    # snapshots + derivatives, and first-stage reuse does not apply (multistep
+    # reuse is the history= mechanism).
+    ssprkmsvs32 = 74
+    ssprkmsvs43 = 75
 
 
 # --------------------------------------------------------------------------- #
@@ -139,7 +148,7 @@ class IntegrationSchemeType(Enum):
 # --------------------------------------------------------------------------- #
 #
 # IntegrationSchemeType is the single enum that captures every registered
-# scheme, but a 74-member flat list does not tell a user which entry is an
+# scheme, but a 76-member flat list does not tell a user which entry is an
 # explicit scheme and which is an implicit one. The family enums below are
 # thin VIEWS of the same members: every member keeps the same name and the
 # same int value as its IntegrationSchemeType counterpart, so all four lookup
@@ -150,7 +159,7 @@ class IntegrationSchemeType(Enum):
 #     getIntegrator('RK4')
 #     getIntegrator('rungeKutta4')
 #
-# and the families are exhaustive and disjoint over the 74 members (pinned in
+# and the families are exhaustive and disjoint over the 76 members (pinned in
 # tests/test_family_enums.py). `SCHEME_FAMILY` maps a scheme's identifier to
 # the family enum class it belongs to; IntegrationScheme.family is the same
 # fact on the registered scheme object.
@@ -225,11 +234,13 @@ class RelaxedChebyshev(Enum):
 
 
 class MultistepExplicit(Enum):
-    """Explicit linear multistep (Adams family, `multistep.py`).
+    """Explicit linear multistep (Adams family `multistep.py`, SSPRKMSVS `ssprkmsvs.py`).
 
-    Adams-Bashforth 2-5 (pure predictor, one evaluation after startup) and
-    the Adams-Bashforth-Moulton 2-4 PECE predictor-correctors (two
-    evaluations after startup). All carry state-bearing `StepHistory`.
+    Adams-Bashforth 2-5 (pure predictor, one evaluation after startup), the
+    Adams-Bashforth-Moulton 2-4 PECE predictor-correctors (two evaluations
+    after startup), and Shu's SSP multistep SSPRKMSVS32/43 (convex
+    combinations of forward-Euler substeps across past states, one evaluation
+    after startup, fixed-step only). All carry state-bearing `StepHistory`.
     """
     ab2 = IntegrationSchemeType.ab2.value
     ab3 = IntegrationSchemeType.ab3.value
@@ -238,6 +249,8 @@ class MultistepExplicit(Enum):
     abm2 = IntegrationSchemeType.abm2.value
     abm3 = IntegrationSchemeType.abm3.value
     abm4 = IntegrationSchemeType.abm4.value
+    ssprkmsvs32 = IntegrationSchemeType.ssprkmsvs32.value
+    ssprkmsvs43 = IntegrationSchemeType.ssprkmsvs43.value
 
 
 class DIRK(Enum):

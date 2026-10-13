@@ -1,14 +1,15 @@
-"""Adams-Bashforth / Adams-Bashforth-Moulton driver (NOTES.md S3.6 Phase 1).
+"""Explicit multistep drivers: Adams-Bashforth / Adams-Bashforth-Moulton
+(NOTES.md S3.6 Phase 1) and Shu's SSPRKMSVS (NOTES.md S3.23, wave 3).
 
 Most generic behaviour (state cloning, copied/ephemeral fields, kwargs passthrough) is
 already covered for these schemes for free, the moment they joined the `scheme`
 fixture every other test file parametrizes over -- the full suite went from 1103 to
-1313 passing tests without a single new failure the day these seven were added, a
+1313 passing tests without a single new failure the day the Adams family was added, a
 strong signal the "reuse butcher._weighted_update, reuse a DP5 starter, thread
 StepHistory" design didn't need new machinery that could itself be wrong. This file
 covers what's specific to multistep: convergence order, the count-of-evaluations cost
-claim, the safe-but-expensive no-history fallback, and the dt/uid restart guards
-(S2g) getting a real consumer for the first time.
+claim, the safe-but-expensive no-history fallback, the dt/uid restart guards (S2g),
+and -- for the SSPRKMSVS pair -- the fixed-step-only contract (no error estimate).
 """
 
 import pytest
@@ -25,12 +26,16 @@ AB_SCHEMES = [('Adams-Bashforth 2', 2), ('Adams-Bashforth 3', 3),
              ('Adams-Bashforth 4', 4), ('Adams-Bashforth 5', 5)]
 ABM_SCHEMES = [('Adams-Bashforth-Moulton 2 (PECE)', 2), ('Adams-Bashforth-Moulton 3 (PECE)', 3),
               ('Adams-Bashforth-Moulton 4 (PECE)', 4)]
-ALL_MULTISTEP = AB_SCHEMES + ABM_SCHEMES
+# Shu's SSP multistep (wave 3): the `order` here is also the driver's history depth
+# (`steps`), so the `StepHistory(maxlen=order - 1)` in `_run` / `_count_evaluations`
+# is exactly the depth each driver indexes into.
+SSPRKMSVS_SCHEMES = [('SSPRKMSVS32', 2), ('SSPRKMSVS43', 3)]
+ALL_MULTISTEP = AB_SCHEMES + ABM_SCHEMES + SSPRKMSVS_SCHEMES
 
 
 def _run(scheme, order, problem, dt, T):
     system = problem.initial()
-    history = StepHistory(maxlen=order - 1)
+    history = StepHistory(maxlen=max(1, scheme.steps))
     for _ in range(int(round(T / dt))):
         result = scheme(system, dt=dt, f=problem.rhs, history=history)
         system, history = result.state, result.history
@@ -133,7 +138,7 @@ def _count_evaluations(scheme, order, problem, dt, steps):
         return problem.rhs(state, step_dt, **kwargs)
 
     system = problem.initial()
-    history = StepHistory(maxlen=order - 1)
+    history = StepHistory(maxlen=max(1, scheme.steps))
     per_step = []
     for _ in range(steps):
         before = counter[0]
@@ -160,10 +165,40 @@ def test_abm_costs_two_evaluations_per_step_after_bootstrap(name, order):
 
 
 # --------------------------------------------------------------------------- #
+# SSPRKMSVS specifics (wave 3): one-evaluation steady state, fixed-step-only    #
+# --------------------------------------------------------------------------- #
+
+@pytest.mark.parametrize('name,order', SSPRKMSVS_SCHEMES)
+def test_ssprkmsvs_costs_one_evaluation_per_step_after_bootstrap(name, order):
+    """The steady state reuses the past derivative from the history, so once the
+    cold start (DP5 for `steps` calls) is done, each step is ONE evaluation."""
+    s = getIntegrator(name)
+    prob = testing.PROBLEMS['oscillator']()
+    per_step = _count_evaluations(s, order, prob, dt=0.1, steps=order + 3)
+    assert per_step[-1] == 1, f'{name}: expected 1 evaluation/step once warmed up, got {per_step}'
+
+
+@pytest.mark.parametrize('name,order', SSPRKMSVS_SCHEMES)
+def test_ssprkmsvs_is_fixed_step_only(name, order):
+    """No embedded estimate exists, so `result.error` must be None on every call
+    (bootstrap and steady state alike) -- adaptive stepping is refused by
+    construction rather than by a check that could be forgotten."""
+    s = getIntegrator(name)
+    prob = testing.PROBLEMS['oscillator']()
+    system = prob.initial()
+    history = StepHistory(maxlen=max(1, s.steps))
+    for _ in range(order + 3):
+        result = s(system, dt=0.1, f=prob.rhs, history=history)
+        assert result.error is None, f'{name}: an error estimate was produced'
+        system, history = result.state, result.history
+
+
+# --------------------------------------------------------------------------- #
 # S2g restart guards, exercised by a real consumer for the first time         #
 # --------------------------------------------------------------------------- #
 
-def test_dt_change_restarts_history_and_stays_correct():
+@pytest.mark.parametrize('name,order', [('Adams-Bashforth 4', 4)] + SSPRKMSVS_SCHEMES)
+def test_dt_change_restarts_history_and_stays_correct(name, order):
     """A dt change mid-run must not silently mix incompatible-dt history entries.
 
     StepHistory.pushed's own guard (S2g-a) drops stale entries on a dt change; this
@@ -171,10 +206,10 @@ def test_dt_change_restarts_history_and_stays_correct():
     bootstrapping again with the new dt, rather than either crashing or silently using
     coefficients computed for the wrong step size.
     """
-    s = getIntegrator('Adams-Bashforth 4')
+    s = getIntegrator(name)
     prob = testing.PROBLEMS['oscillator']()
     system = prob.initial()
-    history = StepHistory(maxlen=3)
+    history = StepHistory(maxlen=max(1, s.steps))
     for i in range(8):
         dt = 0.1 if i < 4 else 0.05  # change dt partway through
         result = s(system, dt=dt, f=prob.rhs, history=history)

@@ -467,6 +467,15 @@ EXPECTED_VERDICTS = {
     'Adams-Bashforth-Moulton 2 (PECE)': (None, 1.5, False),
     'Adams-Bashforth-Moulton 3 (PECE)': (None, 1.5, False),
     'Adams-Bashforth-Moulton 4 (PECE)': (None, 1.5, False),
+    # Shu's SSP multistep (wave 3): no tableau the SSP scan reads, so no ssp_cfl.
+    # The measured 1.5 is the shared Dormand-Prince cold start's limit, NOT the
+    # methods' steady-state SSP bounds (C = 1/2 for SSPRKMSVS32, C = 1/3 for
+    # SSPRKMSVS43) -- the trajectory sweep does not thread history, so the driver
+    # re-runs its DP5 starter every step, exactly the cap the Adams/BDF/AM family
+    # carries. The tight SSP coefficients are a structural property of the
+    # steady-state convex combination (NOTES.md S3.23), not a trajectory limit.
+    'SSPRKMSVS32': (None, 1.5, False),
+    'SSPRKMSVS43': (None, 1.5, False),
     'Adams-Moulton 2 (implicit)': (None, 1.5, False),
     'Adams-Moulton 3 (implicit)': (None, 1.5, False),
     'Adams-Moulton 4 (implicit)': (None, 1.5, False),

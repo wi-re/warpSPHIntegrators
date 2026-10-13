@@ -51,6 +51,7 @@ from .fullyimplicit import gaussLegendre2, radauIia2
 from .ark import ARK324L2SA, ARK436L2SA
 from .newmark import newmark
 from .multistep import AB2, AB3, AB4, AB5, ABM2, ABM3, ABM4, AM2, AM3, AM4
+from .ssprkmsvs import SSPRKMSVS32, SSPRKMSVS43
 from .bdf import BDF1, BDF2, BDF3, BDF4, BDF5
 from .imex import IMEXEuler
 from .imexmultistep import SBDF2, SBDF3, CNAB2
@@ -254,6 +255,22 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     ABM4, 'Adams-Bashforth-Moulton 4 (PECE)', IntegrationSchemeType.abm4, 4, True,
     implicit=False, steps=3, startup_order=4))
+
+# ---- SSP multistep (NOTES.md S3.23, SCHEME_EXPANSION_PLAN wave 3) ---------- #
+# Shu's strong-stability-preserving multistep methods (ssprkmsvs.py): convex
+# combinations of forward-Euler substeps across past states. SSPRKMSVS32 is
+# 3-step / order 2 / SSP C = 1/2, SSPRKMSVS43 is 4-step / order 3 / SSP C = 1/3.
+# One right-hand-side evaluation per step once past the cold start (the past
+# derivatives are reused from the history). `dissipation=True` as for the Adams
+# family (an explicit linear multistep method, so not symplectic for a general
+# Hamiltonian -- Tang 1993). Fixed-step only: no embedded error estimate, so
+# `result.error is None` and adaptive stepping is refused by construction.
+IntegrationSchemes.append(IntegrationScheme(
+    SSPRKMSVS32, 'SSPRKMSVS32', IntegrationSchemeType.ssprkmsvs32, 2, True,
+    implicit=False, steps=2, startup_order=2))
+IntegrationSchemes.append(IntegrationScheme(
+    SSPRKMSVS43, 'SSPRKMSVS43', IntegrationSchemeType.ssprkmsvs43, 3, True,
+    implicit=False, steps=3, startup_order=3))
 
 # ---- Fully implicit Adams-Moulton (NOTES.md S3.8 Phase 4) ------------------ #
 # The AM corrector formula solved to convergence with JFNK, as distinct from the
