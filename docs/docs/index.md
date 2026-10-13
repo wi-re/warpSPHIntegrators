@@ -5,7 +5,7 @@ sidebar_label: Overview
 # warpSPHIntegrators — scheme wiki
 
 Differentiable ODE integration for PyTorch (and, eventually, NVIDIA Warp):
-a typed state/update system, **76 registered time-stepping schemes across 11
+a typed state/update system, **79 registered time-stepping schemes across 11
 families**, and a matrix-free implicit machinery (JFNK + GMRES) that keeps the
 implicit schemes differentiable through the solves.
 

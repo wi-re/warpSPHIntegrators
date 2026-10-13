@@ -38,7 +38,8 @@ from .butcher import (
     forwardEuler, RungeKutta2, heunsMethod, ralston2nd, RungeKutta3,
     heunsMethod3rd, ralston3rd, Wray3rd, SSPRK3, SSPRK104, SSPRK53, SSPRK63,
     SSPRK73, SSPRK83, SSPRK54, KYKSSPRK42, KYK2014DGSSPRK3S2, SSPRK43, SSPRK432,
-    SSPRK932, RungeKutta4,
+    SSPRK932, SSPRK53_2N1, SSPRK53_2N2, SSPRK53_H,
+    RungeKutta4,
     RungeKutta4alt, Nystrom5th, BogackiShampine, DormandPrince, CashKarp, EPEC,
     EPECmodified,
 )
@@ -104,6 +105,13 @@ IntegrationSchemes.append(IntegrationScheme(KYK2014DGSSPRK3S2, 'KYK2014DGSSPRK_3
 IntegrationSchemes.append(IntegrationScheme(SSPRK43,      'SSPRK43',       IntegrationSchemeType.ssprk43, 3, True))
 IntegrationSchemes.append(IntegrationScheme(SSPRK432,     'SSPRK432',      IntegrationSchemeType.ssprk432, 3, True))
 IntegrationSchemes.append(IntegrationScheme(SSPRK932,     'SSPRK932',      IntegrationSchemeType.ssprk932, 3, True))
+# The OrdinaryDiffEq wave-5 SSP tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13);
+# display names are ODE's verbatim. Higueras & Roldan low-storage third-order
+# SSP variants, screened and confirmed to be distinct one-step maps from
+# SSPRK53 (NOTES.md S3.25).
+IntegrationSchemes.append(IntegrationScheme(SSPRK53_2N1,  'SSPRK53_2N1',   IntegrationSchemeType.ssprk53_2n1, 3, True))
+IntegrationSchemes.append(IntegrationScheme(SSPRK53_2N2,  'SSPRK53_2N2',   IntegrationSchemeType.ssprk53_2n2, 3, True))
+IntegrationSchemes.append(IntegrationScheme(SSPRK53_H,    'SSPRK53_H',     IntegrationSchemeType.ssprk53_h, 3, True))
 IntegrationSchemes.append(IntegrationScheme(RungeKutta4,  'RK4',           IntegrationSchemeType.rungeKutta4, 4, True))
 IntegrationSchemes.append(IntegrationScheme(RungeKutta4alt, 'RK4 (alternative)', IntegrationSchemeType.rungeKutta4alt, 4, True))
 IntegrationSchemes.append(IntegrationScheme(Nystrom5th,   'Nystrom 5th order', IntegrationSchemeType.nystrom5th, 5, True))

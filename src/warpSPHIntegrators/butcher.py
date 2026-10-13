@@ -448,6 +448,58 @@ def getButcherTableau(scheme, alpha = 1/2, beta = 2/3):
             b = np.array([1/6, 1/15, 1/15, 1/15, 1/15, 1/15, 1/6, 1/6, 1/6]),
             c = np.array([0.0, 1/6, 1/3, 1/2, 2/3, 5/6, 1/2, 2/3, 5/6])
         )
+    # The OrdinaryDiffEq wave-5 SSP tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13):
+    # Higueras & Roldan's new third-order low-storage SSP methods (arXiv:1809.04807).
+    # Screened before registration: all three are algebraically DISTINCT one-step
+    # maps from SSPRK53 (different stages and final b-row; one-step-map diff
+    # O(dt^4) ~ 1.5e-4..4.6e-3 per unit dt^4, not ~1e-16), so they are their own
+    # methods, not storage rearrangements of it (NOTES.md S3.25). ODE's storage
+    # saving (1-2 temporaries) does not apply to this driver, which builds each
+    # stage state fresh from the a-row. Coefficients transcribed from
+    # OrdinaryDiffEq v7.8.1 (ssprk_caches.jl alphas/betas,
+    # ssprk_perform_step.jl recurrences), converted to Butcher form as in wave 1
+    # (row sums == ODE's stored c to 1e-15; order-3 conditions to <=5e-15).
+    # None are FSAL.
+    elif scheme == 'SSPRK53_2N1':
+        # Measured: order 3, SSP coefficient 2.1808 (ODE publishes 2.18),
+        # real-axis interval [-5.527, 0]. Row sums == c. c_3 = 1.0053 > 1: stage
+        # 3 evaluates just past the step end, as ODE does.
+        return butcherTableau(
+            a = np.array([[0.0, 0.0, 0.0, 0.0, 0.0],
+                          [0.443568244942995, 0.0, 0.0, 0.0, 0.0],
+                          [0.443568244942995, 0.291111420073766, 0.0, 0.0, 0.0],
+                          [0.443568244942995, 0.291111420073766, 0.270612601278217, 0.0, 0.0],
+                          [0.1901117921952908, 0.12476933240758091, 0.11598361065328995, 0.110577759392786, 0.0]]),
+            b = np.array([0.1901117921952908, 0.12476933240758091, 0.11598361065328995, 0.110577759392786, 0.458557505351052]),
+            c = np.array([0.0, 0.443568244942995, 0.734679665016762, 1.005292266294979, 0.541442494648948])
+        )
+    elif scheme == 'SSPRK53_2N2':
+        # Measured: order 3, SSP coefficient 2.1487 (ODE publishes 2.148),
+        # real-axis interval [-7.263, 0] -- the largest of the four despite the
+        # smallest SSP coefficient. Row sums == c.
+        return butcherTableau(
+            a = np.array([[0.0, 0.0, 0.0, 0.0, 0.0],
+                          [0.465388589249323, 0.0, 0.0, 0.0, 0.0],
+                          [0.465388589249323, 0.465388589249323, 0.0, 0.0, 0.0],
+                          [0.14783400776685549, 0.14783400776685549, 0.124745797313998, 0.0, 0.0],
+                          [0.14783400776685549, 0.14783400776685549, 0.124745797313998, 0.465388589249323, 0.0]]),
+            b = np.array([0.14114733153392192, 0.14114733153392192, 0.11910342333890192, 0.4443386098445868, 0.154263303748666]),
+            c = np.array([0.0, 0.465388589249323, 0.930777178498646, 0.42041381284771, 0.885802402097033])
+        )
+    elif scheme == 'SSPRK53_H':
+        # Measured: order 3, SSP coefficient 2.6506 (ODE publishes 2.65),
+        # real-axis interval [-6.213, 0] (the same as SSPRK53's to measurement
+        # tolerance). Shares SSPRK53's first two nodes (c1, c2) but has distinct
+        # later stages. Row sums == c.
+        return butcherTableau(
+            a = np.array([[0.0, 0.0, 0.0, 0.0, 0.0],
+                          [0.377268915331368, 0.0, 0.0, 0.0, 0.0],
+                          [0.377268915331368, 0.377268915331368, 0.0, 0.0, 0.0],
+                          [0.26081197914449766, 0.26081197914449766, 0.260811979144498, 0.0, 0.0],
+                          [0.21915343633198697, 0.11709725184184361, 0.11709725184184376, 0.169383144652957, 0.0]]),
+            b = np.array([0.21915343633198697, 0.11709725184184361, 0.11709725184184376, 0.169383144652957, 0.377268915331368]),
+            c = np.array([0.0, 0.377268915331368, 0.754537830662737, 0.782435937433493, 0.622731084668631])
+        )
     elif scheme == 'RK4':
         return butcherTableau(
             a = np.array([[0, 0, 0, 0],
@@ -575,6 +627,9 @@ KYK2014DGSSPRK3S2 = butcherScheme('KYK2014DGSSPRK_3S2')
 SSPRK43          = butcherScheme('SSPRK43')
 SSPRK432         = butcherScheme('SSPRK432')
 SSPRK932         = butcherScheme('SSPRK932')
+SSPRK53_2N1      = butcherScheme('SSPRK53_2N1')
+SSPRK53_2N2      = butcherScheme('SSPRK53_2N2')
+SSPRK53_H        = butcherScheme('SSPRK53_H')
 RungeKutta4      = butcherScheme('RK4')
 RungeKutta4alt  = butcherScheme('RK4alt')
 Nystrom5th      = butcherScheme('Nystrom5')

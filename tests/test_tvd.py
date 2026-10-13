@@ -122,6 +122,13 @@ def test_named_tvd_schemes_have_ssp_coefficient_one(tableau_name):
     ('SSPRK43', 2.0),
     ('SSPRK432', 2.0),
     ('SSPRK932', 4.0),
+    # Wave-5 ODE SSPRK tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13): the
+    # Higueras-Roldan low-storage third-order variants; ODE's published
+    # ssp_coefficient (2.18/2.148/2.65) agrees with the library's all-stage
+    # measurement (2.1808/2.1487/2.6506) to <= 8e-4.
+    ('SSPRK53_2N1', 2.18),
+    ('SSPRK53_2N2', 2.148),
+    ('SSPRK53_H', 2.65),
 ])
 def test_explicit_ssp_coefficients(name, expected):
     r = tvd_analysis.convex_combination_cfl(getButcherTableau(name))
@@ -189,6 +196,14 @@ def test_ssprk104_ssp_boundary_and_real_axis_interval():
     ('SSPRK43', 2.0, -5.14940),
     ('SSPRK432', 2.0, -5.14940),
     ('SSPRK932', 6.0, -13.28960),
+    # Wave 5 (SCHEME_EXPANSION_PLAN, 2026-10-13): the Higueras-Roldan
+    # low-storage variants. SSPRK53_2N2 has the largest real-axis interval of
+    # the four despite the smallest SSP coefficient; SSPRK53_H matches
+    # SSPRK53's interval to 1e-4 (it shares SSPRK53's first two nodes but has
+    # distinct later stages).
+    ('SSPRK53_2N1', 2.1808, -5.52779),
+    ('SSPRK53_2N2', 2.1487, -7.26303),
+    ('SSPRK53_H', 2.6506, -6.21351),
 ])
 def test_expanded_ssprk_ssp_boundaries_and_real_axis_intervals(
         name, ssp_boundary, real_axis_left):
@@ -427,6 +442,13 @@ EXPECTED_VERDICTS = {
     'SSPRK43': (2.0, 2.0, False),
     'SSPRK432': (2.0, 2.0, False),
     'SSPRK932': (4.0, 5.0, True),
+    # The wave-5 ODE SSPRK tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13): the
+    # Higueras-Roldan low-storage third-order variants. All three measure the
+    # same per-step TVD CFL 2.0 as SSPRK53 in the upwind-model sweep, and none
+    # is unconditionally TVD (the stage maps leave the convex hull past CFL 2).
+    'SSPRK53_2N1': (2.18, 2.0, False),
+    'SSPRK53_2N2': (2.148, 2.0, False),
+    'SSPRK53_H': (2.65, 2.0, False),
     'RK4': (2.0 / 3.0, 1.25, False),
     'RK4 (alternative)': (1.0 / 3.0, 1.25, False),
     'Nystrom 5th order': (0.0, 1.5, False),

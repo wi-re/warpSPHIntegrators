@@ -166,12 +166,18 @@ def test_stage_times_stay_within_the_step(scheme):
     PEFRL and VEFRL have coefficients outside [0, 1] by construction, as do
     RK3/RK4 (alternative), and ESDIRK4(3)6L[2]SA's c4 = 26/25 (a Kennedy-Carpenter
     node deliberately placed just past the endpoint), so these are allowed a wider
-    window; everything else must stay inside the step.
+    window; SSPRK53_2N1's stage 3 sits at c3 = 1.0053 (evaluated just past the
+    step end, as in OrdinaryDiffEq); everything else must stay inside the step.
     """
     dt = 0.1
-    slack = 1.5 if scheme.name in (
+    if scheme.name in (
         'PEFRL', 'VEFRL', 'RK3', 'RK4 (alternative)', 'ESDIRK4(3)6L[2]SA',
-    ) else 0.0
+    ):
+        slack = 1.5
+    elif scheme.name == 'SSPRK53_2N1':
+        slack = 0.01
+    else:
+        slack = 0.0
     for step, stage_times in enumerate(_stage_times(scheme, dt, steps=2, t0=1.0)):
         lo, hi = 1.0 + step * dt, 1.0 + (step + 1) * dt
         for t in stage_times:

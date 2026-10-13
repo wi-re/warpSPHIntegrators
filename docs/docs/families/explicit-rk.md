@@ -2,7 +2,7 @@
 sidebar_label: Explicit RK
 ---
 
-# Explicit Runge-Kutta (`ExplicitRK`) — 31 schemes
+# Explicit Runge-Kutta (`ExplicitRK`) — 34 schemes
 
 One-step explicit RK on the generic Butcher tableau, driven by the single
 `butcher.RungeKuttaB` path: a stage $k_i = f(t^n + c_i\,\mathrm{dt},
@@ -244,6 +244,33 @@ do not sum to 1; measured scaling 1.058, NOTES.md §3.22), $O(\mathrm{dt})$
 instead of the $O(\mathrm{dt}^3)$ a 3(2) pair must have. ODE's own docstring
 says "Consider using `SSPRK43` instead". Full tableau in `butcher.py`.
 
+### SSPRK53_2N1, SSPRK53_2N2 and SSPRK53_H (Higueras–Roldán low-storage variants)
+
+Higueras & Roldán's new third-order low-storage SSP methods (Higueras &
+Roldán, *New third order low-storage SSP explicit Runge–Kutta methods*,
+arXiv:1809.04807; coefficients as stored by OrdinaryDiffEq v7.8.1). All three
+are 5-stage order 3, written in ODE's Shu–Osher α/β form with 1–2 working
+temporaries (vs 2 for SSPRK53). **Screened before registration** (NOTES.md
+§3.25): all three are algebraically *distinct* one-step maps from SSPRK53 —
+different stages and a different final b-row, with the one-step map differing
+by $O(\mathrm{dt}^4) \approx 1.5\times 10^{-4}$–$4.6\times 10^{-3}$ per unit
+dt⁴, not $\sim 10^{-16}$ — so they are their own methods, not storage
+rearrangements of it. ODE's storage saving does not apply to this driver,
+which builds each stage state fresh from the a-row. Full tableaus in
+`butcher.py`; not FSAL.
+
+| Method | Stages | SSP $r$ (measured) | Real axis |
+|---|---|---|---|
+| SSPRK53_2N1 | 5 | 2.1808 (ODE publishes 2.18) | $[-5.528, 0]$ |
+| SSPRK53_2N2 | 5 | 2.1487 (ODE publishes 2.148) | $[-7.263, 0]$ |
+| SSPRK53_H | 5 | 2.6506 (ODE publishes 2.65) | $[-6.213, 0]$ |
+
+SSPRK53_2N2 has the largest real-axis interval of the four despite the
+smallest SSP coefficient; SSPRK53_H matches SSPRK53's interval to 1e-4 (it
+shares SSPRK53's first two nodes $c_1, c_2$ but has distinct later stages).
+SSPRK53_2N1's stage 3 sits at $c_3 = 1.0053 > 1$ (evaluated just past the
+step end, as ODE does).
+
 ## Order 4
 
 ### Classical RK4 (`RungeKutta4`)
@@ -363,6 +390,7 @@ The registry-wide classification from `scripts/tvd_classifier.py`
 | SSPRK(10,4) | 4 (scan cap; exact 6) | 5 (tested limit) |
 | SSPRK53 / SSPRK63 / SSPRK73 / SSPRK83 / SSPRK54 / KYKSSPRK42 / KYK2014DGSSPRK_3S2 | 2.651 / 3.518 / 4 / 4 / 1.769 / 2.284 / 1.894 (SSPRK73/83 at the scan cap; exact 4.2879 / 5.1071) | 2 / 3 / 3 / 5 / 2 / 2 / 1.5 |
 | SSPRK43 / SSPRK432 / SSPRK932 | 2.0 / 2.0 / 4 (scan cap; exact 6.0) | 2 / 2 / 5 (SSPRK932 unconditional) |
+| SSPRK53_2N1 / SSPRK53_2N2 / SSPRK53_H | 2.181 / 2.149 / 2.651 | 2 / 2 / 2 |
 
 TVD is strictly broader than SSP: RK4 is per-step TVD past where its internal
 stages leave the convex hull, and Nystrom/Dormand-Prince are TVD to CFL 1.5
@@ -407,6 +435,7 @@ register, so they live alongside the registry (NOTES.md §3.24).
 - Kubatko, Yeager & Ketcheson, *Optimal strong-stability-preserving Runge-Kutta time discretizations for discontinuous Galerkin methods*, J. Sci. Comput. 60 (2014) 313-344 — KYKSSPRK42, KYK2014DGSSPRK_3S2.
 - Kraaijevanger, *Contractivity of Runge-Kutta methods*, BIT 31.3 (1991) 482-528 — SSPRK43 main method; Conde, Fekete & Shadid, arXiv:1806.08693 (2018) — the SSPRK43 embedded pair.
 - Gottlieb, Ketcheson & Shu, *Strong Stability Preserving Runge–Kutta and Multistep Time Discretizations*, World Scientific (2011) — SSPRK432 (Example 6.1), SSPRK932.
+- Higueras & Roldán, *New third order low-storage SSP explicit Runge–Kutta methods*, arXiv:1809.04807 (2018) — SSPRK53_2N1 / SSPRK53_2N2 / SSPRK53_H.
 - Shu & Osher, *Efficient implementation of essentially non-oscillatory shock capturing schemes*, J. Comput. Phys. 79 (1989) 500-512 — SSP/TVD RK2, RK3.
 - Bogacki & Shampine, *A 3(2) pair of Runge-Kutta formulas*, BIT 35 (1995) 232-248.
 - Dormand & Prince, J. Comput. Appl. Math. 8 (1981) 15-28; Cash & Karp, NASA TM-100035 (1990).

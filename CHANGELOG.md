@@ -90,6 +90,35 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
   (A-stable, `R → 1` from below, not L-stable) for `κ ≥ 0.5`.
   `tests/test_prrk.py` (16 tests) pins all of it.
 
+### Added — schemes (76 → 79): the wave-5 Higueras–Roldán low-storage SSPRK53 variants
+
+- SSPRK53_2N1 / SSPRK53_2N2 / SSPRK53_H (Higueras & Roldán, *New third
+  order low-storage SSP explicit Runge–Kutta methods*, arXiv:1809.04807) —
+  5-stage order-3 low-storage SSP methods from OrdinaryDiffEq v7.8.1 (wave 5
+  of `SCHEME_EXPANSION_PLAN.md`), on the generic Butcher driver.
+- **Screened before registration** (the plan's gate): all three are
+  algebraically *distinct* one-step maps from the already-registered
+  SSPRK53 — different stages and final b-row, one-step map differing by
+  $O(\mathrm{dt}^4) \approx 1.5\times 10^{-4}$–$4.6\times 10^{-3}$ per unit
+  dt⁴ (not ~1e-16) — so they register as their own methods rather than being
+  skipped as storage rearrangements (ODE's 1–2 temporary storage saving does
+  not apply to this driver, which builds each stage state fresh).
+- Coefficients transcribed from ODE's Shu–Osher alphas/betas and converted
+  to Butcher form: row sums equal ODE's stored c to 1e-15, all order-3
+  conditions hold to ≤5e-15, and the same derivation reproduces the
+  registered SSPRK53 tableau to 3e-17 (validating the conversion)
+  (NOTES.md §3.25).
+- Measured: SSP coefficient 2.1808 / 2.1487 / 2.6506 (ODE publishes
+  2.18 / 2.148 / 2.65), real-axis interval [-5.528, 0] / [-7.263, 0] /
+  [-6.213, 0]. SSPRK53_2N2 has the largest real-axis interval of the four
+  despite the smallest SSP coefficient; SSPRK53_H matches SSPRK53's
+  interval to 1e-4 (it shares the first two nodes but has distinct later
+  stages); SSPRK53_2N1's stage 3 sits at c₃ = 1.0053 > 1 (evaluated just
+  past the step end, as ODE does). None FSAL.
+- `tests/test_tvd.py` pins the SSP boundaries and real-axis intervals
+  (expanded test, mu_max = 8) and the verdict table gains three entries
+  (all `(ssp, 2.0, False)` — the same per-step TVD CFL as SSPRK53).
+
 ### Added — drift fields (`drift.py`)
 
 - `integrated(update_key, drift_key=...)` declares a **drift field**: a
