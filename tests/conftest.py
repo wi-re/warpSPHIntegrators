@@ -121,36 +121,112 @@ ALL_SCHEMES = _scheme_params()
 #: 0.15 leaves room for that without admitting a lost order.
 ORDER_TOLERANCE = 0.15
 
-#: Wave-6 schemes whose errors on the non-autonomous `forced` problem sit at or
-#: below the 1e-12 double-precision roundoff floor on the standard grid (dt
-#: 0.1 .. 0.0125) -- so accurate there that measured_order has no usable pair
-#: (None), not a low number. The same phenomenon as the EXACT_ON_LINEAR_PROBLEMS
-#: skip in test_convergence.py, on a non-autonomous problem. Their grid starts
-#: coarser (every entry divides T = 2.0) so the errors sit above the floor.
+#: Convergence grids for (scheme, problem) pairs whose standard grid (dt
+#: 0.1 .. 0.0125) sits at or below the 1e-12 double-precision roundoff floor --
+#: so accurate there that measured_order has no usable pair (None), not a low
+#: number. The same phenomenon as the EXACT_ON_LINEAR_PROBLEMS skip in
+#: test_convergence.py, on problems where the scheme's error is simply too
+#: small. Each grid starts coarser (every entry divides T = 2.0) so the errors
+#: sit above the floor; the measured order is then taken from the two finest
+#: points above the floor, which are asymptotic at those dt.
 #:
-#: BS5 needs the coarsest grid for an extra reason: its x-component error on this
-#: problem is superconvergent (the u error is oscillatory and its time integral
+#: BS5 needs the coarsest grid for an extra reason: its x-component error on
+#: forced is superconvergent (the u error is oscillatory and its time integral
 #: over [0, 2] nearly cancels), so a higher-order term dominates at moderate dt
 #: (ratio 1235 ~ 2^10.3 between dt = 0.5 and 0.25) and crosses the true dt^5
 #: term near dt ~ 0.17 -- the L1 apparent order drifts 6.95 (0.5..0.25) to 4.03
 #: (0.125..0.0625) across grids, while the u component alone decays at 5.16-5.43.
 #: On the [2.0, 1.0, 0.5, 0.25] grid its finest usable pair measures 6.95, above
 #: the registered 5, which is pinned directly on oscillator / kepler.
-FORCED_COARSE_GRID = {
-    'BS5 5(4)': [2.0, 1.0, 0.5, 0.25],
-    'Alshina6': [1.0, 0.5, 0.25, 0.125],
-    'MSRK6': [1.0, 0.5, 0.25, 0.125],
-    'SIR54': [1.0, 0.5, 0.25, 0.125],
+#:
+#: The wave-7 high-order tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13) are the
+#: first schemes whose errors floor out on more than one problem at once. The
+#: 3-point grids (RKV76IIa, TanYam7 on forced; Feagin10 on kepler) are the
+#: coarsest that keeps the two finest points above the floor: with a 4th point
+#: at dt = 0.25 that point is floor-contaminated and the measured pair drags
+#: the order down 0.5-1.5 below the true one.
+PROBLEM_COARSE_GRIDS = {
+    'forced': {
+        'BS5 5(4)': [2.0, 1.0, 0.5, 0.25],
+        'Alshina6': [1.0, 0.5, 0.25, 0.125],
+        'MSRK6': [1.0, 0.5, 0.25, 0.125],
+        'SIR54': [1.0, 0.5, 0.25, 0.125],
+        'Vern6 6(5)': [2.0, 1.0, 0.5, 0.25],
+        'Vern7 7(6)': [1.0, 0.5, 0.25, 0.125],
+        'Vern8 8(7)': [1.0, 0.5, 0.25, 0.125],
+        'Vern9 9(8)': [2.0, 1.0, 0.5, 0.25],
+        'RKV76IIa 7(6)': [2.0, 1.0, 0.5],
+        'TanYam7 7(6)': [2.0, 1.0, 0.5],
+        'TsitPap8 8(7)': [2.0, 1.0, 0.5, 0.25],
+        'DP8': [1.0, 0.5, 0.25, 0.125],
+        'Feagin10': [2.0, 1.0, 0.5, 0.25],
+        # Feagin12's MAIN order is unmeasurable on forced (see FORCED_FLOOR);
+        # this grid pins its lower-order REUSE order in test_step_reuse.py
+        # (measured 7.04 here vs the predicted 6).
+        'Feagin12': [1.0, 0.5, 0.25, 0.125],
+    },
+    'oscillator': {
+        'Vern6 6(5)': [0.4, 0.2, 0.1, 0.05],
+        'Vern7 7(6)': [0.4, 0.2, 0.1, 0.05],
+        'Vern8 8(7)': [0.4, 0.2, 0.1, 0.05],
+        'Vern9 9(8)': [0.4, 0.2, 0.1, 0.05],
+        'RKV76IIa 7(6)': [1.0, 0.5, 0.25, 0.125],
+        'TanYam7 7(6)': [1.0, 0.5, 0.25, 0.125],
+        'TsitPap8 8(7)': [0.4, 0.2, 0.1, 0.05],
+        'DP8': [0.4, 0.2, 0.1, 0.05],
+        'Feagin10': [0.4, 0.2, 0.1, 0.05],
+        'Feagin12': [0.4, 0.2, 0.1, 0.05],
+        'Feagin14': [0.4, 0.2, 0.1, 0.05],
+    },
+    'kepler': {
+        'Vern6 6(5)': [1.0, 0.5, 0.25, 0.125],
+        'Vern7 7(6)': [0.4, 0.2, 0.1, 0.05],
+        'Vern8 8(7)': [0.4, 0.2, 0.1, 0.05],
+        'Vern9 9(8)': [1.0, 0.5, 0.25, 0.125],
+        'RKV76IIa 7(6)': [0.4, 0.2, 0.1, 0.05],
+        # g4's dt = 0.1 point (1.2e-13) is floor-dropped, leaving only the
+        # pre-asymptotic coarse pair (7.69 < 7.85); the (0.5, 0.25) pair on
+        # the g2 grid is the finest asymptotic one (7.855).
+        'TsitPap8 8(7)': [1.0, 0.5, 0.25, 0.125],
+        'DP8': [0.4, 0.2, 0.1, 0.05],
+        'Feagin10': [2.0, 1.0, 0.5],
+        'Feagin12': [1.0, 0.5, 0.25, 0.125],
+        'Feagin14': [1.0, 0.5, 0.25, 0.125],
+    },
+    'damped': {
+        'Vern6 6(5)': [0.4, 0.2, 0.1, 0.05],
+        'Vern7 7(6)': [0.4, 0.2, 0.1, 0.05],
+        'Vern8 8(7)': [0.4, 0.2, 0.1, 0.05],
+        'Vern9 9(8)': [0.4, 0.2, 0.1, 0.05],
+        'RKV76IIa 7(6)': [1.0, 0.5, 0.25, 0.125],
+        'TanYam7 7(6)': [0.4, 0.2, 0.1, 0.05],
+        'TsitPap8 8(7)': [0.4, 0.2, 0.1, 0.05],
+        # g4's dt = 0.1 point (6.5e-13) is floor-dropped, leaving the
+        # pre-asymptotic (0.2, 0.1) pair (7.77 < 7.85); the g2 grid's
+        # (0.25, 0.125) pair measures 7.878.
+        'DP8': [1.0, 0.5, 0.25, 0.125],
+        'Feagin10': [0.4, 0.2, 0.1, 0.05],
+        'Feagin12': [0.4, 0.2, 0.1, 0.05],
+        'Feagin14': [0.4, 0.2, 0.1, 0.05],
+    },
 }
+
+#: Schemes whose main-order error on the non-autonomous `forced` problem sits
+#: at the roundoff floor at EVERY dt that divides T = 2.0 -- even the single
+#: dt = 2.0 step (1.8e-11 for Feagin12, 5.8e-14 for Feagin14) leaves fewer
+#: than two points above the floor, so no grid can measure a main order there
+#: and test_convergence skips the forced problem for them (the order is pinned
+#: on the other three problems instead). Their lower-order REUSE errors are a
+#: different quantity, sit comfortably above the floor, and are measured fine
+#: (test_step_reuse.py).
+FORCED_FLOOR = {'Feagin12', 'Feagin14'}
 
 
 def dts_for(scheme_name, problem_name, default):
-    """The convergence grid for (scheme, problem): the coarser FORCED_COARSE_GRID
-    entry on `forced` when the scheme's standard-grid errors would sit at the
-    roundoff floor; the caller's default otherwise."""
-    if problem_name == 'forced':
-        return FORCED_COARSE_GRID.get(scheme_name, default)
-    return default
+    """The convergence grid for (scheme, problem): the coarser per-problem grid
+    when the scheme's standard-grid errors would sit at the roundoff floor; the
+    caller's default otherwise."""
+    return PROBLEM_COARSE_GRIDS.get(problem_name, {}).get(scheme_name, default)
 
 
 @pytest.fixture(params=ALL_SCHEMES)

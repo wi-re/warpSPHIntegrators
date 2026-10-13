@@ -5,7 +5,7 @@ sidebar_label: Overview
 # warpSPHIntegrators — scheme wiki
 
 Differentiable ODE integration for PyTorch (and, eventually, NVIDIA Warp):
-a typed state/update system, **97 registered time-stepping schemes across 11
+a typed state/update system, **108 registered time-stepping schemes across 11
 families**, and a matrix-free implicit machinery (JFNK + GMRES) that keeps the
 implicit schemes differentiable through the solves.
 
@@ -56,7 +56,7 @@ Every scheme in the registry belongs to exactly one family enum (see the
 
 | Family | Enum | Schemes | One line | Page |
 |---|---|---|---|---|
-| Explicit RK | `ExplicitRK` | 52 | Butcher-tableau one-step explicit RK, classical/SSP/TVD/embedded | [explicit-rk](/docs/families/explicit-rk) |
+| Explicit RK | `ExplicitRK` | 63 | Butcher-tableau one-step explicit RK, classical/SSP/TVD/embedded, Verner/Feagin high-order | [explicit-rk](/docs/families/explicit-rk) |
 | Symplectic | `Symplectic` | 6 | Geometric position/velocity splitting for second-order ODEs | [symplectic](/docs/families/symplectic) |
 | Relaxed Chebyshev | `RelaxedChebyshev` | 3 | Matrix-free super-timestepping, real-axis stability $O(s^2)$ in stages | [relaxed-chebyshev](/docs/families/relaxed-chebyshev) |
 | Multistep explicit | `MultistepExplicit` | 9 | Adams-Bashforth, PECE Adams-Bashforth-Moulton, and SSPRKMSVS32/43 | [multistep-explicit](/docs/families/multistep-explicit) |

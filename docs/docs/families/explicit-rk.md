@@ -2,7 +2,7 @@
 sidebar_label: Explicit RK
 ---
 
-# Explicit Runge-Kutta (`ExplicitRK`) — 52 schemes
+# Explicit Runge-Kutta (`ExplicitRK`) — 63 schemes
 
 One-step explicit RK on the generic Butcher tableau, driven by the single
 `butcher.RungeKuttaB` path: a stage $k_i = f(t^n + c_i\,\mathrm{dt},
@@ -470,17 +470,76 @@ Full tableaus in `butcher.py`.
 
 **Alshina6** is the 6th-order member of Alshina, Zaks & Kalitkin's optimal
 family (2008). **MSRK6** is Stepanov's 9-stage order-6 method
-(arXiv:2202.08443, Table 4): 8 working stages + the FSAL stage. Together
-with each other these are the highest-order one-step explicit methods in the
-registry. Full tableaus in `butcher.py`.
+(arXiv:2202.08443, Table 4): 8 working stages + the FSAL stage. Full
+tableaus in `butcher.py`.
+
+## Order 7 and up (wave 7)
+
+The eleven high-order tableaus of wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13):
+Verner's optimal pairs, the two 10-stage order-7 methods, the Tsitouras–
+Papakostas 8(7) pair, Hairer's DP8, and Feagin's symmetric methods up to
+order 14. The registry's highest-order one-step explicit methods are now
+**Feagin14** (order 14) and **Vern9** (order 9 with a free embedded branch).
+
+| Method | Stages | Embedded | SSP $r$ (measured) | Real axis | FSAL |
+|---|---|---|---|---|---|
+| Vern6 (`Vern6`) | 9 | 5th | 0.0877 | $[-4.855, 0]$ | yes |
+| Vern7 (`Vern7`) | 10 | 6th | 0.0514 | $[-4.640, 0]$ | no |
+| TanYam7 (`TanYam7`) | 10 | 6th | 0.0 | $[-4.913, 0]$ | no |
+| RKV76IIa (`RKV76IIa`) | 10 | 6th | 0.0 | $[-4.911, 0]$ | no |
+| Vern8 (`Vern8`) | 13 | 7th | 0.1615 | $[-13.425, 0]$ | no |
+| TsitPap8 (`TsitPap8`) | 13 | 7th | 0.1804 | $[-10.388, 0]$ | no |
+| DP8 (`DP8`) | 12 | — (dual 5/3 companion, registered plain) | 0.2371 | $[-6.394, 0]$ | no |
+| Vern9 (`Vern9`) | 16 | 8th | 0.1272 | $[-4.476, 0]$ | no |
+| Feagin10 (`Feagin10`) | 17 | — (symmetric, fixed step) | 0.0 | $[-2.528, 0]$ | no |
+| Feagin12 (`Feagin12`) | 25 | — (symmetric, fixed step) | 0.0 | $[-4.070, 0]$ | no |
+| Feagin14 (`Feagin14`) | 35 | — (symmetric, fixed step) | 0.0 | $[-1.874, 0]$ | no |
+
+- **Vern6–Vern9** — Verner's numerically optimal pairs with interpolants
+  (Verner, *Numerical Algorithms* 53.2-3 (2010) 383-396; coefficients as
+  stored by OrdinaryDiffEq v7.8.1). Each is stored with a tail stage at
+  $c = 1$; **Vern6 is the wave's only FSAL tableau** (its last row is the
+  main weight vector), so its reuse is lossless. Vern8 carries the
+  wave's widest real-axis interval, $[-13.425, 0]$.
+- **TanYam7** — the 9-stage order-7 method of Tanaka, Muramatsu & Yamashita
+  (*IPSJ* 33.12 (1992) 1512-1526), stored by ODE with a 10th stage at
+  $c = 1$ for the order-6 companion. ODE's published real stability interval
+  $[-4.9125, 0]$ is reproduced by the measured scan.
+- **RKV76IIa** — Verner's "most efficient" 10-stage (10:7(6)) pair (Verner,
+  *RKV76.IIa — a 'most efficient' Runge–Kutta pair*, 2024); same 9-work-
+  stage + $c = 1$ companion structure as TanYam7.
+- **TsitPap8** — Tsitouras–Papakostas' 8(7) pair designed for cheap error
+  estimation (Tsitouras & Papakostas, *SIAM J. Sci. Comput.* 20.6 (1999));
+  its stage 8 sits at $c_8 = 1.0070922$, just past the step end (like
+  SSPRK53_2N1's $c_3$ and ESDIRK's $c_4$ — the stage-times test carries a
+  per-scheme slack for it).
+- **DP8** — Hairer's 8/5/3 adaptation of the Dormand–Prince method (Hairer,
+  Nørsett & Wanner, *Solving Ordinary Differential Equations I*, 2nd ed.,
+  1993). Registered **plain**: the companion is a dual 5th/3rd-order
+  combination, not a valid (8,7) pair, so no `IntegrationResult.error` is
+  exposed. The wave's largest SSP coefficient ($r = 0.2371$).
+- **Feagin10 / Feagin12 / Feagin14** — Feagin's symmetric (time-reversible)
+  10th/12th/14th-order methods for molecular dynamics and celestial mechanics
+  (Feagin, *The Computer Journal* 26.5 (1983) 351-357; coefficients as
+  stored by ODE v7.8.1). Plain and fixed-step in ODE; the c-node structure
+  is the visible signature of the symmetry (mirror-symmetric about
+  $c = 1/2$ up to the endpoint stages). Feagin14's real-axis interval
+  $[-1.874, 0]$ is the narrowest of the wave despite its order — verified
+  genuine ($|R(-2.0)| = 3.51$), its 35-stage stability polynomial
+  oscillates for $|z| \gtrsim 2$.
+
+Cross-checked against the actual ODE v7.8.1 solver on a real (nonlinear,
+non-autonomous) problem: $\max|\Delta y|$ at $T = 2$ is
+$\le 8.9\times 10^{-16}$ for every member of the wave (NOTES.md §3.27).
 
 ## First-stage reuse
 
 `priorStep=result.stages[-1]` feeds the previous step's last stage as this
 step's first stage, saving one evaluation. It is lossless exactly for the FSAL
-tableaus — Bogacki-Shampine, Dormand-Prince, and the wave-6
+tableaus — Bogacki-Shampine, Dormand-Prince, the wave-6
 Tsit5 / OwrenZen3 / OwrenZen4 / OwrenZen5 / BS5 / Stepanov5 pairs plus
-MSRK5 / MSRK6 / SIR54 — and, one case beyond FSAL, for RKO65: with $b_1 = 0$
+MSRK5 / MSRK6 / SIR54, and the wave-7 **Vern6** — and, one case beyond FSAL,
+for RKO65: with $b_1 = 0$
 its stale k0 reaches the update only through the stage equations, and the
 one-stage paths carry the common coefficient $(b^\top a)_1 = 0$ as well, so
 `reuse.step_reuse_analysis` reports a lossless order 5 for it (NOTES.md
@@ -488,7 +547,15 @@ one-stage paths carry the common coefficient $(b^\top a)_1 = 0$ as well, so
 exact reuse order per scheme; pinned in `tests/test_step_reuse.py`);
 single-stage tableaus (Forward Euler) refuse it outright, since the reuse
 would be the lagged two-step map with no imaginary-axis stability region.
-Multistep and implicit families use different mechanisms — see their pages.
+Wave 7 adds a second refusal class (NOTES.md §3.27): the multi-stage
+**Vern7**, **RKV76IIa**, **TanYam7** and **Feagin14** refuse reuse outright,
+because their reuse-modified recurrence — a three-dimensional two-step map in
+the state $(y^{n-1}, y^n, k_s^{n-1})$ — has no stability interval on the
+imaginary axis that covers the standard test step ($|\mathrm{Im}(z)| \lesssim$
+0.02 / 0.008 / 0.008 / 0.108 respectively, against one-step intervals to
+0.35 / 4.44 / 4.44 / 1.16). The remaining wave-7 schemes keep reuse at the
+reported (lower) order. Multistep and implicit families use different
+mechanisms — see their pages.
 
 ## SSP / TVD landscape (measured)
 
@@ -508,6 +575,7 @@ The registry-wide classification from `scripts/tvd_classifier.py`
 | SSPRK43 / SSPRK432 / SSPRK932 | 2.0 / 2.0 / 4 (scan cap; exact 6.0) | 2 / 2 / 5 (SSPRK932 unconditional) |
 | SSPRK53_2N1 / SSPRK53_2N2 / SSPRK53_H | 2.181 / 2.149 / 2.651 | 2 / 2 / 2 |
 | Tsit5 5(4) / OwrenZen3 3(2) / OwrenZen4 4(3) / OwrenZen5 5(4) / BS5 5(4) / Stepanov5 5(4) / Alshina2 2(1) / Alshina3 / Alshina6 / MSRK5 / MSRK6 / SIR54 / Ralston4 / RKO65 / RKM / PSRK4p7q6 / PSRK3p6q5 / PSRK3p5q4 (wave 6) | 0 / 0.7813 / 0.6444 / 0 / 0.5237 / 0 / 1 / 1 / 0 / 0.3226 / 0.1009 / 0 / 0.7209 / 0 / 0.7531 / 0 / 0 / 0 | 1.5 / 1 / 1.25 / 1.5 / 1.5 / 1.5 / 1 / 1 / 1.25 / 2 / 2 / 1.5 / 1.25 / 2 / 1.5 / 2 / 1.5 / 1.25 |
+| Vern6 6(5) / Vern7 7(6) / TanYam7 7(6) / RKV76IIa 7(6) / Vern8 8(7) / TsitPap8 8(7) / DP8 / Vern9 9(8) / Feagin10 / Feagin12 / Feagin14 (wave 7) | 0.0877 / 0.0514 / 0 / 0 / 0.1615 / 0.1804 / 0.2371 / 0.1272 / 0 / 0 / 0 | 2 / 2 / 2 / 2 / 2 / 2 / 3 / 2 / 1 / 1.25 / 0.75 |
 
 TVD is strictly broader than SSP: RK4 is per-step TVD past where its internal
 stages leave the convex hull, and Nystrom/Dormand-Prince are TVD to CFL 1.5
@@ -563,6 +631,11 @@ register, so they live alongside the registry (NOTES.md §3.24).
 - Tsitouras, *Explicit Runge–Kutta methods for starting integration of Lane–Emden problem*, Applied Mathematics and Computation 354 (2019) 353-364 — RKO65.
 - Mead & Renaut, *Optimal Runge–Kutta methods for first order pseudospectral operators*, Journal of Computational Physics 152.1 (1999) 404-419 — RKM.
 - Aubry & Chartier, *Pseudo-symplectic Runge–Kutta methods*, BIT 38 (1998) 439-461; Capuano et al., *Pseudo-symplectic Runge–Kutta methods: revisiting the optimal coefficients*, Journal of Computational Physics 328 (2017) 86-94 — PSRK4p7q6 / PSRK3p6q5 / PSRK3p5q4.
+- Verner, *Numerically optimal Runge–Kutta pairs with interpolants*, Numerical Algorithms 53.2-3 (2010) 383-396 — Vern6 / Vern7 / Vern8 / Vern9.
+- Verner, *RKV76.IIa — a 'most efficient' Runge–Kutta (10:7(6)) pair* (2024, sfu.ca) — RKV76IIa.
+- Tanaka, Muramatsu & Yamashita, *On the Optimization of Some Nine-Stage Seventh-order Runge-Kutta Method*, Information Processing Society of Japan 33.12 (1992) 1512-1526 — TanYam7.
+- Tsitouras & Papakostas, *Cheap error estimation for Runge–Kutta methods*, SIAM Journal on Scientific Computing 20.6 (1999) — TsitPap8.
+- Feagin, *A family of symmetric integration algorithms for molecular dynamics, celestial mechanics, and cosmology*, The Computer Journal 26.5 (1983) 351-357 — Feagin10 / Feagin12 / Feagin14 (DP8: Hairer, Nørsett & Wanner 1993, the first entry above).
 - Shu & Osher, *Efficient implementation of essentially non-oscillatory shock capturing schemes*, J. Comput. Phys. 79 (1989) 500-512 — SSP/TVD RK2, RK3.
 - Bogacki & Shampine, *A 3(2) pair of Runge-Kutta formulas*, BIT 35 (1995) 232-248.
 - Dormand & Prince, J. Comput. Appl. Math. 8 (1981) 15-28; Cash & Karp, NASA TM-100035 (1990).

@@ -1,6 +1,6 @@
 # Scheme expansion plan — OrdinaryDiffEq gap (staged by family and complexity)
 
-**Status: waves 1–6 done (2026-10-13); waves 7–16 not started.** Registry at 97
+**Status: waves 1–7 done (2026-10-13); waves 8–16 not started.** Registry at 108
 schemes (64 at planning time).
 
 Scope: the schemes present in local **OrdinaryDiffEq v7.8.1** but missing from this

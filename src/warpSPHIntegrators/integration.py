@@ -42,6 +42,8 @@ from .butcher import (
     Tsit5, OwrenZen3, OwrenZen4, OwrenZen5, BS5, Stepanov5, Alshina2, Alshina3,
     Alshina6, MSRK5, MSRK6, SIR54, Ralston4, RKO65, RKM, PSRK4p7q6, PSRK3p6q5,
     PSRK3p5q4,
+    Vern6, Vern7, Vern8, Vern9, RKV76IIa, TanYam7, TsitPap8, DP8,
+    Feagin10, Feagin12, Feagin14,
     RungeKutta4,
     RungeKutta4alt, Nystrom5th, BogackiShampine, DormandPrince, CashKarp, EPEC,
     EPECmodified,
@@ -146,6 +148,26 @@ IntegrationSchemes.append(IntegrationScheme(RKM,          'RKM',           Integ
 IntegrationSchemes.append(IntegrationScheme(PSRK4p7q6,    'PSRK4p7q6',     IntegrationSchemeType.psrk4p7q6, 4, True))
 IntegrationSchemes.append(IntegrationScheme(PSRK3p6q5,    'PSRK3p6q5',     IntegrationSchemeType.psrk3p6q5, 3, True))
 IntegrationSchemes.append(IntegrationScheme(PSRK3p5q4,    'PSRK3p5q4',     IntegrationSchemeType.psrk3p5q4, 3, True))
+# The OrdinaryDiffEq wave-7 high-order tableaus (SCHEME_EXPANSION_PLAN,
+# 2026-10-13): the Verner family, Tsitouras's high-order embedded pairs
+# (TanYam7 7(6), TsitPap8 8(7)), Dormand-Prince 8, and the Feagin 10/12/14
+# symmetric methods. Coefficients from ODE v7.8.1's caches, cross-checked
+# one step against the real ODE solvers (NOTES.md 3.27). The embedded pairs
+# (Vern6-9, RKV76IIa, TanYam7, TsitPap8) store `b` as a (main, embedded)
+# tuple; DP8 and the Feagin methods are fixed-step plain tableaus (DP8's ODE
+# estimate is a dual 5th+3rd-order companion, not a (p-1) solution). FSAL:
+# Vern6 only. All one-step explicit and dissipative.
+IntegrationSchemes.append(IntegrationScheme(Vern6,        'Vern6 6(5)',    IntegrationSchemeType.vern6, 6, True))
+IntegrationSchemes.append(IntegrationScheme(Vern7,        'Vern7 7(6)',    IntegrationSchemeType.vern7, 7, True))
+IntegrationSchemes.append(IntegrationScheme(Vern8,        'Vern8 8(7)',    IntegrationSchemeType.vern8, 8, True))
+IntegrationSchemes.append(IntegrationScheme(Vern9,        'Vern9 9(8)',    IntegrationSchemeType.vern9, 9, True))
+IntegrationSchemes.append(IntegrationScheme(RKV76IIa,     'RKV76IIa 7(6)', IntegrationSchemeType.rkv76iia, 7, True))
+IntegrationSchemes.append(IntegrationScheme(TanYam7,      'TanYam7 7(6)',  IntegrationSchemeType.tanyam7, 7, True))
+IntegrationSchemes.append(IntegrationScheme(TsitPap8,     'TsitPap8 8(7)', IntegrationSchemeType.tsitpap8, 8, True))
+IntegrationSchemes.append(IntegrationScheme(DP8,          'DP8',           IntegrationSchemeType.dp8, 8, True))
+IntegrationSchemes.append(IntegrationScheme(Feagin10,     'Feagin10',      IntegrationSchemeType.feagin10, 10, True))
+IntegrationSchemes.append(IntegrationScheme(Feagin12,     'Feagin12',      IntegrationSchemeType.feagin12, 12, True))
+IntegrationSchemes.append(IntegrationScheme(Feagin14,     'Feagin14',      IntegrationSchemeType.feagin14, 14, True))
 IntegrationSchemes.append(IntegrationScheme(leapFrog, 'Leap Frog', IntegrationSchemeType.leapFrog, 2, False))
 IntegrationSchemes.append(IntegrationScheme(symplecticEuler, 'Symplectic Euler', IntegrationSchemeType.symplecticEuler, 2, False))
 IntegrationSchemes.append(IntegrationScheme(velocityVerlet, 'Velocity Verlet', IntegrationSchemeType.velocityVerlet, 2, False))

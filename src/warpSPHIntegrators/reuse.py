@@ -23,7 +23,9 @@ So the retained global order is ``min(p, q + 1)``, or ``min(p, q + 2)`` when
 stability region, because the method becomes a two-step one. A single-stage tableau
 degenerates to ``y^{n+1} = y^n + dt*f(y^{n-1})``, which is formally first order but
 has no stability region on the imaginary axis, so single-stage schemes refuse reuse
-outright rather than reporting an order.
+outright rather than reporting an order. The same refusal applies to the few
+multi-stage tableaus whose reuse-modified recurrence likewise has no usable
+stability interval on the imaginary axis (``REUSE_IMAGINARY_UNSTABLE``).
 
 That substitution argument is for *explicit* tableaus, where every stage is a plain
 function of already-known states. An implicit (DIRK) stage is not: its value depends
@@ -104,6 +106,42 @@ HANDROLLED_REUSE = {
     # accurate (the stage U2 is not y^{n+1} -- the corrector corrects it), so
     # there is no ready-made derivative to splice in as a first stage.
     IntegrationSchemeType.exprb32: (None, 'EXPRB32 does not implement first-stage reuse (it is not stiffly accurate)'),
+}
+
+#: Wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13): tableaus whose reuse-modified
+#: recurrence is unstable on the imaginary axis. Reuse turns the step into a
+#: recurrence whose state is (y^{n-1}, y^n, k_s^{n-1}) -- the new step's k0 is
+#: the previous step's last-stage derivative, which depends on the step before
+#: that -- so its stability region is NOT the tableau's one-step region. On
+#: y' = lambda y the recurrence's two nonzero eigenvalues were scanned along the
+#: imaginary axis (the exact 3D transition, verified against a literal
+#: step-by-step run); the |Im(z)| bound below is where both stay in the unit
+#: disk. When that interval does not cover the standard test step (y = 2*dt =
+#: 0.2 at dt = 0.1 on the omega = 2 oscillator), the reuse run diverges there,
+#: so reuse is refused outright -- the same call the single-stage case makes --
+#: rather than reporting an order the run cannot deliver.
+REUSE_IMAGINARY_UNSTABLE = {
+    IntegrationSchemeType.vern7: (
+        'the reuse-modified recurrence has no stability interval on the imaginary axis '
+        'beyond |Im(z)| ~ 0.020 (the one-step method is stable to 0.352): on the omega = 2 '
+        'oscillator reuse diverges at dt = 0.1 (error 3e13 after 20 steps) instead of '
+        'converging at the predicted order 4, so reuse is refused rather than reported'),
+    IntegrationSchemeType.rkv76iia: (
+        'the reuse-modified recurrence has no stability interval on the imaginary axis '
+        'beyond |Im(z)| ~ 0.008 (the one-step method is stable to 4.435): on the omega = 2 '
+        'oscillator reuse diverges at every standard test step (error 2e67 at dt = 0.0125) '
+        'instead of converging at the predicted order 4, so reuse is refused rather than reported'),
+    IntegrationSchemeType.tanyam7: (
+        'the reuse-modified recurrence has no stability interval on the imaginary axis '
+        'beyond |Im(z)| ~ 0.008 (the one-step method is stable to 4.435): on the omega = 2 '
+        'oscillator reuse diverges at every standard test step (error 1e62 at dt = 0.0125) '
+        'instead of converging at the predicted order 4, so reuse is refused rather than reported'),
+    IntegrationSchemeType.feagin14: (
+        'the reuse-modified recurrence has no stability interval on the imaginary axis '
+        'beyond |Im(z)| ~ 0.108 (the one-step method is stable to 1.157): reuse is unstable '
+        'at the coarsest standard test step (error 4.8e-3 at dt = 0.1 on the omega = 2 '
+        'oscillator, ten digits off the predicted order-6 curve), so reuse is refused '
+        'rather than reported'),
 }
 
 _TOL = 1e-12
@@ -243,6 +281,10 @@ def _block_tableau_of(scheme):
 
 def step_reuse_analysis(scheme) -> ReuseAnalysis:
     """Full reuse analysis for a registered ``IntegrationScheme``."""
+    identifier = getattr(scheme, 'identifier', None)
+    if identifier in REUSE_IMAGINARY_UNSTABLE:
+        return ReuseAnalysis(None, False, REUSE_IMAGINARY_UNSTABLE[identifier])
+
     tableau = _tableau_of(scheme)
     if tableau is not None:
         return tableau_reuse_analysis(tableau, scheme.order)

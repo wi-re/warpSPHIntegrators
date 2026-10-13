@@ -150,6 +150,22 @@ def test_named_tvd_schemes_have_ssp_coefficient_one(tableau_name):
     ('PSRK4p7q6', 0.0),
     ('PSRK3p6q5', 0.0),
     ('PSRK3p5q4', 0.0),
+    # Wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13): the high-order Verner /
+    # TsitPap / DP8 / Feagin tableaus. None is SSP in the upwind model beyond
+    # the small convex-combination coefficients below (the Feagin and
+    # RKV76IIa/TanYam7 stage maps leave the convex hull at every resolvable
+    # CFL). DP8 has the largest of the wave (0.2371).
+    ('Vern6', 0.0877),
+    ('Vern7', 0.0514),
+    ('Vern8', 0.1615),
+    ('Vern9', 0.1272),
+    ('RKV76IIa', 0.0),
+    ('TanYam7', 0.0),
+    ('TsitPap8', 0.1804),
+    ('DP8', 0.2371),
+    ('Feagin10', 0.0),
+    ('Feagin12', 0.0),
+    ('Feagin14', 0.0),
 ])
 def test_explicit_ssp_coefficients(name, expected):
     r = tvd_analysis.convex_combination_cfl(getButcherTableau(name))
@@ -246,6 +262,22 @@ def test_ssprk104_ssp_boundary_and_real_axis_interval():
     ('PSRK4p7q6', 0.0, -11.41),
     ('PSRK3p6q5', 0.0, -3.548),
     ('PSRK3p5q4', 0.0, -2.784),
+    # Wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13): the high-order tableaus.
+    # Vern8 has the widest real-axis interval of the wave ([-13.42, 0]);
+    # Feagin14 the narrowest ([-1.874, 0] -- verified genuine, |R(-2.0)| = 3.51:
+    # its 35-stage stability polynomial oscillates for |z| >~ 2, smaller than
+    # the family trend).
+    ('Vern6', 0.0877, -4.855),
+    ('Vern7', 0.0514, -4.640),
+    ('Vern8', 0.1615, -13.425),
+    ('Vern9', 0.1272, -4.476),
+    ('RKV76IIa', 0.0, -4.911),
+    ('TanYam7', 0.0, -4.913),
+    ('TsitPap8', 0.1804, -10.388),
+    ('DP8', 0.2371, -6.394),
+    ('Feagin10', 0.0, -2.528),
+    ('Feagin12', 0.0, -4.070),
+    ('Feagin14', 0.0, -1.874),
 ])
 def test_expanded_ssprk_ssp_boundaries_and_real_axis_intervals(
         name, ssp_boundary, real_axis_left):
@@ -519,6 +551,21 @@ EXPECTED_VERDICTS = {
     'PSRK4p7q6': (0.0, 2.0, False),
     'PSRK3p6q5': (0.0, 1.5, False),
     'PSRK3p5q4': (0.0, 1.25, False),
+    # The wave-7 high-order tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13).
+    # None is unconditionally TVD: every one of them grows TV past its
+    # measured per-step CFL (DP8 is the best of the wave at 3.0; Feagin14
+    # the worst at 0.75).
+    'Vern6 6(5)': (0.0877, 2.0, False),
+    'Vern7 7(6)': (0.0514, 2.0, False),
+    'Vern8 8(7)': (0.1615, 2.0, False),
+    'Vern9 9(8)': (0.1272, 2.0, False),
+    'RKV76IIa 7(6)': (0.0, 2.0, False),
+    'TanYam7 7(6)': (0.0, 2.0, False),
+    'TsitPap8 8(7)': (0.1804, 2.0, False),
+    'DP8': (0.2371, 3.0, False),
+    'Feagin10': (0.0, 1.0, False),
+    'Feagin12': (0.0, 1.25, False),
+    'Feagin14': (0.0, 0.75, False),
     'Leap Frog': (None, None, False),
     'Symplectic Euler': (None, None, False),
     'Velocity Verlet': (None, None, False),

@@ -124,6 +124,22 @@ LINEARLY_SYMPLECTIC = {
 }
 NONLINEARLY_SYMPLECTIC = LINEARLY_SYMPLECTIC - {'Newmark', 'Trapezoidal (Crank-Nicolson)'}
 
+# Wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13): high-order NON-symplectic tableaus
+# whose area defect at this test's step (dt = 0.5, omega = 2, so h = dt*omega = 1)
+# sits below the 1e-7 discrimination floor. A non-symplectic order-p method's
+# defect on the linear oscillator is O(h^(p+2)) with a method-dependent
+# coefficient; for these the coefficient is small enough that det(D Phi) - 1
+# measures +9.6e-09 (Vern8) / -2.9e-08 (Vern9) / -8.4e-08 (TsitPap8) /
+# -4.8e-08 (DP8) / -1.9e-08 (Feagin12) at h = 1. They are not symplectic: the
+# defect grows as a power of h (measured at h = 2.5: +1.97e-05 / -3.74e-04 /
+# -9.76e-05 / -5.07e-04 / +7.97e-02, pinned by
+# test_high_order_area_defect_grows_with_the_step), and their non-symplectic
+# character on nonlinear problems is pinned by
+# test_dissipation_flag_predicts_energy_behaviour.
+AREA_DEFECT_BELOW_DISCRIMINATION = {
+    'Vern8 8(7)', 'Vern9 9(8)', 'TsitPap8 8(7)', 'DP8', 'Feagin12',
+}
+
 
 def _phase_map(scheme, problem, phase, dt, solver=None):
     system = problem.initial()
@@ -160,6 +176,12 @@ def test_every_scheme_has_the_expected_linear_oscillator_area_property(scheme):
                     f'exact exponential flow, area-preserving trivially, so the area '
                     f'defect is at rounding); its non-symplectic character on nonlinear '
                     f'problems is pinned by the dissipation-flag kepler test')
+    if scheme.name in AREA_DEFECT_BELOW_DISCRIMINATION:
+        pytest.skip(f'{scheme.name} is non-symplectic, but its area defect at '
+                    f'this test\'s step (h = dt*omega = 1) is below the 1e-7 '
+                    f'discrimination floor (see AREA_DEFECT_BELOW_DISCRIMINATION); '
+                    f'the growth of the defect with the step is pinned by '
+                    f'test_high_order_area_defect_grows_with_the_step')
     solver = None
     if scheme.name in {'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)',
                        'Newmark', 'Gauss-Legendre 2'}:
@@ -180,6 +202,24 @@ def test_every_scheme_has_the_expected_linear_oscillator_area_property(scheme):
             f'{scheme.name} unexpectedly looks symplectic on the oscillator; '
             f'det(D Phi)={determinant:.9f}. Reclassify it deliberately if this is intended.'
         )
+
+
+@pytest.mark.parametrize('name', sorted(AREA_DEFECT_BELOW_DISCRIMINATION))
+def test_high_order_area_defect_grows_with_the_step(name):
+    """The five skipped wave-7 schemes are non-symplectic: their area defect,
+    below the 1e-7 floor at h = 1, must re-emerge at larger steps (a truly
+    area-preserving map would stay at roundoff). Measured at h = 2.5:
+    +1.97e-05 / -3.74e-04 / -9.76e-05 / -5.07e-04 / +7.97e-02."""
+    s = getIntegrator(name)
+    prob = testing.PROBLEMS['oscillator']()
+    defect_h1 = abs(float(torch.linalg.det(_phase_jacobian(s, prob, dt=0.5))) - 1.0)
+    assert defect_h1 < 1e-7, (
+        f'{name}: defect at h = 1 is {defect_h1:.3e} -- above the 1e-7 floor, '
+        f'it no longer needs the AREA_DEFECT_BELOW_DISCRIMINATION skip')
+    defect_h25 = abs(float(torch.linalg.det(_phase_jacobian(s, prob, dt=1.25))) - 1.0)
+    assert defect_h25 > 1e-5, (
+        f'{name}: defect at h = 2.5 is only {defect_h25:.3e} -- it looks '
+        f'area-preserving at every step, reclassify deliberately')
 
 
 @pytest.mark.parametrize('name', ['Implicit Midpoint', 'Newmark', 'Gauss-Legendre 2'])

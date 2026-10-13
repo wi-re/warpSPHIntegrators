@@ -177,6 +177,27 @@ class IntegrationSchemeType(Enum):
     psrk4p7q6 = 94
     psrk3p6q5 = 95
     psrk3p5q4 = 96
+    # The OrdinaryDiffEq wave-7 high-order tableaus (SCHEME_EXPANSION_PLAN,
+    # 2026-10-13): the Verner family, Tsitouras's high-order embedded pairs
+    # (tanyam7, tsitpap8), Dormand-Prince 8, and the Feagin symmetric methods.
+    # Coefficients from ODE v7.8.1's caches, cross-checked one step against
+    # the real ODE solvers (NOTES.md 3.27). The embedded pairs (vern6-9,
+    # rkv76iia, tanyam7, tsitpap8) store `b` as a (main, embedded) tuple;
+    # dp8 and the feagins are fixed-step plain tableaus (DP8's ODE estimate
+    # is a dual 5th+3rd-order companion, not a (p-1) solution). FSAL:
+    # vern6 only. One-step explicit throughout, so all sit in the ExplicitRK
+    # family below.
+    vern6 = 97
+    vern7 = 98
+    vern8 = 99
+    vern9 = 100
+    rkv76iia = 101
+    tanyam7 = 102
+    tsitpap8 = 103
+    dp8 = 104
+    feagin10 = 105
+    feagin12 = 106
+    feagin14 = 107
 
 
 # --------------------------------------------------------------------------- #
@@ -184,7 +205,7 @@ class IntegrationSchemeType(Enum):
 # --------------------------------------------------------------------------- #
 #
 # IntegrationSchemeType is the single enum that captures every registered
-# scheme, but a 97-member flat list does not tell a user which entry is an
+# scheme, but a 108-member flat list does not tell a user which entry is an
 # explicit scheme and which is an implicit one. The family enums below are
 # thin VIEWS of the same members: every member keeps the same name and the
 # same int value as its IntegrationSchemeType counterpart, so all four lookup
@@ -195,7 +216,7 @@ class IntegrationSchemeType(Enum):
 #     getIntegrator('RK4')
 #     getIntegrator('rungeKutta4')
 #
-# and the families are exhaustive and disjoint over the 97 members (pinned in
+# and the families are exhaustive and disjoint over the 108 members (pinned in
 # tests/test_family_enums.py). `SCHEME_FAMILY` maps a scheme's identifier to
 # the family enum class it belongs to; IntegrationScheme.family is the same
 # fact on the registered scheme object.
@@ -249,6 +270,17 @@ class ExplicitRK(Enum):
     psrk4p7q6 = IntegrationSchemeType.psrk4p7q6.value
     psrk3p6q5 = IntegrationSchemeType.psrk3p6q5.value
     psrk3p5q4 = IntegrationSchemeType.psrk3p5q4.value
+    vern6 = IntegrationSchemeType.vern6.value
+    vern7 = IntegrationSchemeType.vern7.value
+    vern8 = IntegrationSchemeType.vern8.value
+    vern9 = IntegrationSchemeType.vern9.value
+    rkv76iia = IntegrationSchemeType.rkv76iia.value
+    tanyam7 = IntegrationSchemeType.tanyam7.value
+    tsitpap8 = IntegrationSchemeType.tsitpap8.value
+    dp8 = IntegrationSchemeType.dp8.value
+    feagin10 = IntegrationSchemeType.feagin10.value
+    feagin12 = IntegrationSchemeType.feagin12.value
+    feagin14 = IntegrationSchemeType.feagin14.value
     rungeKutta4 = IntegrationSchemeType.rungeKutta4.value
     rungeKutta4alt = IntegrationSchemeType.rungeKutta4alt.value
     nystrom5th = IntegrationSchemeType.nystrom5th.value

@@ -1,9 +1,9 @@
 """Family enums: the per-class views of IntegrationSchemeType.
 
-The single 97-member enum does not tell a user which entry is an explicit
+The single 108-member enum does not tell a user which entry is an explicit
 scheme and which is an implicit one, so the library also ships one enum per
 driver family (enums.FAMILY_ENUMS). These tests pin the contract those views
-must keep: exhaustive and disjoint over the 97 members, same name and value
+must keep: exhaustive and disjoint over the 108 members, same name and value
 as the canonical members, `getIntegrator` accepting every lookup form, and
 `IntegrationScheme.family` reporting the right class.
 """
@@ -32,7 +32,10 @@ from warpSPHIntegrators.integration import IntegrationSchemes
 
 # The member count per family, in FAMILY_ENUMS order. A count change means a
 # scheme moved families or a new one was registered -- both worth a look.
-EXPECTED_FAMILY_SIZES = (52, 6, 3, 9, 7, 2, 8, 6, 1, 2, 1)
+#: Wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13): the eleven high-order tableaus
+#: (Vern6-9, RKV76IIa, TanYam7, TsitPap8, DP8, Feagin10/12/14) join ExplicitRK,
+#: 52 -> 63; the registry grows 97 -> 108.
+EXPECTED_FAMILY_SIZES = (63, 6, 3, 9, 7, 2, 8, 6, 1, 2, 1)
 
 IMPLICIT_FAMILIES = (DIRK, CoupledRK, MultistepImplicit, IMEX, LinearlyImplicit, Newmark)
 EXPLICIT_FAMILIES = (ExplicitRK, Symplectic, RelaxedChebyshev, MultistepExplicit, Exponential)
@@ -40,12 +43,12 @@ EXPLICIT_FAMILIES = (ExplicitRK, Symplectic, RelaxedChebyshev, MultistepExplicit
 
 def test_families_are_exhaustive_and_disjoint():
     members = list(IntegrationSchemeType)
-    assert len(members) == 97
+    assert len(members) == 108
     seen = []
     for family in FAMILY_ENUMS:
         for member in family:
             seen.append(IntegrationSchemeType(member.value))
-    assert len(seen) == len(set(seen)) == 97, "a member appears in more than one family"
+    assert len(seen) == len(set(seen)) == 108, "a member appears in more than one family"
     assert set(seen) == set(members), "a canonical member is missing from every family"
     assert len(FAMILY_ENUMS) == 11
     assert tuple(len(list(family)) for family in FAMILY_ENUMS) == EXPECTED_FAMILY_SIZES
@@ -60,7 +63,7 @@ def test_family_members_match_the_canonical_enum():
 
 
 def test_every_registered_scheme_has_a_family():
-    assert len(IntegrationSchemes) == 97
+    assert len(IntegrationSchemes) == 108
     for scheme in IntegrationSchemes:
         assert scheme.family is SCHEME_FAMILY[scheme.identifier]
         assert scheme.family in FAMILY_ENUMS
@@ -121,6 +124,12 @@ def test_family_membership_spot_checks():
         ('ETD2RK', Exponential),
         ('EXPRB32', Exponential),
         ('Newmark', Newmark),
+        # Wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13): the high-order tableaus
+        # land in ExplicitRK, the rest of the registry's ExplicitRK coverage
+        # unchanged.
+        ('Vern6 6(5)', ExplicitRK),
+        ('DP8', ExplicitRK),
+        ('Feagin14', ExplicitRK),
     ]
     for name, family in expectations:
         assert getIntegrator(name).family is family, name

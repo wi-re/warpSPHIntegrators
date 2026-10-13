@@ -72,7 +72,7 @@ The per-stage update descriptor passed to the system's apply methods.
 
 | Name | Purpose |
 |---|---|
-| `IntegrationSchemes` | The registry: every registered scheme (64), each a `IntegrationScheme` |
+| `IntegrationSchemes` | The registry: every registered scheme (108), each a `IntegrationScheme` |
 | `IntegrationScheme` | The registry record: `function`, `name`, `identifier`, `order`, `dissipation`, `reuse_order`, `fsal`, `implicit`, `steps`, `stiffly_accurate`, `stability`, `startup_order` |
 | `IntegrationSchemeType` | Per-scheme identifier enum (the `getIntegrator` key) |
 | `FAMILY_ENUMS` / `SCHEME_FAMILY` | The eleven per-family enums, and the scheme → family map |

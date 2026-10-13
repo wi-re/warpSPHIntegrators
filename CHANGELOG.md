@@ -158,6 +158,48 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
   parameter-dependent tableaus (the pRRK situation); SplitEuler is the
   registered `symplecticEuler` duplicate.
 
+### Added — schemes (97 → 108): the wave-7 high-order tableaus (Verner / HighOrderRK / Feagin / DP8)
+
+- Eleven high-order OrdinaryDiffEq v7.8.1 tableaus on the generic Butcher
+  driver (wave 7 of `SCHEME_EXPANSION_PLAN.md`): Verner's optimal pairs
+  Vern6 6(5) / Vern7 7(6) / Vern8 8(7) / Vern9 9(8) (*Numer. Algorithms* 53
+  (2010) 383-396), TanYam7 7(6) (Tanaka–Muramatsu–Yamashita, *IPSJ* 33.12
+  (1992) 1512-1526), RKV76IIa 7(6) (Verner's 2024 "most efficient" 10-stage
+  pair), TsitPap8 8(7) (Tsitouras–Papakostas, *SISC* 20.6 (1999), cheap error
+  estimation), DP8 (Hairer's 8/5/3 Dormand–Prince adaptation), and Feagin's
+  symmetric methods Feagin10 / Feagin12 / Feagin14 (*The Computer Journal*
+  26.5 (1983) 351-357) — the registry's highest-order one-step explicit
+  methods (order 14).
+- Seven embedded pairs (Vern6–Vern9, RKV76IIa, TanYam7, TsitPap8) expose
+  `IntegrationResult.error`; DP8 (dual 5th/3rd-order companion — not a valid
+  (8,7) pair) and the three Feagin tableaus register **plain**, fixed-step.
+  Vern6 is the wave's only FSAL tableau (lossless reuse).
+- Cross-checked against the actual ODE v7.8.1 solver on a real (nonlinear,
+  non-autonomous) problem: max |Δy| ≤ 8.9e-16 at T = 2 for every member of
+  the wave (NOTES.md §3.27).
+- **Reuse: the first multi-stage refusal class.** Vern7, RKV76IIa, TanYam7
+  and Feagin14 refuse `priorStep` reuse outright: the reuse-modified
+  recurrence is a three-dimensional two-step map (state
+  `(y^{n-1}, y^n, k_s^{n-1})`) whose stability interval on the imaginary
+  axis (|Im(z)| ≲ 0.020 / 0.008 / 0.008 / 0.108) does not cover the standard
+  test step, against one-step intervals to 0.352 / 4.435 / 4.435 / 1.157 —
+  reuse diverges there instead of converging. `reuse.py` records the
+  refusals in `REUSE_IMAGINARY_UNSTABLE` (the single-stage refusal's
+  precedent); the remaining wave-7 schemes keep reuse at the reported lower
+  order (5 for Vern8 / TsitPap8 / DP8, 6 for Vern9 / Feagin10 / Feagin12 —
+  pre-asymptotic on every double-precision grid, banded in
+  `tests/test_step_reuse.py`'s `HIGH_ORDER_REUSE`).
+- `tests/test_tvd.py` pins the SSP boundaries (0.0 – 0.2371; DP8 the
+  wave's largest) and real-axis intervals (Vern8's [-13.425, 0] the
+  wave's widest; Feagin14's [-1.874, 0] the narrowest despite its order —
+  verified genuine, |R(−2.0)| = 3.51) plus the 11 verdict entries;
+  `tests/test_embedded.py` covers the seven pairs on per-pair grids
+  (`EMBEDDED_GRID`). The main-order tests move to per-problem coarse grids
+  (`conftest.PROBLEM_COARSE_GRIDS`) where the standard grid sits at the
+  roundoff floor; Feagin12/14's main order is unmeasurable on `forced` at
+  every dt that divides T = 2 (pinned as a skip, `FORCED_FLOOR`).
+- Registry grows 97 → 108; the ExplicitRK family grows 52 → 63.
+
 ### Added — drift fields (`drift.py`)
 
 - `integrated(update_key, drift_key=...)` declares a **drift field**: a

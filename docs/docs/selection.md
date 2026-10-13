@@ -5,7 +5,8 @@ title: Choosing a Scheme
 
 # Choosing a Scheme
 
-Sixty-four schemes in eleven families. This page is the decision path; the
+One hundred and eight schemes in eleven families. This page is the
+decision path; the
 [families](families/explicit-rk) pages have the details, the
 [solver](solver) page the JFNK mechanics, and the README's
 [Supported Integrators table](https://github.com/wi-re/warpSPHIntegrators#supported-integrators)

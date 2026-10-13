@@ -10,7 +10,7 @@ import math
 import pytest
 import torch
 
-from conftest import EXACT_ON_LINEAR_PROBLEMS
+from conftest import EXACT_ON_LINEAR_PROBLEMS, dts_for
 from warpSPHIntegrators import getIntegrator, get_reference_state, testing
 from warpSPHIntegrators.butcher import getButcherTableau
 
@@ -45,7 +45,31 @@ EMBEDDED = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)', 'Cash-Karp 5(4)',
             # the propagated branch for Gauss-Legendre 2 (order 4), exactly
             # the propagated order for Radau IIA s=2 (order 3).
             'Gauss-Legendre 2',
-            'Radau IIA s=2']
+            'Radau IIA s=2',
+            # The wave-7 Verner / TsitPap embedded pairs (SCHEME_EXPANSION_PLAN,
+            # 2026-10-13): each is (p, p-1), so the estimate is the embedded
+            # branch's local error, O(dt^(p-1+1)) = dt^order, like the wave-6
+            # pairs. DP8 and the Feagin tableaus are PLAIN (no embedded weight
+            # vector) and stay out of this list.
+            'Vern6 6(5)', 'Vern7 7(6)', 'Vern8 8(7)', 'Vern9 9(8)',
+            'RKV76IIa 7(6)', 'TanYam7 7(6)', 'TsitPap8 8(7)']
+
+
+#: Wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13): per-pair grids for the new (p, p-1)
+#: estimates, which floor out (below 1e-13) at the finest points of the standard
+#: grid. Measured single-step estimate rates against dt^order on these grids:
+#: Vern6 6.08/6.04/6.00, Vern7 7.24/7.11/7.05, Vern8 8.48/8.32/8.19, Vern9
+#: 9.79/9.29/9.21, RKV76IIa 7.20/7.09/7.03, TanYam7 7.20/7.09/6.99, TsitPap8
+#: 9.03/8.73/8.51.
+EMBEDDED_GRID = {
+    'Vern6 6(5)': [0.2, 0.1, 0.05, 0.025],
+    'Vern7 7(6)': [0.4, 0.2, 0.1, 0.05],
+    'Vern8 8(7)': [0.8, 0.4, 0.2, 0.1],
+    'Vern9 9(8)': [0.8, 0.4, 0.2, 0.1],
+    'RKV76IIa 7(6)': [0.4, 0.2, 0.1, 0.05],
+    'TanYam7 7(6)': [0.4, 0.2, 0.1, 0.05],
+    'TsitPap8 8(7)': [0.8, 0.4, 0.2, 0.1],
+}
 
 
 @pytest.mark.parametrize('name', EMBEDDED)
@@ -78,14 +102,21 @@ def test_error_estimate_has_the_embedded_order(name):
     prob_name = 'forced' if name in ('ROS3P', 'EXPRB32') else 'oscillator'
     prob = testing.PROBLEMS[prob_name]()
 
-    dts = [0.1, 0.05, 0.025, 0.0125]
+    # The wave-7 pairs (EMBEDDED_GRID) floor out on the standard grid, so each
+    # runs on its own coarser grid; a pair whose finer magnitude is at the
+    # roundoff floor carries no rate.
+    dts = EMBEDDED_GRID.get(name, [0.1, 0.05, 0.025, 0.0125])
     magnitudes = []
     for dt in dts:
         result = s(prob.initial(), dt=dt, f=prob.rhs)
         err = get_reference_state(result.error)
         magnitudes.append(float(err.x.abs().sum() + err.u.abs().sum()))
 
-    rates = [math.log(a / b) / math.log(2) for a, b in zip(magnitudes, magnitudes[1:])]
+    rates = []
+    for a, b in zip(magnitudes, magnitudes[1:]):
+        if name in EMBEDDED_GRID and b < 1e-13:
+            continue  # at the roundoff floor, the rate is meaningless
+        rates.append(math.log(a / b) / math.log(2))
     # Local error of the (p-1)-order branch is O(dt^p). TR-BDF2 is the exception:
     # its published (2, 3) pair embeds a *higher*-order branch, so the difference
     # is the propagated branch's own O(dt^3) local error. Gauss-Legendre 2's
@@ -96,9 +127,17 @@ def test_error_estimate_has_the_embedded_order(name):
     expected = (s.order + 1 if s.name == 'TR-BDF2'
                 else s.order - 1 if s.name == 'Gauss-Legendre 2'
                 else s.order)
-    assert all(abs(r - expected) < 0.3 for r in rates), (
-        f'{name}: error estimate scales as dt^{rates}, expected dt^{expected}'
-    )
+    if name in EMBEDDED_GRID:
+        # One-sided band: the coarsest pair of the coarser grids can still be
+        # pre-asymptotic (overshooting the asymptotic rate), so only the low
+        # side is held tight; nothing may undershoot by more than half an order.
+        assert all(expected - 0.5 <= r <= expected + 2.0 for r in rates), (
+            f'{name}: error estimate scales as dt^{rates}, expected dt^{expected}'
+        )
+    else:
+        assert all(abs(r - expected) < 0.3 for r in rates), (
+            f'{name}: error estimate scales as dt^{rates}, expected dt^{expected}'
+        )
 
 
 @pytest.mark.parametrize('name', [
@@ -144,17 +183,20 @@ def test_propagated_solution_is_the_high_order_branch(name):
     s = getIntegrator(name)
     # EXPRB32 is exact on the linear autonomous oscillator (roundoff-floor error,
     # no measurable order); the forced problem is the smallest one where its order
-    # 3 shows up.
+    # 3 shows up. The wave-7 pairs floor out on the standard oscillator grid too,
+    # so use the per-problem coarse grid where they have a measurable order.
     prob_name = 'forced' if name in EXACT_ON_LINEAR_PROBLEMS else 'oscillator'
     order, _ = testing.convergence(s, testing.PROBLEMS[prob_name](),
-                                   testing.default_step_sizes(), 2.0)
+                                   dts_for(name, prob_name, testing.default_step_sizes()), 2.0)
     assert order >= s.order - 0.15
 
 
 @pytest.mark.parametrize('name', ['BogackiShampine', 'DormandPrince', 'CashKarp',
                                   'SSPRK43', 'SSPRK432',
                                   'Tsit5', 'OwrenZen3', 'OwrenZen4', 'OwrenZen5',
-                                  'BS5', 'Stepanov5', 'Alshina2'])
+                                  'BS5', 'Stepanov5', 'Alshina2',
+                                  'Vern6', 'Vern7', 'Vern8', 'Vern9',
+                                  'RKV76IIa', 'TanYam7', 'TsitPap8'])
 def test_tableau_is_consistent(name):
     """Row sums of `a` must equal `c`, and both weight vectors must sum to 1."""
     tab = getButcherTableau(name)
@@ -167,7 +209,7 @@ def test_tableau_is_consistent(name):
 
 @pytest.mark.parametrize('name', ['BogackiShampine', 'DormandPrince',
                                   'Tsit5', 'OwrenZen3', 'OwrenZen4', 'OwrenZen5',
-                                  'BS5', 'Stepanov5'])
+                                  'BS5', 'Stepanov5', 'Vern6'])
 def test_fsal_property_holds_in_the_tableau(name):
     tab = getButcherTableau(name)
     assert tab.c[-1] == pytest.approx(1.0)

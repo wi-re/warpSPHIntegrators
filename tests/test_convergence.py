@@ -9,8 +9,9 @@ and `kepler` adds a nonlinear problem that a linear one cannot stand in for.
 
 import pytest
 
-from conftest import (EXACT_ON_LINEAR_PROBLEMS, LINEAR_AUTONOMOUS_PROBLEMS,
-                      ORDER_TOLERANCE, dts_for, order_of)
+from conftest import (EXACT_ON_LINEAR_PROBLEMS, FORCED_FLOOR,
+                      LINEAR_AUTONOMOUS_PROBLEMS, ORDER_TOLERANCE,
+                      dts_for, order_of)
 
 
 #: Splitting integrators, whose registered order holds only for a *separable*
@@ -37,6 +38,10 @@ def test_scheme_achieves_registered_order(scheme, problem_name, step_sizes):
                     f'the exact exponential flow; the error is at the roundoff floor, so '
                     f'no order is measurable); its order is pinned on forced / kepler / '
                     f'viscous Burgers instead')
+    if scheme.name in FORCED_FLOOR and problem_name == 'forced':
+        pytest.skip(f'{scheme.name} is at the roundoff floor on forced at every dt that '
+                    f'divides T = 2.0 (see FORCED_FLOOR), so no order is measurable there; '
+                    f'it is pinned on oscillator / kepler / damped instead')
     order, errors = order_of(scheme, problem_name, dts_for(scheme.name, problem_name, step_sizes))
     assert order is not None, f'{scheme.name} produced no usable errors on {problem_name}: {errors}'
     assert order >= scheme.order - ORDER_TOLERANCE, (
@@ -68,7 +73,9 @@ def test_splitting_schemes_need_a_separable_force(scheme, step_sizes):
         pytest.skip(f'{scheme.name} is exact on linear autonomous problems (damped is '
                     f'one; the error is at the roundoff floor, so no order is '
                     f'measurable); pinned on forced / kepler / viscous Burgers instead')
-    order, errors = order_of(scheme, 'damped', step_sizes)
+    # damped is linear autonomous, so the wave-7 high-order tableaus floor out on
+    # the standard grid there too: use the per-problem coarse grid (dts_for).
+    order, errors = order_of(scheme, 'damped', dts_for(scheme.name, 'damped', step_sizes))
     assert order is not None
     if scheme.name in SEPARABLE_HAMILTONIAN_ONLY:
         assert order >= 1 - ORDER_TOLERANCE, (
