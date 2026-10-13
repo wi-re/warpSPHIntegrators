@@ -823,7 +823,9 @@ def update_position(
         value = value + blend.reference_weight * get_tagged_attr(reference_state, tag=position_tag)
     # a device-tensor dt is only truth-tested on the host (a sync) outside a
     # whole-step graph capture (util.deferHostTime); inside it, it is nonzero
-    if has_derivative and (spec.derivative_dt is not None if _hostTimeDeferred() else spec.derivative_dt):
+    # a device-tensor dt is never truth-tested: that is a host read per update, and a zero dt only skips adding
+    # 0 * delta (inside a graph capture it was always "nonzero" already)
+    if has_derivative and (spec.derivative_dt is not None if (_hostTimeDeferred() or isinstance(spec.derivative_dt, torch.Tensor)) else spec.derivative_dt):
         delta = _resolve_delta(update, position_derivative_tag)
         value = _accumulate(value, delta, spec.derivative_dt)
     if hasattr(spec, 'current_velocity_dt') and spec.current_velocity_dt is not None:
