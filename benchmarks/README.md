@@ -16,6 +16,7 @@ python benchmarks/tvd_classifier.py --help
 | `implicit_scale.py` | Phase 6 isolated-process DOF, warm-start, preconditioner, timing and native-memory scale gate |
 | `implicit_scale.py --spatial`, `spatial_preconditioners.py` | Sparse reference/ILU and shifted spatial solve follow-up |
 | `stiff_startup.py` | BDF implicit/explicit startup and low-order control |
+| `splitting_validation.py` | Known oscillator orders/contraction/energy, Burgers reference/CFL and qualified exact-flow merging |
 | `jfnk_preconditioner_benchmark.py` | Krylov/preconditioning cost |
 | `stiff_benchmark_suite.py` | Stiff/nonlinear accuracy and cost |
 | `rkc_benchmark.py`, `rosenbrock_benchmark.py`, `exponential_benchmark.py` | Semilinear family comparisons |

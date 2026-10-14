@@ -25,6 +25,14 @@ existing drivers. See [the runnable tensor guide](tensor-ode).
 `Event`, `RunError`, `RunCheckpoint`, `snapshot_state`, `save_checkpoint` and
 `load_checkpoint` support controlled runs; see [the contracts and example](runs).
 
+## Physical operator splitting
+
+`ConservativeDissipativeRHS` declares autonomous physical parts. `LieTrotter`,
+`Strang`, restricted `Yoshida4` and `compose` bind sub-integrators and options into a `SplitScheme`
+accepted by `solve`. `LinearExponentialFlow` supports small dense linear flows;
+`classify_separable` returns a `SeparabilityResult` with measured local diagnostics.
+See [the runnable guide and qualifications](operator-splitting).
+
 ## State and fields
 
 | Name | Signature (abridged) | Purpose |

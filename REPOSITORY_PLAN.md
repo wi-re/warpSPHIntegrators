@@ -16,12 +16,14 @@ retains the baseline findings and migration rationale.
 | 4 — ordinary ODE usability and packaging | Tensor adapter, catalog filters, structural metadata, compatible selection, option guards and installed-wheel gate | [validation](docs/development/phase4-validation.md) |
 | 5 — reliable run orchestration | Transactional fixed/adaptive runs, step status, sampling, events and restart checkpoints | [validation](docs/development/phase5-validation.md) |
 | 6 — stiff startup and coupled scaling | Order-preserving implicit BDF bootstrap, warm/preconditioner measurements, s=3 prototypes; diffusion scale gate failed, wave 9 deferred | [validation](docs/development/phase6-validation.md) |
+| 7 — physical splitting on known toy consumers | Physical capabilities, Lie–Trotter/Strang, implicit/dense exact D, bounded Yoshida4, lifecycle/gradient and geometric diagnostics | `78d6a25`; [validation](docs/development/phase7-foundation-validation.md) |
 
 The 137-scheme catalog is committed locally and remains unreleased beyond package
 0.6.1. Expansion waves 1–8 are complete with recorded exceptions; waves 9–16
 remain subject to the gates below. Commit creation and package publication are
-separate actions. **Phase 7 is next. The spatial follow-up clears the recorded wave 9 scale cases;
-companion/source/catalog gates remain before registration.**
+separate actions. **Phase 7's package/toy scope is complete. Phase 8 is next.
+The spatial follow-up clears the recorded wave 9 scale cases; companion/source/
+catalog gates remain before registration. PESPH integration is later application work.**
 
 ## Phase 3 completion record
 
@@ -101,24 +103,33 @@ passes, while diffusion exceeds the work bar at N=256 and fails solves at N=1024
 Wave 9 remains gated. Validated: 6,963 passed, 609 skipped; wheel and docs
 gates pass. See [the Phase 6 record](docs/development/phase6-validation.md).
 
-### Phase 7 Implement useful splitting and second-order methods
+### Phase 7 Implement useful splitting and second-order methods — complete on toy consumers
 
-Priority: conditional on downstream physics. Size: large.
+Scope revised by the user on 14 October: known toy behavior is the validation
+target while PESPH is being built. Production SPH physics claims stay conditional.
 
-- [ ] Verify the downstream entropy-carrying prototype and baseline described in
-  the splitting plan; retain its separability and energy assumptions.
-- [ ] Implement conservative/dissipative capabilities and structural checks, then
+- [x] Audit the downstream prototype/baseline: no executable PESPH yet. Use the
+  known damped oscillator and a controlled unsplit Burgers reference for this phase;
+  retain entropy/separability/compatible-energy assumptions for later SPH adoption.
+- [x] Implement conservative/dissipative capabilities and structural checks, then
   explicit Lie-Trotter and Strang orchestration with a single outer finalize.
-- [ ] Verify order on damped/split test problems. Backward Euler as the dissipative
+- [x] Verify order on damped/split test problems. Backward Euler as the dissipative
   substep is the first-order control, not the advertised second-order variant.
-- [ ] Add implicit/exponential dissipative flows and measure the viscous CFL benefit.
-  Attempt merging only under its fixed-step and exact-flow qualifications.
-- [ ] Coordinate general RKN (wave 12), Composite (wave 13), and conditional
-  high-order composition with this driver. Keep compatible-energy substeps and
-  anti-diffusive negative-step limits as explicit downstream gates.
+- [x] Add implicit/dense exact dissipative flows and measure the viscous CFL benefit.
+  Demonstrate fixed/static exact-flow merging in a benchmark; preserve existing
+  synchronized callbacks/output/restart semantics in the ordinary runner.
+- [x] Provide a shared one-step composition contract for existing geometric schemes
+  and future RKN/Composite additions. Restricted Yoshida4 reaches order four with
+  a checked anti-diffusion bound; compatible-energy substeps remain application work.
+  General RKN, Suzuki and arbitrary negative-step recipes are separate expansion
+  work, not implicit additions to this phase.
 
 Completion: the split meets its contracts, preserves lifecycle and gradients, and
-delivers measured order/stability/cost improvements on an actual consumer.
+delivers measured order/stability/cost improvements on executable toy consumers.
+The constant-damping determinant and integrated mechanical-energy budget are also
+measured. See [the Phase 7 record](docs/development/phase7-foundation-validation.md).
+Validated: 6,993 passed, 609 skipped; installed-wheel, runnable examples, catalog,
+repository links and documentation-site gates pass.
 
 ### Phase 8 Resume catalog expansion in reviewed batches
 

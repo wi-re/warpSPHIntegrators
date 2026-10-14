@@ -1,8 +1,20 @@
 # Conservative/Dissipative Operator Splitting
 
-> Status, 14 October 2026: design only; phases A–F are unimplemented here.
-> Verify the downstream entropy/separability prototype before execution Phase 7.
+> Status, 14 October 2026: execution Phase 7 is implemented and validated on the
+> user-selected known oscillator and Burgers toy consumers. PESPH is a later
+> application integration, not a blocker for this scope.
 > [Current task list](../../REPOSITORY_PLAN.md).
+
+The sections below retain the wider research design. Actual implementation is
+recorded in [Phase 7 validation](../development/phase7-foundation-validation.md):
+A/B implemented with local structural probes and parameterized factories (not
+fixed catalog entries); C uses existing JFNK and a dense exact small-system flow;
+D demonstrates qualified fixed/static exact-flow merging without changing runner
+sampling/lifecycle semantics; E supplies bounded Yoshida4, not Suzuki or arbitrary
+negative-step recipes; F measures constant-damping contraction and a second-order
+energy budget without introducing a universal catalog flag. C2 pairwise compatible
+energy, production PESPH, sparse exponential assembly, adaptive split estimates,
+general RKN and broader stability/crossover studies remain separate follow-ons.
 
 **What this document is.** An assessment of the proposal in `docs/research/integrators/hamiltonian-proposal.md` — use the
 existing "frozen viscosity" idea as a deliberate operator split, so the conservative half
@@ -15,7 +27,9 @@ it clears a gate that three roadmap items are currently blocked on. But the writ
 what should be built:
 
 1. **Strang splitting with a backward-Euler viscous half is order 1, not order 2.** The
-   half-step sub-integrator must be *symmetric* for the composition to be second order.
+   half-step sub-integrator must be at least second order for this composition to
+   retain order two; symmetry is additionally required for reversibility and
+   the higher-order symmetric-composition construction.
    `docs/research/integrators/hamiltonian-proposal.md`'s own diagrams (§"IMEX Strang Split Loop", §"Structural Implementation
    Blueprint") specify `v* = v_n + (dt/2)·ν∇²v*` — backward Euler — while claiming second
    order. Use implicit midpoint, the trapezoidal rule, or the exact exponential flow.
@@ -169,7 +183,7 @@ odd power:
 𝓗 + 𝓓 + h²( −(1/24)[𝓗,[𝓗,𝓓]] + (1/12)[𝓓,[𝓓,𝓗]] ) + O(h⁴)
 ```
 
-Order 2, and — because only even powers survive — **symmetric**, which is what makes it
+For exact flows it is order 2 and **symmetric**, which is what makes it
 eligible as the base method for higher-order composition (§2.5). Two properties of the
 leading term are worth extracting:
 
@@ -179,18 +193,19 @@ leading term are worth extracting:
   the splitting error constant is small. This is what makes a high-order conservative half
   worth more than the composite order count suggests — see §2.5.
 
-**The symmetry requirement on the sub-integrators.** Both results above assume `Φ^H` and
+**The accuracy and symmetry requirements on the sub-integrators.** Both expansions above assume `Φ^H` and
 `Φ^D` are *exact* flows. Replace them with numerical methods and the composition is
-symmetric — hence of even order, hence order 2 — only if each sub-method is itself
-symmetric and the arrangement stays palindromic. Concretely:
+symmetric only if each sub-method is itself symmetric and the arrangement stays
+palindromic. Second-order sub-methods suffice for accuracy at order two even when
+they are not symmetric; that does not justify a higher-order triple jump. Concretely:
 
 | Viscous sub-integrator | Symmetric? | Stability | Strang order |
 |---|---|---|---|
 | Backward Euler | **no** (its adjoint is forward Euler) | L-stable | **1** |
 | Implicit Midpoint | yes | A-stable, not L | 2 |
 | Trapezoidal (Crank-Nicolson) | yes | A-stable, not L | 2 |
-| Explicit Midpoint / RK2 | yes | conditionally stable, `h ≲ h_visc` | 2 |
-| RKC2 / RKL2 | no | extended real-axis, `h ≲ s²·h_visc` | 1 (order 2 in isolation) |
+| Explicit Midpoint / RK2 | no | conditionally stable, `h ≲ h_visc` | 2 |
+| RKC2 / RKL2 | no | extended real-axis, `h ≲ s²·h_visc` | 2 (with valid stage count) |
 | Exact `exp(hA)v` via `krylov_phi` | yes (exact flows are) | unconditional, exactly damping | 2 |
 
 This is the correction to `docs/research/integrators/hamiltonian-proposal.md`, and it is not a technicality: the two blueprint

@@ -6,6 +6,17 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ## [Unreleased]
 
+### Added — physical splitting on toy consumers (Phase 7)
+
+- Added conservative/dissipative RHS capabilities, local separability diagnostics
+  and parameterized Lie–Trotter/Strang composition over one-step integrators.
+  Fixed runs preserve caller state, failures, gradients and one outer lifecycle.
+- Added a dense exact linear dissipative flow and a restricted fourth-order
+  Yoshida recipe with an explicit anti-diffusion bound. No fixed registrations change.
+- Known oscillator and periodic Burgers consumers verify order, contraction,
+  energy budget, mass and viscous-CFL benefit. Exact-flow merging is measured as
+  a qualified benchmark; PESPH/compatible-energy application integration is later work.
+
 ### Added — spatial solver follow-up
 
 - Added a Torch-only stage transform with application-owned shifted spatial solves.

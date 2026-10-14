@@ -7,6 +7,11 @@ test files, numerical evidence and intended consumers. Method implementation and
 primary-source verification are separate fields: legacy methods remain implemented
 even where their original primary-source revision is not yet pinned.
 
+Parameterized physical splitting factories and the dense linear flow added in
+execution Phase 7 are outside the fixed registration ledger. Their contracts,
+Yoshida coefficient source and toy validation are recorded in
+[the Phase 7 record](../development/phase7-foundation-validation.md).
+
 ## Source pin and transformations
 
 Expansion waves use OrdinaryDiffEq **7.8.1**, metapackage git tree

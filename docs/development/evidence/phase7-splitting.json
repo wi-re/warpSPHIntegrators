@@ -1,0 +1,335 @@
+{
+  "dtype": "float64",
+  "device": "cpu",
+  "threads": 1,
+  "oscillator": {
+    "orders": [
+      {
+        "method": "LieTrotter",
+        "order": 1,
+        "measured_order": 1.1167933559770418,
+        "rows": [
+          {
+            "h": 0.1,
+            "error": 0.04915057232041495,
+            "seconds": 0.021343689877539873
+          },
+          {
+            "h": 0.05,
+            "error": 0.021294717508299005,
+            "seconds": 0.040372982155531645
+          },
+          {
+            "h": 0.025,
+            "error": 0.009819369078611556,
+            "seconds": 0.08115648105740547
+          }
+        ]
+      },
+      {
+        "method": "Strang",
+        "order": 2,
+        "measured_order": 2.0028549570886467,
+        "rows": [
+          {
+            "h": 0.2,
+            "error": 0.05589538246037681,
+            "seconds": 0.007998430170118809
+          },
+          {
+            "h": 0.1,
+            "error": 0.013862368181421308,
+            "seconds": 0.015661198180168867
+          },
+          {
+            "h": 0.05,
+            "error": 0.003458740747617456,
+            "seconds": 0.031406573951244354
+          }
+        ]
+      },
+      {
+        "method": "Yoshida4",
+        "order": 4,
+        "measured_order": 4.0131312777161945,
+        "rows": [
+          {
+            "h": 0.2,
+            "error": 0.007307795334220296,
+            "seconds": 0.014565382152795792
+          },
+          {
+            "h": 0.1,
+            "error": 0.000440315552992121,
+            "seconds": 0.02716549765318632
+          },
+          {
+            "h": 0.05,
+            "error": 2.7270376561472354e-05,
+            "seconds": 0.053288433235138655
+          }
+        ]
+      }
+    ],
+    "geometry": [
+      {
+        "method": "Strang",
+        "h": 0.5,
+        "determinant": 0.7788007830714048,
+        "expected": 0.7788007830714049,
+        "defect": 1.1102230246251565e-16
+      },
+      {
+        "method": "Yoshida4",
+        "h": 0.5,
+        "determinant": 0.7788007828699774,
+        "expected": 0.7788007830714049,
+        "defect": 2.0142743029083476e-10
+      },
+      {
+        "method": "unsplit-RK4",
+        "h": 0.5,
+        "determinant": 0.7759874131944443,
+        "expected": 0.7788007830714049,
+        "defect": 0.0028133698769605697
+      }
+    ],
+    "energy_balance": [
+      {
+        "h": 0.1,
+        "initial_energy": 2.0,
+        "final_energy": 1.1224926741654988,
+        "trapezoidal_dissipation": 0.8569078721770613,
+        "balance_defect": 0.02059945365743987
+      },
+      {
+        "h": 0.05,
+        "initial_energy": 2.0,
+        "final_energy": 1.1302720043181917,
+        "trapezoidal_dissipation": 0.864567225279423,
+        "balance_defect": 0.005160770402385273
+      },
+      {
+        "h": 0.025,
+        "initial_energy": 2.0,
+        "final_energy": 1.1322275628971954,
+        "trapezoidal_dissipation": 0.8664815676538574,
+        "balance_defect": 0.001290869448947185
+      }
+    ],
+    "energy_balance_order": 1.9992433457523535,
+    "separability": true
+  },
+  "burgers_order": [
+    {
+      "method": "LieTrotter",
+      "order": 1,
+      "measured_order": 1.0110450731037675,
+      "rows": [
+        {
+          "h": 0.01,
+          "error": 0.00015502060720148117,
+          "seconds": 0.419964256696403,
+          "termination": "finished",
+          "mass_error": 0.0
+        },
+        {
+          "h": 0.005,
+          "error": 7.61619359064703e-05,
+          "seconds": 0.04890070203691721,
+          "termination": "finished",
+          "mass_error": 0.0
+        },
+        {
+          "h": 0.0025,
+          "error": 3.779053850747299e-05,
+          "seconds": 0.08405234105885029,
+          "termination": "finished",
+          "mass_error": 0.0
+        }
+      ]
+    },
+    {
+      "method": "Strang-midpoint",
+      "order": 2,
+      "measured_order": 2.000088283204076,
+      "rows": [
+        {
+          "h": 0.01,
+          "error": 4.388685421696706e-06,
+          "seconds": 0.04068860225379467,
+          "termination": "finished",
+          "mass_error": 8.881784197001252e-16
+        },
+        {
+          "h": 0.005,
+          "error": 1.0969024971686287e-06,
+          "seconds": 0.07572299335151911,
+          "termination": "finished",
+          "mass_error": 0.0
+        },
+        {
+          "h": 0.0025,
+          "error": 2.742088440473017e-07,
+          "seconds": 0.1297003268264234,
+          "termination": "finished",
+          "mass_error": 0.0
+        }
+      ]
+    },
+    {
+      "method": "Strang-exp",
+      "order": 2,
+      "measured_order": 1.9999401581264198,
+      "rows": [
+        {
+          "h": 0.01,
+          "error": 1.025307494420175e-06,
+          "seconds": 0.010731857735663652,
+          "termination": "finished",
+          "mass_error": 7.105427357601002e-15
+        },
+        {
+          "h": 0.005,
+          "error": 2.5636936988175574e-07,
+          "seconds": 0.020677232649177313,
+          "termination": "finished",
+          "mass_error": 1.2434497875801753e-14
+        },
+        {
+          "h": 0.0025,
+          "error": 6.409500102633107e-08,
+          "seconds": 0.04123210208490491,
+          "termination": "finished",
+          "mass_error": 4.440892098500626e-15
+        }
+      ]
+    },
+    {
+      "method": "Strang-BE-control",
+      "order": 1,
+      "measured_order": 0.995797671890203,
+      "rows": [
+        {
+          "h": 0.01,
+          "error": 0.001038093322652076,
+          "seconds": 0.049371834844350815,
+          "termination": "finished",
+          "mass_error": 0.0
+        },
+        {
+          "h": 0.005,
+          "error": 0.0005220584095777467,
+          "seconds": 0.08152730064466596,
+          "termination": "finished",
+          "mass_error": 0.0
+        },
+        {
+          "h": 0.0025,
+          "error": 0.00026179064741728344,
+          "seconds": 0.14537961687892675,
+          "termination": "finished",
+          "mass_error": 8.881784197001252e-16
+        }
+      ]
+    }
+  ],
+  "viscous_cfl": [
+    {
+      "method": "explicit",
+      "h": 0.001,
+      "explicit_step_ratio": 8.192,
+      "successful": false,
+      "bounded": false,
+      "termination": "nonfinite",
+      "max_amplitude": 4.253786576357614e+158,
+      "seconds": 0.010046276729553938
+    },
+    {
+      "method": "explicit",
+      "h": 0.005,
+      "explicit_step_ratio": 40.96,
+      "successful": false,
+      "bounded": false,
+      "termination": "nonfinite",
+      "max_amplitude": 2.9696961543368613e+43,
+      "seconds": 0.005515113938599825
+    },
+    {
+      "method": "explicit",
+      "h": 0.01,
+      "explicit_step_ratio": 81.92,
+      "successful": true,
+      "bounded": false,
+      "termination": "finished",
+      "max_amplitude": 213.07491734298117,
+      "seconds": 0.0036945054307579994
+    },
+    {
+      "method": "implicit",
+      "h": 0.001,
+      "explicit_step_ratio": 8.192,
+      "successful": true,
+      "bounded": true,
+      "termination": "finished",
+      "max_amplitude": 0.21390394481071684,
+      "seconds": 0.2540038023144007
+    },
+    {
+      "method": "implicit",
+      "h": 0.005,
+      "explicit_step_ratio": 40.96,
+      "successful": true,
+      "bounded": true,
+      "termination": "finished",
+      "max_amplitude": 0.2138825741610396,
+      "seconds": 0.12383789988234639
+    },
+    {
+      "method": "implicit",
+      "h": 0.01,
+      "explicit_step_ratio": 81.92,
+      "successful": true,
+      "bounded": true,
+      "termination": "finished",
+      "max_amplitude": 0.2138156157164677,
+      "seconds": 0.09280620003119111
+    },
+    {
+      "method": "exponential",
+      "h": 0.001,
+      "explicit_step_ratio": 8.192,
+      "successful": true,
+      "bounded": true,
+      "termination": "finished",
+      "max_amplitude": 0.21390483434072394,
+      "seconds": 0.06122087175026536
+    },
+    {
+      "method": "exponential",
+      "h": 0.005,
+      "explicit_step_ratio": 40.96,
+      "successful": true,
+      "bounded": true,
+      "termination": "finished",
+      "max_amplitude": 0.21390482660682802,
+      "seconds": 0.012917002197355032
+    },
+    {
+      "method": "exponential",
+      "h": 0.01,
+      "explicit_step_ratio": 81.92,
+      "successful": true,
+      "bounded": true,
+      "termination": "finished",
+      "max_amplitude": 0.21390480356111208,
+      "seconds": 0.006636825855821371
+    }
+  ],
+  "merging": {
+    "steps": 20,
+    "unmerged_d_flows": 40,
+    "merged_d_flows": 21,
+    "final_difference": 2.220446049250313e-15
+  }
+}

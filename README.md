@@ -59,6 +59,7 @@ if __name__ == '__main__':
 [Tensor adapter and catalog filters](docs/docs/tensor-ode.md) cover ordinary ODEs.
 [The run API](docs/docs/runs.md) adds fixed/adaptive trajectories, rejection,
 sampling, events and checkpoints; see [the complete run example](examples/run_ode.py).
+[Physical splitting](docs/docs/operator-splitting.md) covers autonomous compositions.
 The [full protocol example](examples/harmonic_oscillator.py) covers tagged
 position/velocity states and custom SPH lifecycle behavior.
 

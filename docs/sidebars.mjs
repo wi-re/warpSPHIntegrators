@@ -5,6 +5,7 @@ const sidebars = {
     'quickstart',
     'tensor-ode',
     'runs',
+    'operator-splitting',
     'options',
     'selection',
     'catalog',

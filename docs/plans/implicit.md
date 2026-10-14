@@ -62,16 +62,15 @@ and the git history; the pre-2026-09-15 text of this file remains in git.
 - [x] **SSPRK(5,4) / SSPRK54.** Registered and validated in expansion wave 1
   (2026-10-12). See [section 3.21](../research/integrators/notes-3-21.md) for
   coefficient provenance and the measured/source SSP discrepancies.
-- [?] **High-order symplectic composition.** Yoshida 4/6/8, Suzuki, Blanes-Moan, or
-  a general `compose()` helper over the existing Verlet base. **Gated on a
-  separable Hamiltonian downstream**, and that gate is real: NOTES already measures
-  the whole Verlet/Forest-Ruth family dropping to first order under a
-  velocity-dependent force, which is every actual SPH momentum equation. (For a
-  *separable* Hamiltonian, composition reaches order 6-8 explicitly and far more
-  cheaply than Gauss-Legendre s=3.)
+- [x] **Physical composition foundation.** Repository Phase 7 supplies `compose`,
+  Lie–Trotter, Strang and restricted Yoshida4 on declared toy physical splits.
+  Local separability guards and bounded negative exact linear D steps retain the
+  physics caveats. Higher orders, Suzuki/Blanes-Moan and production SPH remain
+  follow-ons; no unconditional stiff/symplectic composite claim is made.
 - [?] **One-step Runge-Kutta-Nystrom.** NOTES §3.6 lists *multistep* Nystrom
   (Stormer-Cowell) and Gauss-Jackson as not-done, but not one-step RKN. Same
-  separability caveat as the composition methods.
+  separability caveat as the composition methods. The Phase 7 driver provides
+  the shared one-step contract; general RKN catalog additions remain wave 12.
 
 ### Infrastructure
 
@@ -79,8 +78,9 @@ CI coverage and multicore gates were refreshed in repository Phase 1. The
 current six-shard configuration rejects uncategorized files and checks exactly-one
 membership. See [CONTRIBUTING](../../CONTRIBUTING.md) and the
 [Phase 1 record](../development/phase1-validation.md) for current commands/timings.
-Generalized-alpha maps to expansion wave 11 / execution Phase 8, RKN to wave 12 /
-Phase 7, coupled scaling to wave 9 / Phase 6, and composition to Phase 7.
+Generalized-alpha maps to expansion wave 11 / execution Phase 8, general RKN to
+wave 12 / Phase 8 with Phase 7's composition contract, coupled scaling to wave 9 /
+Phase 6, and physical composition to Phase 7.
 This roadmap is a design/history reference; [the execution plan](../../REPOSITORY_PLAN.md)
 owns the current task list.
 
