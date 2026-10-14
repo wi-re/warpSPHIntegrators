@@ -19,6 +19,8 @@ Choose the Torch CPU/CUDA build appropriate to your machine before installing th
 editable package. The existing local validation environment is conda `warp`;
 `conda run -n warp python ...` selects it without activating another shell.
 Install `.[examples]` for plotting/notebooks and `.[benchmark]` for plot drivers.
+Both `.[test]` (used by CI) and `.[dev]` include SciPy for independent numerical
+references and spatial solver tests; the library's basic runtime does not require it.
 Julia is needed only for the independent coefficient oracles, not normal tests.
 
 ## Validation and multicore execution

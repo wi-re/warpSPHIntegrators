@@ -6,6 +6,11 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ## [Unreleased]
 
+### Fixed
+
+- Declare SciPy in the test and developer extras so CI's `.[test]` install
+  includes the independent pRRK convergence reference and spatial solver checks.
+
 ### Documentation
 
 - Give the README and generated catalog friendly author/construction names,
