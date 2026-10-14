@@ -20,6 +20,7 @@ from warpSPHIntegrators import (
     ConservativeDissipativeRHS, Strang, Yoshida4, LinearExponentialFlow,
     GeneralizedAlpha, Collocation, VariableAdams, StabilizedRK, Nystrom, NystromWeights, NDF, AdaptiveNDF,
     Extrapolation, ExtrapolationQuadrature,
+    AlgorithmSwitch,
 )
 
 
@@ -131,6 +132,13 @@ extrapolated=solve(Extrapolation('midpoint',6),TensorState(torch.ones(1,dtype=to
     dt=.2,adaptive=True,rtol=1e-8,atol=1e-10,callback=extrapolation_records.append)
 assert extrapolated.successful and abs(extrapolated.state.y.item()-math.exp(-1))<2e-8
 assert isinstance(extrapolation_records[-1].result.quadrature,ExtrapolationQuadrature)
+switch=AlgorithmSwitch(('dormandPrince',NDF(3)),lambda s,p:0 if s.t<.1 else 1,'wheel-switch-v1')
+switched=solve(switch,TensorState(torch.ones(1,dtype=torch.float64)),.3,rhs,dt=.01,
+    adaptive=True,rtol=1e-6,atol=1e-9)
+with tempfile.TemporaryDirectory() as directory:
+    path=Path(directory)/'switch.pt';save_checkpoint(switched.checkpoint,path)
+    switched=solve(switch,None,.6,rhs,restart=load_checkpoint(path))
+assert switched.successful and abs(switched.state.y.item()-math.exp(-.6))<1e-5
 print(f'Installed wheel {package.__version__}: all modules/exports, py.typed, '
       f'{len(filter_schemes(state_kind="tensor"))} tensor drivers, advanced state protocol, '
       'adaptive sampling/events, portable restart, stiff bootstrap, stage preconditioning, physical splitting and generalized-alpha continuation pass')

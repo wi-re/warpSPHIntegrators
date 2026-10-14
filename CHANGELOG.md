@@ -8,6 +8,11 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Added — Phase 8 backend expansion
 
+- Transactional algorithm switching with pure state/previous-index policies,
+  owned child history, safe cache resets, delegated adaptive order/step control
+  and portable nested tensor restart. Declared-bound toy consumers compare
+  explicit/implicit switching with always-explicit and always-implicit baselines.
+
 - Explicit Euler/midpoint extrapolation factories with pinned nonlinear source
   maps, exact-derived column coefficients, full-state affine quadratures,
   adaptive timestep and composition support. Fixed target orders remain distinct

@@ -1,0 +1,16 @@
+{
+  "monorepo_tree": "bae9b8e5f1d00e51c554648e5094e215164a19f8",
+  "package": "OrdinaryDiffEqCore",
+  "version": "4.15.1",
+  "source_sha256": {
+    "lib/OrdinaryDiffEqCore/src/algorithms.jl": "dcdc9bdd44d48843e8bd29ddffa57ab34ea78017e0dc3854b63687dcefdeb2ea",
+    "lib/OrdinaryDiffEqCore/src/perform_step/composite_perform_step.jl": "f1e7e04d5942e0aec194ea0c720f7728d912a75f082da244037d917f50865a6d"
+  },
+  "findings": [
+    "CompositeAlgorithm selects complete algorithms through a choice function receiving the integrator",
+    "Source Julia indices are one-based",
+    "Source choose_algorithm! initializes selected caches, resets algorithm-dependent options and calls transfer_cache!",
+    "Package AlgorithmSwitch is an independently designed zero-based pure state/previous-index policy with owned numeric history and cold-start transitions; source cache/controller equivalence not claimed"
+  ],
+  "numerical_evidence": "tests/test_algorithm_switch.py compares complete trajectories with manual selection and cache reset; child numerical methods have independent source/accuracy gates"
+}

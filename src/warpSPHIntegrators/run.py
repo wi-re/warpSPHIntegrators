@@ -227,7 +227,8 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
     from .ndf import NDF
     from .adaptive_ndf import AdaptiveNDF
     from .extrapolation import Extrapolation
-    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme,GeneralizedAlpha,Collocation,VariableAdams,StabilizedRK,Nystrom,NDF,AdaptiveNDF,Extrapolation)) else getIntegrator(scheme)
+    from .switching import AlgorithmSwitch
+    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme,GeneralizedAlpha,Collocation,VariableAdams,StabilizedRK,Nystrom,NDF,AdaptiveNDF,Extrapolation,AlgorithmSwitch)) else getIntegrator(scheme)
     if restart is not None:
         if restart.scheme != scheme.identifier.name:
             raise ValueError('Checkpoint scheme does not match')

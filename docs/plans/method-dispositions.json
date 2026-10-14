@@ -5271,6 +5271,19 @@
       ],
       "evidence": "docs/development/extrapolation-validation.md",
       "intended_consumer": "Use the factory for its comparison/quadrature contract"
+    },
+    {
+      "name": "AlgorithmSwitch backend",
+      "status": "implemented",
+      "wave": 13,
+      "reason": "Owned active-child history, cold-start method transitions, accepted adaptive delegation and portable nested restart; pure zero-based policy differs from source integrator policy/cache transfer",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; Core 4.15.1 CompositeAlgorithm/choose_algorithm! source semantics audit",
+      "implementation": "src/warpSPHIntegrators/switching.py",
+      "tests": [
+        "tests/test_algorithm_switch.py"
+      ],
+      "evidence": "docs/development/algorithm-switch-validation.md",
+      "intended_consumer": "Known varying-stiffness problems with declared bounds or other pure state-based selection policies"
     }
   ]
 }

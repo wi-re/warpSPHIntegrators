@@ -28,7 +28,7 @@ on the known structural consumer, with accepted acceleration, restart, lifecycle
 quantity coupling and gradient checks. Subsequent reviewed backends supply
 collocation stages 2–9 with Schur spatial preconditioning, variable Adams,
 MEBDF2/CNLF2, Legendre/Gegenbauer stabilization, generalized Nyström, fixed and
-adaptive-order NDF, and explicit extrapolation. Their source/consumer/restart
+adaptive-order NDF, explicit extrapolation and owned algorithm switching. Their source/consumer/restart
 evidence is linked below; remaining driver families retain their own gates.
 PESPH integration is later application work.**
 
@@ -200,7 +200,11 @@ must be recorded rather than counted as an implemented method.
   extrapolation and map semantics independently where they do not.
   Explicit Euler/midpoint extrapolation now has fixed-column source, order,
   quantity, gradient, adaptive and composition gates; [backend evidence](docs/development/extrapolation-validation.md).
-  Implicit extrapolation, maps and algorithm switching retain their own contracts.
+  Algorithm switching now retains active-child history, cold-starts on transitions,
+  delegates adaptive control and supports portable nested restart with a declared-
+  bound varying-stiffness consumer; [backend evidence](docs/development/algorithm-switch-validation.md).
+  Implicit extrapolation, direct maps and source-specific cache transfer retain
+  their own contracts.
 - [ ] Keep waves 14–15 as prototypes until matrix/operator, multirate, and derivative
   contracts and cost models are convincing.
 - [ ] Screen wave 16 and maintain equivalence records; consider a genuine low-storage

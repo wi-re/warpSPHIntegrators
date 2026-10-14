@@ -4,7 +4,8 @@
 (three-stage Gauss/Radau) and a parameterized classical generalized-alpha driver.
 Parameterized Gauss/Radau stages 2–9, variable Adams, MEBDF2/CNLF2, stabilized
 Legendre/Gegenbauer, fourteen generalized Nyström, fixed-order NDF 1–5 and
-adaptive NDF target-order and explicit extrapolation backends are implemented
+adaptive NDF target-order, explicit extrapolation and owned algorithm switching
+backends are implemented
 with source/numerical/consumer gates; remaining waves 10–16 members retain theirs.**
 The registry contains 142 schemes (140 before MEBDF2/CNLF2; 139 before fixed ABM5; 137 before the first
 wave-9 batch; 64 at planning time).
@@ -404,7 +405,10 @@ controllers and internal threading remain distinct. [Evidence](../development/ex
   lifecycle and time semantics before implementation.
 - Composite (`OrdinaryDiffEqCore.CompositeAlgorithm`): **algorithm switching**
   with choice/cache transitions, not the physical flow composition implemented
-  in Phase 7. Design its run/restart/adaptive semantics separately.
+  in Phase 7. AlgorithmSwitch now supplies pure accepted-selection state, owned
+  active-child history, cold-start transitions, delegated adaptive control and
+  portable tensor restart; source cache-transfer/controller semantics remain
+  distinct. [Evidence](../development/algorithm-switch-validation.md).
 
 **Gate:** per-driver; extrapolation convergence-order tests on the standard problems;
 IRKC stability-interval measurement.

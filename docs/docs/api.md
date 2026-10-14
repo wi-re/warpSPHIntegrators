@@ -189,6 +189,12 @@ assert scheme.metadata.estimate_extra_stages == 1
 
 ## Results and history
 
+`AlgorithmSwitch(methods, selector, policy_id)` selects a complete method per
+trial, retains same-child history and cold-starts on switches. It delegates
+accepted adaptive policies and checkpoints nested child memory. `order` is None;
+FSAL and dense output are disabled. See [algorithm switching](algorithm-switching)
+for pure selector, history, lifecycle and restart semantics.
+
 `Extrapolation(base='midpoint', order=4)` supplies fixed-target explicit Euler
 orders 2–8 and even midpoint orders 2–10. `extrapolation_coefficients` exposes
 immutable column weights; `ExtrapolationQuadrature` on the result exposes

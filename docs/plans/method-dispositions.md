@@ -32,6 +32,8 @@ restricted equivalence; improved IRKN history is separate backend work.
 
 `Extrapolation` supplies twelve fixed-target Euler/midpoint configurations with [source/quantity/work evidence](../development/extrapolation-validation.md). Both order-two main maps equal explicit midpoint and remain outside fixed registration.
 
+`AlgorithmSwitch` supplies [owned history and accepted-control selection](../development/algorithm-switch-validation.md), with cold transitions and explicit differences from upstream cache transfer.
+
 ## Source pin and transformations
 
 Expansion waves use OrdinaryDiffEq **7.8.1**, metapackage git tree
