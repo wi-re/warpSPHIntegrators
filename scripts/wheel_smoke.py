@@ -7,12 +7,14 @@ import json
 import math
 import pkgutil
 import sys
+import tempfile
 
 import torch
 import warpSPHIntegrators as package
 from warpSPHIntegrators import (
     TensorState, tensor_rhs, getIntegrator, getPreferredIntegrator, filter_schemes,
     StepHistory, SemilinearRHS, testing, get_reference_state,
+    solve, Event, save_checkpoint, load_checkpoint,
 )
 
 
@@ -41,5 +43,17 @@ for scheme in filter_schemes(state_kind='tensor'):
 problem = testing.oscillator_problem()
 result = getIntegrator('RK4')(problem.initial(), .01, problem.rhs)
 assert torch.isfinite(get_reference_state(result.state).x).all()
+# The installed runner, dense/event path and portable restart must work together.
+rhs = tensor_rhs(lambda t, y: -y)
+run = solve('Dormand-Prince 5(4)', TensorState(y), 1., rhs, dt=.3,
+            adaptive=True, rtol=1e-8, atol=1e-10, sample_times=[.25,.75])
+assert run.state.t == 1. and torch.allclose(run.state.y,y*math.exp(-1),rtol=3e-8)
+with tempfile.TemporaryDirectory() as directory:
+    path = Path(directory) / 'restart.pt'
+    save_checkpoint(run.checkpoint,path)
+    resumed = solve('Dormand-Prince 5(4)',None,2.,rhs,restart=load_checkpoint(path),
+                    events=[Event(lambda t,s:s.y[0].item()-.2,terminal=True)])
+assert resumed.termination == 'event' and abs(resumed.state.t-math.log(5)) < 1e-7
 print(f'Installed wheel {package.__version__}: all modules/exports, py.typed, '
-      f'{len(filter_schemes(state_kind="tensor"))} tensor drivers and the advanced state protocol pass')
+      f'{len(filter_schemes(state_kind="tensor"))} tensor drivers, advanced state protocol, '
+      'adaptive sampling/events and portable restart pass')

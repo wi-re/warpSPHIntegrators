@@ -57,6 +57,8 @@ if __name__ == '__main__':
 ```
 
 [Tensor adapter and catalog filters](docs/docs/tensor-ode.md) cover ordinary ODEs.
+[The run API](docs/docs/runs.md) adds fixed/adaptive trajectories, rejection,
+sampling, events and checkpoints; see [the complete run example](examples/run_ode.py).
 The [full protocol example](examples/harmonic_oscillator.py) covers tagged
 position/velocity states and custom SPH lifecycle behavior.
 
@@ -73,8 +75,8 @@ position/velocity states and custom SPH lifecycle behavior.
   [method dispositions](docs/plans/method-dispositions.md) and [benchmarks](benchmarks/README.md).
 - [Detailed protocol examples and galleries](docs/development/usage-reference.md).
 
-Stepping is PyTorch based; native Warp buffers remain future work. Adaptive
-helpers require a caller-owned acceptance loop, multistep history is fixed-step,
+Stepping is PyTorch based; native Warp buffers remain future work. The run API owns acceptance and isolates rejected attempts; external effects
+require application transaction hooks. Multistep history is fixed-step,
 particle masking belongs to the user's system, and geometric methods retain
 their force/separability assumptions. See [architecture](docs/development/architecture.md)
 for the current boundaries.

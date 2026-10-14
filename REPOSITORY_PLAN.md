@@ -14,11 +14,12 @@ retains the baseline findings and migration rationale.
 | 2 — executable onboarding and catalog | Derived metadata, generated catalog, runnable source examples and PR documentation gate | `5eb45e0`; [validation](docs/development/phase2-validation.md) |
 | 3 — consolidation and organization | Current architecture, method dispositions, indexed research, contributor workflow, relocated examples/assets/benchmarks and preserved oracles | [migration and validation](docs/development/phase3-validation.md) |
 | 4 — ordinary ODE usability and packaging | Tensor adapter, catalog filters, structural metadata, compatible selection, option guards and installed-wheel gate | [validation](docs/development/phase4-validation.md) |
+| 5 — reliable run orchestration | Transactional fixed/adaptive runs, step status, sampling, events and restart checkpoints | [validation](docs/development/phase5-validation.md) |
 
 The 137-scheme catalog is committed locally and remains unreleased beyond package
 0.6.1. Expansion waves 1–8 are complete with recorded exceptions; waves 9–16
 remain subject to the gates below. Commit creation and package publication are
-separate actions. **Phase 5 is next.**
+separate actions. **Phase 6 is next.**
 
 ## Phase 3 completion record
 
@@ -58,21 +59,24 @@ Completion: a new user can choose an appropriate method and integrate a tensor O
 without implementing lifecycle hooks; advanced SPH state behavior remains covered
 by the existing protocol tests.
 
-### Phase 5 Add reliable run orchestration and failure handling
+### Phase 5 Add reliable run orchestration and failure handling — complete
 
 Priority: high. Depends on metadata from Phases 2 and 4. Size: medium to large.
 
-- [ ] Define public step success and failure semantics, including the distinction
+- [x] Define public step success and failure semantics, including the distinction
   between Newton stagnation at a precision floor and true tolerance convergence.
-- [ ] Add a fixed-step runner with history/reuse threading and output callbacks.
-- [ ] Add adaptive acceptance/rejection, field tolerances, nonfinite checks, limits,
+- [x] Add a fixed-step runner with history/reuse threading and output callbacks.
+- [x] Add adaptive acceptance/rejection, field tolerances, nonfinite checks, limits,
   and rollback of state and lifecycle effects; use the recorded estimate exponent.
-- [ ] Specify sampling/dense-output behavior, then add supported events and restart
+- [x] Specify sampling/dense-output behavior, then add supported events and restart
   checkpoints as separate increments.
 
 Completion: deterministic fixed-step runs and controlled adaptive runs have correct
 final time, preserved caller state, observable failures, and no history or side
 effect committed by rejected attempts. Existing single-step users remain supported.
+
+Validated: 6,938 tests passed, 609 skipped; installed-wheel and documentation
+gates pass. See [the Phase 5 record](docs/development/phase5-validation.md).
 
 ### Phase 6 Address stiff startup and prove coupled scaling
 

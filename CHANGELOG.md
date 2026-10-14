@@ -6,6 +6,17 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ## [Unreleased]
 
+### Added — reliable runs and failure handling (Phase 5)
+
+- Fixed/adaptive `solve` threads history and safe FSAL reuse, clips final time,
+  isolates rejected attempts and provides field tolerances, bounded retries,
+  accepted-step callbacks and explicit external transaction hooks.
+- Step status retains custom-solver failures and distinguishes Newton precision
+  floors from tolerance convergence; the runner requires opt-in for stagnation.
+- DP5 sampling/events preserve the numerical grid, with terminal steps recomputed
+  at roots. In-memory and weights-only tensor checkpoints retain run configuration
+  and history; documented lifecycle, gradient and persistence qualifications.
+
 ### Added — tensor ODE usability and discovery (Phase 4)
 
 - `TensorState` and `tensor_rhs` adapt ordinary `(t,y)` tensor ODEs, including

@@ -56,7 +56,7 @@ OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
 |---|---|
 | Family driver/tableau | Family category, convergence, reuse and stability; embedded/adaptive/gradient checks where applicable |
 | Newton/GMRES/preconditioner | `solvers`, implicit families, convergence and gradients |
-| Fields, lifecycle, registry or RHS | Full gate |
+| Fields, lifecycle, registry, RHS or run orchestration | Full gate |
 | Published examples or catalog | Direct example validation, catalog check and site build |
 | Paths/notebooks/repository documents | Repository link/path validation; compile notebook cells; source example and site checks |
 

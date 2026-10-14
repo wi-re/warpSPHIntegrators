@@ -3,7 +3,7 @@ import math
 import pytest
 import torch
 from warpSPHIntegrators import (solve, TensorState, tensor_rhs, Event,
-    snapshot_state, testing)
+    save_checkpoint, load_checkpoint, snapshot_state, testing)
 
 
 def state(value=1.,t=0.):
@@ -70,3 +70,47 @@ def test_initial_terminal_event_and_invalid_event():
     with pytest.raises(TypeError,match='Event objects'):
         solve('Dormand-Prince 5(4)',state(),1.,f,dt=.1,events=[lambda t,s:t])
 
+
+@pytest.mark.parametrize('name,adaptive',[('RK4',False),('Dormand-Prince 5(4)',True),('BDF2',False)])
+def test_restart_preserves_trajectory_history_and_controller(tmp_path,name,adaptive):
+    f=tensor_rhs(lambda t,y:-y)
+    opts=dict(dt=.1,adaptive=adaptive,rtol=1e-8,atol=1e-10,allow_stagnation=True)
+    complete=solve(name,state(),1.,f,**opts)
+    seen=[]
+    def stop(record):
+        seen.append(record.result.state.t)
+        return len(seen)<4
+    part=solve(name,state(),1.,f,callback=stop,**opts)
+    cp=part.checkpoint
+    resumed=solve(name,None,1.,f,restart=cp)
+    assert torch.equal(complete.state.y,resumed.state.y)
+    assert part.accepted_steps+resumed.accepted_steps==complete.accepted_steps
+    path=tmp_path/'run.pt';save_checkpoint(cp,path)
+    restored=load_checkpoint(path,map_location='cpu')
+    disk=solve(name,None,1.,f,restart=restored)
+    assert torch.equal(complete.state.y,disk.state.y)
+    assert len(cp.history)==len(restored.history)
+    cp.state.y.fill_(0)
+    assert part.state.y.item()>0
+
+
+def test_checkpoint_preserves_gradients_in_memory_and_detaches_on_disk(tmp_path):
+    y=torch.ones(1,dtype=torch.float64,requires_grad=True)
+    f=tensor_rhs(lambda t,y:y)
+    part=solve('RK4',TensorState(y),1.,f,dt=.1,callback=lambda r:False)
+    resumed=solve('RK4',None,1.,f,restart=part.checkpoint)
+    assert torch.autograd.grad(resumed.state.y.sum(),y)[0].item()==pytest.approx(math.e,rel=1e-6)
+    path=tmp_path/'run.pt';save_checkpoint(part.checkpoint,path)
+    assert not load_checkpoint(path).state.y.requires_grad
+    assert not snapshot_state(part.checkpoint,detach=True).state.y.requires_grad
+    with pytest.raises(ValueError,match='scheme'):
+        solve('Midpoint',None,1.,f,restart=part.checkpoint)
+    with pytest.raises(ValueError,match='state=None'):
+        solve('RK4',state(),1.,f,restart=part.checkpoint)
+
+
+def test_portable_checkpoint_requires_tensor_contract(tmp_path):
+    p=testing.oscillator_problem()
+    r=solve('RK4',p.initial(),.1,p.rhs,dt=.1)
+    with pytest.raises(TypeError,match='plain TensorState'):
+        save_checkpoint(r.checkpoint,tmp_path/'unsupported.pt')

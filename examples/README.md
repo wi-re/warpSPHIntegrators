@@ -3,6 +3,7 @@
 Install the package from the checkout root with `python -m pip install -e '.[examples]'`.
 This supplies matplotlib, tqdm and Jupyter in addition to the numerical package.
 
+- [Controlled run](run_ode.py): adaptive acceptance, sampling, events and restart.
 - [Tensor ODE](tensor_ode.py): ordinary `(t, y)` callback, no lifecycle implementation.
 - [Harmonic oscillator](harmonic_oscillator.py): standalone float64 CPU example;
   run `python examples/harmonic_oscillator.py` from the checkout root.

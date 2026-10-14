@@ -99,10 +99,10 @@ helps only weakly (condition number 5.06 on the 256-DOF block system) — the
 block system's spectrum is a two-dimensional annulus, not a diagonal-dominant
 cluster (NOTES.md §3.18).
 
-## Adaptive step control (helpers only)
+## Adaptive step control
 
-Phase 11 deliberately landed **helpers, not a driver**: the library proposes,
-the caller disposes. `adaptive.py` exposes:
+The [run API](runs) owns adaptive acceptance and rollback. For applications that
+keep their own stepping loop, `adaptive.py` also exposes the original helpers:
 
 - `estimate_error_norm(result, rtol=1e-3, atol=1e-6)` measures the
   weighted RMS of `result.error`, scaled against `result.state`. A value of
@@ -119,8 +119,8 @@ the caller disposes. `adaptive.py` exposes:
 
 [The generated catalog](catalog) lists every estimate emitter and exponent.
 Multistep schemes emit no estimates, and changing dt restarts their history.
-The caller owns acceptance/rejection, final-time clipping and state/history
-commit; a general trajectory driver remains on the roadmap.
+Use [the run API](runs) for acceptance/rejection, final-time clipping and state/history
+commit, or retain a caller-owned loop with these helpers.
 
 [example:run adaptive]: #
 ```python

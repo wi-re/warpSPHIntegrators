@@ -1,0 +1,41 @@
+{
+  "started_utc": "2026-10-14T11:11:31.287802+00:00",
+  "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:36:31) [GCC 14.3.0]",
+  "torch": "2.13.0+cu130",
+  "numpy": "2.5.2",
+  "pytest": "9.1.1",
+  "device": "cpu",
+  "platform": "Linux-7.0.0-30-generic-x86_64-with-glibc2.39",
+  "package": "0.5.0",
+  "git_head": "8045506e7da5711023b1b04b057ecb2fa2c1990c",
+  "gate_sha256": "b69a2af1a06ed79c633d8621de3d58c1396a88608f5d32e5fd8cdac3b8c61839",
+  "workers_per_run": 8,
+  "parallel_shards": 1,
+  "numerical_threads_per_worker": 1,
+  "runs": [
+    {
+      "label": "full",
+      "expression": null,
+      "command": [
+        "/home/lu26029/miniconda3/envs/warp/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "-n",
+        "8",
+        "--dist=worksteal",
+        "--durations=20",
+        "--junitxml=/home/lu26029/dev/warpSPHIntegrators/.tmp/phase5/final-full/full.xml"
+      ],
+      "seconds": 267.926,
+      "exit_code": 0,
+      "log": "/home/lu26029/dev/warpSPHIntegrators/.tmp/phase5/final-full/full.txt",
+      "failures": [],
+      "tests_count": 7547,
+      "failures_count": 0,
+      "errors_count": 0,
+      "skipped_count": 609
+    }
+  ],
+  "seconds": 267.933
+}

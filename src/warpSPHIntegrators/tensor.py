@@ -28,7 +28,7 @@ class TensorState(BaseIntegrationSystem):
     Scalar, vector and batched tensors keep their shape, device, dtype and graph.
     The RHS must return a tensor of exactly the same shape/device/dtype.
     Use catalog records with state_kind='tensor'; geometric/Newmark methods need
-    an explicit position/velocity system. The caller owns the stepping loop.
+    an explicit position/velocity system. Use solve() or a caller-owned stepping loop.
     """
 
     state: _TensorFields | torch.Tensor = reference_state()

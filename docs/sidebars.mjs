@@ -4,6 +4,7 @@ const sidebars = {
     'index',
     'quickstart',
     'tensor-ode',
+    'runs',
     'options',
     'selection',
     'catalog',

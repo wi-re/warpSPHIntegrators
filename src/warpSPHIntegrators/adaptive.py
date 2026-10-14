@@ -1,7 +1,7 @@
 """Adaptive step-size control and dense output (roadmap Phase 11, NOTES.md S3.17).
 
 This module is a *set of helpers, not a solver*: nothing here owns a step loop.
-The caller drives the accept/reject loop (NOTES.md S3.8's "no solver contract
+The optional run.solve API or a caller drives the accept/reject loop (NOTES.md S3.8's "no solver contract
 without a downstream" caution), and the two primitives it needs are:
 
 - :func:`estimate_error_norm` -- turn the embedded-pair estimate carried on an

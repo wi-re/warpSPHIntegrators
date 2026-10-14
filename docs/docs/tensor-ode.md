@@ -96,8 +96,8 @@ DP5 dense output takes the initial state and `result.stages`.
 The adapter preserves the chosen driver's gradient semantics. Explicit and
 implicit tensor state/parameter paths are tested. ROS3P/EXPRB32 freeze operators;
 their existing gradient qualifications still apply, including incomplete
-differentiation through parameter-dependent frozen operators. The adapter does
-not add a trajectory solver, automatic rejection or events; those are Phase 5.
+differentiation through parameter-dependent frozen operators. Use [the run API](runs) for fixed/adaptive trajectories, acceptance, sampling,
+events and restart checkpoints.
 
 ## Selecting a conventional default
 

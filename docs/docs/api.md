@@ -17,6 +17,14 @@ rest. The [Quick Start](quickstart) shows a full minimal example.
 callbacks. Read `result.state.y`; splits, history, estimates and gradients use the
 existing drivers. See [the runnable tensor guide](tensor-ode).
 
+## Run orchestration
+
+`solve(scheme, state, t_end, rhs, dt=..., adaptive=False, ...)` returns a
+`RunResult` with counters, samples, events, status and restart checkpoint.
+`IntegrationResult.step_status` exposes single-step success and convergence.
+`Event`, `RunError`, `RunCheckpoint`, `snapshot_state`, `save_checkpoint` and
+`load_checkpoint` support controlled runs; see [the contracts and example](runs).
+
 ## State and fields
 
 | Name | Signature (abridged) | Purpose |

@@ -41,8 +41,10 @@ DIRK family represents its implicit tableau, not an upstream additive pair.
 `solvers.py` and `jfnk.py` provide fixed-point and matrix-free Newton/GMRES solves,
 FD/JVP products, preconditioning, diagnostics and implicit differentiation.
 `history.py` stores fixed-step history and restarts it when the timestep changes.
-`adaptive.py` supplies error norms, step proposals and DP5 dense output; callers
-still own acceptance/rejection and trajectory orchestration.
+`adaptive.py` supplies error norms, step proposals and DP5 dense output. `run.py`
+owns optional transactional fixed/adaptive orchestration, outputs and events;
+`checkpoint.py` persists tensor-only restarts. Single-step callers can keep their
+own loop. External side effects require application transaction hooks.
 
 ## Current boundaries
 

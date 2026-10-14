@@ -72,6 +72,7 @@ from .rosenbrock import integrateROS3P as ROS3P
 from .exponential import integrateETD2RK as ETD2RK, integrateEXPRB32 as EXPRB32
 from .prrk import pRRK22, pRRK33, pRRK54
 from .adaptive import estimate_error_norm, propose_dt, dormand_prince_dense_output
+from .checkpoint import save_checkpoint, load_checkpoint
 from .run import (solve, assess_step, snapshot_state, StepStatus, StepRecord,
                   RunSample, RunResult, RunError, RunCheckpoint, Event, EventHit)
 
@@ -106,6 +107,7 @@ from .drift import DriftField, drift_fields, drift_fields_active
 __version__ = "0.6.1"
 
 __all__ = [
+    "save_checkpoint", "load_checkpoint",
     "solve", "assess_step", "snapshot_state", "StepStatus", "StepRecord",
     "RunSample", "RunResult", "RunError", "RunCheckpoint", "Event", "EventHit",
     "SchemeMetadata",
