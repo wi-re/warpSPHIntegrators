@@ -671,6 +671,8 @@ EXPECTED_VERDICTS = {
     # Radau IIA is L-stable: |R(z)| -> 0 along the negative real axis, an even
     # stronger contraction than A-stability gives.
     'Radau IIA s=2': (None, 5.0, True),
+    'Gauss-Legendre 3': (None, 5.0, True),
+    'Radau IIA s=3': (None, 5.0, True),
     # The IMEX multistep family (NOTES.md S3.19): no tableau attribute the SSP
     # scan reads, so no ssp_cfl. The measured 1.5 is the shared Dormand-Prince
     # cold start's imaginary-axis boundary (the bootstrap is explicit and

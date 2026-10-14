@@ -6,7 +6,7 @@ independent schedules.
 
 | Document | Reconciled position, 14 October 2026 |
 |---|---|
-| [Scheme expansion](scheme-expansion.md) | Waves 1–8 committed; waves 9–16 deferred to the execution plan's gates; additional source candidates tracked in the ledger |
+| [Scheme expansion](scheme-expansion.md) | Waves 1–8 and first s=3 wave-9 batch implemented; higher stages/driver families retain their gates; waves 10–11 re-enumerated from pinned source |
 | [Implicit roadmap](implicit.md) | Original phases 0–14 complete; SSPRK54 complete since wave 1; remaining extensions conditional on consumers/scaling |
 | [Splitting design](splitting.md) | Package/toy Phase 7 complete: capabilities, compositions, implicit/dense exact D, bounded Yoshida4 and geometric diagnostics; PESPH and specialized extensions remain application/follow-on work |
 | [WCSPH/JFNK design](wcsph-jfnk.md) | A/B/E1–E1.10 historically recorded complete; C/D/E2/E3 open in downstream repositories, not reverified by this migration |

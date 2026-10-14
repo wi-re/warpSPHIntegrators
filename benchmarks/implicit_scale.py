@@ -44,8 +44,9 @@ def problem(n,kind):
 def case(args):
     torch.set_num_threads(1)
     initial,rhs,diagonal=problem(args.n,args.problem)
-    scheme=prototype_scheme(args.scheme) if args.scheme.endswith('3') else getIntegrator({
-        'gauss2':'Gauss-Legendre 2','radau2':'Radau IIA s=2','sdirk2':'SDIRK2'}[args.scheme])
+    names={'gauss2':'Gauss-Legendre 2','radau2':'Radau IIA s=2','sdirk2':'SDIRK2',
+           'gauss3':'Gauss-Legendre 3','radau3':'Radau IIA s=3'}
+    scheme=prototype_scheme(args.scheme) if args.scheme.endswith('3') and not getattr(args,'registered',False) else getIntegrator(names[args.scheme])
     stages=3 if args.scheme.endswith('3') else 2
     opts=dict(matvec='jvp',tol=1e-10,newton_tol=1e-6,gmres_maxiter=120,gmres_restart=30,max_iterations=6)
     if args.mode=='block':
@@ -113,6 +114,8 @@ def main():
     parser.add_argument('--repeats',type=int,default=2)
     parser.add_argument('--dt',type=float,default=.05)
     parser.add_argument('--spatial',action='store_true',help='Compare sparse LU/ILU and shifted spatial solves')
+    parser.add_argument('--registered',action='store_true',help='Measure the actual registered s=3 drivers, including companion work')
+    parser.add_argument('--selected-only',action='store_true',help='Spatial gate: direct LU reference and preferred shifted ILU only')
     parser.add_argument('--case',action='store_true')
     parser.add_argument('--scheme',default='radau3');parser.add_argument('--problem',default='reaction')
     parser.add_argument('--mode',default='block');parser.add_argument('--n',type=int,default=64)
@@ -132,7 +135,7 @@ def main():
     configs += [('sdirk2','none',False),('sdirk2','diagonal',False),('sdirk2','diagonal',True)]
     if args.spatial:
         configs=[(s,m,False) for s in ('gauss2','radau2','gauss3','radau3')
-                 for m in ('block','spatial_lu','spatial_ilu','shifted_lu','shifted_ilu')]
+                 for m in (('spatial_lu','shifted_ilu') if args.selected_only else ('block','spatial_lu','spatial_ilu','shifted_lu','shifted_ilu'))]
     results=[]
     for kind in ('reaction','diffusion'):
         for n in args.sizes:
@@ -141,6 +144,7 @@ def main():
                     '--problem',kind,'--mode',mode,'--n',str(n),'--dt',str(args.dt),
                     '--steps',str(args.steps),'--repeats',str(args.repeats)]
                 if warm:command.append('--warm')
+                if args.registered:command.append('--registered')
                 process=subprocess.run(command,env=env,text=True,capture_output=True)
                 if process.returncode:
                     raise RuntimeError(process.stderr)
@@ -178,7 +182,8 @@ def main():
     report=dict(python=sys.version,torch=torch.__version__,platform=platform.platform(),
         cpu_model=next(line.split(':',1)[1].strip() for line in Path('/proc/cpuinfo').read_text().splitlines() if line.startswith('model name')),
         measurement_git_head=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
-        source_state='spatial follow-up working tree' if args.spatial else 'Phase 6 working tree, before implementation commits',device='cpu',dtype='float64',threads=1,
+        source_state='Phase 8 registered driver gate' if args.registered else ('spatial follow-up working tree' if args.spatial else 'Phase 6 working tree, before implementation commits'),
+        registered=args.registered,selected_only=args.selected_only,device='cpu',dtype='float64',threads=1,
         sizes=args.sizes,dt=args.dt,steps=args.steps,repeats=args.repeats,
         memory_definition='fresh-process ru_maxrss, baseline after native thread-pool initialization; additional peak includes first-use AD/library allocation',
         definition='all selected cold s=3 cases: zero tolerance failures, <=120 Krylov iterations per step, '

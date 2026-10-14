@@ -30,6 +30,7 @@ STATE_SPACE_IMPLICIT = [
     # and the slow tanh component is integrated at their full order.
     'Gauss-Legendre 2',
     'Radau IIA s=2',
+    'Gauss-Legendre 3', 'Radau IIA s=3',
     # SBDF2: one Dormand-Prince startup step (like BDF2) plus the BDF2
     # backbone, so it damps the z = -10 transient the same way BDF2 does
     # (measured |x - tanh(1)| = 8e-4). SBDF3 and CNAB2 need two and one

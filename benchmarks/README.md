@@ -15,6 +15,8 @@ python benchmarks/tvd_classifier.py --help
 | `blockrk_benchmark.py` | Historical two-stage coupled numerical comparisons |
 | `implicit_scale.py` | Phase 6 isolated-process DOF, warm-start, preconditioner, timing and native-memory scale gate |
 | `implicit_scale.py --spatial`, `spatial_preconditioners.py` | Sparse reference/ILU and shifted spatial solve follow-up |
+| `implicit_scale.py --spatial --registered --selected-only` | Actual s=3 registration gate, direct reference and preferred shifted ILU with companion work |
+| `firk_registration.py` | Known oscillator/cubic-decay accuracy and measured RHS/Krylov work for s=2/3 |
 | `stiff_startup.py` | BDF implicit/explicit startup and low-order control |
 | `splitting_validation.py` | Known oscillator orders/contraction/energy, Burgers reference/CFL and qualified exact-flow merging |
 | `jfnk_preconditioner_benchmark.py` | Krylov/preconditioning cost |

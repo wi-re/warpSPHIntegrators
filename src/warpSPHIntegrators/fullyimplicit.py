@@ -33,6 +33,11 @@ precedent, ``dirk.py``). Each carries a null-stage order-2 companion -- an
 order-2 quadrature rule over ``(k0 = f(t^n, y^n), k1, k2)`` -- because the
 2-stage-only order-2 pair is degenerate (it is just ``b`` itself) for both
 schemes.
+
+The scale-qualified three-stage additions use the pinned OrdinaryDiffEq
+monorepo source: Gauss (order 6) has a same-node order-2 companion; Radau IIA
+(order 5) has a derived unsmoothed order-3 companion. The latter does not
+reproduce upstream's shifted-Jacobian error filter or adaptive controller.
 """
 
 import dataclasses
@@ -57,9 +62,10 @@ class BlockTableau(NamedTuple):
 
     ``a`` is s-by-s with a nonzero off-diagonal entry (the coupling that makes
     the stage equations a single block system), ``c`` the stage times, ``b`` the
-    propagated-solution weights, and ``companion_b`` an (s+1)-vector of order-2
-    weights over the stages *plus a null first stage* ``k0 = f(t^n, y^n)`` at
-    ``c0 = 0``. The 2-stage-only order-2 pair is degenerate for both shipped
+    propagated-solution weights, and ``companion_b`` an optional (s+1)-vector of
+    weights over the stages *plus an optional null first stage* ``k0 = f(t^n, y^n)`` at
+    ``c0 = 0``. Companion order is recorded in scheme metadata. A zero first
+    weight needs no extra evaluation. The 2-stage-only order-2 pair is degenerate for both legacy
     tableaus (it is ``b`` itself), so the estimate needs the null stage:
     ``companion_b[0] != 0`` costs one extra RHS evaluation per step.
     """
@@ -240,7 +246,8 @@ def fullyImplicitBlock(initialState, dt, f, tableau: BlockTableau, *args,
         y_main = _weighted_update(initialState, ks, tableau.b, dt, *args, **kwargs)
         error = None
         if companion_b is not None:
-            y_embed = _weighted_update(initialState, k_all, companion_b, dt, *args, **kwargs)
+            weights = companion_b if k0 is not None else companion_b[1:]
+            y_embed = _weighted_update(initialState, k_all, weights, dt, *args, **kwargs)
             error = state_difference(y_main, y_embed)
             error.t = float(initialState.t + dt)
         y_main.t = float(initialState.t + dt)
@@ -261,7 +268,35 @@ def fullyImplicitBlock(initialState, dt, f, tableau: BlockTableau, *args,
 
 
 def getBlockTableau(scheme: str) -> BlockTableau:
-    if scheme == 'radauIia2':
+    if scheme == 'gaussLegendre3':
+        # OrdinaryDiffEq 7.8.1 monorepo tree bae9b8e5f1d00e51c554648e5094e215164a19f8,
+        # lib/OrdinaryDiffEqFIRK (2.8.1)/src/firk_tableaus.jl,
+        # generateGaussLegendreTableau(..., 3). Exact collocation form;
+        # source same-node order-2 companion bhat, no null RHS call.
+        r = np.sqrt(15.)
+        return BlockTableau(
+            np.array([[5/36, 2/9-r/15, 5/36-r/30],
+                      [5/36+r/24, 2/9, 5/36-r/24],
+                      [5/36+r/30, 2/9+r/15, 5/36]]),
+            np.array([5/18, 4/9, 5/18]),
+            np.array([.5-r/10, .5, .5+r/10]),
+            np.array([0., -5/6, 8/3, -5/6]))
+    elif scheme == 'radauIia3':
+        # Same pinned source: RadauIIA5Tableau (order 5, three stages).
+        # A reconstructed from its inverse-stage transform matches these exact
+        # collocation coefficients. Source e acts on stage increments, not RHS
+        # weights. Our UNSMOOTHED order-3 solution companion is
+        # bhat = (-1, b - e @ A); its error is h*(f0 + e @ A @ k).
+        # This omits upstream's shifted-Jacobian smoothing/re-estimation and
+        # must not be described as reproducing its stiff adaptive controller.
+        r = np.sqrt(6.)
+        a = np.array([[(88-7*r)/360, (296-169*r)/1800, (-2+3*r)/225],
+                      [(296+169*r)/1800, (88+7*r)/360, (-2-3*r)/225],
+                      [(16-r)/36, (16+r)/36, 1/9]])
+        return BlockTableau(a, a[-1].copy(),
+            np.array([(4-r)/10, (4+r)/10, 1.]),
+            np.array([-1., 7/9+17*r/36, 7/9-17*r/36, 4/9]))
+    elif scheme == 'radauIia2':
         # Radau IIA s=2: the collocation method at the Radau points {1/3, 1} --
         # the roots of 3x^2 - 2x - 1 on [0, 1], right endpoint pinned, so the
         # s=1 limit is exactly backward Euler. Order 3, A- and L-stable, stiffly
@@ -328,3 +363,5 @@ def blockScheme(tableau_name: str):
 
 radauIia2 = blockScheme('radauIia2')
 gaussLegendre2 = blockScheme('gaussLegendre2')
+gaussLegendre3 = blockScheme('gaussLegendre3')
+radauIia3 = blockScheme('radauIia3')

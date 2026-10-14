@@ -18,12 +18,13 @@ retains the baseline findings and migration rationale.
 | 6 — stiff startup and coupled scaling | Order-preserving implicit BDF bootstrap, warm/preconditioner measurements, s=3 prototypes; diffusion scale gate failed, wave 9 deferred | [validation](docs/development/phase6-validation.md) |
 | 7 — physical splitting on known toy consumers | Physical capabilities, Lie–Trotter/Strang, implicit/dense exact D, bounded Yoshida4, lifecycle/gradient and geometric diagnostics | `78d6a25`; [validation](docs/development/phase7-foundation-validation.md) |
 
-The 137-scheme catalog is committed locally and remains unreleased beyond package
-0.6.1. Expansion waves 1–8 are complete with recorded exceptions; waves 9–16
-remain subject to the gates below. Commit creation and package publication are
-separate actions. **Phase 7's package/toy scope is complete. Phase 8 is next.
-The spatial follow-up clears the recorded wave 9 scale cases; companion/source/
-catalog gates remain before registration. PESPH integration is later application work.**
+The 139-scheme catalog remains unreleased beyond package 0.6.1. Expansion
+waves 1–8 and the first s=3 wave-9 batch are complete with recorded exceptions;
+the remaining batches are subject to the gates below. Commit creation and package publication are
+separate actions. **Phase 8 is underway: its first reviewed batch registers
+Gauss-Legendre 3 / Radau IIA s=3 after their source, companion, scale and numerical
+gates. Higher stages and new driver families retain their own gates.
+PESPH integration is later application work.**
 
 ## Phase 3 completion record
 
@@ -137,14 +138,18 @@ Priority: after reliable gates and a concrete benefit. Size: varies by driver.
 
 - [x] Clear the recorded Phase 6 spatial scale bar with shifted spatial ILU.
   [Follow-up evidence](docs/development/spatial-followup-validation.md).
-- [ ] Complete wave 9 companion/source/catalog gates before registration; general
-  downstream SPH spatial/field assembly remains application-specific.
-- [ ] Re-enumerate waves 10–11 against pinned sources and split simple tableaus
+- [x] Complete wave 9 companion/source/catalog gates for the first s=3 batch;
+  [validation](docs/development/phase8-wave9-validation.md). General downstream
+  SPH spatial/field assembly remains application-specific.
+- [ ] Qualify higher-stage Gauss/Radau with their own scale/estimate/source evidence.
+- [x] Re-enumerate waves 10–11 against pinned sources and split simple tableaus
   from history, recurrence, or driver changes. Variable coefficients are primarily
   a timestep/history issue; do not assume fixed-step methods exclude non-autonomous
   RHS functions.
-- [ ] Prioritize additions with a benchmarked niche, such as generalized-alpha for
-  structural dynamics or an improved stiff Rosenbrock method.
+- [x] Prioritize a benchmarked niche: s=3 collocation improves known-consumer
+  accuracy/work while passing the spatial bar. Generalized-alpha is source-confirmed
+  for a later structural toy batch; further Rosenbrock additions need stage-driver
+  compatibility and a measured advantage.
 - [ ] Advance wave 12/13 work through Phase 7 where contracts overlap. Design
   extrapolation and map semantics independently where they do not.
 - [ ] Keep waves 14–15 as prototypes until matrix/operator, multirate, and derivative
@@ -155,6 +160,10 @@ Priority: after reliable gates and a concrete benefit. Size: varies by driver.
 Completion per batch: pinned coefficients, numerical property gates, gradient and
 adaptive coverage where applicable, complete user docs, disposition records, and a
 measured reason to retain the method. Reassess the plan at each driver boundary.
+
+First batch validated: 7,096 passed, 621 skipped; installed-wheel, examples,
+catalog, repository links and site gates pass. Source/companion and actual
+registered-driver scale evidence are in [the batch record](docs/development/phase8-wave9-validation.md).
 
 ### Phase 9 Establish backend and performance projects
 

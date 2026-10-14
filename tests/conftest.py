@@ -45,7 +45,7 @@ CATEGORIES = {
     'multistep': ['test_multistep.py'],
     'ark': ['test_ark.py'],
     'imex': ['test_imex.py', 'test_imexmultistep.py'],
-    'fullyimplicit': ['test_fullyimplicit.py','test_implicit_prototypes.py'],
+    'fullyimplicit': ['test_fullyimplicit.py','test_implicit_prototypes.py','test_firk_wave9.py'],
     'exponential': ['test_exponential.py'],
     'rosenbrock': ['test_rosenbrock.py'],
     'rkc': ['test_rkc.py'],
@@ -206,6 +206,9 @@ ORDER_TOLERANCE = 0.15
 #: the order down 0.5-1.5 below the true one.
 PROBLEM_COARSE_GRIDS = {
     'forced': {
+        # Wave 9: GL3's order-6 collocation error is already ~4e-12 at h=.1;
+        # refine from a coarser grid to retain two points above roundoff.
+        'Gauss-Legendre 3': [.4,.2,.1,.05],
         'BS5 5(4)': [2.0, 1.0, 0.5, 0.25],
         'Alshina6': [1.0, 0.5, 0.25, 0.125],
         'MSRK6': [1.0, 0.5, 0.25, 0.125],
@@ -345,6 +348,11 @@ def order_of(scheme, problem_name, dts, T=2.0, reuse=False, **step_options):
     The warnings are the feature under test in test_step_reuse.py; everywhere else
     they are noise.
     """
+    if scheme.name in {'Gauss-Legendre 3','Radau IIA s=3'}:
+        # Default FD/Newton floors (~1e-10 globally) obscure orders 5/6.
+        # Measure discretization with JVP and a stricter linear solve; leave
+        # the production default and every order assertion unchanged.
+        step_options.setdefault('solver_opts',dict(matvec='jvp',tol=1e-13,newton_tol=1e-9))
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', RuntimeWarning)
         order, errors = testing.convergence(scheme, problem(problem_name), dts, T,

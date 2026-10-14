@@ -58,3 +58,23 @@ The wave-1 exploratory pair is also preserved (`wave1/ode_reference.jl`,
 absence of its output means the original probe cannot validate trajectory matching.
 Original scratch files are retained locally and ignored. New measurements belong
 in dated tracked records with commands, versions and numerical qualifications.
+
+## Phase 8 / first wave-9 batch
+
+`wave9/oracle.jl` checks the complete cached monorepo git-tree hash before
+evaluating its FIRK constructors. It uses Julia stdlibs and Golub-Welsch
+quadrature, so no FIRK package installation or network is required:
+
+```bash
+julia --startup-file=no scripts/coefficients/wave9/oracle.jl /path/to/OrdinaryDiffEq/OnlvZ > /tmp/wave9-oracle.json
+python scripts/coefficients/phase8_inventory.py /path/to/OrdinaryDiffEq/OnlvZ --output /tmp/phase8-inventory.json
+```
+
+The tracked `wave9/oracle.json` contains source hashes, Gauss source quadrature,
+Radau inverse-transform reconstruction and independent nonlinear dense-Newton
+one-step states/errors. `tests/test_firk_wave9.py` compares the proposed production
+coefficients and execution against these independent values. Gauss's companion is
+from the source; Radau's solution companion is an explicitly recorded unsmoothed
+transformation, not a transcription of upstream's filtered adaptive controller.
+The inventory retains macro-generated types, aliases, package versions and order
+expressions for waves 10–11; enumeration alone does not approve coefficients.

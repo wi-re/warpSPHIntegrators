@@ -99,7 +99,7 @@ The per-stage update descriptor passed to the system's apply methods.
 
 | Name | Purpose |
 |---|---|
-| `IntegrationSchemes` | The registry: every registered scheme (137), each a `IntegrationScheme` |
+| `IntegrationSchemes` | The registry: every registered scheme (139), each a `IntegrationScheme` |
 | `IntegrationScheme` | The registry record: `function`, `name`, `identifier`, `order`, `dissipation`, `reuse_order`, `fsal`, `implicit`, `steps`, `stiffly_accurate`, `stability`, `startup_order` |
 | `SchemeMetadata` / `scheme.metadata` | Frozen metadata derived from the driver's tableau: stages, companion order, estimate exponent, required/optional RHS accessors, per-step options and dense output |
 | `scheme.has_error_estimate` / `scheme.estimate_order` | Whether a step emits an estimate, and its exponent q for `propose_dt`; q is 3 for both TR-BDF2 and Gauss-Legendre 2 |

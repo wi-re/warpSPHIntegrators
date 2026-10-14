@@ -69,6 +69,7 @@ def test_metadata_preserves_the_scheme_tuple_contract(s):
 @pytest.mark.parametrize('name,propagated,companion,q', [
     ('TR-BDF2', 2, 3, 3), ('Gauss-Legendre 2', 4, 2, 3),
     ('Radau IIA s=2', 3, 2, 3), ('Dormand-Prince 5(4)', 5, 4, 5),
+    ('Gauss-Legendre 3', 6, 2, 3), ('Radau IIA s=3', 5, 3, 4),
 ])
 def test_estimate_exponent_is_distinct_from_propagated_and_companion_orders(name, propagated, companion, q):
     s = getIntegrator(name)

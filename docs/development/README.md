@@ -17,6 +17,7 @@
 - [Phase 6 stiff startup and failed coupled scale gate](phase6-validation.md)
 - [Spatial solver follow-up and Phase 7 downstream audit](spatial-followup-validation.md)
 - [Phase 7 toy splitting, geometric diagnostics and lifecycle validation](phase7-foundation-validation.md)
+- [Phase 8 first wave-9 batch and waves 10–11 source audit](phase8-wave9-validation.md)
 - [Examples](../../examples/README.md) and [benchmarks](../../benchmarks/README.md)
 - [Coefficient extraction/oracle tools](../../scripts/coefficients/README.md)
 

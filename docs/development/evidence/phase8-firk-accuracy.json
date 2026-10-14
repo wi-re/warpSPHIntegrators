@@ -1,0 +1,300 @@
+{
+  "device": "cpu",
+  "dtype": "float64",
+  "threads": 1,
+  "solver_opts": {
+    "matvec": "jvp",
+    "tol": 1e-13,
+    "newton_tol": 1e-09
+  },
+  "rows": [
+    {
+      "method": "Gauss-Legendre 2",
+      "problem": "oscillator",
+      "h": 0.2,
+      "endpoint": 2.0,
+      "error": 0.00029077246937503354,
+      "rhs_calls": 150,
+      "krylov_iterations": 40.0,
+      "seconds": 0.5646037347614765
+    },
+    {
+      "method": "Gauss-Legendre 2",
+      "problem": "oscillator",
+      "h": 0.1,
+      "endpoint": 2.0,
+      "error": 1.8303814010134367e-05,
+      "rhs_calls": 300,
+      "krylov_iterations": 80.0,
+      "seconds": 0.10731306113302708
+    },
+    {
+      "method": "Gauss-Legendre 2",
+      "problem": "oscillator",
+      "h": 0.05,
+      "endpoint": 2.0,
+      "error": 1.1460340834101856e-06,
+      "rhs_calls": 600,
+      "krylov_iterations": 160.0,
+      "seconds": 0.21547016920521855,
+      "measured_order": 3.997422441655026
+    },
+    {
+      "method": "Gauss-Legendre 2",
+      "problem": "nonlinear",
+      "h": 0.2,
+      "endpoint": 0.4,
+      "error": 0.00011732608062942074,
+      "rhs_calls": 56,
+      "krylov_iterations": 15.0,
+      "seconds": 0.019550231751054525
+    },
+    {
+      "method": "Gauss-Legendre 2",
+      "problem": "nonlinear",
+      "h": 0.1,
+      "endpoint": 0.4,
+      "error": 8.247555180140864e-06,
+      "rhs_calls": 98,
+      "krylov_iterations": 26.0,
+      "seconds": 0.0337721798568964
+    },
+    {
+      "method": "Gauss-Legendre 2",
+      "problem": "nonlinear",
+      "h": 0.05,
+      "endpoint": 0.4,
+      "error": 5.375964207132711e-07,
+      "rhs_calls": 184,
+      "krylov_iterations": 48.0,
+      "seconds": 0.06257960200309753
+    },
+    {
+      "method": "Gauss-Legendre 2",
+      "problem": "nonlinear",
+      "h": 0.025,
+      "endpoint": 0.4,
+      "error": 3.401109893719223e-08,
+      "rhs_calls": 338,
+      "krylov_iterations": 84.0,
+      "seconds": 0.11218855623155832,
+      "measured_order": 3.9824460057412097
+    },
+    {
+      "method": "Gauss-Legendre 3",
+      "problem": "oscillator",
+      "h": 0.2,
+      "endpoint": 2.0,
+      "error": 3.3341350158533345e-07,
+      "rhs_calls": 270,
+      "krylov_iterations": 60.0,
+      "seconds": 0.12798867700621486
+    },
+    {
+      "method": "Gauss-Legendre 3",
+      "problem": "oscillator",
+      "h": 0.1,
+      "endpoint": 2.0,
+      "error": 5.233982358632261e-09,
+      "rhs_calls": 540,
+      "krylov_iterations": 120.0,
+      "seconds": 0.23045220412313938
+    },
+    {
+      "method": "Gauss-Legendre 3",
+      "problem": "oscillator",
+      "h": 0.05,
+      "endpoint": 2.0,
+      "error": 8.187583944163634e-11,
+      "rhs_calls": 1080,
+      "krylov_iterations": 240.0,
+      "seconds": 0.3926297281868756,
+      "measured_order": 5.998327458488574
+    },
+    {
+      "method": "Gauss-Legendre 3",
+      "problem": "nonlinear",
+      "h": 0.2,
+      "endpoint": 0.4,
+      "error": 2.5093951185883867e-06,
+      "rhs_calls": 102,
+      "krylov_iterations": 22.0,
+      "seconds": 0.034728888887912035
+    },
+    {
+      "method": "Gauss-Legendre 3",
+      "problem": "nonlinear",
+      "h": 0.1,
+      "endpoint": 0.4,
+      "error": 5.810301950681662e-08,
+      "rhs_calls": 177,
+      "krylov_iterations": 38.0,
+      "seconds": 0.05992903420701623
+    },
+    {
+      "method": "Gauss-Legendre 3",
+      "problem": "nonlinear",
+      "h": 0.05,
+      "endpoint": 0.4,
+      "error": 1.0610547995781872e-09,
+      "rhs_calls": 324,
+      "krylov_iterations": 68.0,
+      "seconds": 0.10849019326269627
+    },
+    {
+      "method": "Gauss-Legendre 3",
+      "problem": "nonlinear",
+      "h": 0.025,
+      "endpoint": 0.4,
+      "error": 1.7398193996598366e-11,
+      "rhs_calls": 576,
+      "krylov_iterations": 115.0,
+      "seconds": 0.1859722100198269,
+      "measured_order": 5.9304178016199645
+    },
+    {
+      "method": "Radau IIA s=2",
+      "problem": "oscillator",
+      "h": 0.2,
+      "endpoint": 2.0,
+      "error": 0.007762131088272839,
+      "rhs_calls": 150,
+      "krylov_iterations": 40.0,
+      "seconds": 0.04144053813070059
+    },
+    {
+      "method": "Radau IIA s=2",
+      "problem": "oscillator",
+      "h": 0.1,
+      "endpoint": 2.0,
+      "error": 0.0009717485676377091,
+      "rhs_calls": 300,
+      "krylov_iterations": 80.0,
+      "seconds": 0.08255031378939748
+    },
+    {
+      "method": "Radau IIA s=2",
+      "problem": "oscillator",
+      "h": 0.05,
+      "endpoint": 2.0,
+      "error": 0.00012108072967176309,
+      "rhs_calls": 600,
+      "krylov_iterations": 160.0,
+      "seconds": 0.1647927756421268,
+      "measured_order": 3.0046138015735946
+    },
+    {
+      "method": "Radau IIA s=2",
+      "problem": "nonlinear",
+      "h": 0.2,
+      "endpoint": 0.4,
+      "error": 0.0019775139994225865,
+      "rhs_calls": 58,
+      "krylov_iterations": 16.0,
+      "seconds": 0.0157427410595119
+    },
+    {
+      "method": "Radau IIA s=2",
+      "problem": "nonlinear",
+      "h": 0.1,
+      "endpoint": 0.4,
+      "error": 0.0002902514065415973,
+      "rhs_calls": 98,
+      "krylov_iterations": 26.0,
+      "seconds": 0.025873353239148855
+    },
+    {
+      "method": "Radau IIA s=2",
+      "problem": "nonlinear",
+      "h": 0.05,
+      "endpoint": 0.4,
+      "error": 3.945637460034401e-05,
+      "rhs_calls": 184,
+      "krylov_iterations": 48.0,
+      "seconds": 0.04797527799382806
+    },
+    {
+      "method": "Radau IIA s=2",
+      "problem": "nonlinear",
+      "h": 0.025,
+      "endpoint": 0.4,
+      "error": 5.136648013492895e-06,
+      "rhs_calls": 358,
+      "krylov_iterations": 91.0,
+      "seconds": 0.09207059722393751,
+      "measured_order": 2.9413592797685597
+    },
+    {
+      "method": "Radau IIA s=3",
+      "problem": "oscillator",
+      "h": 0.2,
+      "endpoint": 2.0,
+      "error": 1.2424507868979973e-05,
+      "rhs_calls": 280,
+      "krylov_iterations": 60.0,
+      "seconds": 0.09840718097984791
+    },
+    {
+      "method": "Radau IIA s=3",
+      "problem": "oscillator",
+      "h": 0.1,
+      "endpoint": 2.0,
+      "error": 3.8771436583484586e-07,
+      "rhs_calls": 560,
+      "krylov_iterations": 120.0,
+      "seconds": 0.19658913696184754
+    },
+    {
+      "method": "Radau IIA s=3",
+      "problem": "oscillator",
+      "h": 0.05,
+      "endpoint": 2.0,
+      "error": 1.208545352682222e-08,
+      "rhs_calls": 1120,
+      "krylov_iterations": 240.0,
+      "seconds": 0.39534752117469907,
+      "measured_order": 5.003650672944984
+    },
+    {
+      "method": "Radau IIA s=3",
+      "problem": "nonlinear",
+      "h": 0.2,
+      "endpoint": 0.4,
+      "error": 2.1580447558955385e-05,
+      "rhs_calls": 107,
+      "krylov_iterations": 23.0,
+      "seconds": 0.03613019920885563
+    },
+    {
+      "method": "Radau IIA s=3",
+      "problem": "nonlinear",
+      "h": 0.1,
+      "endpoint": 0.4,
+      "error": 9.737971944367985e-07,
+      "rhs_calls": 184,
+      "krylov_iterations": 39.0,
+      "seconds": 0.061963729094713926
+    },
+    {
+      "method": "Radau IIA s=3",
+      "problem": "nonlinear",
+      "h": 0.05,
+      "endpoint": 0.4,
+      "error": 3.573104145893069e-08,
+      "rhs_calls": 338,
+      "krylov_iterations": 70.0,
+      "seconds": 0.11150032328441739
+    },
+    {
+      "method": "Radau IIA s=3",
+      "problem": "nonlinear",
+      "h": 0.025,
+      "endpoint": 0.4,
+      "error": 1.1860527004969867e-09,
+      "rhs_calls": 619,
+      "krylov_iterations": 122.0,
+      "seconds": 0.19670636113733053,
+      "measured_order": 4.912937944580888
+    }
+  ]
+}

@@ -1,7 +1,8 @@
 # Method dispositions and coefficient provenance
 
-Reconciled 14 October 2026 against commit `5eb45e0`. The [JSON ledger](method-dispositions.json)
-records all 137 registered identifiers plus standalone, equivalent, deferred and
+Original audit at `5eb45e0`, supplemented by the Phase 8 first wave-9 batch on
+14 October 2026. The [JSON ledger](method-dispositions.json)
+records all 139 registered identifiers plus standalone, equivalent, deferred and
 screening candidates. It includes implementation/source constructors, modifications,
 test files, numerical evidence and intended consumers. Method implementation and
 primary-source verification are separate fields: legacy methods remain implemented
@@ -147,6 +148,8 @@ explicitly marked awaiting verification, not assigned the expansion source pin.
 | SFSDIRK8 | 8 | [`SFSDIRK8`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
 | Gauss-Legendre 2 | baseline | [`gaussLegendre2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
 | Radau IIA s=2 | baseline | [`radauIia2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
+| Gauss-Legendre 3 | 9 (first batch) | [`gaussLegendre3`](../../src/warpSPHIntegrators/fullyimplicit.py) | [validation](../development/phase8-wave9-validation.md) |
+| Radau IIA s=3 | 9 (first batch) | [`radauIia3`](../../src/warpSPHIntegrators/fullyimplicit.py) | [validation](../development/phase8-wave9-validation.md) |
 | ARK3(2)4L[2]SA | baseline | [`ARK324L2SA`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
 | ARK4(3)6L[2]SA | baseline | [`ARK436L2SA`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
 | Newmark | baseline | [`newmark`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |

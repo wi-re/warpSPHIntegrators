@@ -6,6 +6,18 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ## [Unreleased]
 
+### Added — Phase 8 first wave-9 batch
+
+- Registered three-stage Gauss-Legendre (order 6) and Radau IIA (order 5), bringing
+  the catalog to 139. Coefficients agree with an independently evaluated pinned
+  source oracle; existing enum values and two-stage methods remain intact.
+- Gauss uses a same-node order-2 companion with no extra RHS evaluation. Radau
+  uses a derived unsmoothed order-3 companion; upstream's filtered adaptive
+  controller is not claimed. Metadata records estimate exponents 3/4 accurately.
+- Actual registered drivers, including companion work, pass the unchanged spatial
+  scale bar through N=1024. Higher stages remain gated. A reproducible source
+  inventory corrects the wave 10/11 history, recurrence and driver assumptions.
+
 ### Added — physical splitting on toy consumers (Phase 7)
 
 - Added conservative/dissipative RHS capabilities, local separability diagnostics

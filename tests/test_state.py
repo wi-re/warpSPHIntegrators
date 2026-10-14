@@ -150,6 +150,7 @@ DRIFT_BEFORE_FIRST_EVALUATION = {
     # (c[0] != 0), so their first f evaluation sits at t^n + c[0]*dt.
     'SSPSDIRK2', 'Cash4', 'Hairer4', 'Hairer42', 'SFSDIRK4', 'SFSDIRK5',
     'SFSDIRK6', 'SFSDIRK7', 'SFSDIRK8',
+    'Gauss-Legendre 3', 'Radau IIA s=3',
 }
 
 

@@ -58,7 +58,7 @@ from .dirk import (backwardEuler as implicitBackwardEuler, implicitMidpoint, tra
                    ESDIRK54I8L2SA, ESDIRK659L2SA, SSPSDIRK2, ARS222, ARS232, ARS343, ARS443,
                    BHR553, Cash4, CFNLIRK3, Hairer4, Hairer42, SFSDIRK4, SFSDIRK5, SFSDIRK6,
                    SFSDIRK7, SFSDIRK8)
-from .fullyimplicit import gaussLegendre2, radauIia2
+from .fullyimplicit import gaussLegendre2, radauIia2, gaussLegendre3, radauIia3
 from .ark import ARK324L2SA, ARK436L2SA
 from .newmark import newmark
 from .multistep import AB2, AB3, AB4, AB5, ABM2, ABM3, ABM4, AM2, AM3, AM4
@@ -326,6 +326,12 @@ IntegrationSchemes.append(IntegrationScheme(
     implicit=True, steps=1, stiffly_accurate=False, stability='A'))
 IntegrationSchemes.append(IntegrationScheme(
     radauIia2, 'Radau IIA s=2', IntegrationSchemeType.radauIia2, 3, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    gaussLegendre3, 'Gauss-Legendre 3', IntegrationSchemeType.gaussLegendre3, 6, False,
+    implicit=True, steps=1, stiffly_accurate=False, stability='A'))
+IntegrationSchemes.append(IntegrationScheme(
+    radauIia3, 'Radau IIA s=3', IntegrationSchemeType.radauIia3, 5, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
 # Additive (IMEX) Kennedy-Carpenter ARK pairs (NOTES.md S3.9 Phase 5). Each is an
 # explicit + implicit half; the combined method is *not* FSAL (the explicit half is

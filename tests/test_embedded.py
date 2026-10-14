@@ -10,7 +10,7 @@ import math
 import pytest
 import torch
 
-from conftest import EXACT_ON_LINEAR_PROBLEMS, ESTIMATE_SCHEMES, dts_for, estimate_order
+from conftest import EXACT_ON_LINEAR_PROBLEMS, ESTIMATE_SCHEMES, dts_for, estimate_order, order_of
 from warpSPHIntegrators import getIntegrator, get_reference_state, testing
 from warpSPHIntegrators.butcher import getButcherTableau
 
@@ -46,6 +46,7 @@ EMBEDDED = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)', 'Cash-Karp 5(4)',
             # the propagated order for Radau IIA s=2 (order 3).
             'Gauss-Legendre 2',
             'Radau IIA s=2',
+            'Gauss-Legendre 3', 'Radau IIA s=3',
             # The wave-7 Verner / TsitPap embedded pairs (SCHEME_EXPANSION_PLAN,
             # 2026-10-13): each is (p, p-1), so the estimate is the embedded
             # branch's local error, O(dt^(p-1+1)) = dt^order, like the wave-6
@@ -214,8 +215,7 @@ def test_propagated_solution_is_the_high_order_branch(name):
     # 3 shows up. The wave-7 pairs floor out on the standard oscillator grid too,
     # so use the per-problem coarse grid where they have a measurable order.
     prob_name = 'forced' if name in EXACT_ON_LINEAR_PROBLEMS else 'oscillator'
-    order, _ = testing.convergence(s, testing.PROBLEMS[prob_name](),
-                                   dts_for(name, prob_name, testing.default_step_sizes()), 2.0)
+    order, _ = order_of(s, prob_name, dts_for(name, prob_name, testing.default_step_sizes()), 2.0)
     assert order >= s.order - 0.15
 
 

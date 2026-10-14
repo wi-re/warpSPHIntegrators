@@ -62,7 +62,7 @@ separability, drift-field support and available RHS capabilities. An empty
 `available_capabilities` set excludes ETD2RK, whose linear action is mandatory;
 optional split accessors do not restrict combined-RHS methods.
 
-The adapter supports the 130 catalog records whose `metadata.state_kind` is
+The adapter supports the 132 catalog records whose `metadata.state_kind` is
 `tensor`. Geometric and Newmark methods require a position/velocity system;
 using their records with TensorState fails before stepping. Use the
 [full state protocol](quickstart) for those methods and SPH fields. The catalog

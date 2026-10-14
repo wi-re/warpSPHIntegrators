@@ -2,10 +2,10 @@
 sidebar_label: Coupled RK
 ---
 
-# Coupled (block) fully implicit RK (`CoupledRK`) — 2 schemes
+# Coupled (block) fully implicit RK (`CoupledRK`) — 4 schemes
 
-The fully implicit RK family, driven by `fullyimplicit.py`: Gauss-Legendre 2
-and Radau IIA $s=2$. These are the collocation methods whose Butcher $a$
+The fully implicit RK family, driven by `fullyimplicit.py`: Gauss-Legendre 2/3
+and Radau IIA $s=2/3$. These are the collocation methods whose Butcher $a$
 matrices are **coupled** ($a_{ij} \neq 0$ for $j > i$) — a DIRK driver cannot
 take them, because no stage is a function of already-known quantities alone.
 
@@ -36,7 +36,7 @@ Driver conventions (NOTES.md §3.18):
   work; final-stage re-evaluation, companion and gradient work add RHS calls.
   Phase 6 divides Krylov counts by $s$ and instruments actual RHS calls for
   end-to-end work comparisons.
-- Each scheme carries a **null-stage order-2 companion**: the 2-stage-only
+- The two-stage schemes carry a **null-stage order-2 companion**: the 2-stage-only
   order-2 embedded pair is degenerate (it is $b$ itself), so the companion
   quadrature is taken over $(k_0, k_1, k_2)$ with the null stage $k_0 =
   f(t^n, y^n)$ at $c_0 = 0$ (min-norm choice). The companion's $b_0 \neq 0$
@@ -44,6 +44,11 @@ Driver conventions (NOTES.md §3.18):
   both schemes. `IntegrationResult.error` is the state-shaped difference
   `state_difference(y_main, y_embed)` (the same convention the adaptive
   helpers use; [solver](../solver)).
+- Gauss-Legendre 3 uses the source's same-node order-2 companion and needs no
+  null-stage call. Radau IIA s=3 has a derived unsmoothed order-3 companion with
+  one null-stage call. Their estimate exponents are 3 and 4, respectively;
+  neither exponent equals its propagated order. Solver accuracy must resolve
+  the estimate as well as the main solution.
 
 ## Gauss-Legendre 2 (`Gauss-Legendre 2`)
 
@@ -121,16 +126,53 @@ RK4 secular); (2) stiff damping at $z = -10$ across the implicit family
 (Radau 0.0959, BDF5 0.65, GL2 0.30, trapezoidal 0.67); (3) the order ladder
 (GL2 3.98, Radau 3.00, vs. the explicit/implicit references).
 
-## Phase 6 scale decision
+## Three-stage registrations
+
+`Gauss-Legendre 3` propagates at order **6**, with A-stability, time symmetry and
+the RK symplectic identity. `Radau IIA s=3` propagates at order **5**, with
+L-stability and stiff accuracy. Names encode stage count here; the pinned
+upstream `RadauIIA5` means propagated order five and three stages.
+
+Coefficients are verified against the full pinned OrdinaryDiffEq 7.8.1 monorepo
+tree, bundled FIRK 2.8.1. A Julia oracle evaluates its Gauss quadrature constructor
+and reconstructs Radau A from its inverse-stage transform; a separate dense
+Newton solve checks nonlinear autonomous and time-dependent one-step results.
+The source snapshot and transformations are retained in the
+[coefficient oracle](https://github.com/wi-re/warpSPHIntegrators/blob/main/scripts/coefficients/wave9/oracle.json).
+
+Gauss's companion weights are `(-5/6, 8/3, -5/6)` over its three derivatives.
+Radau's order-3 companion over the null plus three stages is
+`(-1, 7/9+17*sqrt(6)/36, 7/9-17*sqrt(6)/36, 4/9)`.
+Its error is `h*(f0 + e @ A @ k)`, derived from the source increment estimator.
+It deliberately omits the source's shifted-Jacobian smoothing and special
+re-estimation, so it does not reproduce upstream stiff adaptive control.
+The main solution is still the order-five Radau collocation method. Companion
+order conditions, estimate rates, nonlinear branch accuracy and adaptive runs
+are checked separately.
+
+High-order accuracy and geometric measurements need tighter solves than the
+default FD/GMRES floor. For a differentiable RHS, use
+`solver_opts={'matvec': 'jvp', 'tol': 1e-13, 'newton_tol': 1e-9}` in CPU float64
+for the small reference problems; Newton's threshold is applied to the driver's
+scaled norm. Choose tolerances and a spatial preconditioner for the real consumer.
+Adaptive Gauss uses a conservative low-order estimate and is not guaranteed
+cheaper than fixed steps merely because the main method is order six.
+
+## Scale decision and remaining stages
 
 A local stage-block preconditioner and three-stage Gauss/Radau prototypes are
 measured on reaction and mesh-refined diffusion systems at N=64/256/1024. The
 reaction cases pass; diffusion exceeds the work bar at N=256 and fails tolerance
-at N=1024, including the two-stage baselines. No higher-stage method is registered.
-The next prerequisite is spatial/field-aware preconditioning, followed by
-companion/gradient/source gates. See
+at N=1024, including the two-stage baselines. The spatial follow-up clears those
+cases. Phase 8 retests the actual registered s=3 drivers, including companion
+work: shifted ILU and direct LU pass the unchanged bar through N=1024.
+At N=1024 diffusion, shifted ILU takes 10 Krylov iterations per step for each
+three-stage method; maximum additional native RSS is about 155 MiB. General
+unstructured/multifield SPH assembly remains application work. Stages four and
+above are not registered and need their own evidence. See
 [the recorded gate and benchmark](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/phase6-validation.md)
-and [preconditioner usage](../solver).
+and [Phase 8 validation](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/phase8-wave9-validation.md),
+with [preconditioner usage](../solver).
 
 ## References
 

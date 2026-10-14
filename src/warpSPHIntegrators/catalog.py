@@ -48,8 +48,8 @@ def scheme_metadata(scheme) -> SchemeMetadata:
             if tab.d_explicit is not None and tab.d_implicit is not None:
                 embedded = scheme.order - 1
         elif tab.companion_b is not None:
-            embedded = 2
-            extra = 1  # the null stage f(t_n, y_n), outside the coupled solve
+            embedded = 3 if key == 'radauIia3' else 2
+            extra = int(tab.companion_b[0] != 0)  # optional null RHS evaluation
         break
     if key in {'ros3p', 'exprb32'}:
         stages, embedded = (3 if key == 'ros3p' else 2), 2

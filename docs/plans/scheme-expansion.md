@@ -1,8 +1,8 @@
 # Scheme expansion plan — OrdinaryDiffEq gap (staged by family and complexity)
 
-**Status: waves 1–8 committed, including the Phase 1 validation gate
-(2026-10-14); waves 9–16 unstarted.**
-The committed registry contains 137 schemes (108 before wave 8; 64 at planning time).
+**Status: waves 1–8 committed; the first wave-9 batch is implemented in Phase 8
+(three-stage Gauss/Radau), while higher stages and waves 10–16 remain gated.**
+The registry contains 139 schemes (137 before this batch; 64 at planning time).
 The current execution gates are in [REPOSITORY_PLAN.md](../../REPOSITORY_PLAN.md).
 
 Scope: the schemes present in local **OrdinaryDiffEq v7.8.1** but missing from this
@@ -247,7 +247,7 @@ Package metadata remains 0.6.1; these changes are unreleased.
 
 <a id="wave-9--firk-block-tableaus-ordinarydiffeqfirk-seven-listed-stage-configurations"></a>
 
-### Wave 9 — FIRK tableaus — spatial follow-up passes, registrations deferred
+### Wave 9 — FIRK tableaus — first s=3 batch implemented
 
 The original list mixed stage counts and upstream propagated-order names. Gauss
 s=3/4/5 means orders 6/8/10. Upstream RadauIIA3 is order 3, s=2 (already ours);
@@ -272,22 +272,35 @@ then still requires companions/estimate rates, coefficient/source validation and
 complete numerical/gradient gates. No Lobatto addition is implied; its partitioned
 interface remains a separate design.
 
+Phase 8 clears these remaining gates for **Gauss-Legendre 3 (order 6)** and
+**Radau IIA s=3 (order 5)**. The complete pinned monorepo tree is checked by the
+Julia source oracle. Gauss carries the source same-node order-2 companion;
+Radau uses the explicitly derived unsmoothed order-3 companion, not the source's
+filtered adaptive controller. Actual registered-driver work includes companion
+calls and passes the same spatial gate. See
+[the first-batch record](../development/phase8-wave9-validation.md).
+Gauss s>=4, Radau s>=4 and variable-order controllers remain separate batches:
+the first s=3 result does not qualify their solve scaling or estimators.
+
 ## Wave 10 — multistep extensions (C3/C4, ~16 methods)
 
-- `bdf.py`: NordsieckBDF (Nordsieck-form BDF), QNDF / QNDF1 / QNDF2 (quasi-Newton
-  NDF — fewer implicit solves per step), MEBDF2 (modified-energy BDF).
-- `multistep.py`: ABM54 (5(4) embedded multistep → adaptive-capable); VCAB3/4/5 and
-  VCABM/VCABM3/4/5 (variable-coefficient variants for non-autonomous problems —
-  verify the history-structure difference from our autonomous AB/ABM before
+- `bdf.py`: NordsieckBDF (Nordsieck-form BDF), QNDF / QNDF1 / QNDF2
+  (quasi-constant-step NDF — inspect order/history semantics), MEBDF2 (modified extended BDF).
+- `multistep.py`: ABM54 (fifth-order predictor/corrector, **not** a source 5(4)
+  embedded/adaptive pair); VCAB3/4/5 and VCABM/VCABM3/4/5 (variable-step history
+  coefficients — fixed-step AB/ABM also support non-autonomous RHS; inspect
+  timestep ratios, history and controller state before
   transcribing).
 - New small Nordsieck driver: AN5, JVODE (ODEPACK's classic).
 - `imexmultistep.py`: CNLF2 (Crank–Nicolson–Lefort–Fortunato 2).
-- AMF (`OrdinaryDiffEqAMF`, amf.jl + linsolve.jl): Adams–Moulton with a frozen linear
-  operator solved exactly — matches our semilinear IMEX/ARK pattern (enumerate the
-  alg from source at implementation time).
+- AMF (`OrdinaryDiffEqAMF`, amf.jl + linsolve.jl): **Approximate Matrix
+  Factorization**, a Rosenbrock-W wrapper with structured split factors. It needs
+  operator/factorization contracts and is not an Adams–Moulton extension.
 
-**Gate:** order at constant dt; cold-start correctness; the ABM54 embedded rate
-test; restart-on-dt-change.
+**Gate:** order at constant dt; cold-start correctness; any estimator must be
+derived and validated separately; step/history/order transitions for variable-step
+drivers. The source declaration inventory also includes FBDF/ABDF2 and DAE-specific
+variants; they are not interchangeable with fixed-coefficient BDF tableaus.
 
 ## Wave 11 — stabilized / Krylov extensions (C3, ~16 methods)
 
@@ -295,15 +308,22 @@ test; restart-on-dt-change.
   exponential RK 2), RKG1, RKG2, RKL1, RKMC2 (verify each method's construction from
   source — several are variants our driver does not currently parameterize).
 - `rosenbrock.py`: Rosenbrock23, Rosenbrock32 (tableau forms), RosenbrockW6S4OS,
-  Tsit5DA (Rosenbrock-type 5th order), HybridExplicitImplicitRK (verify structure).
+  Tsit5DA (a HybridExplicitImplicitRK instance for mass-matrix DAEs, not a plain
+  stiff fifth-order Rosenbrock tableau), HybridExplicitImplicitRK (new driver).
 - `exponential.py`: the remaining ODE exponential-RK members (ETDRK2 / EXPRB53
-  candidates — enumerate from `lib/OrdinaryDiffEqExponentialRK` at implementation
-  time; the local struct grep surfaced only the ETD2 family, so the full list is
-  unverified here).
+  candidates — macro-generated source members include ETDRK2/3/4, HochOst4,
+  Exp4, EPIRK4/5, EXPRB53s3 and Exprb32/43; explicit struct grep alone missed them).
 - `newmark.py`: GeneralizedAlpha (Hughes–Liu).
 
 **Gate:** real-axis stability interval per method (the selling point of this family);
 semilinear split tests; GMRES cost accounting where a solve is involved.
+
+The [reproducible Phase 8 source inventory](../development/evidence/phase8-source-inventory.json)
+records all nine package versions, declarations/order expressions and source hashes
+for waves 10–11. These are inventories, not coefficient/equivalence approvals.
+GeneralizedAlpha needs weighted second-order residuals and a parameter contract;
+stabilized methods need recurrences/stage selection, and exponential methods need
+phi/Krylov formulas. None is assumed to be a plain-tableau transcription.
 
 ## Wave 12 — RKN + second-order-ODE family (C4, ~17 methods, new general RKN driver)
 
@@ -333,8 +353,9 @@ block-solve scale for IRKN/PDIRK at s>2.
   polynomials — needs a linear (Krylov) solver per stage; rides the frozen-operator
   GMRES pattern from `rosenbrock.py`.
 - FunctionMap (`OrdinaryDiffEqFunctionMap`): integration composed with a fixed map.
-- Composite (`OrdinaryDiffEqCore.CompositeAlgorithm`): composition of registered
-  schemes — orchestration layer, no new math.
+- Composite (`OrdinaryDiffEqCore.CompositeAlgorithm`): **algorithm switching**
+  with choice/cache transitions, not the physical flow composition implemented
+  in Phase 7. Design its run/restart/adaptive semantics separately.
 
 **Gate:** per-driver; extrapolation convergence-order tests on the standard problems;
 IRKC stability-interval measurement.

@@ -1,0 +1,342 @@
+{
+  "monorepo_version": "7.8.1",
+  "monorepo_tree": "bae9b8e5f1d00e51c554648e5094e215164a19f8",
+  "qualification": "Source declaration inventory only; complete root tree verified by wave9/oracle.jl",
+  "packages": [
+    {
+      "wave": 10,
+      "package": "OrdinaryDiffEqAdamsBashforthMoulton",
+      "version": "2.2.0",
+      "algorithms": [
+        "AB3",
+        "AB4",
+        "AB5",
+        "ABM32",
+        "ABM43",
+        "ABM54",
+        "VCAB3",
+        "VCAB4",
+        "VCAB5",
+        "VCABM",
+        "VCABM3",
+        "VCABM4",
+        "VCABM5"
+      ],
+      "source_order_declarations": {
+        "AB3": "3",
+        "ABM32": "3",
+        "AB4": "4",
+        "ABM43": "4",
+        "AB5": "5",
+        "ABM54": "5",
+        "VCAB3": "3",
+        "VCAB4": "4",
+        "VCAB5": "5",
+        "VCABM3": "3",
+        "VCABM4": "4",
+        "VCABM5": "5",
+        "VCABM": "1  #dummy value"
+      },
+      "implementation_class": "history/coefficient/controller work, not plain tableaus",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqAdamsBashforthMoulton/src/alg_utils.jl": "00e0a71513b4d377c4498d1ccfa9578fda2372ec189802ae707b7651a983a8a6",
+        "lib/OrdinaryDiffEqAdamsBashforthMoulton/src/algorithms.jl": "7b45a51ac73c83d745840f3ebb53ccf178c3062996f82039aef79be2d5eeb8f1"
+      }
+    },
+    {
+      "wave": 10,
+      "package": "OrdinaryDiffEqBDF",
+      "version": "2.4.5",
+      "algorithms": [
+        "ABDF2",
+        "DABDF2",
+        "DFBDF",
+        "DImplicitEuler",
+        "DNordsieckBDF",
+        "FBDF",
+        "MEBDF2",
+        "NordsieckBDF",
+        "QNDF",
+        "QNDF1",
+        "QNDF2",
+        "SBDF"
+      ],
+      "source_order_declarations": {
+        "ABDF2": "2",
+        "SBDF": "alg.order",
+        "QNDF1": "1",
+        "QNDF2": "2",
+        "QNDF": "1 #dummy value",
+        "MEBDF2": "2",
+        "FBDF": "1 #dummy value",
+        "DImplicitEuler": "1",
+        "DABDF2": "2",
+        "DFBDF": "1 #dummy value",
+        "NordsieckBDF": "1  # dummy: the running order lives in the cache",
+        "DNordsieckBDF": "1"
+      },
+      "implementation_class": "history/order/nonlinear-solver work; D-prefixed algorithms include DAEs",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqBDF/src/alg_utils.jl": "0b75f0e8caf9f44e3db5f5294841f8f3cf8987bcc5d0479f3a889ce45b4e9ba1",
+        "lib/OrdinaryDiffEqBDF/src/algorithms.jl": "9a9d2d0cf0b23894f9a9b7338e8a9010611a7eb8074906a6d970e751fb9cf16b"
+      }
+    },
+    {
+      "wave": 10,
+      "package": "OrdinaryDiffEqNordsieck",
+      "version": "2.3.0",
+      "algorithms": [
+        "AN5",
+        "JVODE"
+      ],
+      "source_order_declarations": {
+        "AN5": "5",
+        "JVODE": "1  #dummy value"
+      },
+      "implementation_class": "Nordsieck history/step/order transformations",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqNordsieck/src/alg_utils.jl": "54d8264753366b88ea439455a3d67ac4c6cd5d9017b46ae3f36daecb2d0d1b7e",
+        "lib/OrdinaryDiffEqNordsieck/src/algorithms.jl": "33bd8ed35a63d997d43fff120e791c8a2a6c6cffe5ee55933a17f63a6fab2859"
+      }
+    },
+    {
+      "wave": 10,
+      "package": "OrdinaryDiffEqAMF",
+      "version": "2.3.0",
+      "algorithms": [
+        "AMF"
+      ],
+      "source_order_declarations": {},
+      "implementation_class": "wrapper over another algorithm with approximated matrix factorization",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqAMF/src/amf.jl": "3a42b4407e196916361747500f8ee33fe83a1a0dc968eca856bce1a397dd7246"
+      }
+    },
+    {
+      "wave": 10,
+      "package": "OrdinaryDiffEqIMEXMultistep",
+      "version": "2.2.0",
+      "algorithms": [
+        "CNAB2",
+        "CNLF2"
+      ],
+      "source_order_declarations": {
+        "CNAB2": "2",
+        "CNLF2": "2"
+      },
+      "implementation_class": "split history and startup work",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqIMEXMultistep/src/alg_utils.jl": "e3a47821532233ebd7bf0dde131df3a3f92f484c491244d42204d372b0e50055",
+        "lib/OrdinaryDiffEqIMEXMultistep/src/algorithms.jl": "2707c3c950f43fea16b652b1aebfb1ac740affcde2c4ab969d6ded0d0f206d87"
+      }
+    },
+    {
+      "wave": 11,
+      "package": "OrdinaryDiffEqStabilizedRK",
+      "version": "2.6.0",
+      "algorithms": [
+        "ESERK4",
+        "ESERK5",
+        "RKC",
+        "RKG1",
+        "RKG2",
+        "RKL1",
+        "RKL2",
+        "RKMC2",
+        "ROCK2",
+        "ROCK4",
+        "SERK2",
+        "TSRKC2",
+        "TSRKC3"
+      ],
+      "source_order_declarations": {
+        "ROCK2": "2",
+        "ROCK4": "4",
+        "ESERK4": "4",
+        "ESERK5": "5",
+        "SERK2": "2",
+        "RKC": "2",
+        "RKMC2": "2",
+        "TSRKC2": "2",
+        "TSRKC3": "3",
+        "RKL1": "1",
+        "RKL2": "2",
+        "RKG1": "1",
+        "RKG2": "2"
+      },
+      "implementation_class": "recurrence/stage-selection coefficients and stability/cost gate",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqStabilizedRK/src/alg_utils.jl": "6be24ba90a7c5589f54fb8d39f8f6ff21d578db9faf063f3b4e7a9ca20303b55",
+        "lib/OrdinaryDiffEqStabilizedRK/src/algorithms.jl": "988bdae17ed7349a9d56fda8f283237bf4ba36c644e01e437fbed8f75a64e5d1"
+      }
+    },
+    {
+      "wave": 11,
+      "package": "OrdinaryDiffEqRosenbrock",
+      "version": "2.7.0",
+      "algorithms": [
+        "GRK4A",
+        "GRK4T",
+        "HybridExplicitImplicitRK",
+        "ROK4a",
+        "ROS2",
+        "ROS2PR",
+        "ROS2S",
+        "ROS3",
+        "ROS34PRw",
+        "ROS34PW1a",
+        "ROS34PW1b",
+        "ROS34PW2",
+        "ROS34PW3",
+        "ROS3P",
+        "ROS3PR",
+        "ROS3PRL",
+        "ROS3PRL2",
+        "Rodas23W",
+        "Rodas3",
+        "Rodas3P",
+        "Rodas3d",
+        "Rodas4",
+        "Rodas42",
+        "Rodas4P",
+        "Rodas4P2",
+        "Rodas4PW",
+        "Rodas5",
+        "Rodas5P",
+        "Rodas5Pe",
+        "Rodas5Pr",
+        "Rodas6P",
+        "Ros4LStab",
+        "RosShamp4",
+        "Rosenbrock23",
+        "Rosenbrock32",
+        "RosenbrockW6S4OS",
+        "Scholz4_7",
+        "Tsit5DA",
+        "Veldd4",
+        "Velds4"
+      ],
+      "source_order_declarations": {
+        "Rosenbrock23": "2",
+        "Rosenbrock32": "3",
+        "Rodas3P": "3",
+        "ROS3PR": "3",
+        "ROS3PRL": "3",
+        "ROS3PRL2": "3",
+        "ROS3P": "3",
+        "Rodas3": "3",
+        "Rodas3d": "3",
+        "Rodas23W": "3",
+        "ROS2": "2",
+        "ROS2PR": "2",
+        "ROS2S": "2",
+        "ROS3": "3",
+        "Scholz4_7": "3",
+        "ROS34PW1a": "3",
+        "ROS34PW1b": "3",
+        "ROS34PW2": "3",
+        "ROS34PW3": "4",
+        "ROS34PRw": "3",
+        "ROK4a": "4",
+        "RosShamp4": "4",
+        "Veldd4": "4",
+        "Velds4": "4",
+        "GRK4T": "4",
+        "GRK4A": "4",
+        "Ros4LStab": "4",
+        "RosenbrockW6S4OS": "4",
+        "Rodas4": "4",
+        "Rodas42": "4",
+        "Rodas4P": "4",
+        "Rodas4P2": "4",
+        "Rodas4PW": "4",
+        "Rodas5": "5",
+        "Rodas5P": "5",
+        "Rodas5Pr": "5",
+        "Rodas5Pe": "5",
+        "Rodas6P": "6",
+        "HybridExplicitImplicitRK": "alg.order"
+      },
+      "implementation_class": "linearized stage driver; tableau compatibility must be checked per method",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqRosenbrock/src/alg_utils.jl": "af0bf2543945b0ddff097d3f749db0af101c8cda84e31282e819e36875707c1b",
+        "lib/OrdinaryDiffEqRosenbrock/src/algorithms.jl": "c712ed73bda464ab8030e8a73fcfa6c0e4f701821f6cfb05bf5432ff5a081726"
+      }
+    },
+    {
+      "wave": 11,
+      "package": "OrdinaryDiffEqExponentialRK",
+      "version": "2.3.0",
+      "algorithms": [
+        "EPIRK4s3A",
+        "EPIRK4s3B",
+        "EPIRK5P1",
+        "EPIRK5P2",
+        "EPIRK5s3",
+        "ETD2",
+        "ETDRK2",
+        "ETDRK3",
+        "ETDRK4",
+        "EXPRB53s3",
+        "Exp4",
+        "Exprb32",
+        "Exprb43",
+        "HochOst4",
+        "LawsonEuler",
+        "NorsettEuler"
+      ],
+      "source_order_declarations": {
+        "LawsonEuler": "1",
+        "NorsettEuler": "1",
+        "ETDRK2": "2",
+        "ETDRK3": "3",
+        "ETDRK4": "4",
+        "HochOst4": "4",
+        "Exp4": "4",
+        "EPIRK4s3A": "4",
+        "EPIRK4s3B": "4",
+        "EPIRK5s3": "5",
+        "EPIRK5P1": "5",
+        "EPIRK5P2": "5",
+        "EXPRB53s3": "5",
+        "ETD2": "2",
+        "Exprb32": "3",
+        "Exprb43": "4"
+      },
+      "implementation_class": "phi/Jacobian stage formulas and Krylov error/cost work",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqExponentialRK/src/alg_utils.jl": "ac4dcb3cdf06076f69a5c8271e958d5ec8cc44a77b283943efc2fa44c44cf003",
+        "lib/OrdinaryDiffEqExponentialRK/src/algorithms.jl": "07d136201003da3d1e5c33fa2f332647801d3bd2e90ed9d248000c2ba30ec8c5"
+      }
+    },
+    {
+      "wave": 11,
+      "package": "OrdinaryDiffEqNewmark",
+      "version": "2.4.0",
+      "algorithms": [
+        "GeneralizedAlpha",
+        "NewmarkBeta"
+      ],
+      "source_order_declarations": {
+        "NewmarkBeta": "alg.\u03b3 \u2248 1 / 2 ? 2 : 1",
+        "GeneralizedAlpha": "alg.\u03b3 * (1 - alg.\u03b1f) \u2248 (1 - alg.\u03b1m) / 2 ? 2 : 1"
+      },
+      "implementation_class": "second-order residual/weighted-time driver, not a plain RK tableau",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqNewmark/src/alg_utils.jl": "14f477b5a4565afd7e3050761de9deb5a38d23d7c3022e8afed96115f382ab11",
+        "lib/OrdinaryDiffEqNewmark/src/algorithms.jl": "73f6b8f98a341d812fb2d84acfd29916e2d47fb80d5fe58f638deb3ad0c4700d"
+      }
+    }
+  ],
+  "corrections": [
+    "Variable-step coefficients concern step/history ratios; non-autonomous RHS works with fixed-step AB/ABM too.",
+    "MEBDF2 means modified extended BDF, not modified-energy BDF.",
+    "QNDF refers to quasi-constant timesteps for NDF; it is not shorthand for quasi-Newton.",
+    "ABM54 order five does not by its name certify an embedded fourth-order error estimate.",
+    "Pinned AMF means Approximate Matrix Factorization for Rosenbrock-W, not Adams-Moulton with a frozen operator.",
+    "Tsit5DA is a HybridExplicitImplicitRK instance for mass-matrix DAEs; it is not a generic stiff fifth-order Rosenbrock addition.",
+    "ETD2 alone is not the whole exponential family: macro-generated ETDRK/EPIRK/Exprb members exist.",
+    "GeneralizedAlpha needs weighted second-order acceleration/time residuals and a parameter contract.",
+    "OrdinaryDiffEq CompositeAlgorithm switches algorithms; it is not Phase 7 physical flow composition."
+  ]
+}

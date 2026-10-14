@@ -3970,6 +3970,69 @@
         "tests/test_adaptive.py"
       ],
       "intended_consumer": "semilinear or Jacobian-linearized stiff ODEs"
+    },
+    {
+      "name": "Gauss-Legendre 3",
+      "identifier": "gaussLegendre3",
+      "status": "implemented",
+      "wave": 9,
+      "source": {
+        "version": "OrdinaryDiffEq 7.8.1 monorepo / bundled FIRK 2.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8",
+        "file": "lib/OrdinaryDiffEqFIRK/src/firk_tableaus.jl",
+        "constructor": "generateGaussLegendreTableau(Float64,Float64,3)",
+        "verification": "Complete monorepo tree verified; source SHA-256, Julia coefficients and nonlinear autonomous/non-autonomous one-step oracle in scripts/coefficients/wave9/oracle.json"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/fullyimplicit.py",
+        "constructor": "gaussLegendre3"
+      },
+      "coefficient_modifications": [
+        "Exact three-stage collocation coefficients; independent Julia source quadrature oracle agrees",
+        "Source same-node order-2 companion represented with a zero null-stage weight; no extra RHS evaluation"
+      ],
+      "evidence": "docs/development/phase8-wave9-validation.md",
+      "tests": [
+        "tests/test_firk_wave9.py",
+        "tests/test_convergence.py",
+        "tests/test_embedded.py",
+        "tests/test_hamiltonian.py",
+        "tests/test_stiff.py",
+        "tests/test_tvd.py"
+      ],
+      "intended_consumer": "high-accuracy conservative/geometric ordinary ODEs"
+    },
+    {
+      "name": "Radau IIA s=3",
+      "identifier": "radauIia3",
+      "status": "implemented",
+      "wave": 9,
+      "source": {
+        "version": "OrdinaryDiffEq 7.8.1 monorepo / bundled FIRK 2.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8",
+        "file": "lib/OrdinaryDiffEqFIRK/src/firk_tableaus.jl",
+        "constructor": "RadauIIA5Tableau(Float64,Float64)",
+        "verification": "Complete monorepo tree verified; source SHA-256, Julia coefficients and nonlinear autonomous/non-autonomous one-step oracle in scripts/coefficients/wave9/oracle.json"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/fullyimplicit.py",
+        "constructor": "radauIia3"
+      },
+      "coefficient_modifications": [
+        "Order-five source algorithm is three stages, not an order-three method",
+        "Exact A reconstructed against pinned inverse-stage transform",
+        "Derived unsmoothed order-3 companion (-1, b - e @ A); source shifted-Jacobian filter/re-estimation is not reproduced"
+      ],
+      "evidence": "docs/development/phase8-wave9-validation.md",
+      "tests": [
+        "tests/test_firk_wave9.py",
+        "tests/test_convergence.py",
+        "tests/test_embedded.py",
+        "tests/test_hamiltonian.py",
+        "tests/test_stiff.py",
+        "tests/test_tvd.py"
+      ],
+      "intended_consumer": "high-accuracy stiff ordinary ODEs with spatial preconditioning at scale"
     }
   ],
   "other_dispositions": [
@@ -4624,14 +4687,14 @@
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
-      "name": "Gauss s=3 / Radau IIA s=3",
+      "name": "Gauss s>=4 / Radau IIA s>=4",
       "status": "deferred",
-      "reason": "Numerical prototypes pass orders 6/5, collocation, stability, symmetry and gradients; shifted spatial ILU clears recorded 1D scale cases, but companion/source/catalog gates remain",
-      "source": "Collocation derivation at shifted Gauss/Radau nodes; Hairer & Wanner, coimbra.pdf",
-      "implementation": "benchmarks/collocation_prototypes.py",
-      "tests": "tests/test_implicit_prototypes.py",
-      "evidence": "docs/development/phase6-validation.md",
-      "intended_consumer": "higher-order stiff or conservative systems after spatial/field-aware preconditioning clears the recorded gate"
+      "reason": "First s=3 batch registered in Phase 8; higher stages still require their own spatial scaling, coefficients/companions and catalog gates",
+      "source": "OrdinaryDiffEq 7.8.1 pinned monorepo, lib/OrdinaryDiffEqFIRK; arbitrary-stage Gauss / Radau generators",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/development/phase8-wave9-validation.md",
+      "intended_consumer": "only after each higher-stage batch has a measured benefit and passes the unchanged scale bar"
     }
   ]
 }

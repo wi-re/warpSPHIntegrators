@@ -66,7 +66,7 @@ from .dirk import (TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA,
                    ESDIRK54I8L2SA, ESDIRK659L2SA, SSPSDIRK2, ARS222, ARS232, ARS343, ARS443,
                    BHR553, Cash4, CFNLIRK3, Hairer4, Hairer42, SFSDIRK4, SFSDIRK5, SFSDIRK6,
                    SFSDIRK7, SFSDIRK8)
-from .fullyimplicit import gaussLegendre2, radauIia2, BlockTableau
+from .fullyimplicit import gaussLegendre2, radauIia2, gaussLegendre3, radauIia3, BlockTableau
 from .ark import ARK324L2SA, ARK436L2SA
 from .rkc import RKC1, RKC2, RKL2, stage_count
 from .rosenbrock import integrateROS3P as ROS3P
@@ -110,6 +110,7 @@ from .drift import DriftField, drift_fields, drift_fields_active
 __version__ = "0.6.1"
 
 __all__ = [
+    "gaussLegendre3", "radauIia3",
     "ConservativeDissipativeRHS", "compose", "LieTrotter", "Strang", "Yoshida4", "SplitScheme",
     "LinearExponentialFlow", "classify_separable", "SeparabilityResult",
     "stage_block_preconditioner", "stage_shifted_preconditioner",

@@ -62,8 +62,12 @@ def test_dissipation_flag_predicts_energy_behaviour(scheme, problem_name):
                     'is pinned by the area and kepler-form tests')
 
     problem = testing.PROBLEMS[problem_name]()
-    short = testing.max_energy_drift(scheme, problem, DT, T_SHORT)
-    long = testing.max_energy_drift(scheme, problem, DT, T_LONG)
+    # At order six the default FD/GMRES floor dominates the GL3 energy band.
+    # Measure its geometry with an accurate JVP solve, rather than skipping it
+    # or misclassifying solver drift as dissipation of the collocation method.
+    options={'solver_opts':dict(matvec='jvp',tol=1e-13,newton_tol=1e-9)} if scheme.name=='Gauss-Legendre 3' else {}
+    short = testing.max_energy_drift(scheme, problem, DT, T_SHORT, **options)
+    long = testing.max_energy_drift(scheme, problem, DT, T_LONG, **options)
     if max(short, long) < ENERGY_NOISE_FLOOR:
         return
     growth = long / short
@@ -92,6 +96,7 @@ def test_bounded_energy_schemes_are_exactly_the_expected_set():
         # measurement below); Radau IIA s=2 is deliberately not in this set:
         # L-stable and dissipative (kepler energy growth 8.1 over 8x the time).
         'Gauss-Legendre 2',
+        'Gauss-Legendre 3',
         'SSPSDIRK2',  # composition of two implicit-midpoint half-steps
     }
 
@@ -123,6 +128,7 @@ LINEARLY_SYMPLECTIC = {
     # (a_12 != a_21). Radau IIA s=2 is deliberately absent -- its defect is
     # 2.44e-2, squarely in the "not symplectic" branch.
     'Gauss-Legendre 2',
+    'Gauss-Legendre 3',
 }
 NONLINEARLY_SYMPLECTIC = LINEARLY_SYMPLECTIC - {'Newmark', 'Trapezoidal (Crank-Nicolson)'}
 
@@ -186,7 +192,7 @@ def test_every_scheme_has_the_expected_linear_oscillator_area_property(scheme):
                     f'test_high_order_area_defect_grows_with_the_step')
     solver = None
     if scheme.name in {'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)',
-                       'Newmark', 'Gauss-Legendre 2', 'SSPSDIRK2'}:
+                       'Newmark', 'Gauss-Legendre 2', 'Gauss-Legendre 3', 'SSPSDIRK2'}:
         # Gauss-Legendre 2 needs the strict solve too: with the default JFNK
         # tolerances its area defect is 4.29e-06 (solver noise), the strict
         # solve recovers 3.05e-13 (the method's true symplecticity).

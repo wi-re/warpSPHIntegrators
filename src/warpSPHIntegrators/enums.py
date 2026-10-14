@@ -237,6 +237,9 @@ class IntegrationSchemeType(Enum):
     sfstdirk6 = 134
     sfstdirk7 = 135
     sfstdirk8 = 136
+    # Wave 9, first scale-qualified batch: stage-count names; orders 6/5.
+    gaussLegendre3 = 137
+    radauIia3 = 138
 
 
 # --------------------------------------------------------------------------- #
@@ -244,7 +247,7 @@ class IntegrationSchemeType(Enum):
 # --------------------------------------------------------------------------- #
 #
 # IntegrationSchemeType is the single enum that captures every registered
-# scheme, but a 137-member flat list does not tell a user which entry is an
+# scheme, but a 139-member flat list does not tell a user which entry is an
 # explicit scheme and which is an implicit one. The family enums below are
 # thin VIEWS of the same members: every member keeps the same name and the
 # same int value as its IntegrationSchemeType counterpart, so all four lookup
@@ -255,7 +258,7 @@ class IntegrationSchemeType(Enum):
 #     getIntegrator('RK4')
 #     getIntegrator('rungeKutta4')
 #
-# and the families are exhaustive and disjoint over the 137 members (pinned in
+# and the families are exhaustive and disjoint over the 139 members (pinned in
 # tests/test_family_enums.py). `SCHEME_FAMILY` maps a scheme's identifier to
 # the family enum class it belongs to; IntegrationScheme.family is the same
 # fact on the registered scheme object.
@@ -437,10 +440,13 @@ class CoupledRK(Enum):
     Non-triangular tableaus (a_ij != 0 for i != j), so the s stage equations
     are one s-by-s JFNK block solve over a BlockState, not s sequential stage
     solves. Gauss-Legendre 2 (order 4, A-stable, symplectic by measurement)
-    and Radau IIA s=2 (order 3, L-stable, stiffly accurate).
+    and Radau IIA s=2 (order 3, L-stable, stiffly accurate), plus scale-qualified
+    s=3 Gauss/Radau at orders 6/5 with distinct companion orders 2/3.
     """
     gaussLegendre2 = IntegrationSchemeType.gaussLegendre2.value
     radauIia2 = IntegrationSchemeType.radauIia2.value
+    gaussLegendre3 = IntegrationSchemeType.gaussLegendre3.value
+    radauIia3 = IntegrationSchemeType.radauIia3.value
 
 
 class MultistepImplicit(Enum):

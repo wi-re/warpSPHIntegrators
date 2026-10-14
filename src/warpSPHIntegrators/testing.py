@@ -1009,7 +1009,7 @@ def energy_drift(scheme, problem: Problem, dt: float, T: float) -> float:
     return abs(e1 - e0) / abs(e0)
 
 
-def max_energy_drift(scheme, problem: Problem, dt: float, T: float) -> float:
+def max_energy_drift(scheme, problem: Problem, dt: float, T: float, **scheme_kwargs) -> float:
     """Largest relative energy error seen at any step in [0, T].
 
     This, not the endpoint value, is what distinguishes a symplectic scheme from a
@@ -1017,6 +1017,7 @@ def max_energy_drift(scheme, problem: Problem, dt: float, T: float) -> float:
     energy error *oscillates* within an O(dt^p) band no matter how long the run; a
     non-symplectic one accumulates error secularly and the maximum grows with T.
     Sampling only the endpoint measures the phase of the oscillation, not its bound.
+    Scheme options (including solver accuracy) are forwarded on every step.
     """
     if problem.energy is None:
         raise ValueError(f'{problem.name} is not a Hamiltonian problem')
@@ -1024,6 +1025,6 @@ def max_energy_drift(scheme, problem: Problem, dt: float, T: float) -> float:
     e0 = problem.energy(get_reference_state(system))
     worst = 0.0
     for _ in range(int(round(T / dt))):
-        system = scheme(system, dt=dt, f=problem.rhs, priorStep=None).state
+        system = scheme(system, dt=dt, f=problem.rhs, priorStep=None, **scheme_kwargs).state
         worst = max(worst, abs(problem.energy(get_reference_state(system)) - e0) / abs(e0))
     return worst
