@@ -6,6 +6,19 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ## [Unreleased]
 
+### Added — tensor ODE usability and discovery (Phase 4)
+
+- `TensorState` and `tensor_rhs` adapt ordinary `(t,y)` tensor ODEs, including
+  additive/semilinear parts, to the existing drivers with shape/dtype/device
+  checks. Added a complete standalone example and source-validated tensor guide.
+- `filter_schemes` returns registered records matching combined catalog criteria;
+  structural metadata covers state kind, separability, drift and retained history.
+  `getPreferredIntegrator` returns ordinary-ODE records while preserving the
+  existing raw-callable `getPreferredScheme` API.
+- Validated critical solver/family numerical controls while retaining custom
+  option/RHS passthrough. Added an isolated installed-wheel gate and CI job,
+  declared development tooling, and documented common/per-family options.
+
 ### Removed — unused integrated-field option
 
 - Removed `integrated(..., fluid_only=...)` and its automatic field metadata:

@@ -12,7 +12,7 @@ Python 3.11–3.13 are exercised by CI. From the checkout root:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -e '.[test]'
+python -m pip install -e '.[dev]'
 ```
 
 Choose the Torch CPU/CUDA build appropriate to your machine before installing the
@@ -111,9 +111,12 @@ file, independently of the shell's working directory.
 Confirm package/version/changelog consistency, generated catalog and provenance,
 full CPU gate and shard partition, example/link checks, and production site build.
 Retain environment, commands, timing and numerical caveats in a dated validation
-record. Build a wheel and check it in a fresh environment before publishing; the
-editable checkout is not evidence of wheel correctness. Installed-wheel automation
-and dependency bounds are scheduled in Phase 4. Publishing is a separate action
+record. Run `python scripts/validate_wheel.py --cpu-torch` to build and test the wheel
+in a fresh environment outside the checkout before publishing; the
+editable checkout is not evidence of wheel correctness. CI exercises a fresh dependency install. Offline local validation can use
+`--reuse-dependencies`: it shares numerical dependencies but still installs the
+project wheel into a separate venv and checks every module's import location and
+installed version. This does not establish minimum numerical dependency versions. Publishing is a separate action
 from creating commits and running checks.
 
 `.tmp` contains preserved local probes and generated validation output and is

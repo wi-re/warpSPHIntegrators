@@ -13,11 +13,12 @@ retains the baseline findings and migration rationale.
 | 1 — reliable gates and wave 8 | 137 registered schemes; numerical, CI partition, adaptive and gradient gates restored | `413d4c4`; [validation](docs/development/phase1-validation.md) |
 | 2 — executable onboarding and catalog | Derived metadata, generated catalog, runnable source examples and PR documentation gate | `5eb45e0`; [validation](docs/development/phase2-validation.md) |
 | 3 — consolidation and organization | Current architecture, method dispositions, indexed research, contributor workflow, relocated examples/assets/benchmarks and preserved oracles | [migration and validation](docs/development/phase3-validation.md) |
+| 4 — ordinary ODE usability and packaging | Tensor adapter, catalog filters, structural metadata, compatible selection, option guards and installed-wheel gate | [validation](docs/development/phase4-validation.md) |
 
 The 137-scheme catalog is committed locally and remains unreleased beyond package
 0.6.1. Expansion waves 1–8 are complete with recorded exceptions; waves 9–16
 remain subject to the gates below. Commit creation and package publication are
-separate actions. **Phase 4 is next.**
+separate actions. **Phase 5 is next.**
 
 ## Phase 3 completion record
 
@@ -34,21 +35,24 @@ separate actions. **Phase 4 is next.**
 
 ## Remaining execution phases
 
-### Phase 4 Improve discovery and ordinary ODE usability
+### Phase 4 Improve discovery and ordinary ODE usability — complete
 
 Priority: high. Size: medium.
 
-- [ ] Add the tensor adapter and catalog filter API with complete minimal examples.
-- [ ] Document a common option surface and scheme-specific options. Validate critical
+- [x] Add the tensor adapter and catalog filter API with complete minimal examples.
+- [x] Document a common option surface and scheme-specific options. Validate critical
   solver options while preserving intentional passthrough to the RHS.
 - [x] Remove unused `fluid_only` after checking warpSPHIntegrators, warpSPH and
   warpSPHCore for callers/metadata consumers. Document system/RHS ownership of
   particle masking; do not introduce a mask flag without a consumer.
   [Consumer audit and validation](docs/development/fluid-only-removal.md).
-- [ ] Define a compatible future for `getPreferredScheme` and metadata for
+- [x] Define a compatible future for `getPreferredScheme` and metadata for
   separability, drift fields, history, estimates and dense output.
-- [ ] Declare development/example/benchmark dependencies and test an installed
+- [x] Declare development/example/benchmark dependencies and test an installed
   wheel separately from the editable checkout.
+
+Validated: 6,907 tests passed, 609 skipped; installed-wheel and documentation
+gates pass. See [the Phase 4 record](docs/development/phase4-validation.md).
 
 Completion: a new user can choose an appropriate method and integrate a tensor ODE
 without implementing lifecycle hooks; advanced SPH state behavior remains covered
