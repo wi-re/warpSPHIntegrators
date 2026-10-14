@@ -30,6 +30,111 @@ FAMILY_PAGES = {
     'Newmark': ('Newmark', 'newmark'),
 }
 
+# Documentation labels, keyed by the stable public enum spelling. Author names
+# and constructions follow the cited family pages and coefficient source notes.
+# Keep legacy lookup names in snapshot()['schemes'][...]['name']; a friendly
+# label is presentation, not a new getIntegrator string alias.
+FRIENDLY_NAMES = {
+    'rungeKutta2': 'Explicit midpoint (Runge–Kutta 2)',
+    'rungeKutta3': 'Classical Runge–Kutta 3',
+    'rungeKutta4': 'Classical Runge–Kutta 4',
+    'rungeKutta4alt': 'Runge–Kutta 4 (3/8 rule)',
+    'sspRK3': 'Shu–Osher SSP Runge–Kutta 3',
+    'ssprk104': 'SSP Runge–Kutta (10 stages, order 4)',
+    'kykssprk42': 'Kubatko–Yeager–Ketcheson SSP RK2 (4 stages)',
+    'kyk2014dgssprk3s2': 'Kubatko–Yeager–Ketcheson DG SSP RK2 (3 stages)',
+    'ssprk43': 'SSP Runge–Kutta 3(2) (4 stages, comparison 1)',
+    'ssprk432': 'SSP Runge–Kutta 3(2) (4 stages, comparison 2)',
+    'ssprk932': 'SSP Runge–Kutta 3 (9 stages)',
+    'ssprk53_2n1': 'Higueras–Roldán SSP RK3 (2N1 variant)',
+    'ssprk53_2n2': 'Higueras–Roldán SSP RK3 (2N2 variant)',
+    'ssprk53_h': 'Higueras–Roldán SSP RK3 (H variant)',
+    'nystrom5th': 'Nyström Runge–Kutta 5',
+    'bogackiShampine': 'Bogacki–Shampine 3(2)',
+    'dormandPrince': 'Dormand–Prince 5(4)',
+    'cashKarp': 'Cash–Karp 5(4)',
+    'tsit5': 'Tsitouras 5(4)',
+    'owrenzen3': 'Owren–Zennaro 3(2)',
+    'owrenzen4': 'Owren–Zennaro 4(3)',
+    'owrenzen5': 'Owren–Zennaro 5(4)',
+    'bs5': 'Bogacki–Shampine 5(4)',
+    'stefanov5': 'Stepanov 5(4) (7 stages)',
+    'arushina2': 'Alshina–Zaks–Kalitkin 2(1)',
+    'arushina3': 'Alshina–Zaks–Kalitkin 3',
+    'arushina6': 'Alshina–Zaks–Kalitkin 6',
+    'msrk5': 'Stepanov 5 (9 stages)',
+    'msrk6': 'Stepanov 6 (9 stages)',
+    'sir54': 'Kovalnogov–Simos–Tsitouras 5 (SIR method)',
+    'raston4': 'Ralston Runge–Kutta 4',
+    'rko65': 'Runge–Kutta–Oliver 5 (6 stages)',
+    'rkm': 'Mead–Renaut Runge–Kutta 3',
+    'psrk4p7q6': 'Pseudo-symplectic Runge–Kutta 4 (6 stages)',
+    'psrk3p6q5': 'Pseudo-symplectic Runge–Kutta 3 (5 stages)',
+    'psrk3p5q4': 'Pseudo-symplectic Runge–Kutta 3 (4 stages)',
+    'rkv76iia': 'Verner 7(6) (RKV76.IIa)',
+    'tanyam7': 'Tanaka–Muramatsu–Yamashita 7(6)',
+    'tsitpap8': 'Tsitouras–Papakostas 8(7)',
+    'dp8': 'Dormand–Prince 8',
+    'leapFrog': 'Leapfrog (synchronized)',
+    'pefrl': 'Forest–Ruth 4 (position-first, PEFRL)',
+    'vefrl': 'Forest–Ruth 4 (velocity-first, VEFRL)',
+    'epec': 'Evaluate–predict–evaluate–correct (midpoint)',
+    'epecModified': 'Evaluate–predict–evaluate–correct (Heun)',
+    'tvdRK2': 'TVD Runge–Kutta 2 (Shu–Osher)',
+    'tvdRK3': 'TVD Runge–Kutta 3 (Shu–Osher)',
+    'sdirk2': 'Singly diagonally implicit Runge–Kutta 2',
+    'trbdf2': 'Trapezoidal rule–BDF2 (TR-BDF2)',
+    'sspsdirk2': 'SSP singly diagonally implicit Runge–Kutta 2',
+    'bhr553': 'Boscarino–Russo 3 (BHR553, implicit part)',
+    'cash4': 'Cash SDIRK 4(3)',
+    'cfnlirk3': 'Calvo–de Frutos–Novo 3 (implicit part)',
+    'hairer4': 'Hairer–Wanner SDIRK 4(3) (variant 1)',
+    'hairer42': 'Hairer–Wanner SDIRK 4(3) (variant 2)',
+    'mebdf2': 'Modified extended backward differentiation 2',
+    'ssprkmsvs32': 'SSP multistep (3 steps, order 2)',
+    'ssprkmsvs43': 'SSP multistep (4 steps, order 3)',
+    'imexEuler': 'Implicit–explicit Euler',
+    'sbdf2': 'Semi-implicit backward differentiation 2',
+    'sbdf3': 'Semi-implicit backward differentiation 3',
+    'cnab2': 'Crank–Nicolson–Adams–Bashforth 2',
+    'cnlf2': 'Crank–Nicolson–leapfrog 2',
+    'rkc1': 'Runge–Kutta–Chebyshev 1',
+    'rkc2': 'Runge–Kutta–Chebyshev 2',
+    'rkl2': 'Runge–Kutta–Legendre 2',
+    'ros3p': 'Rosenbrock–W 3(2) (ROS3P)',
+    'etd2rk': 'Exponential time-differencing Runge–Kutta 2',
+    'exprb32': 'Exponential Rosenbrock 3(2)',
+    'newmark': 'Newmark (average acceleration by default)',
+}
+for stages, order in ((5, 3), (6, 3), (7, 3), (8, 3), (5, 4)):
+    FRIENDLY_NAMES[f'ssprk{stages}{order}'] = f'SSP Runge–Kutta ({stages} stages, order {order})'
+for order in (6, 7, 8, 9):
+    FRIENDLY_NAMES[f'vern{order}'] = f'Verner {order}({order-1})'
+for order in (10, 12, 14):
+    FRIENDLY_NAMES[f'feagin{order}'] = f'Feagin Runge–Kutta {order}'
+for order in (3, 4, 5):
+    FRIENDLY_NAMES[f'kvaerno{order}'] = f'Kværnø {order}({order-1})'
+for code, pair, stages in (('3', '3(2)', 4), ('4', '4(3)', 6), ('47', '4(3)', 7),
+                           ('5', '5(4)', 8), ('58', '5(4)', 8)):
+    FRIENDLY_NAMES[f'kencarp{code}'] = f'Kennedy–Carpenter {pair} ({stages} stages, KenCarp{code})'
+for code, pair, stages, variant in (
+        ('324l2sa', '3(2)', 4, ''), ('436l2sa', '4(3)', 6, ''),
+        ('325l2sa', '3(2)', 5, ''), ('436l2sa2', '4(3)', 6, ', variant 2'),
+        ('437l2sa', '4(3)', 7, ''), ('547l2sa2', '5(4)', 7, ', variant 2'),
+        ('54i8l2sa', '5(4)', 8, ', I variant'), ('659l2sa', '6(5)', 9, '')):
+    FRIENDLY_NAMES[f'esdirk{code}'] = f'Explicit-first-stage SDIRK {pair} ({stages} stages{variant})'
+for code in ('222', '232', '343', '443'):
+    FRIENDLY_NAMES[f'ars{code}'] = f'Ascher–Ruuth–Spiteri (ARS{code}, implicit part)'
+for stages in range(4, 9):
+    FRIENDLY_NAMES[f'sfstdirk{stages}'] = f'Ferracina–Spijker SDIRK 4 ({stages} stages)'
+for stages in (2, 3):
+    FRIENDLY_NAMES[f'gaussLegendre{stages}'] = f'Gauss–Legendre collocation ({stages} stages)'
+    FRIENDLY_NAMES[f'radauIia{stages}'] = f'Radau IIA collocation ({stages} stages)'
+for code, pair, stages in (('324l2sa', '3(2)', 4), ('436l2sa', '4(3)', 6)):
+    FRIENDLY_NAMES[f'ark{code}'] = f'Kennedy–Carpenter additive RK {pair} ({stages} stages)'
+for order in range(1, 6):
+    FRIENDLY_NAMES[f'bdf{order}'] = f'Backward differentiation formula {order}'
+
 
 def snapshot():
     families = []
@@ -42,7 +147,9 @@ def snapshot():
         meta = asdict(s.metadata)
         for key in ('required_capabilities', 'optional_capabilities', 'required_options'):
             meta[key] = sorted(meta[key])
-        schemes.append({'name': s.name, 'identifier': s.identifier.name,
+        schemes.append({'name': s.name,
+                        'friendly_name': FRIENDLY_NAMES.get(s.identifier.name, s.name),
+                        'identifier': s.identifier.name,
                         'family': s.family.__name__, 'order': s.order,
                         'implicit': s.implicit, 'stability': s.stability,
                         'fsal': s.fsal, 'reuse_order': s.reuse_order, 'steps': s.steps,
@@ -80,12 +187,17 @@ def catalog_markdown(data):
              'pass to `propose_dt`, and can differ from the propagated order.', '',
              'An empty required-RHS set permits a combined plain callable. IMEX splits',
              'are optional; KenCarp/ARS DIRKs supply their pure implicit tableaus.',
-             'Stability labels and reuse qualifications are explained in the family pages.', '']
+             'Stability labels and reuse qualifications are explained in the family pages.', '',
+             'Friendly names spell out authors and method constructions. The enum column',
+             'gives the exact family member accepted by `getIntegrator`, for example',
+             '`getIntegrator(ExplicitRK.tsit5)` for Tsitouras 5(4). Family members share',
+             'their values with `IntegrationSchemeType`. Existing lookup strings keep',
+             'their original spelling; these documentation labels do not add string aliases.', '']
     for family in data['families']:
         lines += [f"## {family['label']} — {family['count']} schemes", '',
                   f"[Equations and qualifications](families/{family['page']}).", '',
-                  '| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |',
-                  '|---|---:|---|---:|---:|---|---|---|---|']
+                  '| Friendly name | Enum member | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |',
+                  '|---|---|---:|---|---:|---:|---|---|---|---|']
         for s in data['schemes']:
             if s['family'] != family['name']:
                 continue
@@ -105,7 +217,7 @@ def catalog_markdown(data):
                 state += '; separability assumptions'
             if s['history_length']:
                 state += f"; {s['history_length']} previous entries"
-            lines.append(f"| {s['name']} | {s['order']} | {stages} | "
+            lines.append(f"| {s['friendly_name']} | `{s['family']}.{s['identifier']}` | {s['order']} | {stages} | "
                          f"{s['embedded_order'] if s['embedded_order'] is not None else '—'} | "
                          f"{s['estimate_order'] if s['estimate_order'] is not None else '—'} | "
                          f"{s['stability'] or '—'} | {reuse} | {requirements} | {state} |")
@@ -120,8 +232,8 @@ def readme_catalog(data):
                  'Velocity Verlet', 'PEFRL', 'VEFRL'}
     for family in data['families']:
         lines += [f"### {family['label']} ({family['count']})", '',
-                  '| Scheme | Order | Stored stages | Estimate | Stability / structure |',
-                  '|---|---:|---|---|---|']
+                  '| Friendly name | Enum member | Order | Stored stages | Estimate | Stability / structure |',
+                  '|---|---|---:|---|---|---|']
         for s in data['schemes']:
             if s['family'] != family['name']:
                 continue
@@ -152,7 +264,7 @@ def readme_catalog(data):
                                   else 'SSP under its CFL bound')
             if s['history_length']:
                 properties.append('history required')
-            lines.append(f"| {s['name']} | {s['order']} | {stages} | {estimate} | "
+            lines.append(f"| {s['friendly_name']} | `{s['family']}.{s['identifier']}` | {s['order']} | {stages} | {estimate} | "
                          f"{'; '.join(properties) or '—'} |")
         lines.append('')
     return '\n'.join(lines)

@@ -18,221 +18,227 @@ An empty required-RHS set permits a combined plain callable. IMEX splits
 are optional; KenCarp/ARS DIRKs supply their pure implicit tableaus.
 Stability labels and reuse qualifications are explained in the family pages.
 
+Friendly names spell out authors and method constructions. The enum column
+gives the exact family member accepted by `getIntegrator`, for example
+`getIntegrator(ExplicitRK.tsit5)` for Tsitouras 5(4). Family members share
+their values with `IntegrationSchemeType`. Existing lookup strings keep
+their original spelling; these documentation labels do not add string aliases.
+
 ## Explicit RK — 63 schemes
 
 [Equations and qualifications](families/explicit-rk).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
-|---|---:|---|---:|---:|---|---|---|---|
-| Forward Euler | 1 | 1 | — | — | — | refused | combined | tensor |
-| Midpoint | 2 | 2 | — | — | — | 2 | combined | tensor |
-| Heun's Method (2nd order) | 2 | 2 | — | — | — | 2 | combined | tensor |
-| Ralston's Method (2nd order) | 2 | 2 | — | — | — | 1 | combined | tensor |
-| RK3 | 3 | 3 | — | — | — | 2 | combined | tensor |
-| Heun's Method (3rd order) | 3 | 3 | — | — | — | 1 | combined | tensor |
-| Ralston's Method (3rd order) | 3 | 3 | — | — | — | 1 | combined | tensor |
-| Wray's Method (3rd order) | 3 | 3 | — | — | — | 1 | combined | tensor |
-| SSP RK3 | 3 | 3 | — | — | — | 1 | combined | tensor |
-| SSPRK(10,4) | 4 | 10 | — | — | — | 3 | combined | tensor |
-| SSPRK53 | 3 | 5 | — | — | — | 1 | combined | tensor |
-| SSPRK63 | 3 | 6 | — | — | — | 1 | combined | tensor |
-| SSPRK73 | 3 | 7 | — | — | — | 1 | combined | tensor |
-| SSPRK83 | 3 | 8 | — | — | — | 1 | combined | tensor |
-| SSPRK54 | 4 | 5 | — | — | — | 1 | combined | tensor |
-| KYKSSPRK42 | 2 | 4 | — | — | — | 1 | combined | tensor |
-| KYK2014DGSSPRK_3S2 | 2 | 3 | — | — | — | 1 | combined | tensor |
-| SSPRK43 | 3 | 4 | 2 | 3 | — | 1 | combined | tensor |
-| SSPRK432 | 3 | 4 | 2 | 3 | — | 1 | combined | tensor |
-| SSPRK932 | 3 | 9 | — | — | — | 1 | combined | tensor |
-| SSPRK53_2N1 | 3 | 5 | — | — | — | 1 | combined | tensor |
-| SSPRK53_2N2 | 3 | 5 | — | — | — | 1 | combined | tensor |
-| SSPRK53_H | 3 | 5 | — | — | — | 1 | combined | tensor |
-| RK4 | 4 | 4 | — | — | — | 3 | combined | tensor |
-| RK4 (alternative) | 4 | 4 | — | — | — | 2 | combined | tensor |
-| Nystrom 5th order | 5 | 6 | — | — | — | 1 | combined | tensor |
-| Bogacki-Shampine 3(2) | 3 | 4 | 2 | 3 | — | 3 (FSAL) | combined | tensor |
-| Dormand-Prince 5(4) | 5 | 7 | 4 | 5 | — | 5 (FSAL) | combined | tensor |
-| Cash-Karp 5(4) | 5 | 6 | 4 | 5 | — | 1 | combined | tensor |
-| Tsit5 5(4) | 5 | 7 | 4 | 5 | — | 5 (FSAL) | combined | tensor |
-| OwrenZen3 3(2) | 3 | 4 | 2 | 3 | — | 3 (FSAL) | combined | tensor |
-| OwrenZen4 4(3) | 4 | 6 | 3 | 4 | — | 4 (FSAL) | combined | tensor |
-| OwrenZen5 5(4) | 5 | 8 | 4 | 5 | — | 5 (FSAL) | combined | tensor |
-| BS5 5(4) | 5 | 8 | 4 | 5 | — | 5 (FSAL) | combined | tensor |
-| Stepanov5 5(4) | 5 | 7 | 4 | 5 | — | 5 (FSAL) | combined | tensor |
-| Alshina2 2(1) | 2 | 2 | 1 | 2 | — | 1 | combined | tensor |
-| Alshina3 | 3 | 3 | — | — | — | 1 | combined | tensor |
-| Alshina6 | 6 | 7 | — | — | — | 4 | combined | tensor |
-| MSRK5 | 5 | 9 | — | — | — | 5 (FSAL) | combined | tensor |
-| MSRK6 | 6 | 9 | — | — | — | 6 (FSAL) | combined | tensor |
-| SIR54 | 5 | 8 | — | — | — | 5 (FSAL) | combined | tensor |
-| Ralston4 | 4 | 4 | — | — | — | 2 | combined | tensor |
-| RKO65 | 5 | 6 | — | — | — | 5 | combined | tensor |
-| RKM | 3 | 6 | — | — | — | 1 | combined | tensor |
-| PSRK4p7q6 | 4 | 6 | — | — | — | 4 | combined | tensor |
-| PSRK3p6q5 | 3 | 5 | — | — | — | 3 | combined | tensor |
-| PSRK3p5q4 | 3 | 4 | — | — | — | 3 | combined | tensor |
-| Vern6 6(5) | 6 | 9 | 5 | 6 | — | 6 (FSAL) | combined | tensor |
-| Vern7 7(6) | 7 | 10 | 6 | 7 | — | refused | combined | tensor |
-| Vern8 8(7) | 8 | 13 | 7 | 8 | — | 5 | combined | tensor |
-| Vern9 9(8) | 9 | 16 | 8 | 9 | — | 6 | combined | tensor |
-| RKV76IIa 7(6) | 7 | 10 | 6 | 7 | — | refused | combined | tensor |
-| TanYam7 7(6) | 7 | 10 | 6 | 7 | — | refused | combined | tensor |
-| TsitPap8 8(7) | 8 | 13 | 7 | 8 | — | 5 | combined | tensor |
-| DP8 | 8 | 12 | — | — | — | 5 | combined | tensor |
-| Feagin10 | 10 | 17 | — | — | — | 6 | combined | tensor |
-| Feagin12 | 12 | 25 | — | — | — | 6 | combined | tensor |
-| Feagin14 | 14 | 35 | — | — | — | refused | combined | tensor |
-| EPEC | 2 | 2 | — | — | — | 2 | combined | tensor |
-| EPEC Modified | 2 | 2 | — | — | — | 2 | combined | tensor |
-| TVD RK3 | 3 | 3 | — | — | — | refused | combined | tensor |
-| TVD RK2 | 2 | 2 | — | — | — | refused | combined | tensor |
-| Explicit Euler | 1 | 1 | — | — | — | refused | combined | tensor |
+| Friendly name | Enum member | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---|---:|---|---:|---:|---|---|---|---|
+| Forward Euler | `ExplicitRK.forwardEuler` | 1 | 1 | — | — | — | refused | combined | tensor |
+| Explicit midpoint (Runge–Kutta 2) | `ExplicitRK.rungeKutta2` | 2 | 2 | — | — | — | 2 | combined | tensor |
+| Heun's Method (2nd order) | `ExplicitRK.heunsMethod` | 2 | 2 | — | — | — | 2 | combined | tensor |
+| Ralston's Method (2nd order) | `ExplicitRK.ralston2nd` | 2 | 2 | — | — | — | 1 | combined | tensor |
+| Classical Runge–Kutta 3 | `ExplicitRK.rungeKutta3` | 3 | 3 | — | — | — | 2 | combined | tensor |
+| Heun's Method (3rd order) | `ExplicitRK.heunsMethod3rd` | 3 | 3 | — | — | — | 1 | combined | tensor |
+| Ralston's Method (3rd order) | `ExplicitRK.ralston3rd` | 3 | 3 | — | — | — | 1 | combined | tensor |
+| Wray's Method (3rd order) | `ExplicitRK.wray3rd` | 3 | 3 | — | — | — | 1 | combined | tensor |
+| Shu–Osher SSP Runge–Kutta 3 | `ExplicitRK.sspRK3` | 3 | 3 | — | — | — | 1 | combined | tensor |
+| SSP Runge–Kutta (10 stages, order 4) | `ExplicitRK.ssprk104` | 4 | 10 | — | — | — | 3 | combined | tensor |
+| SSP Runge–Kutta (5 stages, order 3) | `ExplicitRK.ssprk53` | 3 | 5 | — | — | — | 1 | combined | tensor |
+| SSP Runge–Kutta (6 stages, order 3) | `ExplicitRK.ssprk63` | 3 | 6 | — | — | — | 1 | combined | tensor |
+| SSP Runge–Kutta (7 stages, order 3) | `ExplicitRK.ssprk73` | 3 | 7 | — | — | — | 1 | combined | tensor |
+| SSP Runge–Kutta (8 stages, order 3) | `ExplicitRK.ssprk83` | 3 | 8 | — | — | — | 1 | combined | tensor |
+| SSP Runge–Kutta (5 stages, order 4) | `ExplicitRK.ssprk54` | 4 | 5 | — | — | — | 1 | combined | tensor |
+| Kubatko–Yeager–Ketcheson SSP RK2 (4 stages) | `ExplicitRK.kykssprk42` | 2 | 4 | — | — | — | 1 | combined | tensor |
+| Kubatko–Yeager–Ketcheson DG SSP RK2 (3 stages) | `ExplicitRK.kyk2014dgssprk3s2` | 2 | 3 | — | — | — | 1 | combined | tensor |
+| SSP Runge–Kutta 3(2) (4 stages, comparison 1) | `ExplicitRK.ssprk43` | 3 | 4 | 2 | 3 | — | 1 | combined | tensor |
+| SSP Runge–Kutta 3(2) (4 stages, comparison 2) | `ExplicitRK.ssprk432` | 3 | 4 | 2 | 3 | — | 1 | combined | tensor |
+| SSP Runge–Kutta 3 (9 stages) | `ExplicitRK.ssprk932` | 3 | 9 | — | — | — | 1 | combined | tensor |
+| Higueras–Roldán SSP RK3 (2N1 variant) | `ExplicitRK.ssprk53_2n1` | 3 | 5 | — | — | — | 1 | combined | tensor |
+| Higueras–Roldán SSP RK3 (2N2 variant) | `ExplicitRK.ssprk53_2n2` | 3 | 5 | — | — | — | 1 | combined | tensor |
+| Higueras–Roldán SSP RK3 (H variant) | `ExplicitRK.ssprk53_h` | 3 | 5 | — | — | — | 1 | combined | tensor |
+| Classical Runge–Kutta 4 | `ExplicitRK.rungeKutta4` | 4 | 4 | — | — | — | 3 | combined | tensor |
+| Runge–Kutta 4 (3/8 rule) | `ExplicitRK.rungeKutta4alt` | 4 | 4 | — | — | — | 2 | combined | tensor |
+| Nyström Runge–Kutta 5 | `ExplicitRK.nystrom5th` | 5 | 6 | — | — | — | 1 | combined | tensor |
+| Bogacki–Shampine 3(2) | `ExplicitRK.bogackiShampine` | 3 | 4 | 2 | 3 | — | 3 (FSAL) | combined | tensor |
+| Dormand–Prince 5(4) | `ExplicitRK.dormandPrince` | 5 | 7 | 4 | 5 | — | 5 (FSAL) | combined | tensor |
+| Cash–Karp 5(4) | `ExplicitRK.cashKarp` | 5 | 6 | 4 | 5 | — | 1 | combined | tensor |
+| Tsitouras 5(4) | `ExplicitRK.tsit5` | 5 | 7 | 4 | 5 | — | 5 (FSAL) | combined | tensor |
+| Owren–Zennaro 3(2) | `ExplicitRK.owrenzen3` | 3 | 4 | 2 | 3 | — | 3 (FSAL) | combined | tensor |
+| Owren–Zennaro 4(3) | `ExplicitRK.owrenzen4` | 4 | 6 | 3 | 4 | — | 4 (FSAL) | combined | tensor |
+| Owren–Zennaro 5(4) | `ExplicitRK.owrenzen5` | 5 | 8 | 4 | 5 | — | 5 (FSAL) | combined | tensor |
+| Bogacki–Shampine 5(4) | `ExplicitRK.bs5` | 5 | 8 | 4 | 5 | — | 5 (FSAL) | combined | tensor |
+| Stepanov 5(4) (7 stages) | `ExplicitRK.stefanov5` | 5 | 7 | 4 | 5 | — | 5 (FSAL) | combined | tensor |
+| Alshina–Zaks–Kalitkin 2(1) | `ExplicitRK.arushina2` | 2 | 2 | 1 | 2 | — | 1 | combined | tensor |
+| Alshina–Zaks–Kalitkin 3 | `ExplicitRK.arushina3` | 3 | 3 | — | — | — | 1 | combined | tensor |
+| Alshina–Zaks–Kalitkin 6 | `ExplicitRK.arushina6` | 6 | 7 | — | — | — | 4 | combined | tensor |
+| Stepanov 5 (9 stages) | `ExplicitRK.msrk5` | 5 | 9 | — | — | — | 5 (FSAL) | combined | tensor |
+| Stepanov 6 (9 stages) | `ExplicitRK.msrk6` | 6 | 9 | — | — | — | 6 (FSAL) | combined | tensor |
+| Kovalnogov–Simos–Tsitouras 5 (SIR method) | `ExplicitRK.sir54` | 5 | 8 | — | — | — | 5 (FSAL) | combined | tensor |
+| Ralston Runge–Kutta 4 | `ExplicitRK.raston4` | 4 | 4 | — | — | — | 2 | combined | tensor |
+| Runge–Kutta–Oliver 5 (6 stages) | `ExplicitRK.rko65` | 5 | 6 | — | — | — | 5 | combined | tensor |
+| Mead–Renaut Runge–Kutta 3 | `ExplicitRK.rkm` | 3 | 6 | — | — | — | 1 | combined | tensor |
+| Pseudo-symplectic Runge–Kutta 4 (6 stages) | `ExplicitRK.psrk4p7q6` | 4 | 6 | — | — | — | 4 | combined | tensor |
+| Pseudo-symplectic Runge–Kutta 3 (5 stages) | `ExplicitRK.psrk3p6q5` | 3 | 5 | — | — | — | 3 | combined | tensor |
+| Pseudo-symplectic Runge–Kutta 3 (4 stages) | `ExplicitRK.psrk3p5q4` | 3 | 4 | — | — | — | 3 | combined | tensor |
+| Verner 6(5) | `ExplicitRK.vern6` | 6 | 9 | 5 | 6 | — | 6 (FSAL) | combined | tensor |
+| Verner 7(6) | `ExplicitRK.vern7` | 7 | 10 | 6 | 7 | — | refused | combined | tensor |
+| Verner 8(7) | `ExplicitRK.vern8` | 8 | 13 | 7 | 8 | — | 5 | combined | tensor |
+| Verner 9(8) | `ExplicitRK.vern9` | 9 | 16 | 8 | 9 | — | 6 | combined | tensor |
+| Verner 7(6) (RKV76.IIa) | `ExplicitRK.rkv76iia` | 7 | 10 | 6 | 7 | — | refused | combined | tensor |
+| Tanaka–Muramatsu–Yamashita 7(6) | `ExplicitRK.tanyam7` | 7 | 10 | 6 | 7 | — | refused | combined | tensor |
+| Tsitouras–Papakostas 8(7) | `ExplicitRK.tsitpap8` | 8 | 13 | 7 | 8 | — | 5 | combined | tensor |
+| Dormand–Prince 8 | `ExplicitRK.dp8` | 8 | 12 | — | — | — | 5 | combined | tensor |
+| Feagin Runge–Kutta 10 | `ExplicitRK.feagin10` | 10 | 17 | — | — | — | 6 | combined | tensor |
+| Feagin Runge–Kutta 12 | `ExplicitRK.feagin12` | 12 | 25 | — | — | — | 6 | combined | tensor |
+| Feagin Runge–Kutta 14 | `ExplicitRK.feagin14` | 14 | 35 | — | — | — | refused | combined | tensor |
+| Evaluate–predict–evaluate–correct (midpoint) | `ExplicitRK.epec` | 2 | 2 | — | — | — | 2 | combined | tensor |
+| Evaluate–predict–evaluate–correct (Heun) | `ExplicitRK.epecModified` | 2 | 2 | — | — | — | 2 | combined | tensor |
+| TVD Runge–Kutta 3 (Shu–Osher) | `ExplicitRK.tvdRK3` | 3 | 3 | — | — | — | refused | combined | tensor |
+| TVD Runge–Kutta 2 (Shu–Osher) | `ExplicitRK.tvdRK2` | 2 | 2 | — | — | — | refused | combined | tensor |
+| Explicit Euler | `ExplicitRK.explicitEuler` | 1 | 1 | — | — | — | refused | combined | tensor |
 
 ## Symplectic — 6 schemes
 
 [Equations and qualifications](families/symplectic).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
-|---|---:|---|---:|---:|---|---|---|---|
-| Leap Frog | 2 | driver | — | — | — | 1 | combined | position/velocity; separability assumptions |
-| Symplectic Euler | 2 | driver | — | — | — | 1 | combined | position/velocity; separability assumptions |
-| Velocity Verlet | 2 | driver | — | — | — | 2 | combined | position/velocity; separability assumptions |
-| PEFRL | 4 | driver | — | — | — | refused | combined | position/velocity; separability assumptions |
-| VEFRL | 4 | driver | — | — | — | refused | combined | position/velocity; separability assumptions |
-| Semi-Implicit Euler | 1 | 1 | — | — | — | refused | combined | position/velocity |
+| Friendly name | Enum member | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---|---:|---|---:|---:|---|---|---|---|
+| Leapfrog (synchronized) | `Symplectic.leapFrog` | 2 | driver | — | — | — | 1 | combined | position/velocity; separability assumptions |
+| Symplectic Euler | `Symplectic.symplecticEuler` | 2 | driver | — | — | — | 1 | combined | position/velocity; separability assumptions |
+| Velocity Verlet | `Symplectic.velocityVerlet` | 2 | driver | — | — | — | 2 | combined | position/velocity; separability assumptions |
+| Forest–Ruth 4 (position-first, PEFRL) | `Symplectic.pefrl` | 4 | driver | — | — | — | refused | combined | position/velocity; separability assumptions |
+| Forest–Ruth 4 (velocity-first, VEFRL) | `Symplectic.vefrl` | 4 | driver | — | — | — | refused | combined | position/velocity; separability assumptions |
+| Semi-Implicit Euler | `Symplectic.semiImplicitEuler` | 1 | 1 | — | — | — | refused | combined | position/velocity |
 
 ## Relaxed Chebyshev — 3 schemes
 
 [Equations and qualifications](families/relaxed-chebyshev).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
-|---|---:|---|---:|---:|---|---|---|---|
-| RKC1 | 1 | variable | — | — | — | refused | combined; `lambda_max=` or `s=` | tensor |
-| RKC2 | 2 | variable | — | — | — | refused | combined; `lambda_max=` or `s=` | tensor |
-| RKL2 | 2 | variable | — | — | — | refused | combined; `lambda_max=` or `s=` | tensor |
+| Friendly name | Enum member | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---|---:|---|---:|---:|---|---|---|---|
+| Runge–Kutta–Chebyshev 1 | `RelaxedChebyshev.rkc1` | 1 | variable | — | — | — | refused | combined; `lambda_max=` or `s=` | tensor |
+| Runge–Kutta–Chebyshev 2 | `RelaxedChebyshev.rkc2` | 2 | variable | — | — | — | refused | combined; `lambda_max=` or `s=` | tensor |
+| Runge–Kutta–Legendre 2 | `RelaxedChebyshev.rkl2` | 2 | variable | — | — | — | refused | combined; `lambda_max=` or `s=` | tensor |
 
 ## Multistep explicit — 10 schemes
 
 [Equations and qualifications](families/multistep-explicit).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
-|---|---:|---|---:|---:|---|---|---|---|
-| Adams-Bashforth 2 | 2 | driver | — | — | — | refused | combined | tensor; 1 previous entries |
-| Adams-Bashforth 3 | 3 | driver | — | — | — | refused | combined | tensor; 2 previous entries |
-| Adams-Bashforth 4 | 4 | driver | — | — | — | refused | combined | tensor; 3 previous entries |
-| Adams-Bashforth 5 | 5 | driver | — | — | — | refused | combined | tensor; 4 previous entries |
-| Adams-Bashforth-Moulton 2 (PECE) | 2 | driver | — | — | — | refused | combined | tensor; 1 previous entries |
-| Adams-Bashforth-Moulton 3 (PECE) | 3 | driver | — | — | — | refused | combined | tensor; 2 previous entries |
-| Adams-Bashforth-Moulton 4 (PECE) | 4 | driver | — | — | — | refused | combined | tensor; 3 previous entries |
-| Adams-Bashforth-Moulton 5 (PECE) | 5 | driver | — | — | — | refused | combined | tensor; 4 previous entries |
-| SSPRKMSVS32 | 2 | driver | — | — | — | refused | combined | tensor; 2 previous entries |
-| SSPRKMSVS43 | 3 | driver | — | — | — | refused | combined | tensor; 3 previous entries |
+| Friendly name | Enum member | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---|---:|---|---:|---:|---|---|---|---|
+| Adams-Bashforth 2 | `MultistepExplicit.ab2` | 2 | driver | — | — | — | refused | combined | tensor; 1 previous entries |
+| Adams-Bashforth 3 | `MultistepExplicit.ab3` | 3 | driver | — | — | — | refused | combined | tensor; 2 previous entries |
+| Adams-Bashforth 4 | `MultistepExplicit.ab4` | 4 | driver | — | — | — | refused | combined | tensor; 3 previous entries |
+| Adams-Bashforth 5 | `MultistepExplicit.ab5` | 5 | driver | — | — | — | refused | combined | tensor; 4 previous entries |
+| Adams-Bashforth-Moulton 2 (PECE) | `MultistepExplicit.abm2` | 2 | driver | — | — | — | refused | combined | tensor; 1 previous entries |
+| Adams-Bashforth-Moulton 3 (PECE) | `MultistepExplicit.abm3` | 3 | driver | — | — | — | refused | combined | tensor; 2 previous entries |
+| Adams-Bashforth-Moulton 4 (PECE) | `MultistepExplicit.abm4` | 4 | driver | — | — | — | refused | combined | tensor; 3 previous entries |
+| Adams-Bashforth-Moulton 5 (PECE) | `MultistepExplicit.abm5` | 5 | driver | — | — | — | refused | combined | tensor; 4 previous entries |
+| SSP multistep (3 steps, order 2) | `MultistepExplicit.ssprkmsvs32` | 2 | driver | — | — | — | refused | combined | tensor; 2 previous entries |
+| SSP multistep (4 steps, order 3) | `MultistepExplicit.ssprkmsvs43` | 3 | driver | — | — | — | refused | combined | tensor; 3 previous entries |
 
 ## DIRK — 37 schemes
 
 [Equations and qualifications](families/dirk).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
-|---|---:|---|---:|---:|---|---|---|---|
-| Backward Euler (implicit) | 1 | 1 | — | — | L | refused | combined | tensor |
-| Implicit Midpoint | 2 | 1 | — | — | A | refused | combined | tensor |
-| Trapezoidal (Crank-Nicolson) | 2 | 2 | — | — | A | 2 (FSAL) | combined | tensor |
-| SDIRK2 | 2 | 2 | — | — | L | refused | combined | tensor |
-| TR-BDF2 | 2 | 3 | 3 | 3 | L | 2 (FSAL) | combined | tensor |
-| ESDIRK3(2)4L[2]SA | 3 | 4 | 2 | 3 | L | 3 (FSAL) | combined | tensor |
-| ESDIRK4(3)6L[2]SA | 4 | 6 | 3 | 4 | L | 4 (FSAL) | combined | tensor |
-| Kvaerno3 | 3 | 4 | 2 | 3 | L | 3 (FSAL) | combined | tensor |
-| Kvaerno4 | 4 | 5 | 3 | 4 | A | 4 (FSAL) | combined | tensor |
-| Kvaerno5 | 5 | 7 | 4 | 5 | L | 5 (FSAL) | combined | tensor |
-| KenCarp3 | 3 | 4 | 2 | 3 | L | 3 (FSAL) | combined | tensor |
-| KenCarp4 | 4 | 6 | 3 | 4 | L | 4 (FSAL) | combined | tensor |
-| KenCarp47 | 4 | 7 | 3 | 4 | L | 4 (FSAL) | combined | tensor |
-| KenCarp5 | 5 | 8 | 4 | 5 | L | 5 (FSAL) | combined | tensor |
-| KenCarp58 | 5 | 8 | 4 | 5 | L | 5 (FSAL) | combined | tensor |
-| ESDIRK3(2)5L[2]SA | 3 | 5 | 2 | 3 | L | 3 (FSAL) | combined | tensor |
-| ESDIRK4(3)6L[2]SA2 | 4 | 6 | 3 | 4 | L | 4 (FSAL) | combined | tensor |
-| ESDIRK4(3)7L[2]SA | 4 | 7 | 3 | 4 | L | 4 (FSAL) | combined | tensor |
-| ESDIRK5(4)7L[2]SA2 | 5 | 7 | 4 | 5 | L | 5 (FSAL) | combined | tensor |
-| ESDIRK5(4)I8L[2]SA | 5 | 8 | 4 | 5 | L | 5 (FSAL) | combined | tensor |
-| ESDIRK6(5)9L[2]SA | 6 | 9 | 5 | 6 | L | 6 (FSAL) | combined | tensor |
-| SSPSDIRK2 | 2 | 2 | — | — | A | refused | combined | tensor |
-| ARS222 | 2 | 3 | — | — | L | 2 (FSAL) | combined | tensor |
-| ARS232 | 2 | 3 | — | — | L | 2 (FSAL) | combined | tensor |
-| ARS343 | 3 | 4 | — | — | L | 3 (FSAL) | combined | tensor |
-| ARS443 | 3 | 5 | — | — | L | 3 (FSAL) | combined | tensor |
-| BHR553 | 3 | 5 | — | — | L | 3 (FSAL) | combined | tensor |
-| Cash4 | 4 | 5 | 3 | 4 | L | refused | combined | tensor |
-| CFNLIRK3 | 3 | 4 | — | — | L | 3 (FSAL) | combined | tensor |
-| Hairer4 | 4 | 5 | 3 | 4 | L | refused | combined | tensor |
-| Hairer42 | 4 | 5 | 3 | 4 | L | refused | combined | tensor |
-| SFSDIRK4 | 4 | 4 | — | — | — | refused | combined | tensor |
-| SFSDIRK5 | 4 | 5 | — | — | — | refused | combined | tensor |
-| SFSDIRK6 | 4 | 6 | — | — | — | refused | combined | tensor |
-| SFSDIRK7 | 4 | 7 | — | — | — | refused | combined | tensor |
-| SFSDIRK8 | 4 | 8 | — | — | — | refused | combined | tensor |
-| MEBDF2 | 2 | 3 | — | — | L | refused | combined | tensor |
+| Friendly name | Enum member | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---|---:|---|---:|---:|---|---|---|---|
+| Backward Euler (implicit) | `DIRK.backwardEuler` | 1 | 1 | — | — | L | refused | combined | tensor |
+| Implicit Midpoint | `DIRK.implicitMidpoint` | 2 | 1 | — | — | A | refused | combined | tensor |
+| Trapezoidal (Crank-Nicolson) | `DIRK.trapezoidal` | 2 | 2 | — | — | A | 2 (FSAL) | combined | tensor |
+| Singly diagonally implicit Runge–Kutta 2 | `DIRK.sdirk2` | 2 | 2 | — | — | L | refused | combined | tensor |
+| Trapezoidal rule–BDF2 (TR-BDF2) | `DIRK.trbdf2` | 2 | 3 | 3 | 3 | L | 2 (FSAL) | combined | tensor |
+| Explicit-first-stage SDIRK 3(2) (4 stages) | `DIRK.esdirk324l2sa` | 3 | 4 | 2 | 3 | L | 3 (FSAL) | combined | tensor |
+| Explicit-first-stage SDIRK 4(3) (6 stages) | `DIRK.esdirk436l2sa` | 4 | 6 | 3 | 4 | L | 4 (FSAL) | combined | tensor |
+| Kværnø 3(2) | `DIRK.kvaerno3` | 3 | 4 | 2 | 3 | L | 3 (FSAL) | combined | tensor |
+| Kværnø 4(3) | `DIRK.kvaerno4` | 4 | 5 | 3 | 4 | A | 4 (FSAL) | combined | tensor |
+| Kværnø 5(4) | `DIRK.kvaerno5` | 5 | 7 | 4 | 5 | L | 5 (FSAL) | combined | tensor |
+| Kennedy–Carpenter 3(2) (4 stages, KenCarp3) | `DIRK.kencarp3` | 3 | 4 | 2 | 3 | L | 3 (FSAL) | combined | tensor |
+| Kennedy–Carpenter 4(3) (6 stages, KenCarp4) | `DIRK.kencarp4` | 4 | 6 | 3 | 4 | L | 4 (FSAL) | combined | tensor |
+| Kennedy–Carpenter 4(3) (7 stages, KenCarp47) | `DIRK.kencarp47` | 4 | 7 | 3 | 4 | L | 4 (FSAL) | combined | tensor |
+| Kennedy–Carpenter 5(4) (8 stages, KenCarp5) | `DIRK.kencarp5` | 5 | 8 | 4 | 5 | L | 5 (FSAL) | combined | tensor |
+| Kennedy–Carpenter 5(4) (8 stages, KenCarp58) | `DIRK.kencarp58` | 5 | 8 | 4 | 5 | L | 5 (FSAL) | combined | tensor |
+| Explicit-first-stage SDIRK 3(2) (5 stages) | `DIRK.esdirk325l2sa` | 3 | 5 | 2 | 3 | L | 3 (FSAL) | combined | tensor |
+| Explicit-first-stage SDIRK 4(3) (6 stages, variant 2) | `DIRK.esdirk436l2sa2` | 4 | 6 | 3 | 4 | L | 4 (FSAL) | combined | tensor |
+| Explicit-first-stage SDIRK 4(3) (7 stages) | `DIRK.esdirk437l2sa` | 4 | 7 | 3 | 4 | L | 4 (FSAL) | combined | tensor |
+| Explicit-first-stage SDIRK 5(4) (7 stages, variant 2) | `DIRK.esdirk547l2sa2` | 5 | 7 | 4 | 5 | L | 5 (FSAL) | combined | tensor |
+| Explicit-first-stage SDIRK 5(4) (8 stages, I variant) | `DIRK.esdirk54i8l2sa` | 5 | 8 | 4 | 5 | L | 5 (FSAL) | combined | tensor |
+| Explicit-first-stage SDIRK 6(5) (9 stages) | `DIRK.esdirk659l2sa` | 6 | 9 | 5 | 6 | L | 6 (FSAL) | combined | tensor |
+| SSP singly diagonally implicit Runge–Kutta 2 | `DIRK.sspsdirk2` | 2 | 2 | — | — | A | refused | combined | tensor |
+| Ascher–Ruuth–Spiteri (ARS222, implicit part) | `DIRK.ars222` | 2 | 3 | — | — | L | 2 (FSAL) | combined | tensor |
+| Ascher–Ruuth–Spiteri (ARS232, implicit part) | `DIRK.ars232` | 2 | 3 | — | — | L | 2 (FSAL) | combined | tensor |
+| Ascher–Ruuth–Spiteri (ARS343, implicit part) | `DIRK.ars343` | 3 | 4 | — | — | L | 3 (FSAL) | combined | tensor |
+| Ascher–Ruuth–Spiteri (ARS443, implicit part) | `DIRK.ars443` | 3 | 5 | — | — | L | 3 (FSAL) | combined | tensor |
+| Boscarino–Russo 3 (BHR553, implicit part) | `DIRK.bhr553` | 3 | 5 | — | — | L | 3 (FSAL) | combined | tensor |
+| Cash SDIRK 4(3) | `DIRK.cash4` | 4 | 5 | 3 | 4 | L | refused | combined | tensor |
+| Calvo–de Frutos–Novo 3 (implicit part) | `DIRK.cfnlirk3` | 3 | 4 | — | — | L | 3 (FSAL) | combined | tensor |
+| Hairer–Wanner SDIRK 4(3) (variant 1) | `DIRK.hairer4` | 4 | 5 | 3 | 4 | L | refused | combined | tensor |
+| Hairer–Wanner SDIRK 4(3) (variant 2) | `DIRK.hairer42` | 4 | 5 | 3 | 4 | L | refused | combined | tensor |
+| Ferracina–Spijker SDIRK 4 (4 stages) | `DIRK.sfstdirk4` | 4 | 4 | — | — | — | refused | combined | tensor |
+| Ferracina–Spijker SDIRK 4 (5 stages) | `DIRK.sfstdirk5` | 4 | 5 | — | — | — | refused | combined | tensor |
+| Ferracina–Spijker SDIRK 4 (6 stages) | `DIRK.sfstdirk6` | 4 | 6 | — | — | — | refused | combined | tensor |
+| Ferracina–Spijker SDIRK 4 (7 stages) | `DIRK.sfstdirk7` | 4 | 7 | — | — | — | refused | combined | tensor |
+| Ferracina–Spijker SDIRK 4 (8 stages) | `DIRK.sfstdirk8` | 4 | 8 | — | — | — | refused | combined | tensor |
+| Modified extended backward differentiation 2 | `DIRK.mebdf2` | 2 | 3 | — | — | L | refused | combined | tensor |
 
 ## Coupled RK — 4 schemes
 
 [Equations and qualifications](families/coupled-rk).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
-|---|---:|---|---:|---:|---|---|---|---|
-| Gauss-Legendre 2 | 4 | 2 + 1 companion | 2 | 3 | A | refused | combined | tensor |
-| Radau IIA s=2 | 3 | 2 + 1 companion | 2 | 3 | L | refused | combined | tensor |
-| Gauss-Legendre 3 | 6 | 3 | 2 | 3 | A | refused | combined | tensor |
-| Radau IIA s=3 | 5 | 3 + 1 companion | 3 | 4 | L | refused | combined | tensor |
+| Friendly name | Enum member | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---|---:|---|---:|---:|---|---|---|---|
+| Gauss–Legendre collocation (2 stages) | `CoupledRK.gaussLegendre2` | 4 | 2 + 1 companion | 2 | 3 | A | refused | combined | tensor |
+| Radau IIA collocation (2 stages) | `CoupledRK.radauIia2` | 3 | 2 + 1 companion | 2 | 3 | L | refused | combined | tensor |
+| Gauss–Legendre collocation (3 stages) | `CoupledRK.gaussLegendre3` | 6 | 3 | 2 | 3 | A | refused | combined | tensor |
+| Radau IIA collocation (3 stages) | `CoupledRK.radauIia3` | 5 | 3 + 1 companion | 3 | 4 | L | refused | combined | tensor |
 
 ## Multistep implicit — 8 schemes
 
 [Equations and qualifications](families/multistep-implicit).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
-|---|---:|---|---:|---:|---|---|---|---|
-| BDF1 | 1 | driver | — | — | L | refused | combined | tensor; 1 previous entries |
-| BDF2 | 2 | driver | — | — | A | refused | combined | tensor; 1 previous entries |
-| BDF3 | 3 | driver | — | — | A(alpha) | refused | combined | tensor; 2 previous entries |
-| BDF4 | 4 | driver | — | — | A(alpha) | refused | combined | tensor; 3 previous entries |
-| BDF5 | 5 | driver | — | — | A(alpha) | refused | combined | tensor; 4 previous entries |
-| Adams-Moulton 2 (implicit) | 2 | driver | — | — | A | refused | combined | tensor; 1 previous entries |
-| Adams-Moulton 3 (implicit) | 3 | driver | — | — | — | refused | combined | tensor; 2 previous entries |
-| Adams-Moulton 4 (implicit) | 4 | driver | — | — | — | refused | combined | tensor; 3 previous entries |
+| Friendly name | Enum member | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---|---:|---|---:|---:|---|---|---|---|
+| Backward differentiation formula 1 | `MultistepImplicit.bdf1` | 1 | driver | — | — | L | refused | combined | tensor; 1 previous entries |
+| Backward differentiation formula 2 | `MultistepImplicit.bdf2` | 2 | driver | — | — | A | refused | combined | tensor; 1 previous entries |
+| Backward differentiation formula 3 | `MultistepImplicit.bdf3` | 3 | driver | — | — | A(alpha) | refused | combined | tensor; 2 previous entries |
+| Backward differentiation formula 4 | `MultistepImplicit.bdf4` | 4 | driver | — | — | A(alpha) | refused | combined | tensor; 3 previous entries |
+| Backward differentiation formula 5 | `MultistepImplicit.bdf5` | 5 | driver | — | — | A(alpha) | refused | combined | tensor; 4 previous entries |
+| Adams-Moulton 2 (implicit) | `MultistepImplicit.am2` | 2 | driver | — | — | A | refused | combined | tensor; 1 previous entries |
+| Adams-Moulton 3 (implicit) | `MultistepImplicit.am3` | 3 | driver | — | — | — | refused | combined | tensor; 2 previous entries |
+| Adams-Moulton 4 (implicit) | `MultistepImplicit.am4` | 4 | driver | — | — | — | refused | combined | tensor; 3 previous entries |
 
 ## IMEX — 7 schemes
 
 [Equations and qualifications](families/imex).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
-|---|---:|---|---:|---:|---|---|---|---|
-| ARK3(2)4L[2]SA | 3 | 4 | 2 | 3 | L | refused | combined | tensor |
-| ARK4(3)6L[2]SA | 4 | 6 | 3 | 4 | L | refused | combined | tensor |
-| IMEX Euler | 1 | driver | — | — | A | refused | combined | tensor |
-| SBDF2 | 2 | driver | — | — | L | refused | combined | tensor; 1 previous entries |
-| SBDF3 | 3 | driver | — | — | A(alpha) | refused | combined | tensor; 2 previous entries |
-| CNAB2 | 2 | driver | — | — | A | refused | combined | tensor; 1 previous entries |
-| CNLF2 | 2 | driver | — | — | A | refused | combined | tensor; 1 previous entries |
+| Friendly name | Enum member | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---|---:|---|---:|---:|---|---|---|---|
+| Kennedy–Carpenter additive RK 3(2) (4 stages) | `IMEX.ark324l2sa` | 3 | 4 | 2 | 3 | L | refused | combined | tensor |
+| Kennedy–Carpenter additive RK 4(3) (6 stages) | `IMEX.ark436l2sa` | 4 | 6 | 3 | 4 | L | refused | combined | tensor |
+| Implicit–explicit Euler | `IMEX.imexEuler` | 1 | driver | — | — | A | refused | combined | tensor |
+| Semi-implicit backward differentiation 2 | `IMEX.sbdf2` | 2 | driver | — | — | L | refused | combined | tensor; 1 previous entries |
+| Semi-implicit backward differentiation 3 | `IMEX.sbdf3` | 3 | driver | — | — | A(alpha) | refused | combined | tensor; 2 previous entries |
+| Crank–Nicolson–Adams–Bashforth 2 | `IMEX.cnab2` | 2 | driver | — | — | A | refused | combined | tensor; 1 previous entries |
+| Crank–Nicolson–leapfrog 2 | `IMEX.cnlf2` | 2 | driver | — | — | A | refused | combined | tensor; 1 previous entries |
 
 ## Linearly implicit — 1 schemes
 
 [Equations and qualifications](families/rosenbrock).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
-|---|---:|---|---:|---:|---|---|---|---|
-| ROS3P | 3 | 3 | 2 | 3 | A | refused | combined | tensor |
+| Friendly name | Enum member | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---|---:|---|---:|---:|---|---|---|---|
+| Rosenbrock–W 3(2) (ROS3P) | `LinearlyImplicit.ros3p` | 3 | 3 | 2 | 3 | A | refused | combined | tensor |
 
 ## Exponential — 2 schemes
 
 [Equations and qualifications](families/exponential).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
-|---|---:|---|---:|---:|---|---|---|---|
-| ETD2RK | 2 | 2 | — | — | L | refused | linear | tensor |
-| EXPRB32 | 3 | 2 | 2 | 3 | L | refused | combined | tensor |
+| Friendly name | Enum member | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---|---:|---|---:|---:|---|---|---|---|
+| Exponential time-differencing Runge–Kutta 2 | `Exponential.etd2rk` | 2 | 2 | — | — | L | refused | linear | tensor |
+| Exponential Rosenbrock 3(2) | `Exponential.exprb32` | 3 | 2 | 2 | 3 | L | refused | combined | tensor |
 
 ## Newmark — 1 schemes
 
 [Equations and qualifications](families/newmark).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
-|---|---:|---|---:|---:|---|---|---|---|
-| Newmark | 2 | driver | — | — | A | refused | combined | position/velocity |
+| Friendly name | Enum member | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---|---:|---|---:|---:|---|---|---|---|
+| Newmark (average acceleration by default) | `Newmark.newmark` | 2 | driver | — | — | A | refused | combined | position/velocity |

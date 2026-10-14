@@ -208,13 +208,16 @@ Some practical details matter as much as the method name:
 
 [example:run readme-discovery]: #
 ```python
-from warpSPHIntegrators import filter_schemes, getIntegrator
+from warpSPHIntegrators import ExplicitRK, filter_schemes, getIntegrator
 
 pairs = filter_schemes(family='ExplicitRK', has_error_estimate=True,
                        supports_reuse=True)
 assert any(method.name == 'Dormand-Prince 5(4)' for method in pairs)
 scheme = getIntegrator('Dormand-Prince 5(4)')
 assert scheme.order == 5 and scheme.embedded_order == 4 and scheme.fsal
+# The enum column below gives the exact identifier for a friendly method name.
+tsitouras = getIntegrator(ExplicitRK.tsit5)  # Tsitouras 5(4)
+assert tsitouras.order == 5 and tsitouras.embedded_order == 4
 ```
 
 ## TVD, SSP and symplecticity
@@ -459,6 +462,11 @@ Every fixed registry entry is listed here. These tables are generated from the
 runtime catalog by `python scripts/generate_catalog.py`, so new registrations
 update the front page as well as the detailed catalog.
 
+Friendly names expand author names and method abbreviations. The enum column
+gives the exact member to pass to `getIntegrator`, such as `ExplicitRK.tsit5`
+for Tsitouras 5(4). Family enum members share their values with
+`IntegrationSchemeType`; existing lookup strings retain their original spelling.
+
 `Order` is the propagated order under the method's assumptions. `Estimate` gives
 the main/comparison orders and controller exponent `q`; a dash means no estimate.
 Stored stages can include endpoint refresh or companion rows, so they are not
@@ -472,200 +480,200 @@ entries when supplying both halves of an additive split.
 
 ### Explicit RK (63)
 
-| Scheme | Order | Stored stages | Estimate | Stability / structure |
-|---|---:|---|---|---|
-| Forward Euler | 1 | 1 | — | — |
-| Midpoint | 2 | 2 | — | — |
-| Heun's Method (2nd order) | 2 | 2 | — | — |
-| Ralston's Method (2nd order) | 2 | 2 | — | — |
-| RK3 | 3 | 3 | — | — |
-| Heun's Method (3rd order) | 3 | 3 | — | — |
-| Ralston's Method (3rd order) | 3 | 3 | — | — |
-| Wray's Method (3rd order) | 3 | 3 | — | — |
-| SSP RK3 | 3 | 3 | — | SSP under its CFL bound |
-| SSPRK(10,4) | 4 | 10 | — | SSP under its CFL bound |
-| SSPRK53 | 3 | 5 | — | SSP under its CFL bound |
-| SSPRK63 | 3 | 6 | — | SSP under its CFL bound |
-| SSPRK73 | 3 | 7 | — | SSP under its CFL bound |
-| SSPRK83 | 3 | 8 | — | SSP under its CFL bound |
-| SSPRK54 | 4 | 5 | — | SSP under its CFL bound |
-| KYKSSPRK42 | 2 | 4 | — | — |
-| KYK2014DGSSPRK_3S2 | 2 | 3 | — | — |
-| SSPRK43 | 3 | 4 | 3(2), q=3 | SSP under its CFL bound |
-| SSPRK432 | 3 | 4 | 3(2), q=3 | SSP under its CFL bound |
-| SSPRK932 | 3 | 9 | — | SSP under its CFL bound |
-| SSPRK53_2N1 | 3 | 5 | — | SSP under its CFL bound |
-| SSPRK53_2N2 | 3 | 5 | — | SSP under its CFL bound |
-| SSPRK53_H | 3 | 5 | — | SSP under its CFL bound |
-| RK4 | 4 | 4 | — | — |
-| RK4 (alternative) | 4 | 4 | — | — |
-| Nystrom 5th order | 5 | 6 | — | — |
-| Bogacki-Shampine 3(2) | 3 | 4 | 3(2), q=3; FSAL | — |
-| Dormand-Prince 5(4) | 5 | 7 | 5(4), q=5; FSAL | — |
-| Cash-Karp 5(4) | 5 | 6 | 5(4), q=5 | — |
-| Tsit5 5(4) | 5 | 7 | 5(4), q=5; FSAL | — |
-| OwrenZen3 3(2) | 3 | 4 | 3(2), q=3; FSAL | — |
-| OwrenZen4 4(3) | 4 | 6 | 4(3), q=4; FSAL | — |
-| OwrenZen5 5(4) | 5 | 8 | 5(4), q=5; FSAL | — |
-| BS5 5(4) | 5 | 8 | 5(4), q=5; FSAL | — |
-| Stepanov5 5(4) | 5 | 7 | 5(4), q=5; FSAL | — |
-| Alshina2 2(1) | 2 | 2 | 2(1), q=2 | — |
-| Alshina3 | 3 | 3 | — | — |
-| Alshina6 | 6 | 7 | — | — |
-| MSRK5 | 5 | 9 | —; FSAL | — |
-| MSRK6 | 6 | 9 | —; FSAL | — |
-| SIR54 | 5 | 8 | —; FSAL | — |
-| Ralston4 | 4 | 4 | — | — |
-| RKO65 | 5 | 6 | — | — |
-| RKM | 3 | 6 | — | — |
-| PSRK4p7q6 | 4 | 6 | — | — |
-| PSRK3p6q5 | 3 | 5 | — | — |
-| PSRK3p5q4 | 3 | 4 | — | — |
-| Vern6 6(5) | 6 | 9 | 6(5), q=6; FSAL | — |
-| Vern7 7(6) | 7 | 10 | 7(6), q=7 | — |
-| Vern8 8(7) | 8 | 13 | 8(7), q=8 | — |
-| Vern9 9(8) | 9 | 16 | 9(8), q=9 | — |
-| RKV76IIa 7(6) | 7 | 10 | 7(6), q=7 | — |
-| TanYam7 7(6) | 7 | 10 | 7(6), q=7 | — |
-| TsitPap8 8(7) | 8 | 13 | 8(7), q=8 | — |
-| DP8 | 8 | 12 | — | — |
-| Feagin10 | 10 | 17 | — | — |
-| Feagin12 | 12 | 25 | — | — |
-| Feagin14 | 14 | 35 | — | — |
-| EPEC | 2 | 2 | — | — |
-| EPEC Modified | 2 | 2 | — | — |
-| TVD RK3 | 3 | 3 | — | SSP under its CFL bound |
-| TVD RK2 | 2 | 2 | — | SSP under its CFL bound |
-| Explicit Euler | 1 | 1 | — | — |
+| Friendly name | Enum member | Order | Stored stages | Estimate | Stability / structure |
+|---|---|---:|---|---|---|
+| Forward Euler | `ExplicitRK.forwardEuler` | 1 | 1 | — | — |
+| Explicit midpoint (Runge–Kutta 2) | `ExplicitRK.rungeKutta2` | 2 | 2 | — | — |
+| Heun's Method (2nd order) | `ExplicitRK.heunsMethod` | 2 | 2 | — | — |
+| Ralston's Method (2nd order) | `ExplicitRK.ralston2nd` | 2 | 2 | — | — |
+| Classical Runge–Kutta 3 | `ExplicitRK.rungeKutta3` | 3 | 3 | — | — |
+| Heun's Method (3rd order) | `ExplicitRK.heunsMethod3rd` | 3 | 3 | — | — |
+| Ralston's Method (3rd order) | `ExplicitRK.ralston3rd` | 3 | 3 | — | — |
+| Wray's Method (3rd order) | `ExplicitRK.wray3rd` | 3 | 3 | — | — |
+| Shu–Osher SSP Runge–Kutta 3 | `ExplicitRK.sspRK3` | 3 | 3 | — | SSP under its CFL bound |
+| SSP Runge–Kutta (10 stages, order 4) | `ExplicitRK.ssprk104` | 4 | 10 | — | SSP under its CFL bound |
+| SSP Runge–Kutta (5 stages, order 3) | `ExplicitRK.ssprk53` | 3 | 5 | — | SSP under its CFL bound |
+| SSP Runge–Kutta (6 stages, order 3) | `ExplicitRK.ssprk63` | 3 | 6 | — | SSP under its CFL bound |
+| SSP Runge–Kutta (7 stages, order 3) | `ExplicitRK.ssprk73` | 3 | 7 | — | SSP under its CFL bound |
+| SSP Runge–Kutta (8 stages, order 3) | `ExplicitRK.ssprk83` | 3 | 8 | — | SSP under its CFL bound |
+| SSP Runge–Kutta (5 stages, order 4) | `ExplicitRK.ssprk54` | 4 | 5 | — | SSP under its CFL bound |
+| Kubatko–Yeager–Ketcheson SSP RK2 (4 stages) | `ExplicitRK.kykssprk42` | 2 | 4 | — | — |
+| Kubatko–Yeager–Ketcheson DG SSP RK2 (3 stages) | `ExplicitRK.kyk2014dgssprk3s2` | 2 | 3 | — | — |
+| SSP Runge–Kutta 3(2) (4 stages, comparison 1) | `ExplicitRK.ssprk43` | 3 | 4 | 3(2), q=3 | SSP under its CFL bound |
+| SSP Runge–Kutta 3(2) (4 stages, comparison 2) | `ExplicitRK.ssprk432` | 3 | 4 | 3(2), q=3 | SSP under its CFL bound |
+| SSP Runge–Kutta 3 (9 stages) | `ExplicitRK.ssprk932` | 3 | 9 | — | SSP under its CFL bound |
+| Higueras–Roldán SSP RK3 (2N1 variant) | `ExplicitRK.ssprk53_2n1` | 3 | 5 | — | SSP under its CFL bound |
+| Higueras–Roldán SSP RK3 (2N2 variant) | `ExplicitRK.ssprk53_2n2` | 3 | 5 | — | SSP under its CFL bound |
+| Higueras–Roldán SSP RK3 (H variant) | `ExplicitRK.ssprk53_h` | 3 | 5 | — | SSP under its CFL bound |
+| Classical Runge–Kutta 4 | `ExplicitRK.rungeKutta4` | 4 | 4 | — | — |
+| Runge–Kutta 4 (3/8 rule) | `ExplicitRK.rungeKutta4alt` | 4 | 4 | — | — |
+| Nyström Runge–Kutta 5 | `ExplicitRK.nystrom5th` | 5 | 6 | — | — |
+| Bogacki–Shampine 3(2) | `ExplicitRK.bogackiShampine` | 3 | 4 | 3(2), q=3; FSAL | — |
+| Dormand–Prince 5(4) | `ExplicitRK.dormandPrince` | 5 | 7 | 5(4), q=5; FSAL | — |
+| Cash–Karp 5(4) | `ExplicitRK.cashKarp` | 5 | 6 | 5(4), q=5 | — |
+| Tsitouras 5(4) | `ExplicitRK.tsit5` | 5 | 7 | 5(4), q=5; FSAL | — |
+| Owren–Zennaro 3(2) | `ExplicitRK.owrenzen3` | 3 | 4 | 3(2), q=3; FSAL | — |
+| Owren–Zennaro 4(3) | `ExplicitRK.owrenzen4` | 4 | 6 | 4(3), q=4; FSAL | — |
+| Owren–Zennaro 5(4) | `ExplicitRK.owrenzen5` | 5 | 8 | 5(4), q=5; FSAL | — |
+| Bogacki–Shampine 5(4) | `ExplicitRK.bs5` | 5 | 8 | 5(4), q=5; FSAL | — |
+| Stepanov 5(4) (7 stages) | `ExplicitRK.stefanov5` | 5 | 7 | 5(4), q=5; FSAL | — |
+| Alshina–Zaks–Kalitkin 2(1) | `ExplicitRK.arushina2` | 2 | 2 | 2(1), q=2 | — |
+| Alshina–Zaks–Kalitkin 3 | `ExplicitRK.arushina3` | 3 | 3 | — | — |
+| Alshina–Zaks–Kalitkin 6 | `ExplicitRK.arushina6` | 6 | 7 | — | — |
+| Stepanov 5 (9 stages) | `ExplicitRK.msrk5` | 5 | 9 | —; FSAL | — |
+| Stepanov 6 (9 stages) | `ExplicitRK.msrk6` | 6 | 9 | —; FSAL | — |
+| Kovalnogov–Simos–Tsitouras 5 (SIR method) | `ExplicitRK.sir54` | 5 | 8 | —; FSAL | — |
+| Ralston Runge–Kutta 4 | `ExplicitRK.raston4` | 4 | 4 | — | — |
+| Runge–Kutta–Oliver 5 (6 stages) | `ExplicitRK.rko65` | 5 | 6 | — | — |
+| Mead–Renaut Runge–Kutta 3 | `ExplicitRK.rkm` | 3 | 6 | — | — |
+| Pseudo-symplectic Runge–Kutta 4 (6 stages) | `ExplicitRK.psrk4p7q6` | 4 | 6 | — | — |
+| Pseudo-symplectic Runge–Kutta 3 (5 stages) | `ExplicitRK.psrk3p6q5` | 3 | 5 | — | — |
+| Pseudo-symplectic Runge–Kutta 3 (4 stages) | `ExplicitRK.psrk3p5q4` | 3 | 4 | — | — |
+| Verner 6(5) | `ExplicitRK.vern6` | 6 | 9 | 6(5), q=6; FSAL | — |
+| Verner 7(6) | `ExplicitRK.vern7` | 7 | 10 | 7(6), q=7 | — |
+| Verner 8(7) | `ExplicitRK.vern8` | 8 | 13 | 8(7), q=8 | — |
+| Verner 9(8) | `ExplicitRK.vern9` | 9 | 16 | 9(8), q=9 | — |
+| Verner 7(6) (RKV76.IIa) | `ExplicitRK.rkv76iia` | 7 | 10 | 7(6), q=7 | — |
+| Tanaka–Muramatsu–Yamashita 7(6) | `ExplicitRK.tanyam7` | 7 | 10 | 7(6), q=7 | — |
+| Tsitouras–Papakostas 8(7) | `ExplicitRK.tsitpap8` | 8 | 13 | 8(7), q=8 | — |
+| Dormand–Prince 8 | `ExplicitRK.dp8` | 8 | 12 | — | — |
+| Feagin Runge–Kutta 10 | `ExplicitRK.feagin10` | 10 | 17 | — | — |
+| Feagin Runge–Kutta 12 | `ExplicitRK.feagin12` | 12 | 25 | — | — |
+| Feagin Runge–Kutta 14 | `ExplicitRK.feagin14` | 14 | 35 | — | — |
+| Evaluate–predict–evaluate–correct (midpoint) | `ExplicitRK.epec` | 2 | 2 | — | — |
+| Evaluate–predict–evaluate–correct (Heun) | `ExplicitRK.epecModified` | 2 | 2 | — | — |
+| TVD Runge–Kutta 3 (Shu–Osher) | `ExplicitRK.tvdRK3` | 3 | 3 | — | SSP under its CFL bound |
+| TVD Runge–Kutta 2 (Shu–Osher) | `ExplicitRK.tvdRK2` | 2 | 2 | — | SSP under its CFL bound |
+| Explicit Euler | `ExplicitRK.explicitEuler` | 1 | 1 | — | — |
 
 ### Symplectic (6)
 
-| Scheme | Order | Stored stages | Estimate | Stability / structure |
-|---|---:|---|---|---|
-| Leap Frog | 2 | driver | — | symplectic for separable Hamiltonians |
-| Symplectic Euler | 2 | driver | — | symplectic for separable Hamiltonians |
-| Velocity Verlet | 2 | driver | — | symplectic for separable Hamiltonians |
-| PEFRL | 4 | driver | — | symplectic for separable Hamiltonians |
-| VEFRL | 4 | driver | — | symplectic for separable Hamiltonians |
-| Semi-Implicit Euler | 1 | 1 | — | symplectic for separable Hamiltonians |
+| Friendly name | Enum member | Order | Stored stages | Estimate | Stability / structure |
+|---|---|---:|---|---|---|
+| Leapfrog (synchronized) | `Symplectic.leapFrog` | 2 | driver | — | symplectic for separable Hamiltonians |
+| Symplectic Euler | `Symplectic.symplecticEuler` | 2 | driver | — | symplectic for separable Hamiltonians |
+| Velocity Verlet | `Symplectic.velocityVerlet` | 2 | driver | — | symplectic for separable Hamiltonians |
+| Forest–Ruth 4 (position-first, PEFRL) | `Symplectic.pefrl` | 4 | driver | — | symplectic for separable Hamiltonians |
+| Forest–Ruth 4 (velocity-first, VEFRL) | `Symplectic.vefrl` | 4 | driver | — | symplectic for separable Hamiltonians |
+| Semi-Implicit Euler | `Symplectic.semiImplicitEuler` | 1 | 1 | — | symplectic for separable Hamiltonians |
 
 ### Relaxed Chebyshev (3)
 
-| Scheme | Order | Stored stages | Estimate | Stability / structure |
-|---|---:|---|---|---|
-| RKC1 | 1 | variable | — | — |
-| RKC2 | 2 | variable | — | — |
-| RKL2 | 2 | variable | — | — |
+| Friendly name | Enum member | Order | Stored stages | Estimate | Stability / structure |
+|---|---|---:|---|---|---|
+| Runge–Kutta–Chebyshev 1 | `RelaxedChebyshev.rkc1` | 1 | variable | — | — |
+| Runge–Kutta–Chebyshev 2 | `RelaxedChebyshev.rkc2` | 2 | variable | — | — |
+| Runge–Kutta–Legendre 2 | `RelaxedChebyshev.rkl2` | 2 | variable | — | — |
 
 ### Multistep explicit (10)
 
-| Scheme | Order | Stored stages | Estimate | Stability / structure |
-|---|---:|---|---|---|
-| Adams-Bashforth 2 | 2 | driver | — | history required |
-| Adams-Bashforth 3 | 3 | driver | — | history required |
-| Adams-Bashforth 4 | 4 | driver | — | history required |
-| Adams-Bashforth 5 | 5 | driver | — | history required |
-| Adams-Bashforth-Moulton 2 (PECE) | 2 | driver | — | history required |
-| Adams-Bashforth-Moulton 3 (PECE) | 3 | driver | — | history required |
-| Adams-Bashforth-Moulton 4 (PECE) | 4 | driver | — | history required |
-| Adams-Bashforth-Moulton 5 (PECE) | 5 | driver | — | history required |
-| SSPRKMSVS32 | 2 | driver | — | SSP under step/history bounds; history required |
-| SSPRKMSVS43 | 3 | driver | — | SSP under step/history bounds; history required |
+| Friendly name | Enum member | Order | Stored stages | Estimate | Stability / structure |
+|---|---|---:|---|---|---|
+| Adams-Bashforth 2 | `MultistepExplicit.ab2` | 2 | driver | — | history required |
+| Adams-Bashforth 3 | `MultistepExplicit.ab3` | 3 | driver | — | history required |
+| Adams-Bashforth 4 | `MultistepExplicit.ab4` | 4 | driver | — | history required |
+| Adams-Bashforth 5 | `MultistepExplicit.ab5` | 5 | driver | — | history required |
+| Adams-Bashforth-Moulton 2 (PECE) | `MultistepExplicit.abm2` | 2 | driver | — | history required |
+| Adams-Bashforth-Moulton 3 (PECE) | `MultistepExplicit.abm3` | 3 | driver | — | history required |
+| Adams-Bashforth-Moulton 4 (PECE) | `MultistepExplicit.abm4` | 4 | driver | — | history required |
+| Adams-Bashforth-Moulton 5 (PECE) | `MultistepExplicit.abm5` | 5 | driver | — | history required |
+| SSP multistep (3 steps, order 2) | `MultistepExplicit.ssprkmsvs32` | 2 | driver | — | SSP under step/history bounds; history required |
+| SSP multistep (4 steps, order 3) | `MultistepExplicit.ssprkmsvs43` | 3 | driver | — | SSP under step/history bounds; history required |
 
 ### DIRK (37)
 
-| Scheme | Order | Stored stages | Estimate | Stability / structure |
-|---|---:|---|---|---|
-| Backward Euler (implicit) | 1 | 1 | — | L |
-| Implicit Midpoint | 2 | 1 | — | A; symplectic with converged solves |
-| Trapezoidal (Crank-Nicolson) | 2 | 2 | —; FSAL | A; linear oscillator area preservation |
-| SDIRK2 | 2 | 2 | — | L |
-| TR-BDF2 | 2 | 3 | 2(3), q=3; FSAL | L |
-| ESDIRK3(2)4L[2]SA | 3 | 4 | 3(2), q=3; FSAL | L |
-| ESDIRK4(3)6L[2]SA | 4 | 6 | 4(3), q=4; FSAL | L |
-| Kvaerno3 | 3 | 4 | 3(2), q=3; FSAL | L |
-| Kvaerno4 | 4 | 5 | 4(3), q=4; FSAL | A |
-| Kvaerno5 | 5 | 7 | 5(4), q=5; FSAL | L |
-| KenCarp3 | 3 | 4 | 3(2), q=3; FSAL | L |
-| KenCarp4 | 4 | 6 | 4(3), q=4; FSAL | L |
-| KenCarp47 | 4 | 7 | 4(3), q=4; FSAL | L |
-| KenCarp5 | 5 | 8 | 5(4), q=5; FSAL | L |
-| KenCarp58 | 5 | 8 | 5(4), q=5; FSAL | L |
-| ESDIRK3(2)5L[2]SA | 3 | 5 | 3(2), q=3; FSAL | L |
-| ESDIRK4(3)6L[2]SA2 | 4 | 6 | 4(3), q=4; FSAL | L |
-| ESDIRK4(3)7L[2]SA | 4 | 7 | 4(3), q=4; FSAL | L |
-| ESDIRK5(4)7L[2]SA2 | 5 | 7 | 5(4), q=5; FSAL | L |
-| ESDIRK5(4)I8L[2]SA | 5 | 8 | 5(4), q=5; FSAL | L |
-| ESDIRK6(5)9L[2]SA | 6 | 9 | 6(5), q=6; FSAL | L |
-| SSPSDIRK2 | 2 | 2 | — | A; SSP under its CFL bound |
-| ARS222 | 2 | 3 | —; FSAL | L |
-| ARS232 | 2 | 3 | —; FSAL | L |
-| ARS343 | 3 | 4 | —; FSAL | L |
-| ARS443 | 3 | 5 | —; FSAL | L |
-| BHR553 | 3 | 5 | —; FSAL | L |
-| Cash4 | 4 | 5 | 4(3), q=4 | L |
-| CFNLIRK3 | 3 | 4 | —; FSAL | L |
-| Hairer4 | 4 | 5 | 4(3), q=4 | L |
-| Hairer42 | 4 | 5 | 4(3), q=4 | L |
-| SFSDIRK4 | 4 | 4 | — | — |
-| SFSDIRK5 | 4 | 5 | — | — |
-| SFSDIRK6 | 4 | 6 | — | — |
-| SFSDIRK7 | 4 | 7 | — | — |
-| SFSDIRK8 | 4 | 8 | — | — |
-| MEBDF2 | 2 | 3 | — | L |
+| Friendly name | Enum member | Order | Stored stages | Estimate | Stability / structure |
+|---|---|---:|---|---|---|
+| Backward Euler (implicit) | `DIRK.backwardEuler` | 1 | 1 | — | L |
+| Implicit Midpoint | `DIRK.implicitMidpoint` | 2 | 1 | — | A; symplectic with converged solves |
+| Trapezoidal (Crank-Nicolson) | `DIRK.trapezoidal` | 2 | 2 | —; FSAL | A; linear oscillator area preservation |
+| Singly diagonally implicit Runge–Kutta 2 | `DIRK.sdirk2` | 2 | 2 | — | L |
+| Trapezoidal rule–BDF2 (TR-BDF2) | `DIRK.trbdf2` | 2 | 3 | 2(3), q=3; FSAL | L |
+| Explicit-first-stage SDIRK 3(2) (4 stages) | `DIRK.esdirk324l2sa` | 3 | 4 | 3(2), q=3; FSAL | L |
+| Explicit-first-stage SDIRK 4(3) (6 stages) | `DIRK.esdirk436l2sa` | 4 | 6 | 4(3), q=4; FSAL | L |
+| Kværnø 3(2) | `DIRK.kvaerno3` | 3 | 4 | 3(2), q=3; FSAL | L |
+| Kværnø 4(3) | `DIRK.kvaerno4` | 4 | 5 | 4(3), q=4; FSAL | A |
+| Kværnø 5(4) | `DIRK.kvaerno5` | 5 | 7 | 5(4), q=5; FSAL | L |
+| Kennedy–Carpenter 3(2) (4 stages, KenCarp3) | `DIRK.kencarp3` | 3 | 4 | 3(2), q=3; FSAL | L |
+| Kennedy–Carpenter 4(3) (6 stages, KenCarp4) | `DIRK.kencarp4` | 4 | 6 | 4(3), q=4; FSAL | L |
+| Kennedy–Carpenter 4(3) (7 stages, KenCarp47) | `DIRK.kencarp47` | 4 | 7 | 4(3), q=4; FSAL | L |
+| Kennedy–Carpenter 5(4) (8 stages, KenCarp5) | `DIRK.kencarp5` | 5 | 8 | 5(4), q=5; FSAL | L |
+| Kennedy–Carpenter 5(4) (8 stages, KenCarp58) | `DIRK.kencarp58` | 5 | 8 | 5(4), q=5; FSAL | L |
+| Explicit-first-stage SDIRK 3(2) (5 stages) | `DIRK.esdirk325l2sa` | 3 | 5 | 3(2), q=3; FSAL | L |
+| Explicit-first-stage SDIRK 4(3) (6 stages, variant 2) | `DIRK.esdirk436l2sa2` | 4 | 6 | 4(3), q=4; FSAL | L |
+| Explicit-first-stage SDIRK 4(3) (7 stages) | `DIRK.esdirk437l2sa` | 4 | 7 | 4(3), q=4; FSAL | L |
+| Explicit-first-stage SDIRK 5(4) (7 stages, variant 2) | `DIRK.esdirk547l2sa2` | 5 | 7 | 5(4), q=5; FSAL | L |
+| Explicit-first-stage SDIRK 5(4) (8 stages, I variant) | `DIRK.esdirk54i8l2sa` | 5 | 8 | 5(4), q=5; FSAL | L |
+| Explicit-first-stage SDIRK 6(5) (9 stages) | `DIRK.esdirk659l2sa` | 6 | 9 | 6(5), q=6; FSAL | L |
+| SSP singly diagonally implicit Runge–Kutta 2 | `DIRK.sspsdirk2` | 2 | 2 | — | A; SSP under its CFL bound |
+| Ascher–Ruuth–Spiteri (ARS222, implicit part) | `DIRK.ars222` | 2 | 3 | —; FSAL | L |
+| Ascher–Ruuth–Spiteri (ARS232, implicit part) | `DIRK.ars232` | 2 | 3 | —; FSAL | L |
+| Ascher–Ruuth–Spiteri (ARS343, implicit part) | `DIRK.ars343` | 3 | 4 | —; FSAL | L |
+| Ascher–Ruuth–Spiteri (ARS443, implicit part) | `DIRK.ars443` | 3 | 5 | —; FSAL | L |
+| Boscarino–Russo 3 (BHR553, implicit part) | `DIRK.bhr553` | 3 | 5 | —; FSAL | L |
+| Cash SDIRK 4(3) | `DIRK.cash4` | 4 | 5 | 4(3), q=4 | L |
+| Calvo–de Frutos–Novo 3 (implicit part) | `DIRK.cfnlirk3` | 3 | 4 | —; FSAL | L |
+| Hairer–Wanner SDIRK 4(3) (variant 1) | `DIRK.hairer4` | 4 | 5 | 4(3), q=4 | L |
+| Hairer–Wanner SDIRK 4(3) (variant 2) | `DIRK.hairer42` | 4 | 5 | 4(3), q=4 | L |
+| Ferracina–Spijker SDIRK 4 (4 stages) | `DIRK.sfstdirk4` | 4 | 4 | — | — |
+| Ferracina–Spijker SDIRK 4 (5 stages) | `DIRK.sfstdirk5` | 4 | 5 | — | — |
+| Ferracina–Spijker SDIRK 4 (6 stages) | `DIRK.sfstdirk6` | 4 | 6 | — | — |
+| Ferracina–Spijker SDIRK 4 (7 stages) | `DIRK.sfstdirk7` | 4 | 7 | — | — |
+| Ferracina–Spijker SDIRK 4 (8 stages) | `DIRK.sfstdirk8` | 4 | 8 | — | — |
+| Modified extended backward differentiation 2 | `DIRK.mebdf2` | 2 | 3 | — | L |
 
 ### Coupled RK (4)
 
-| Scheme | Order | Stored stages | Estimate | Stability / structure |
-|---|---:|---|---|---|
-| Gauss-Legendre 2 | 4 | 2 + 1 | 4(2), q=3 | A; symplectic with converged solves |
-| Radau IIA s=2 | 3 | 2 + 1 | 3(2), q=3 | L |
-| Gauss-Legendre 3 | 6 | 3 | 6(2), q=3 | A; symplectic with converged solves |
-| Radau IIA s=3 | 5 | 3 + 1 | 5(3), q=4 | L |
+| Friendly name | Enum member | Order | Stored stages | Estimate | Stability / structure |
+|---|---|---:|---|---|---|
+| Gauss–Legendre collocation (2 stages) | `CoupledRK.gaussLegendre2` | 4 | 2 + 1 | 4(2), q=3 | A; symplectic with converged solves |
+| Radau IIA collocation (2 stages) | `CoupledRK.radauIia2` | 3 | 2 + 1 | 3(2), q=3 | L |
+| Gauss–Legendre collocation (3 stages) | `CoupledRK.gaussLegendre3` | 6 | 3 | 6(2), q=3 | A; symplectic with converged solves |
+| Radau IIA collocation (3 stages) | `CoupledRK.radauIia3` | 5 | 3 + 1 | 5(3), q=4 | L |
 
 ### Multistep implicit (8)
 
-| Scheme | Order | Stored stages | Estimate | Stability / structure |
-|---|---:|---|---|---|
-| BDF1 | 1 | driver | — | L; history required |
-| BDF2 | 2 | driver | — | A; history required |
-| BDF3 | 3 | driver | — | A(alpha); history required |
-| BDF4 | 4 | driver | — | A(alpha); history required |
-| BDF5 | 5 | driver | — | A(alpha); history required |
-| Adams-Moulton 2 (implicit) | 2 | driver | — | A; history required |
-| Adams-Moulton 3 (implicit) | 3 | driver | — | history required |
-| Adams-Moulton 4 (implicit) | 4 | driver | — | history required |
+| Friendly name | Enum member | Order | Stored stages | Estimate | Stability / structure |
+|---|---|---:|---|---|---|
+| Backward differentiation formula 1 | `MultistepImplicit.bdf1` | 1 | driver | — | L; history required |
+| Backward differentiation formula 2 | `MultistepImplicit.bdf2` | 2 | driver | — | A; history required |
+| Backward differentiation formula 3 | `MultistepImplicit.bdf3` | 3 | driver | — | A(alpha); history required |
+| Backward differentiation formula 4 | `MultistepImplicit.bdf4` | 4 | driver | — | A(alpha); history required |
+| Backward differentiation formula 5 | `MultistepImplicit.bdf5` | 5 | driver | — | A(alpha); history required |
+| Adams-Moulton 2 (implicit) | `MultistepImplicit.am2` | 2 | driver | — | A; history required |
+| Adams-Moulton 3 (implicit) | `MultistepImplicit.am3` | 3 | driver | — | history required |
+| Adams-Moulton 4 (implicit) | `MultistepImplicit.am4` | 4 | driver | — | history required |
 
 ### IMEX (7)
 
-| Scheme | Order | Stored stages | Estimate | Stability / structure |
-|---|---:|---|---|---|
-| ARK3(2)4L[2]SA | 3 | 4 | 3(2), q=3 | implicit part: L |
-| ARK4(3)6L[2]SA | 4 | 6 | 4(3), q=4 | implicit part: L |
-| IMEX Euler | 1 | driver | — | implicit part: A |
-| SBDF2 | 2 | driver | — | implicit part: L; history required |
-| SBDF3 | 3 | driver | — | implicit part: A(alpha); history required |
-| CNAB2 | 2 | driver | — | implicit part: A; history required |
-| CNLF2 | 2 | driver | — | implicit part: A; history required |
+| Friendly name | Enum member | Order | Stored stages | Estimate | Stability / structure |
+|---|---|---:|---|---|---|
+| Kennedy–Carpenter additive RK 3(2) (4 stages) | `IMEX.ark324l2sa` | 3 | 4 | 3(2), q=3 | implicit part: L |
+| Kennedy–Carpenter additive RK 4(3) (6 stages) | `IMEX.ark436l2sa` | 4 | 6 | 4(3), q=4 | implicit part: L |
+| Implicit–explicit Euler | `IMEX.imexEuler` | 1 | driver | — | implicit part: A |
+| Semi-implicit backward differentiation 2 | `IMEX.sbdf2` | 2 | driver | — | implicit part: L; history required |
+| Semi-implicit backward differentiation 3 | `IMEX.sbdf3` | 3 | driver | — | implicit part: A(alpha); history required |
+| Crank–Nicolson–Adams–Bashforth 2 | `IMEX.cnab2` | 2 | driver | — | implicit part: A; history required |
+| Crank–Nicolson–leapfrog 2 | `IMEX.cnlf2` | 2 | driver | — | implicit part: A; history required |
 
 ### Linearly implicit (1)
 
-| Scheme | Order | Stored stages | Estimate | Stability / structure |
-|---|---:|---|---|---|
-| ROS3P | 3 | 3 | 3(2), q=3 | A |
+| Friendly name | Enum member | Order | Stored stages | Estimate | Stability / structure |
+|---|---|---:|---|---|---|
+| Rosenbrock–W 3(2) (ROS3P) | `LinearlyImplicit.ros3p` | 3 | 3 | 3(2), q=3 | A |
 
 ### Exponential (2)
 
-| Scheme | Order | Stored stages | Estimate | Stability / structure |
-|---|---:|---|---|---|
-| ETD2RK | 2 | 2 | — | linear test: L |
-| EXPRB32 | 3 | 2 | 3(2), q=3 | linear test: L |
+| Friendly name | Enum member | Order | Stored stages | Estimate | Stability / structure |
+|---|---|---:|---|---|---|
+| Exponential time-differencing Runge–Kutta 2 | `Exponential.etd2rk` | 2 | 2 | — | linear test: L |
+| Exponential Rosenbrock 3(2) | `Exponential.exprb32` | 3 | 2 | 3(2), q=3 | linear test: L |
 
 ### Newmark (1)
 
-| Scheme | Order | Stored stages | Estimate | Stability / structure |
-|---|---:|---|---|---|
-| Newmark | 2 | driver | — | bounded linear oscillator (default parameters); linear oscillator area preservation |
+| Friendly name | Enum member | Order | Stored stages | Estimate | Stability / structure |
+|---|---|---:|---|---|---|
+| Newmark (average acceleration by default) | `Newmark.newmark` | 2 | driver | — | bounded linear oscillator (default parameters); linear oscillator area preservation |
 
 [catalog:schemes:end]: #
 

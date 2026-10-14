@@ -76,6 +76,7 @@
   "schemes": [
     {
       "name": "Forward Euler",
+      "friendly_name": "Forward Euler",
       "identifier": "forwardEuler",
       "family": "ExplicitRK",
       "order": 1,
@@ -101,6 +102,7 @@
     },
     {
       "name": "Midpoint",
+      "friendly_name": "Explicit midpoint (Runge\u2013Kutta 2)",
       "identifier": "rungeKutta2",
       "family": "ExplicitRK",
       "order": 2,
@@ -126,6 +128,7 @@
     },
     {
       "name": "Heun's Method (2nd order)",
+      "friendly_name": "Heun's Method (2nd order)",
       "identifier": "heunsMethod",
       "family": "ExplicitRK",
       "order": 2,
@@ -151,6 +154,7 @@
     },
     {
       "name": "Ralston's Method (2nd order)",
+      "friendly_name": "Ralston's Method (2nd order)",
       "identifier": "ralston2nd",
       "family": "ExplicitRK",
       "order": 2,
@@ -176,6 +180,7 @@
     },
     {
       "name": "RK3",
+      "friendly_name": "Classical Runge\u2013Kutta 3",
       "identifier": "rungeKutta3",
       "family": "ExplicitRK",
       "order": 3,
@@ -201,6 +206,7 @@
     },
     {
       "name": "Heun's Method (3rd order)",
+      "friendly_name": "Heun's Method (3rd order)",
       "identifier": "heunsMethod3rd",
       "family": "ExplicitRK",
       "order": 3,
@@ -226,6 +232,7 @@
     },
     {
       "name": "Ralston's Method (3rd order)",
+      "friendly_name": "Ralston's Method (3rd order)",
       "identifier": "ralston3rd",
       "family": "ExplicitRK",
       "order": 3,
@@ -251,6 +258,7 @@
     },
     {
       "name": "Wray's Method (3rd order)",
+      "friendly_name": "Wray's Method (3rd order)",
       "identifier": "wray3rd",
       "family": "ExplicitRK",
       "order": 3,
@@ -276,6 +284,7 @@
     },
     {
       "name": "SSP RK3",
+      "friendly_name": "Shu\u2013Osher SSP Runge\u2013Kutta 3",
       "identifier": "sspRK3",
       "family": "ExplicitRK",
       "order": 3,
@@ -301,6 +310,7 @@
     },
     {
       "name": "SSPRK(10,4)",
+      "friendly_name": "SSP Runge\u2013Kutta (10 stages, order 4)",
       "identifier": "ssprk104",
       "family": "ExplicitRK",
       "order": 4,
@@ -326,6 +336,7 @@
     },
     {
       "name": "SSPRK53",
+      "friendly_name": "SSP Runge\u2013Kutta (5 stages, order 3)",
       "identifier": "ssprk53",
       "family": "ExplicitRK",
       "order": 3,
@@ -351,6 +362,7 @@
     },
     {
       "name": "SSPRK63",
+      "friendly_name": "SSP Runge\u2013Kutta (6 stages, order 3)",
       "identifier": "ssprk63",
       "family": "ExplicitRK",
       "order": 3,
@@ -376,6 +388,7 @@
     },
     {
       "name": "SSPRK73",
+      "friendly_name": "SSP Runge\u2013Kutta (7 stages, order 3)",
       "identifier": "ssprk73",
       "family": "ExplicitRK",
       "order": 3,
@@ -401,6 +414,7 @@
     },
     {
       "name": "SSPRK83",
+      "friendly_name": "SSP Runge\u2013Kutta (8 stages, order 3)",
       "identifier": "ssprk83",
       "family": "ExplicitRK",
       "order": 3,
@@ -426,6 +440,7 @@
     },
     {
       "name": "SSPRK54",
+      "friendly_name": "SSP Runge\u2013Kutta (5 stages, order 4)",
       "identifier": "ssprk54",
       "family": "ExplicitRK",
       "order": 4,
@@ -451,6 +466,7 @@
     },
     {
       "name": "KYKSSPRK42",
+      "friendly_name": "Kubatko\u2013Yeager\u2013Ketcheson SSP RK2 (4 stages)",
       "identifier": "kykssprk42",
       "family": "ExplicitRK",
       "order": 2,
@@ -476,6 +492,7 @@
     },
     {
       "name": "KYK2014DGSSPRK_3S2",
+      "friendly_name": "Kubatko\u2013Yeager\u2013Ketcheson DG SSP RK2 (3 stages)",
       "identifier": "kyk2014dgssprk3s2",
       "family": "ExplicitRK",
       "order": 2,
@@ -501,6 +518,7 @@
     },
     {
       "name": "SSPRK43",
+      "friendly_name": "SSP Runge\u2013Kutta 3(2) (4 stages, comparison 1)",
       "identifier": "ssprk43",
       "family": "ExplicitRK",
       "order": 3,
@@ -526,6 +544,7 @@
     },
     {
       "name": "SSPRK432",
+      "friendly_name": "SSP Runge\u2013Kutta 3(2) (4 stages, comparison 2)",
       "identifier": "ssprk432",
       "family": "ExplicitRK",
       "order": 3,
@@ -551,6 +570,7 @@
     },
     {
       "name": "SSPRK932",
+      "friendly_name": "SSP Runge\u2013Kutta 3 (9 stages)",
       "identifier": "ssprk932",
       "family": "ExplicitRK",
       "order": 3,
@@ -576,6 +596,7 @@
     },
     {
       "name": "SSPRK53_2N1",
+      "friendly_name": "Higueras\u2013Rold\u00e1n SSP RK3 (2N1 variant)",
       "identifier": "ssprk53_2n1",
       "family": "ExplicitRK",
       "order": 3,
@@ -601,6 +622,7 @@
     },
     {
       "name": "SSPRK53_2N2",
+      "friendly_name": "Higueras\u2013Rold\u00e1n SSP RK3 (2N2 variant)",
       "identifier": "ssprk53_2n2",
       "family": "ExplicitRK",
       "order": 3,
@@ -626,6 +648,7 @@
     },
     {
       "name": "SSPRK53_H",
+      "friendly_name": "Higueras\u2013Rold\u00e1n SSP RK3 (H variant)",
       "identifier": "ssprk53_h",
       "family": "ExplicitRK",
       "order": 3,
@@ -651,6 +674,7 @@
     },
     {
       "name": "RK4",
+      "friendly_name": "Classical Runge\u2013Kutta 4",
       "identifier": "rungeKutta4",
       "family": "ExplicitRK",
       "order": 4,
@@ -676,6 +700,7 @@
     },
     {
       "name": "RK4 (alternative)",
+      "friendly_name": "Runge\u2013Kutta 4 (3/8 rule)",
       "identifier": "rungeKutta4alt",
       "family": "ExplicitRK",
       "order": 4,
@@ -701,6 +726,7 @@
     },
     {
       "name": "Nystrom 5th order",
+      "friendly_name": "Nystr\u00f6m Runge\u2013Kutta 5",
       "identifier": "nystrom5th",
       "family": "ExplicitRK",
       "order": 5,
@@ -726,6 +752,7 @@
     },
     {
       "name": "Bogacki-Shampine 3(2)",
+      "friendly_name": "Bogacki\u2013Shampine 3(2)",
       "identifier": "bogackiShampine",
       "family": "ExplicitRK",
       "order": 3,
@@ -751,6 +778,7 @@
     },
     {
       "name": "Dormand-Prince 5(4)",
+      "friendly_name": "Dormand\u2013Prince 5(4)",
       "identifier": "dormandPrince",
       "family": "ExplicitRK",
       "order": 5,
@@ -776,6 +804,7 @@
     },
     {
       "name": "Cash-Karp 5(4)",
+      "friendly_name": "Cash\u2013Karp 5(4)",
       "identifier": "cashKarp",
       "family": "ExplicitRK",
       "order": 5,
@@ -801,6 +830,7 @@
     },
     {
       "name": "Tsit5 5(4)",
+      "friendly_name": "Tsitouras 5(4)",
       "identifier": "tsit5",
       "family": "ExplicitRK",
       "order": 5,
@@ -826,6 +856,7 @@
     },
     {
       "name": "OwrenZen3 3(2)",
+      "friendly_name": "Owren\u2013Zennaro 3(2)",
       "identifier": "owrenzen3",
       "family": "ExplicitRK",
       "order": 3,
@@ -851,6 +882,7 @@
     },
     {
       "name": "OwrenZen4 4(3)",
+      "friendly_name": "Owren\u2013Zennaro 4(3)",
       "identifier": "owrenzen4",
       "family": "ExplicitRK",
       "order": 4,
@@ -876,6 +908,7 @@
     },
     {
       "name": "OwrenZen5 5(4)",
+      "friendly_name": "Owren\u2013Zennaro 5(4)",
       "identifier": "owrenzen5",
       "family": "ExplicitRK",
       "order": 5,
@@ -901,6 +934,7 @@
     },
     {
       "name": "BS5 5(4)",
+      "friendly_name": "Bogacki\u2013Shampine 5(4)",
       "identifier": "bs5",
       "family": "ExplicitRK",
       "order": 5,
@@ -926,6 +960,7 @@
     },
     {
       "name": "Stepanov5 5(4)",
+      "friendly_name": "Stepanov 5(4) (7 stages)",
       "identifier": "stefanov5",
       "family": "ExplicitRK",
       "order": 5,
@@ -951,6 +986,7 @@
     },
     {
       "name": "Alshina2 2(1)",
+      "friendly_name": "Alshina\u2013Zaks\u2013Kalitkin 2(1)",
       "identifier": "arushina2",
       "family": "ExplicitRK",
       "order": 2,
@@ -976,6 +1012,7 @@
     },
     {
       "name": "Alshina3",
+      "friendly_name": "Alshina\u2013Zaks\u2013Kalitkin 3",
       "identifier": "arushina3",
       "family": "ExplicitRK",
       "order": 3,
@@ -1001,6 +1038,7 @@
     },
     {
       "name": "Alshina6",
+      "friendly_name": "Alshina\u2013Zaks\u2013Kalitkin 6",
       "identifier": "arushina6",
       "family": "ExplicitRK",
       "order": 6,
@@ -1026,6 +1064,7 @@
     },
     {
       "name": "MSRK5",
+      "friendly_name": "Stepanov 5 (9 stages)",
       "identifier": "msrk5",
       "family": "ExplicitRK",
       "order": 5,
@@ -1051,6 +1090,7 @@
     },
     {
       "name": "MSRK6",
+      "friendly_name": "Stepanov 6 (9 stages)",
       "identifier": "msrk6",
       "family": "ExplicitRK",
       "order": 6,
@@ -1076,6 +1116,7 @@
     },
     {
       "name": "SIR54",
+      "friendly_name": "Kovalnogov\u2013Simos\u2013Tsitouras 5 (SIR method)",
       "identifier": "sir54",
       "family": "ExplicitRK",
       "order": 5,
@@ -1101,6 +1142,7 @@
     },
     {
       "name": "Ralston4",
+      "friendly_name": "Ralston Runge\u2013Kutta 4",
       "identifier": "raston4",
       "family": "ExplicitRK",
       "order": 4,
@@ -1126,6 +1168,7 @@
     },
     {
       "name": "RKO65",
+      "friendly_name": "Runge\u2013Kutta\u2013Oliver 5 (6 stages)",
       "identifier": "rko65",
       "family": "ExplicitRK",
       "order": 5,
@@ -1151,6 +1194,7 @@
     },
     {
       "name": "RKM",
+      "friendly_name": "Mead\u2013Renaut Runge\u2013Kutta 3",
       "identifier": "rkm",
       "family": "ExplicitRK",
       "order": 3,
@@ -1176,6 +1220,7 @@
     },
     {
       "name": "PSRK4p7q6",
+      "friendly_name": "Pseudo-symplectic Runge\u2013Kutta 4 (6 stages)",
       "identifier": "psrk4p7q6",
       "family": "ExplicitRK",
       "order": 4,
@@ -1201,6 +1246,7 @@
     },
     {
       "name": "PSRK3p6q5",
+      "friendly_name": "Pseudo-symplectic Runge\u2013Kutta 3 (5 stages)",
       "identifier": "psrk3p6q5",
       "family": "ExplicitRK",
       "order": 3,
@@ -1226,6 +1272,7 @@
     },
     {
       "name": "PSRK3p5q4",
+      "friendly_name": "Pseudo-symplectic Runge\u2013Kutta 3 (4 stages)",
       "identifier": "psrk3p5q4",
       "family": "ExplicitRK",
       "order": 3,
@@ -1251,6 +1298,7 @@
     },
     {
       "name": "Vern6 6(5)",
+      "friendly_name": "Verner 6(5)",
       "identifier": "vern6",
       "family": "ExplicitRK",
       "order": 6,
@@ -1276,6 +1324,7 @@
     },
     {
       "name": "Vern7 7(6)",
+      "friendly_name": "Verner 7(6)",
       "identifier": "vern7",
       "family": "ExplicitRK",
       "order": 7,
@@ -1301,6 +1350,7 @@
     },
     {
       "name": "Vern8 8(7)",
+      "friendly_name": "Verner 8(7)",
       "identifier": "vern8",
       "family": "ExplicitRK",
       "order": 8,
@@ -1326,6 +1376,7 @@
     },
     {
       "name": "Vern9 9(8)",
+      "friendly_name": "Verner 9(8)",
       "identifier": "vern9",
       "family": "ExplicitRK",
       "order": 9,
@@ -1351,6 +1402,7 @@
     },
     {
       "name": "RKV76IIa 7(6)",
+      "friendly_name": "Verner 7(6) (RKV76.IIa)",
       "identifier": "rkv76iia",
       "family": "ExplicitRK",
       "order": 7,
@@ -1376,6 +1428,7 @@
     },
     {
       "name": "TanYam7 7(6)",
+      "friendly_name": "Tanaka\u2013Muramatsu\u2013Yamashita 7(6)",
       "identifier": "tanyam7",
       "family": "ExplicitRK",
       "order": 7,
@@ -1401,6 +1454,7 @@
     },
     {
       "name": "TsitPap8 8(7)",
+      "friendly_name": "Tsitouras\u2013Papakostas 8(7)",
       "identifier": "tsitpap8",
       "family": "ExplicitRK",
       "order": 8,
@@ -1426,6 +1480,7 @@
     },
     {
       "name": "DP8",
+      "friendly_name": "Dormand\u2013Prince 8",
       "identifier": "dp8",
       "family": "ExplicitRK",
       "order": 8,
@@ -1451,6 +1506,7 @@
     },
     {
       "name": "Feagin10",
+      "friendly_name": "Feagin Runge\u2013Kutta 10",
       "identifier": "feagin10",
       "family": "ExplicitRK",
       "order": 10,
@@ -1476,6 +1532,7 @@
     },
     {
       "name": "Feagin12",
+      "friendly_name": "Feagin Runge\u2013Kutta 12",
       "identifier": "feagin12",
       "family": "ExplicitRK",
       "order": 12,
@@ -1501,6 +1558,7 @@
     },
     {
       "name": "Feagin14",
+      "friendly_name": "Feagin Runge\u2013Kutta 14",
       "identifier": "feagin14",
       "family": "ExplicitRK",
       "order": 14,
@@ -1526,6 +1584,7 @@
     },
     {
       "name": "Leap Frog",
+      "friendly_name": "Leapfrog (synchronized)",
       "identifier": "leapFrog",
       "family": "Symplectic",
       "order": 2,
@@ -1551,6 +1610,7 @@
     },
     {
       "name": "Symplectic Euler",
+      "friendly_name": "Symplectic Euler",
       "identifier": "symplecticEuler",
       "family": "Symplectic",
       "order": 2,
@@ -1576,6 +1636,7 @@
     },
     {
       "name": "Velocity Verlet",
+      "friendly_name": "Velocity Verlet",
       "identifier": "velocityVerlet",
       "family": "Symplectic",
       "order": 2,
@@ -1601,6 +1662,7 @@
     },
     {
       "name": "PEFRL",
+      "friendly_name": "Forest\u2013Ruth 4 (position-first, PEFRL)",
       "identifier": "pefrl",
       "family": "Symplectic",
       "order": 4,
@@ -1626,6 +1688,7 @@
     },
     {
       "name": "VEFRL",
+      "friendly_name": "Forest\u2013Ruth 4 (velocity-first, VEFRL)",
       "identifier": "vefrl",
       "family": "Symplectic",
       "order": 4,
@@ -1651,6 +1714,7 @@
     },
     {
       "name": "EPEC",
+      "friendly_name": "Evaluate\u2013predict\u2013evaluate\u2013correct (midpoint)",
       "identifier": "epec",
       "family": "ExplicitRK",
       "order": 2,
@@ -1676,6 +1740,7 @@
     },
     {
       "name": "EPEC Modified",
+      "friendly_name": "Evaluate\u2013predict\u2013evaluate\u2013correct (Heun)",
       "identifier": "epecModified",
       "family": "ExplicitRK",
       "order": 2,
@@ -1701,6 +1766,7 @@
     },
     {
       "name": "TVD RK3",
+      "friendly_name": "TVD Runge\u2013Kutta 3 (Shu\u2013Osher)",
       "identifier": "tvdRK3",
       "family": "ExplicitRK",
       "order": 3,
@@ -1726,6 +1792,7 @@
     },
     {
       "name": "TVD RK2",
+      "friendly_name": "TVD Runge\u2013Kutta 2 (Shu\u2013Osher)",
       "identifier": "tvdRK2",
       "family": "ExplicitRK",
       "order": 2,
@@ -1751,6 +1818,7 @@
     },
     {
       "name": "Semi-Implicit Euler",
+      "friendly_name": "Semi-Implicit Euler",
       "identifier": "semiImplicitEuler",
       "family": "Symplectic",
       "order": 1,
@@ -1776,6 +1844,7 @@
     },
     {
       "name": "Explicit Euler",
+      "friendly_name": "Explicit Euler",
       "identifier": "explicitEuler",
       "family": "ExplicitRK",
       "order": 1,
@@ -1801,6 +1870,7 @@
     },
     {
       "name": "Backward Euler (implicit)",
+      "friendly_name": "Backward Euler (implicit)",
       "identifier": "backwardEuler",
       "family": "DIRK",
       "order": 1,
@@ -1826,6 +1896,7 @@
     },
     {
       "name": "Implicit Midpoint",
+      "friendly_name": "Implicit Midpoint",
       "identifier": "implicitMidpoint",
       "family": "DIRK",
       "order": 2,
@@ -1851,6 +1922,7 @@
     },
     {
       "name": "Trapezoidal (Crank-Nicolson)",
+      "friendly_name": "Trapezoidal (Crank-Nicolson)",
       "identifier": "trapezoidal",
       "family": "DIRK",
       "order": 2,
@@ -1876,6 +1948,7 @@
     },
     {
       "name": "SDIRK2",
+      "friendly_name": "Singly diagonally implicit Runge\u2013Kutta 2",
       "identifier": "sdirk2",
       "family": "DIRK",
       "order": 2,
@@ -1901,6 +1974,7 @@
     },
     {
       "name": "TR-BDF2",
+      "friendly_name": "Trapezoidal rule\u2013BDF2 (TR-BDF2)",
       "identifier": "trbdf2",
       "family": "DIRK",
       "order": 2,
@@ -1926,6 +2000,7 @@
     },
     {
       "name": "ESDIRK3(2)4L[2]SA",
+      "friendly_name": "Explicit-first-stage SDIRK 3(2) (4 stages)",
       "identifier": "esdirk324l2sa",
       "family": "DIRK",
       "order": 3,
@@ -1951,6 +2026,7 @@
     },
     {
       "name": "ESDIRK4(3)6L[2]SA",
+      "friendly_name": "Explicit-first-stage SDIRK 4(3) (6 stages)",
       "identifier": "esdirk436l2sa",
       "family": "DIRK",
       "order": 4,
@@ -1976,6 +2052,7 @@
     },
     {
       "name": "Kvaerno3",
+      "friendly_name": "Kv\u00e6rn\u00f8 3(2)",
       "identifier": "kvaerno3",
       "family": "DIRK",
       "order": 3,
@@ -2001,6 +2078,7 @@
     },
     {
       "name": "Kvaerno4",
+      "friendly_name": "Kv\u00e6rn\u00f8 4(3)",
       "identifier": "kvaerno4",
       "family": "DIRK",
       "order": 4,
@@ -2026,6 +2104,7 @@
     },
     {
       "name": "Kvaerno5",
+      "friendly_name": "Kv\u00e6rn\u00f8 5(4)",
       "identifier": "kvaerno5",
       "family": "DIRK",
       "order": 5,
@@ -2051,6 +2130,7 @@
     },
     {
       "name": "KenCarp3",
+      "friendly_name": "Kennedy\u2013Carpenter 3(2) (4 stages, KenCarp3)",
       "identifier": "kencarp3",
       "family": "DIRK",
       "order": 3,
@@ -2076,6 +2156,7 @@
     },
     {
       "name": "KenCarp4",
+      "friendly_name": "Kennedy\u2013Carpenter 4(3) (6 stages, KenCarp4)",
       "identifier": "kencarp4",
       "family": "DIRK",
       "order": 4,
@@ -2101,6 +2182,7 @@
     },
     {
       "name": "KenCarp47",
+      "friendly_name": "Kennedy\u2013Carpenter 4(3) (7 stages, KenCarp47)",
       "identifier": "kencarp47",
       "family": "DIRK",
       "order": 4,
@@ -2126,6 +2208,7 @@
     },
     {
       "name": "KenCarp5",
+      "friendly_name": "Kennedy\u2013Carpenter 5(4) (8 stages, KenCarp5)",
       "identifier": "kencarp5",
       "family": "DIRK",
       "order": 5,
@@ -2151,6 +2234,7 @@
     },
     {
       "name": "KenCarp58",
+      "friendly_name": "Kennedy\u2013Carpenter 5(4) (8 stages, KenCarp58)",
       "identifier": "kencarp58",
       "family": "DIRK",
       "order": 5,
@@ -2176,6 +2260,7 @@
     },
     {
       "name": "ESDIRK3(2)5L[2]SA",
+      "friendly_name": "Explicit-first-stage SDIRK 3(2) (5 stages)",
       "identifier": "esdirk325l2sa",
       "family": "DIRK",
       "order": 3,
@@ -2201,6 +2286,7 @@
     },
     {
       "name": "ESDIRK4(3)6L[2]SA2",
+      "friendly_name": "Explicit-first-stage SDIRK 4(3) (6 stages, variant 2)",
       "identifier": "esdirk436l2sa2",
       "family": "DIRK",
       "order": 4,
@@ -2226,6 +2312,7 @@
     },
     {
       "name": "ESDIRK4(3)7L[2]SA",
+      "friendly_name": "Explicit-first-stage SDIRK 4(3) (7 stages)",
       "identifier": "esdirk437l2sa",
       "family": "DIRK",
       "order": 4,
@@ -2251,6 +2338,7 @@
     },
     {
       "name": "ESDIRK5(4)7L[2]SA2",
+      "friendly_name": "Explicit-first-stage SDIRK 5(4) (7 stages, variant 2)",
       "identifier": "esdirk547l2sa2",
       "family": "DIRK",
       "order": 5,
@@ -2276,6 +2364,7 @@
     },
     {
       "name": "ESDIRK5(4)I8L[2]SA",
+      "friendly_name": "Explicit-first-stage SDIRK 5(4) (8 stages, I variant)",
       "identifier": "esdirk54i8l2sa",
       "family": "DIRK",
       "order": 5,
@@ -2301,6 +2390,7 @@
     },
     {
       "name": "ESDIRK6(5)9L[2]SA",
+      "friendly_name": "Explicit-first-stage SDIRK 6(5) (9 stages)",
       "identifier": "esdirk659l2sa",
       "family": "DIRK",
       "order": 6,
@@ -2326,6 +2416,7 @@
     },
     {
       "name": "SSPSDIRK2",
+      "friendly_name": "SSP singly diagonally implicit Runge\u2013Kutta 2",
       "identifier": "sspsdirk2",
       "family": "DIRK",
       "order": 2,
@@ -2351,6 +2442,7 @@
     },
     {
       "name": "ARS222",
+      "friendly_name": "Ascher\u2013Ruuth\u2013Spiteri (ARS222, implicit part)",
       "identifier": "ars222",
       "family": "DIRK",
       "order": 2,
@@ -2376,6 +2468,7 @@
     },
     {
       "name": "ARS232",
+      "friendly_name": "Ascher\u2013Ruuth\u2013Spiteri (ARS232, implicit part)",
       "identifier": "ars232",
       "family": "DIRK",
       "order": 2,
@@ -2401,6 +2494,7 @@
     },
     {
       "name": "ARS343",
+      "friendly_name": "Ascher\u2013Ruuth\u2013Spiteri (ARS343, implicit part)",
       "identifier": "ars343",
       "family": "DIRK",
       "order": 3,
@@ -2426,6 +2520,7 @@
     },
     {
       "name": "ARS443",
+      "friendly_name": "Ascher\u2013Ruuth\u2013Spiteri (ARS443, implicit part)",
       "identifier": "ars443",
       "family": "DIRK",
       "order": 3,
@@ -2451,6 +2546,7 @@
     },
     {
       "name": "BHR553",
+      "friendly_name": "Boscarino\u2013Russo 3 (BHR553, implicit part)",
       "identifier": "bhr553",
       "family": "DIRK",
       "order": 3,
@@ -2476,6 +2572,7 @@
     },
     {
       "name": "Cash4",
+      "friendly_name": "Cash SDIRK 4(3)",
       "identifier": "cash4",
       "family": "DIRK",
       "order": 4,
@@ -2501,6 +2598,7 @@
     },
     {
       "name": "CFNLIRK3",
+      "friendly_name": "Calvo\u2013de Frutos\u2013Novo 3 (implicit part)",
       "identifier": "cfnlirk3",
       "family": "DIRK",
       "order": 3,
@@ -2526,6 +2624,7 @@
     },
     {
       "name": "Hairer4",
+      "friendly_name": "Hairer\u2013Wanner SDIRK 4(3) (variant 1)",
       "identifier": "hairer4",
       "family": "DIRK",
       "order": 4,
@@ -2551,6 +2650,7 @@
     },
     {
       "name": "Hairer42",
+      "friendly_name": "Hairer\u2013Wanner SDIRK 4(3) (variant 2)",
       "identifier": "hairer42",
       "family": "DIRK",
       "order": 4,
@@ -2576,6 +2676,7 @@
     },
     {
       "name": "SFSDIRK4",
+      "friendly_name": "Ferracina\u2013Spijker SDIRK 4 (4 stages)",
       "identifier": "sfstdirk4",
       "family": "DIRK",
       "order": 4,
@@ -2601,6 +2702,7 @@
     },
     {
       "name": "SFSDIRK5",
+      "friendly_name": "Ferracina\u2013Spijker SDIRK 4 (5 stages)",
       "identifier": "sfstdirk5",
       "family": "DIRK",
       "order": 4,
@@ -2626,6 +2728,7 @@
     },
     {
       "name": "SFSDIRK6",
+      "friendly_name": "Ferracina\u2013Spijker SDIRK 4 (6 stages)",
       "identifier": "sfstdirk6",
       "family": "DIRK",
       "order": 4,
@@ -2651,6 +2754,7 @@
     },
     {
       "name": "SFSDIRK7",
+      "friendly_name": "Ferracina\u2013Spijker SDIRK 4 (7 stages)",
       "identifier": "sfstdirk7",
       "family": "DIRK",
       "order": 4,
@@ -2676,6 +2780,7 @@
     },
     {
       "name": "SFSDIRK8",
+      "friendly_name": "Ferracina\u2013Spijker SDIRK 4 (8 stages)",
       "identifier": "sfstdirk8",
       "family": "DIRK",
       "order": 4,
@@ -2701,6 +2806,7 @@
     },
     {
       "name": "Gauss-Legendre 2",
+      "friendly_name": "Gauss\u2013Legendre collocation (2 stages)",
       "identifier": "gaussLegendre2",
       "family": "CoupledRK",
       "order": 4,
@@ -2726,6 +2832,7 @@
     },
     {
       "name": "Radau IIA s=2",
+      "friendly_name": "Radau IIA collocation (2 stages)",
       "identifier": "radauIia2",
       "family": "CoupledRK",
       "order": 3,
@@ -2751,6 +2858,7 @@
     },
     {
       "name": "Gauss-Legendre 3",
+      "friendly_name": "Gauss\u2013Legendre collocation (3 stages)",
       "identifier": "gaussLegendre3",
       "family": "CoupledRK",
       "order": 6,
@@ -2776,6 +2884,7 @@
     },
     {
       "name": "Radau IIA s=3",
+      "friendly_name": "Radau IIA collocation (3 stages)",
       "identifier": "radauIia3",
       "family": "CoupledRK",
       "order": 5,
@@ -2801,6 +2910,7 @@
     },
     {
       "name": "ARK3(2)4L[2]SA",
+      "friendly_name": "Kennedy\u2013Carpenter additive RK 3(2) (4 stages)",
       "identifier": "ark324l2sa",
       "family": "IMEX",
       "order": 3,
@@ -2829,6 +2939,7 @@
     },
     {
       "name": "ARK4(3)6L[2]SA",
+      "friendly_name": "Kennedy\u2013Carpenter additive RK 4(3) (6 stages)",
       "identifier": "ark436l2sa",
       "family": "IMEX",
       "order": 4,
@@ -2857,6 +2968,7 @@
     },
     {
       "name": "Newmark",
+      "friendly_name": "Newmark (average acceleration by default)",
       "identifier": "newmark",
       "family": "Newmark",
       "order": 2,
@@ -2882,6 +2994,7 @@
     },
     {
       "name": "BDF1",
+      "friendly_name": "Backward differentiation formula 1",
       "identifier": "bdf1",
       "family": "MultistepImplicit",
       "order": 1,
@@ -2907,6 +3020,7 @@
     },
     {
       "name": "BDF2",
+      "friendly_name": "Backward differentiation formula 2",
       "identifier": "bdf2",
       "family": "MultistepImplicit",
       "order": 2,
@@ -2932,6 +3046,7 @@
     },
     {
       "name": "BDF3",
+      "friendly_name": "Backward differentiation formula 3",
       "identifier": "bdf3",
       "family": "MultistepImplicit",
       "order": 3,
@@ -2957,6 +3072,7 @@
     },
     {
       "name": "BDF4",
+      "friendly_name": "Backward differentiation formula 4",
       "identifier": "bdf4",
       "family": "MultistepImplicit",
       "order": 4,
@@ -2982,6 +3098,7 @@
     },
     {
       "name": "BDF5",
+      "friendly_name": "Backward differentiation formula 5",
       "identifier": "bdf5",
       "family": "MultistepImplicit",
       "order": 5,
@@ -3007,6 +3124,7 @@
     },
     {
       "name": "IMEX Euler",
+      "friendly_name": "Implicit\u2013explicit Euler",
       "identifier": "imexEuler",
       "family": "IMEX",
       "order": 1,
@@ -3035,6 +3153,7 @@
     },
     {
       "name": "SBDF2",
+      "friendly_name": "Semi-implicit backward differentiation 2",
       "identifier": "sbdf2",
       "family": "IMEX",
       "order": 2,
@@ -3063,6 +3182,7 @@
     },
     {
       "name": "SBDF3",
+      "friendly_name": "Semi-implicit backward differentiation 3",
       "identifier": "sbdf3",
       "family": "IMEX",
       "order": 3,
@@ -3091,6 +3211,7 @@
     },
     {
       "name": "CNAB2",
+      "friendly_name": "Crank\u2013Nicolson\u2013Adams\u2013Bashforth 2",
       "identifier": "cnab2",
       "family": "IMEX",
       "order": 2,
@@ -3119,6 +3240,7 @@
     },
     {
       "name": "CNLF2",
+      "friendly_name": "Crank\u2013Nicolson\u2013leapfrog 2",
       "identifier": "cnlf2",
       "family": "IMEX",
       "order": 2,
@@ -3147,6 +3269,7 @@
     },
     {
       "name": "MEBDF2",
+      "friendly_name": "Modified extended backward differentiation 2",
       "identifier": "mebdf2",
       "family": "DIRK",
       "order": 2,
@@ -3172,6 +3295,7 @@
     },
     {
       "name": "Adams-Bashforth 2",
+      "friendly_name": "Adams-Bashforth 2",
       "identifier": "ab2",
       "family": "MultistepExplicit",
       "order": 2,
@@ -3197,6 +3321,7 @@
     },
     {
       "name": "Adams-Bashforth 3",
+      "friendly_name": "Adams-Bashforth 3",
       "identifier": "ab3",
       "family": "MultistepExplicit",
       "order": 3,
@@ -3222,6 +3347,7 @@
     },
     {
       "name": "Adams-Bashforth 4",
+      "friendly_name": "Adams-Bashforth 4",
       "identifier": "ab4",
       "family": "MultistepExplicit",
       "order": 4,
@@ -3247,6 +3373,7 @@
     },
     {
       "name": "Adams-Bashforth 5",
+      "friendly_name": "Adams-Bashforth 5",
       "identifier": "ab5",
       "family": "MultistepExplicit",
       "order": 5,
@@ -3272,6 +3399,7 @@
     },
     {
       "name": "Adams-Bashforth-Moulton 2 (PECE)",
+      "friendly_name": "Adams-Bashforth-Moulton 2 (PECE)",
       "identifier": "abm2",
       "family": "MultistepExplicit",
       "order": 2,
@@ -3297,6 +3425,7 @@
     },
     {
       "name": "Adams-Bashforth-Moulton 3 (PECE)",
+      "friendly_name": "Adams-Bashforth-Moulton 3 (PECE)",
       "identifier": "abm3",
       "family": "MultistepExplicit",
       "order": 3,
@@ -3322,6 +3451,7 @@
     },
     {
       "name": "Adams-Bashforth-Moulton 4 (PECE)",
+      "friendly_name": "Adams-Bashforth-Moulton 4 (PECE)",
       "identifier": "abm4",
       "family": "MultistepExplicit",
       "order": 4,
@@ -3347,6 +3477,7 @@
     },
     {
       "name": "Adams-Bashforth-Moulton 5 (PECE)",
+      "friendly_name": "Adams-Bashforth-Moulton 5 (PECE)",
       "identifier": "abm5",
       "family": "MultistepExplicit",
       "order": 5,
@@ -3372,6 +3503,7 @@
     },
     {
       "name": "SSPRKMSVS32",
+      "friendly_name": "SSP multistep (3 steps, order 2)",
       "identifier": "ssprkmsvs32",
       "family": "MultistepExplicit",
       "order": 2,
@@ -3397,6 +3529,7 @@
     },
     {
       "name": "SSPRKMSVS43",
+      "friendly_name": "SSP multistep (4 steps, order 3)",
       "identifier": "ssprkmsvs43",
       "family": "MultistepExplicit",
       "order": 3,
@@ -3422,6 +3555,7 @@
     },
     {
       "name": "Adams-Moulton 2 (implicit)",
+      "friendly_name": "Adams-Moulton 2 (implicit)",
       "identifier": "am2",
       "family": "MultistepImplicit",
       "order": 2,
@@ -3447,6 +3581,7 @@
     },
     {
       "name": "Adams-Moulton 3 (implicit)",
+      "friendly_name": "Adams-Moulton 3 (implicit)",
       "identifier": "am3",
       "family": "MultistepImplicit",
       "order": 3,
@@ -3472,6 +3607,7 @@
     },
     {
       "name": "Adams-Moulton 4 (implicit)",
+      "friendly_name": "Adams-Moulton 4 (implicit)",
       "identifier": "am4",
       "family": "MultistepImplicit",
       "order": 4,
@@ -3497,6 +3633,7 @@
     },
     {
       "name": "RKC1",
+      "friendly_name": "Runge\u2013Kutta\u2013Chebyshev 1",
       "identifier": "rkc1",
       "family": "RelaxedChebyshev",
       "order": 1,
@@ -3525,6 +3662,7 @@
     },
     {
       "name": "RKC2",
+      "friendly_name": "Runge\u2013Kutta\u2013Chebyshev 2",
       "identifier": "rkc2",
       "family": "RelaxedChebyshev",
       "order": 2,
@@ -3553,6 +3691,7 @@
     },
     {
       "name": "RKL2",
+      "friendly_name": "Runge\u2013Kutta\u2013Legendre 2",
       "identifier": "rkl2",
       "family": "RelaxedChebyshev",
       "order": 2,
@@ -3581,6 +3720,7 @@
     },
     {
       "name": "ROS3P",
+      "friendly_name": "Rosenbrock\u2013W 3(2) (ROS3P)",
       "identifier": "ros3p",
       "family": "LinearlyImplicit",
       "order": 3,
@@ -3609,6 +3749,7 @@
     },
     {
       "name": "ETD2RK",
+      "friendly_name": "Exponential time-differencing Runge\u2013Kutta 2",
       "identifier": "etd2rk",
       "family": "Exponential",
       "order": 2,
@@ -3638,6 +3779,7 @@
     },
     {
       "name": "EXPRB32",
+      "friendly_name": "Exponential Rosenbrock 3(2)",
       "identifier": "exprb32",
       "family": "Exponential",
       "order": 3,

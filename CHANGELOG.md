@@ -8,6 +8,10 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Documentation
 
+- Give the README and generated catalog friendly author/construction names,
+  such as Tsitouras 5(4), alongside exact family enum members. Keep legacy
+  lookup names in the generated data and add a separate friendly-name field.
+
 - Restore a self-contained README with method-selection advice, TVD/SSP,
   symplecticity, A/L-stability and JFNK explanations, analytic damped-oscillator
   examples, readable stability figures and measured benchmark tables. Generate
