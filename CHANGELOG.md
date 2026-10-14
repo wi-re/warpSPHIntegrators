@@ -27,6 +27,12 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Added — Phase 8 backend expansion
 
+- Full-JVP Rosenbrock23/32 and W6S4OS factories with coupled quantity stages,
+  complete Jacobian derivatives in implicit adjoints, isolated probes and
+  component increment quadratures. The pair corrects a pinned third-stage time
+  term; original/corrected source records, stability limits and consumer costs
+  are retained separately.
+
 - Source-qualified PDIRK44 factory with serial full-state stage solves, exact
   fourth-order/A/L-stability gates, endpoint refresh, gradients and portable
   continuation. PDIRK means parallel DIRK for ordinary first-order ODEs; the

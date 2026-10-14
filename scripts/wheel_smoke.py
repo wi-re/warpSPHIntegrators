@@ -25,6 +25,7 @@ from warpSPHIntegrators import (
     ExpandedRK,expanded_rk_methods,
     ImprovedNystrom,
     ParallelDIRK,
+    Rosenbrock,
 )
 
 
@@ -93,6 +94,10 @@ assert improved.successful and abs(improved.state.state.x.item()-mechanics.exact
 parallel=solve(ParallelDIRK(),TensorState(torch.ones(1,dtype=torch.float64)),.25,
     tensor_rhs(lambda t,y:-y),dt=.0625,solver_opts={'matvec':'jvp','tol':1e-13,'newton_tol':1e-8})
 assert parallel.successful and abs(parallel.state.y.item()-math.exp(-.25))<1e-6
+linearized=solve(Rosenbrock('Rosenbrock32'),TensorState(torch.ones(1,dtype=torch.float64)),.5,
+    tensor_rhs(lambda t,y:-y+.2*y*y-.2*math.exp(-2*t)),dt=.125,adaptive=True,
+    rtol=1e-7,atol=1e-9,solver_opts={'gmres_tol':1e-13})
+assert linearized.successful and abs(linearized.state.y.item()-math.exp(-.5))<2e-6
 alpha = solve(GeneralizedAlpha(.5),mechanics.initial(),.2,mechanics.rhs,dt=.01,
               solver_opts={'matvec':'jvp','tol':1e-12,'newton_tol':1e-7})
 continued = solve(GeneralizedAlpha(.5),None,.35,mechanics.rhs,restart=alpha.checkpoint,

@@ -692,6 +692,7 @@ contracts allow it.
 | `Nystrom` | 14 qualified VI/VD configurations | Second-order mechanics with position/velocity/quantity quadratures; structure assumptions are checked or declared |
 | `ImprovedNystrom` | Improved Nyström orders 3 and 4 | Fixed-step velocity-independent mechanics; corrected startup and owned history reduce warm-step force calls |
 | `ParallelDIRK` | Parallel DIRK, four stages / order four | L-stable ordinary ODE map, executed serially; four nonlinear solves and no embedded estimate |
+| `Rosenbrock` | Rosenbrock 2(3), 3(2), and six-stage Rosenbrock-W order four | Full-JVP linear stages and complete Jacobian derivatives; corrected pair time term; distinct stability limits |
 | `NDF` / `AdaptiveNDF` | Fixed target 1–5 / accepted target-order selection | Implicit difference history with quasi-constant step policy; distinct from the full upstream controller |
 | `Extrapolation` | Euler 2–8; midpoint 2/4/6/8/10 | Fixed-target explicit extrapolation, adaptive timestep, full-state quantities |
 | `ExpandedRK` | 54 checked main maps, 19 estimates | Source-expanded low-storage-family coefficients; current execution uses full-stage buffers |

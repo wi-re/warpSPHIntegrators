@@ -6189,6 +6189,63 @@
       ],
       "evidence": "docs/development/parallel-dirk-validation.md",
       "intended_consumer": "Fourth-order L-stable ordinary ODE steps; independent stage groups available to future execution backends"
+    },
+    {
+      "name": "Rosenbrock23 full-JVP backend",
+      "status": "implemented",
+      "wave": 11,
+      "reason": "Exact full-RHS JVP and complete implicit adjoints; corrected pair time term / unchanged six-stage source coefficients",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; Rosenbrock 2.7.0 and RosenbrockTableaus 2.4.2 actual constant-cache kernels",
+      "implementation": "src/warpSPHIntegrators/linearized.py",
+      "tests": [
+        "tests/test_linearized.py"
+      ],
+      "evidence": "docs/development/linearized-validation.md",
+      "intended_consumer": "Known nonlinear reaction / real stiff decay with individual stability qualifications; coupled fields and state/parameter gradients"
+    },
+    {
+      "name": "Rosenbrock32 full-JVP backend",
+      "status": "implemented",
+      "wave": 11,
+      "reason": "Exact full-RHS JVP and complete implicit adjoints; corrected pair time term / unchanged six-stage source coefficients",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; Rosenbrock 2.7.0 and RosenbrockTableaus 2.4.2 actual constant-cache kernels",
+      "implementation": "src/warpSPHIntegrators/linearized.py",
+      "tests": [
+        "tests/test_linearized.py"
+      ],
+      "evidence": "docs/development/linearized-validation.md",
+      "intended_consumer": "Known nonlinear reaction / real stiff decay with individual stability qualifications; coupled fields and state/parameter gradients"
+    },
+    {
+      "name": "RosenbrockW6S4OS full-JVP backend",
+      "status": "implemented",
+      "wave": 11,
+      "reason": "Exact full-RHS JVP and complete implicit adjoints; corrected pair time term / unchanged six-stage source coefficients",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; Rosenbrock 2.7.0 and RosenbrockTableaus 2.4.2 actual constant-cache kernels",
+      "implementation": "src/warpSPHIntegrators/linearized.py",
+      "tests": [
+        "tests/test_linearized.py"
+      ],
+      "evidence": "docs/development/linearized-validation.md",
+      "intended_consumer": "Known nonlinear reaction / real stiff decay with individual stability qualifications; coupled fields and state/parameter gradients"
+    },
+    {
+      "name": "Rosenbrock23 pinned uncorrected nonautonomous pair path",
+      "status": "excluded",
+      "wave": 11,
+      "reason": "Third-stage time term gives an order-two defect on y prime=t; Rosenbrock32 main loses nonautonomous order. Corrected augmentation-qualified package path is separate.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; actual constant-cache kernels and differentiation helper inspection",
+      "evidence": "docs/development/linearized-validation.md",
+      "intended_consumer": "Use the corrected full-JVP backend for time-dependent forces"
+    },
+    {
+      "name": "Rosenbrock32 pinned uncorrected nonautonomous pair path",
+      "status": "excluded",
+      "wave": 11,
+      "reason": "Third-stage time term gives an order-two defect on y prime=t; Rosenbrock32 main loses nonautonomous order. Corrected augmentation-qualified package path is separate.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; actual constant-cache kernels and differentiation helper inspection",
+      "evidence": "docs/development/linearized-validation.md",
+      "intended_consumer": "Use the corrected full-JVP backend for time-dependent forces"
     }
   ]
 }

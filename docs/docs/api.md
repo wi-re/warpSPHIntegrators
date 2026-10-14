@@ -51,6 +51,32 @@ for Gauss/Radau, with stage counts 2–9 and estimate-controlled `solve` support
 for shifted solves plus a matching frozen Jacobian action. See
 [the coupled backend guide](families/coupled-rk).
 
+## Source-qualified Rosenbrock methods
+
+`Rosenbrock('Rosenbrock23')`, `Rosenbrock('Rosenbrock32')` and
+`Rosenbrock('RosenbrockW6S4OS')` use full-RHS JVP and GMRES stages. The pair
+corrects the source time term; W6S4OS uses its source coefficients. Custom
+finalize consumes `RosenbrockQuadrature`, with solved increments separated from
+physical rates. These factories retain derivatives through the Jacobian.
+
+[example:run full-jvp-rosenbrock]: #
+```python
+import math
+import torch
+from warpSPHIntegrators import Rosenbrock, TensorState, tensor_rhs, solve
+
+result = solve(Rosenbrock('Rosenbrock32'),
+               TensorState(torch.ones(1, dtype=torch.float64)), .5,
+               tensor_rhs(lambda t, y: -y + .2*y*y - .2*math.exp(-2*t)),
+               dt=.125, adaptive=True, rtol=1e-7, atol=1e-9,
+               solver_opts={'gmres_tol': 1e-13})
+assert result.successful
+assert abs(result.state.y.item() - math.exp(-.5)) < 2e-6
+```
+
+Rosenbrock23 is A/L-stable; Rosenbrock32 and W6S4OS have oscillatory/stiff-region
+limitations. W6S4OS has no estimator. See [method choice and contracts](families/rosenbrock#additional-rosenbrock-factories).
+
 ## Stabilized recurrence factories
 
 `StabilizedRK('rkg2', stages=5)` or `StabilizedRK('rkl2', lambda_max=...)`

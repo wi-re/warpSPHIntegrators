@@ -47,7 +47,7 @@ CATEGORIES = {
     'imex': ['test_imex.py', 'test_imexmultistep.py', 'test_implicit_extensions.py'],
     'fullyimplicit': ['test_fullyimplicit.py','test_implicit_prototypes.py','test_firk_wave9.py','test_collocation_factory.py'],
     'exponential': ['test_exponential.py'],
-    'rosenbrock': ['test_rosenbrock.py'],
+    'rosenbrock': ['test_rosenbrock.py', 'test_linearized.py'],
     'rkc': ['test_rkc.py','test_stabilized_backend.py'],
     'newmark': ['test_newmark.py','test_structural_demo.py','test_generalized_alpha.py'],
     'rkn': ['test_nystrom.py', 'test_improved_nystrom.py'],

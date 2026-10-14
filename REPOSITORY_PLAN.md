@@ -204,6 +204,11 @@ must be recorded rather than counted as an implemented method.
 - [ ] Resolve the remaining wave-11 stabilized, Rosenbrock and exponential
   candidates, plus approximate-matrix-factorization operator contracts. These
   need recurrence/operator/solver and consumer gates, rather than only tableaus.
+  Rosenbrock now supplies the corrected-time Rosenbrock23/32 pair and source
+  W6S4OS map through full-JVP linear stages, complete Jacobian derivatives,
+  isolated lifecycle probes and measured nonlinear/stiff consumers;
+  [validation](docs/development/linearized-validation.md). Individual stability
+  limits are retained. ROCK/SERK/RKMC, exponential and AMF work remains separate.
 - [x] Resolve improved IRKN history and parallel DIRK candidates from wave 12
   with their startup, second-order state, solve and source qualifications.
   [The improved-IRKN source audit](docs/development/irkn-source-audit.md) now

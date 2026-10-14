@@ -344,6 +344,14 @@ restart. These are parameterized backends outside the 142 fixed registrations;
 [validation](../development/stabilized-backend-validation.md). ROCK/SERK/RKMC and
 the linearized/exponential drivers retain separate source/driver/cost gates.
 
+The `Rosenbrock` factory now supplies Rosenbrock23/32 with a qualified correction
+to the source third-stage time term, plus source W6S4OS. Full-JVP stages retain
+Hessian/RHS-parameter derivatives, coupled quantities and isolated probes;
+source, stability, adaptive, ownership and consumer evidence is in
+[the linearized validation](../development/linearized-validation.md). The pair's
+original nonautonomous path is recorded separately. W6S4OS and Rosenbrock32 are
+not A-stable; a small stiff limit alone is not an L-stability certificate.
+
 - `rkc.py` family: ROCK2, ROCK4 (Rodriguez regularized-Chebyshev), SERK2 (stabilized
   exponential RK 2), RKG1, RKG2, RKL1, RKMC2 (verify each method's construction from
   source — several are variants our driver does not currently parameterize).

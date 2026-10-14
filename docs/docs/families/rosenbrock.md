@@ -4,11 +4,64 @@ sidebar_label: Rosenbrock-W
 
 # Linearly implicit — Rosenbrock-W (`LinearlyImplicit`) — 1 scheme
 
-The single linearly-implicit scheme: **ROS3P**, a 3-stage, order-3,
+The fixed catalog contains **ROS3P**, a 3-stage, order-3,
 **A-stable** (not L-stable) Rosenbrock-W method with a built-in order-2
 embedded estimate, from the 3-stage Rosenbrock-W construction in **Lang &
 Verwer, BIT 41(4) (2001) 731-738** (the citable coefficient source). Driven by
 `rosenbrock.py`.
+
+## Additional Rosenbrock factories
+
+`Rosenbrock(method)` supplies three additional methods outside the fixed catalog.
+They freeze the full RHS Jacobian at the start of each step, apply it through
+automatic differentiation, and solve linear stage equations with GMRES. They
+need no outer Newton iteration or user-supplied semilinear split.
+
+| Method | Order | Difference exponent | Linear stability guidance |
+|---|---:|---:|---|
+| `Rosenbrock23` | 2 | 3 | A- and L-stable; a low-order option for stiff decay |
+| `Rosenbrock32` | 3 | 3 | Bounded stiff region; stiff modes can grow |
+| `RosenbrockW6S4OS` | 4 | none | Damps very stiff real modes, but is not A-stable |
+
+For Rosenbrock23/32, the package corrects a pinned-source time-derivative term
+that otherwise spoils Rosenbrock32's nonautonomous order and the pair's error
+estimate. The correction is verified by adding time as an extra state variable
+with t'=1. It leaves autonomous maps unchanged. W6S4OS uses the source coefficients.
+
+Use `solver_opts={'gmres_tol': 1e-12, 'gmres_maxiter': 100}` for linear-solve
+controls. A preconditioner has the usual `(vector, state, context)` interface;
+`context['stage_coefficient']` is h*gamma. All stages share that frozen operator.
+`f_t` can supply a callable returning an exact partial-time update. The default
+uses isolated central time probes; `ft_eps` sets their spacing. Choose spacing
+for the forcing timescale, or supply the derivative for strict accuracy work.
+Solver and time-probe errors limit accuracy below their numerical floors.
+
+These factories retain state and RHS-parameter derivatives through the Jacobian,
+including the Hessian terms dropped by the legacy ROS3P frozen-operator adjoint.
+Extra integrated quantities join the same coupled stage solve. JVP/time probes
+use isolated lifecycle state; the physical endpoint is refreshed for copied fields.
+Custom finalize sets `rosenbrock_compatible=True` and consumes
+`RosenbrockQuadrature`: its weighted, already h-scaled increments reconstruct
+the update, while `result.stages` retains the physical RHS rates. Those are
+different objects. No mass-matrix, FSAL or source cache-controller policy is implied.
+
+Rosenbrock23/32 support adaptive runs and portable tensor continuation; resupply
+solver options and RHS callbacks on restart. W6S4OS requires fixed timesteps.
+All three support physical composition and algorithm switching.
+
+On 4,096 nonlinear forced reaction modes, sixteen steps of size .0625 gave
+W6S4OS error 1.90e-7 with 618 actual RHS calls and .289 seconds, versus
+1.75e-7, 880 calls and .382 seconds for six-stage ESDIRK4. This is a measured
+similar-error benefit on this known problem, including JVP/time probes. On stiff
+linear decay, ESDIRK4 was faster. Rosenbrock32 amplified the fastest stiff modes
+to about 1,445 despite converged stage solves: successful linear algebra alone
+does not establish numerical stability. W6S4OS also slightly amplifies purely
+oscillatory modes; it is not an A/L-stable replacement for Rosenbrock23.
+See [source, gradient and consumer validation](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/linearized-validation.md).
+
+## ROS3P
+
+The following coefficients and options describe the fixed ROS3P record.
 
 ## The one-step form
 
