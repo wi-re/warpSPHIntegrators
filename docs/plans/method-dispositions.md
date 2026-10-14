@@ -21,6 +21,8 @@ are recorded in [the higher-stage validation](../development/higher-collocation-
 `VariableAdams` supplies order-3/4/5 AB/ABM outside the fixed catalog, with
 [variable-history evidence](../development/variable-adams-validation.md).
 Fixed classical AB5/AM5 PECE, MEBDF2 and CNLF2 are registered wave-10 additions.
+`StabilizedRK` binds RKL1/2 and RKG1/2 outside the fixed catalog, with
+[source/time/scale and lifecycle evidence](../development/stabilized-backend-validation.md).
 
 ## Source pin and transformations
 

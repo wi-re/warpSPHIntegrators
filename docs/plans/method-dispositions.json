@@ -4783,6 +4783,54 @@
       ],
       "evidence": "docs/development/higher-collocation-validation.md",
       "intended_consumer": "Known stiff reaction/diffusion and smooth higher-order ODE consumers; stages beyond 9 and source variable-order/filtering controllers remain separate work"
+    },
+    {
+      "name": "RKL1 parameterized backend",
+      "status": "implemented",
+      "reason": "StabilizedRK factory with source recurrence/time agreement, full-state lifecycle and adaptive/portable continuation; outside the fixed registry",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree, StabilizedRK 2.6.0 rkc_perform_step.jl RKL1ConstantCache",
+      "implementation": "src/warpSPHIntegrators/stabilized.py",
+      "tests": [
+        "tests/test_stabilized_backend.py"
+      ],
+      "evidence": "docs/development/stabilized-backend-validation.md",
+      "intended_consumer": "Diffusion-like negative-real spectra with a supplied bound; no general nonnormal stability guarantee"
+    },
+    {
+      "name": "RKL2 parameterized backend",
+      "status": "implemented",
+      "reason": "StabilizedRK factory with source recurrence/time agreement, full-state lifecycle and adaptive/portable continuation; outside the fixed registry",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree, StabilizedRK 2.6.0 rkc_perform_step.jl RKL2ConstantCache",
+      "implementation": "src/warpSPHIntegrators/stabilized.py",
+      "tests": [
+        "tests/test_stabilized_backend.py"
+      ],
+      "evidence": "docs/development/stabilized-backend-validation.md",
+      "intended_consumer": "Diffusion-like negative-real spectra with a supplied bound; no general nonnormal stability guarantee"
+    },
+    {
+      "name": "RKG1 parameterized backend",
+      "status": "implemented",
+      "reason": "StabilizedRK factory with source recurrence/time agreement, full-state lifecycle and adaptive/portable continuation; outside the fixed registry",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree, StabilizedRK 2.6.0 rkc_perform_step.jl RKG1ConstantCache",
+      "implementation": "src/warpSPHIntegrators/stabilized.py",
+      "tests": [
+        "tests/test_stabilized_backend.py"
+      ],
+      "evidence": "docs/development/stabilized-backend-validation.md",
+      "intended_consumer": "Diffusion-like negative-real spectra with a supplied bound; no general nonnormal stability guarantee"
+    },
+    {
+      "name": "RKG2 parameterized backend",
+      "status": "implemented",
+      "reason": "StabilizedRK factory with source recurrence/time agreement, full-state lifecycle and adaptive/portable continuation; outside the fixed registry",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree, StabilizedRK 2.6.0 rkc_perform_step.jl RKG2ConstantCache",
+      "implementation": "src/warpSPHIntegrators/stabilized.py",
+      "tests": [
+        "tests/test_stabilized_backend.py"
+      ],
+      "evidence": "docs/development/stabilized-backend-validation.md",
+      "intended_consumer": "Diffusion-like negative-real spectra with a supplied bound; no general nonnormal stability guarantee"
     }
   ]
 }

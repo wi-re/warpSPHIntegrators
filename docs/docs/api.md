@@ -51,6 +51,15 @@ for Gauss/Radau, with stage counts 2–9 and estimate-controlled `solve` support
 for shifted solves plus a matching frozen Jacobian action. See
 [the coupled backend guide](families/coupled-rk).
 
+## Stabilized recurrence factories
+
+`StabilizedRK('rkg2', stages=5)` or `StabilizedRK('rkl2', lambda_max=...)`
+binds RKL1/2 or RKG1/2 for fixed/adaptive runs. `stabilized_coefficients`
+returns immutable recurrence weights and consistent stage times;
+`stabilized_interval` exposes conservative negative-real sizing bounds.
+Endpoint refresh costs one RHS beyond the recurrence's stage count. See
+[the contracts and executable example](families/relaxed-chebyshev).
+
 ## Second-order numerical damping
 
 `GeneralizedAlpha(rho_inf=.5)` binds a classical fixed-step mechanics driver.
@@ -201,5 +210,6 @@ assert scheme.metadata.estimate_extra_stages == 1
 | `propose_dt` | `propose_dt(error_norm, dt, order, *, target=1.0, safety=0.9, growth_min=0.2, growth_max=5.0)` | Classic PI-style step proposal |
 | `dormand_prince_dense_output` | `dormand_prince_dense_output(state, stages, dt, theta, *args, **kwargs)` | DP5 interpolant at `theta ∈ [0, 1]` |
 
-The helpers are scheme-agnostic; multistep schemes refuse adaptive stepping
-explicitly (see the [solver](solver) page for the rationale).
+The helpers are scheme-agnostic; constant-coefficient multistep schemes refuse
+adaptive stepping. VariableAdams uses its per-step estimator exponent and
+variable-history contract (see the [solver](solver) page).

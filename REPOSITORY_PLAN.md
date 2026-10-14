@@ -168,6 +168,9 @@ must be recorded rather than counted as an implemented method.
 - [x] Add source-checked MEBDF2 and CNLF2 backends, with stiff-decay and split
   oscillation qualifications, safe history/reset and portable restart.
   [Backend evidence](docs/development/implicit-extensions-validation.md).
+- [x] Implement stage-bound RKL1/2 and RKG1/2 factories with internally consistent
+  time nodes, spectral-bound sizing, adaptive/restart and full-state ownership.
+  [Backend evidence](docs/development/stabilized-backend-validation.md).
 - [x] Prioritize a benchmarked niche: s=3 collocation improves known-consumer
   accuracy/work while passing the spatial bar. Generalized-alpha is source-confirmed
   and now has a [known two-mass consumer and linear prototype](docs/development/structural-demo-validation.md).

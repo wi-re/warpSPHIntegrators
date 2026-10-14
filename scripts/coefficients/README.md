@@ -78,3 +78,13 @@ from the source; Radau's solution companion is an explicitly recorded unsmoothed
 transformation, not a transcription of upstream's filtered adaptive controller.
 The inventory retains macro-generated types, aliases, package versions and order
 expressions for waves 10–11; enumeration alone does not approve coefficients.
+
+## Subsequent backend oracles
+
+`wave9/higher_stages.jl` checks higher Gauss/Radau coefficients and nonlinear maps.
+`wave10/variable_adams.jl` evaluates the source divided-difference helpers on
+uniform/irregular history grids. `wave10/implicit_extensions.jl` executes source
+MEBDF2 and CNLF2 constant-cache steps with independent dense Newton increments.
+`wave11/stabilized.jl` executes RKL1/2 and RKG1/2 constant-cache steps at supplied
+fixed stages, including nonautonomous stage times. Each checks the complete
+monorepo tree and records its replaced scaffolding/controller qualifications.

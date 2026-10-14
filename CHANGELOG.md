@@ -8,6 +8,10 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Added — Phase 8 backend expansion
 
+- Stage-bound Legendre/Gegenbauer RKL1/2 and RKG1/2 backends, with consistent
+  time-dependent stages, spectral-bound sizing, adaptive Euler comparisons,
+  owned full-state lifecycle and portable tensor continuation.
+
 - Stage-parameterized Gauss/Radau collocation for stages 2–9, with pinned
   coefficient/nonlinear oracles and an orthogonal real Schur spatial-preconditioner
   interface that passes the higher-stage stencil scale gate.

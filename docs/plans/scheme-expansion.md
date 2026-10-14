@@ -324,6 +324,13 @@ variants; they are not interchangeable with fixed-coefficient BDF tableaus.
 
 ## Wave 11 — stabilized / Krylov extensions (C3, ~16 methods)
 
+The `StabilizedRK` factory supplies RKL1/2 and RKG1/2 with source step-body
+oracles, consistent nonautonomous stage times, conservative spectral sizing,
+unscaled Euler difference control, owned lifecycle/quantity handling and portable
+restart. These are parameterized backends outside the 142 fixed registrations;
+[validation](../development/stabilized-backend-validation.md). ROCK/SERK/RKMC and
+the linearized/exponential drivers retain separate source/driver/cost gates.
+
 - `rkc.py` family: ROCK2, ROCK4 (Rodriguez regularized-Chebyshev), SERK2 (stabilized
   exponential RK 2), RKG1, RKG2, RKL1, RKMC2 (verify each method's construction from
   source — several are variants our driver does not currently parameterize).

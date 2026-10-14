@@ -82,7 +82,60 @@ of Krylov iterations, the implicit methods win; the benchmark plots both sides.
 TVD classification (NOTES.md §3.11): RKC2/RKL2 expose no tableau and are
 classified by measurement — per-step TVD to CFL 1.5 (tested to CFL 5).
 
-## References
+## Legendre/Gegenbauer backend factories
+
+`StabilizedRK` supplies RKL1/2 and RKG1/2 outside the three fixed registrations.
+It binds either a stage count (five by default) or a supplied spectral-radius
+bound. Legendre counts are odd; the automatic selector increases stages when
+the attempted step grows. It raises if `max_stages` is insufficient, rather than
+truncating the stability requirement. `stabilized_interval(family, s)` returns:
+
+| Family | Order | Conservative sizing interval | Minimum stages |
+|---|---|---|---|
+| rkl1 | 1 | s(s+1) | 3, odd |
+| rkl2 | 2 | (s²+s−2)/2 | 3, odd |
+| rkg1 | 1 | s(s+3)/4 | 2 |
+| rkg2 | 2 | (s+4)(s−1)/6 | 3 |
+
+The Gegenbauer source sizes against half the polynomial's full negative-real
+interval. These bounds suit diffusion-like real spectra; an eigenvalue magnitude
+alone does not establish stability for complex or nonnormal operators. There is
+no automatic spectral estimator or SSP/positivity guarantee.
+
+[example:run stabilized-backend]: #
+```python
+import math
+import torch
+from warpSPHIntegrators import StabilizedRK, TensorState, tensor_rhs, solve
+
+method = StabilizedRK('rkg2', lambda_max=100.)
+initial = TensorState(torch.ones(4, dtype=torch.float64))
+result = solve(method, initial, 1., tensor_rhs(lambda t, y: -y), dt=.1,
+               adaptive=True, rtol=1e-6, atol=1e-9)
+assert result.successful
+assert torch.allclose(result.state.y, initial.y * math.exp(-1), atol=3e-6)
+```
+
+Unlike the legacy entry points above, these factories derive stage times from
+the recurrence's consistency relation, supporting time-dependent forcing at
+their measured orders. They refresh copied fields at the physical endpoint:
+an s-stage recurrence therefore costs s+1 RHS calls. All integrated quantities
+use the same full-state recurrence; finalization gets paired updates and weights.
+Input state is owned, and rejected trials retain the runner's accepted state.
+The parameterized factory supports portable tensor restart and gradients.
+
+An unscaled main-minus-forward-Euler difference has exponent two for all four
+families. For the order-one methods this compares two methods of the same order;
+for order two it is a lower-order companion. The upstream controller's division
+by s and FSAL policy are not reproduced. Local tolerance control is not a global
+error guarantee. Saved derivatives and autograd graphs consume storage per stage;
+the recurrence is not advertised as a low-storage execution path.
+
+Pinned source steps, nonautonomous order, polynomial identities, adaptive/restart,
+lifecycle/gradient checks and known diffusion consumers are recorded in
+[the backend validation](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/stabilized-backend-validation.md).
+
+## References for the fixed entries
 
 - Ruuth, *An analysis of a relaxed Chebyshev method*, J. Comput. Phys. 169 (2001) 162-175 — the RKC construction.
 - Meyer, Balsara, Aslam, *Relaxed Lobatto schemes for advection-dominated PDEs*, J. Comput. Phys. 257 (2014) 594-626 (Eqs. 15-19) — RKL2.

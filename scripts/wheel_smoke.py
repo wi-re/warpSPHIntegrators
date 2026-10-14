@@ -18,7 +18,7 @@ from warpSPHIntegrators import (
     stage_block_preconditioner,
     stage_shifted_preconditioner,
     ConservativeDissipativeRHS, Strang, Yoshida4, LinearExponentialFlow,
-    GeneralizedAlpha, Collocation, VariableAdams,
+    GeneralizedAlpha, Collocation, VariableAdams, StabilizedRK,
 )
 
 
@@ -103,6 +103,9 @@ with tempfile.TemporaryDirectory() as directory:
     path=Path(directory)/'cnlf.pt';save_checkpoint(cnlf.checkpoint,path)
     restored=solve('cnlf2',None,.4,rhs,restart=load_checkpoint(path))
 assert restored.successful and abs(restored.state.y.item()-math.exp(-.4))<1e-4
+stabilized=solve(StabilizedRK('rkg2',lambda_max=100.),TensorState(torch.ones(3,dtype=torch.float64)),.4,
+    rhs,dt=.1,adaptive=True,rtol=1e-6,atol=1e-9)
+assert stabilized.successful and torch.allclose(stabilized.state.y,torch.full((3,),math.exp(-.4),dtype=torch.float64),atol=2e-6)
 print(f'Installed wheel {package.__version__}: all modules/exports, py.typed, '
       f'{len(filter_schemes(state_kind="tensor"))} tensor drivers, advanced state protocol, '
       'adaptive sampling/events, portable restart, stiff bootstrap, stage preconditioning, physical splitting and generalized-alpha continuation pass')
