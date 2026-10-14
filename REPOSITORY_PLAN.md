@@ -239,10 +239,49 @@ First batch validated: 7,096 passed, 621 skipped; installed-wheel, examples,
 catalog, repository links and site gates pass. Source/companion and actual
 registered-driver scale evidence are in [the batch record](docs/development/phase8-wave9-validation.md).
 
-### User-facing documentation pass after Phase 8
+### Package structure and public API refactor after Phase 8
 
-Priority: immediately after Phase 8 backend completion, before Phase 9 performance
-work. Requested at user review on 14 October 2026. The revised README establishes
+Priority: after Phase 8 backend completion and before the user-facing documentation
+pass. Requested at user review on 14 October 2026. Treat warpSPH and its sibling
+projects as the supported consumer set for this rewrite; do not retain the broad
+root API or flat module paths solely for hypothetical external callers.
+[Refactor design and initial consumer audit](docs/plans/package-api-refactor.md).
+
+- [ ] Refresh the supported-consumer import and usage audit after Phase 8. Include
+  wildcard-derived uses, deep imports, serialized scheme identifiers, custom
+  lifecycle behavior, tableau access and device-clock/graph hooks.
+- [ ] Split state/contracts, scheme definitions and coefficients, numerical
+  drivers, solvers, runtime orchestration, wrappers and adapters into meaningful
+  subpackages. Establish dependency direction and remove registry/driver cycles
+  and concrete-family dispatch lists where a common stepping contract belongs.
+- [ ] Define a small explicit root API for ordinary use and focused public
+  subpackage APIs for SPH systems and solver extensions. Select fixed schemes
+  through one canonical lookup and enums; keep raw named scheme functions and
+  coefficient-generation internals out of the root facade. Retain explicit
+  parameterized factories where configuration is genuinely necessary.
+- [ ] Migrate warpSPH, warpSPHCore, warpSPHCases and warpSPHPlotting together with
+  repository examples, tests, benchmarks, source tools and packaging. Replace
+  wildcard imports with explicit imports. Preserve serialized identifiers or
+  supply an explicit migration where storage formats change.
+- [ ] Preserve numerical maps, method metadata, lifecycle/quantity behavior,
+  solver diagnostics, gradients, accepted-history/rejection semantics, restart
+  and the consumer graph/clock contract throughout the structural change.
+- [ ] Validate the full numerical suite, installed-wheel exports/imports and
+  source/catalog tooling, then exercise representative supported-consumer flows.
+  Separate missing downstream dependencies from actual regressions and record
+  any consumer check that cannot be run.
+
+Completion: code ownership and dependencies are clear, the root API is small
+and explicit, supported consumers use the new interfaces, and measured numerical
+and state behavior is preserved. A directory move with the old export surface
+re-created through wildcard imports does not complete this pass. Update API
+references and runnable examples during migration; the subsequent documentation
+pass explains the resulting interfaces more broadly.
+
+### User-facing documentation pass after the refactor
+
+Priority: immediately after the post-Phase 8 package/API refactor, before Phase 9
+performance work. Requested at user review on 14 October 2026. The revised README establishes
 the tone: explain the problem and behavior directly, use friendly method names
 alongside exact enum members, and show an understood runnable example before
 specialist detail. Backend interfaces should be settled before this full pass.
@@ -273,7 +312,8 @@ performance projects remain separate work.
 ### Phase 9 Establish backend and performance projects
 
 Priority: guided by real SPH scale. The planned sequence is Phase 8, the
-user-facing documentation pass, then this performance work. Size: large.
+package/API refactor, the user-facing documentation pass, then this performance
+work. Size: large.
 
 - [ ] Profile full steps at realistic field/vector sizes on CPU and CUDA, separating
   RHS work, clone/update traffic, Krylov work, synchronization and graph memory.
