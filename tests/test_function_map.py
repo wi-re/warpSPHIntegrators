@@ -21,7 +21,7 @@ def test_both_source_map_branches_with_an_explicit_scaled_wrapper(key):
         return y+h*value if r['scaled'] else value
     initial=TensorState(torch.tensor(r['initial'],dtype=torch.float64),t=r['t'])
     result=FunctionMap()(initial,r['h'],tensor_map(mapping))
-    assert result.state.y.tolist()==pytest.approx(r['state'],abs=2e-15)
+    assert result.state.y.tolist()==pytest.approx(r['state'],rel=0,abs=2e-15)
     assert result.state.t==r['t']+r['h'] and len(calls)==r['nf']==1
     assert calls[0][0]==r['calls'][0]['t'] and calls[0][1].tolist()==r['initial']
     assert result.error is None and result.stages[0].update is None
@@ -52,7 +52,7 @@ def test_backward_exact_flow_map_and_no_continuous_order_or_adaptive_claim():
     method=FunctionMap();records=[]
     result=solve(method,TensorState(torch.ones(1,dtype=torch.float64)),-.4,
         tensor_map(lambda t,y,h:y*math.exp(-h)),dt=.025,callback=records.append)
-    assert result.successful and result.state.y.item()==pytest.approx(math.exp(.4),abs=2e-15)
+    assert result.successful and result.state.y.item()==pytest.approx(math.exp(.4),rel=0,abs=2e-15)
     assert method.order is None and not method.fsal and not method.has_error_estimate
     assert method.metadata.stage_count==1 and len(records)==16
     with pytest.raises(ValueError,match='estimate'):
@@ -87,9 +87,9 @@ def test_coupled_map_known_rotation_heat_budget_and_endpoint_lifecycle():
     assert result.successful and result.state.initialized==result.state.finalized==16
     assert initial.initialized==initial.finalized==0
     s=result.state.state
-    assert s.x.tolist()==pytest.approx([math.exp(-.08)*math.cos(.4)]*2,abs=2e-15)
-    assert s.u.tolist()==pytest.approx([-math.exp(-.08)*math.sin(.4)]*2,abs=2e-15)
-    assert s.e.tolist()==pytest.approx([.5*(1-math.exp(-.16))]*2,abs=2e-15)
+    assert s.x.tolist()==pytest.approx([math.exp(-.08)*math.cos(.4)]*2,rel=0,abs=2e-15)
+    assert s.u.tolist()==pytest.approx([-math.exp(-.08)*math.sin(.4)]*2,rel=0,abs=2e-15)
+    assert s.e.tolist()==pytest.approx([.5*(1-math.exp(-.16))]*2,rel=0,abs=2e-15)
     assert torch.allclose((s.x.square()+s.u.square())/2+s.e,torch.full_like(s.e,.5),atol=2e-15,rtol=0)
     assert torch.equal(s.density,s.x.square()+s.e)
     assert torch.equal(initial.state.e,torch.zeros(2,dtype=torch.float64))

@@ -26,9 +26,9 @@ def test_recurrence_and_stage_times_match_unchanged_source_steps(key):
     initial=TensorState(torch.tensor(r['initial'],dtype=torch.float64),t=r['t'])
     result=StabilizedRK(family.lower(),int(stages[1:]))(initial,r['h'],tensor_rhs(force))
     assert result.step_status.successful
-    assert result.state.y.tolist()==pytest.approx(r['state'],abs=1e-13)
-    assert result.error.y.tolist()==pytest.approx(r['euler_difference'],abs=1e-13)
-    assert times==pytest.approx(r['rhs_times'],abs=1e-13)
+    assert result.state.y.tolist()==pytest.approx(r['state'],rel=0,abs=1e-13)
+    assert result.error.y.tolist()==pytest.approx(r['euler_difference'],rel=0,abs=1e-13)
+    assert times==pytest.approx(r['rhs_times'],rel=0,abs=1e-13)
     assert len(times)==r['rhs_calls']==len(result.stages)
     assert torch.equal(initial.y,torch.tensor(r['initial'],dtype=torch.float64)) and initial.t==r['t']
 
@@ -45,8 +45,8 @@ def test_nonlinear_nonautonomous_order_and_reported_difference_exponent(family,s
         trial=method(TensorState(torch.ones(1,dtype=torch.float64)),h,rhs)
         estimates.append(abs(trial.error.y.item()))
         assert trial.estimate_order==2
-    assert math.log(errors[-2]/errors[-1],2)==pytest.approx(method.order,abs=.08)
-    assert math.log(estimates[-2]/estimates[-1],2)==pytest.approx(2,abs=.08)
+    assert math.log(errors[-2]/errors[-1],2)==pytest.approx(method.order,rel=0,abs=.08)
+    assert math.log(estimates[-2]/estimates[-1],2)==pytest.approx(2,rel=0,abs=.08)
 
 
 def gegenbauer(s,x):
@@ -68,11 +68,11 @@ def test_known_stability_polynomial_and_conservative_negative_real_interval(fami
         x=1+w1*z
         expected=a+b*(np.polynomial.legendre.Legendre.basis(s)(x) if family.startswith('rkl') else gegenbauer(s,x))
         result=method(TensorState(torch.ones(1,dtype=torch.float64)),1.,tensor_rhs(lambda t,y:z*y))
-        assert result.state.y.item()==pytest.approx(expected,abs=3e-12)
+        assert result.state.y.item()==pytest.approx(expected,rel=0,abs=3e-12)
         assert abs(result.state.y.item())<=1+3e-12
     coeff=stabilized_coefficients(family,s)
-    assert coeff.c[-1]==pytest.approx(1,abs=1e-13)
-    assert sum(coeff.b)==pytest.approx(1,abs=1e-13)
+    assert coeff.c[-1]==pytest.approx(1,rel=0,abs=1e-13)
+    assert sum(coeff.b)==pytest.approx(1,rel=0,abs=1e-13)
     with pytest.raises(TypeError):coeff.b[0]=0
 
 
@@ -139,7 +139,7 @@ class System(testing.ParticleSystem):
     def preprocess(self,initial,dt,**kwargs):self.state.density=self.state.x.square()+self.state.e;return self
     def finalize(self,initial,dt,auxes,updates,weights,**kwargs):
         assert len(auxes)==len(updates)==len(weights)
-        assert sum(weights)==pytest.approx(1,abs=1e-13)
+        assert sum(weights)==pytest.approx(1,rel=0,abs=1e-13)
         self.finalized=initial.finalized+1
         return self
 

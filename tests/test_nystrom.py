@@ -40,19 +40,19 @@ def test_tableaus_and_execution_match_pinned_source_step_bodies(name,forced):
     state=initial(record['initial_q'],record['initial_v'],t=record['t'])
     result=Nystrom(name,structure='declared')(state,record['h'],rhs)
     assert result.step_status.successful
-    assert result.state.state.x.tolist()==pytest.approx(record['q'],abs=2e-13)
-    assert result.state.state.u.tolist()==pytest.approx(record['v'],abs=2e-13)
+    assert result.state.state.x.tolist()==pytest.approx(record['q'],rel=0,abs=2e-13)
+    assert result.state.state.u.tolist()==pytest.approx(record['v'],rel=0,abs=2e-13)
     for actual,expected in zip(calls,record['calls']):
-        assert actual['t']==pytest.approx(expected['t'],abs=1e-14)
-        for key in ['q','v','a']:assert actual[key].tolist()==pytest.approx(expected[key],abs=2e-13)
+        assert actual['t']==pytest.approx(expected['t'],rel=0,abs=1e-14)
+        for key in ['q','v','a']:assert actual[key].tolist()==pytest.approx(expected[key],rel=0,abs=2e-13)
     assert len(calls)==len(record['calls'])==Nystrom(name).metadata.stage_count
     weights=result.quadrature
     assert len(weights.position)==len(weights.velocity)==len(weights.quantity)==len(result.stages)
-    assert sum(weights.position)==pytest.approx(.5,abs=1e-12)
-    assert sum(weights.velocity)==pytest.approx(1.,abs=1e-12)
+    assert sum(weights.position)==pytest.approx(.5,rel=0,abs=1e-12)
+    assert sum(weights.velocity)==pytest.approx(1.,rel=0,abs=1e-12)
     if result.error is not None:
-        assert result.error.state.x.tolist()==pytest.approx(record['error_q'],abs=2e-13)
-        assert result.error.state.u.tolist()==pytest.approx(record['error_v'] or [0.,0.],abs=2e-13)
+        assert result.error.state.x.tolist()==pytest.approx(record['error_q'],rel=0,abs=2e-13)
+        assert result.error.state.u.tolist()==pytest.approx(record['error_v'] or [0.,0.],rel=0,abs=2e-13)
     else:assert not record['error_q'] and not record['error_v']
 
 
@@ -107,11 +107,11 @@ def test_oscillator_polynomial_conditions_through_the_claimed_order(name):
     ones=np.ones(len(c));power=np.eye(len(c))
     for k in range(1,tab.order//2+1):
         # Coefficients in powers of z=-omega²*h² for the q/(h*v) map.
-        assert (b@power@ones)*math.factorial(2*k)==pytest.approx(1,abs=3e-12)
-        assert (bp@power@c)*math.factorial(2*k)==pytest.approx(1,abs=3e-12)
-        assert (bp@power@ones)*math.factorial(2*k-1)==pytest.approx(1,abs=3e-12)
+        assert (b@power@ones)*math.factorial(2*k)==pytest.approx(1,rel=0,abs=3e-12)
+        assert (bp@power@c)*math.factorial(2*k)==pytest.approx(1,rel=0,abs=3e-12)
+        assert (bp@power@ones)*math.factorial(2*k-1)==pytest.approx(1,rel=0,abs=3e-12)
         if 2*k+1<=tab.order:
-            assert (b@power@c)*math.factorial(2*k+1)==pytest.approx(1,abs=3e-12)
+            assert (b@power@c)*math.factorial(2*k+1)==pytest.approx(1,rel=0,abs=3e-12)
         power=power@a
 
 
@@ -151,7 +151,7 @@ def test_difference_exponents_from_independent_time_polynomial_moments(name):
                 s=state.state;return testing.ParticleUpdate(s.u,torch.full_like(s.u,state.t**degree),torch.zeros_like(s.e)),None
             result=method(initial(q=[0.],v=[0.]),h,rhs)
             errors.append(abs(getattr(result.error.state,field).item()))
-        assert errors[0]>0 and math.log(errors[-2]/errors[-1],2)==pytest.approx(q,abs=1e-8)
+        assert errors[0]>0 and math.log(errors[-2]/errors[-1],2)==pytest.approx(q,rel=0,abs=1e-8)
 
 
 @pytest.mark.parametrize('name',METHODS)
@@ -271,7 +271,7 @@ def test_nystrom_composes_with_one_outer_finalize_and_second_order_damped_behavi
     from test_operator_splitting import damped_split,error
     method=Strang(Nystrom('Nystrom4VelocityIndependent'),'RK4')
     errors=[error(method,h) for h in [.1,.05,.025]]
-    assert math.log(errors[-2]/errors[-1],2)==pytest.approx(2,abs=.1)
+    assert math.log(errors[-2]/errors[-1],2)==pytest.approx(2,rel=0,abs=.1)
     start=system()
     result=solve(method,start,.2,damped_split(),dt=.05)
     assert result.successful and result.state.initialized==result.state.finalized==4

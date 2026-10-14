@@ -23,14 +23,14 @@ def test_source_main_error_coefficients_and_nonautonomous_times(key):
     method=Extrapolation(r['base'],r['order']);calls=[]
     def rhs(t,y):calls.append(t);return force(t,y)
     result=method(TensorState(torch.tensor(r['initial'],dtype=torch.float64),t=r['t']),r['h'],tensor_rhs(rhs))
-    assert result.state.y.tolist()==pytest.approx(r['state'],abs=3e-14)
-    assert result.error.y.tolist()==pytest.approx(r['error'],abs=3e-14)
+    assert result.state.y.tolist()==pytest.approx(r['state'],rel=0,abs=3e-14)
+    assert result.error.y.tolist()==pytest.approx(r['error'],rel=0,abs=3e-14)
     sequence,main,companion=extrapolation_coefficients(method.base,method.order)
     if method.base=='midpoint':
-        assert main==pytest.approx(r['main_column_weights'],abs=2e-14)
-        assert companion==pytest.approx(r['comparison_column_weights'],abs=2e-14)
+        assert main==pytest.approx(r['main_column_weights'],rel=0,abs=2e-14)
+        assert companion==pytest.approx(r['comparison_column_weights'],rel=0,abs=2e-14)
     expected=[r['t']]+[r['t']+j*r['h']/n for n in sequence for j in range(1,n)]+[r['t']+r['h']]
-    assert calls==pytest.approx(expected,abs=1e-15)
+    assert calls==pytest.approx(expected,rel=0,abs=1e-15)
     assert len(calls)==method.metadata.stage_count
 
 
@@ -47,7 +47,7 @@ def test_nonlinear_forced_convergence_and_defect_exponents(method):
     for h in (.2,.1,.05):
         result=method(TensorState(torch.zeros(1,dtype=torch.float64)),h,tensor_rhs(lambda t,y:torch.full_like(y,t**(q-1))))
         estimates.append(abs(result.error.y.item()))
-    assert math.log(estimates[-2]/estimates[-1],2)==pytest.approx(q,abs=1e-5)
+    assert math.log(estimates[-2]/estimates[-1],2)==pytest.approx(q,rel=0,abs=1e-5)
 
 
 @pytest.mark.parametrize('method',METHODS,ids=lambda m:m.name)
@@ -55,7 +55,7 @@ def test_polynomial_order_conditions_and_exact_zero_rate_offsets(method):
     ns,alpha,comp=extrapolation_coefficients(method.base,method.order)
     power=1 if method.base=='euler' else 2
     for j in range(len(ns)):
-        assert sum(a/n**(power*j) for n,a in zip(ns,alpha))==pytest.approx(float(j==0),abs=2e-13)
+        assert sum(a/n**(power*j) for n,a in zip(ns,alpha))==pytest.approx(float(j==0),rel=0,abs=2e-13)
     # Build each independent scalar stability polynomial using the recurrence.
     poly=np.polynomial.Polynomial;z=poly([0,1]);columns=[]
     for n in ns:
@@ -65,7 +65,7 @@ def test_polynomial_order_conditions_and_exact_zero_rate_offsets(method):
             previous,current=current,following
         columns.append(current)
     combined=sum(a*p for a,p in zip(alpha,columns))
-    assert combined.coef[:method.order+1]==pytest.approx([1/math.factorial(j) for j in range(method.order+1)],abs=2e-13)
+    assert combined.coef[:method.order+1]==pytest.approx([1/math.factorial(j) for j in range(method.order+1)],rel=0,abs=2e-13)
     state=TensorState(torch.tensor([1e12,-1e12],dtype=torch.float64));calls=[]
     def zero(t,y):calls.append(t);return y*0
     result=method(state,.1,tensor_rhs(zero))
@@ -158,4 +158,4 @@ def test_custom_finalize_requires_opt_in_and_cannot_project_values():
 def test_backward_nonautonomous_steps_retain_time_nodes():
     result=solve(Extrapolation('midpoint',6),TensorState(torch.ones(1,dtype=torch.float64)),-1.,
         tensor_rhs(lambda t,y:-y+.2*y*y-.2*math.exp(-2*t)),dt=.025)
-    assert result.successful and result.state.y.item()==pytest.approx(math.e,abs=2e-9)
+    assert result.successful and result.state.y.item()==pytest.approx(math.e,rel=0,abs=2e-9)

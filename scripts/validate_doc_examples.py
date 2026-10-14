@@ -27,6 +27,7 @@ PAGES += ('docs/docs/families/multistep-implicit.md',)
 PAGES += ('docs/docs/families/extrapolation.md',)
 PAGES += ('docs/docs/algorithm-switching.md',)
 PAGES += ('docs/docs/function-maps.md',)
+PAGES += ('docs/docs/families/expanded-rk.md',)
 FENCE = re.compile(r'^```python[^\n]*\n(.*?)^```[ \t]*$', re.M | re.S)
 ANNOTATION = re.compile(r'\[example:(run|skip|include) ([^\n]+?)\]: #\s*$')
 

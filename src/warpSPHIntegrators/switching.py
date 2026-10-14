@@ -43,11 +43,12 @@ class AlgorithmSwitch:
         from .variable_adams import VariableAdams
         from .generalized_alpha import GeneralizedAlpha
         from .splitting import SplitScheme
+        from .expanded_rk import ExpandedRK
         if not callable(self.selector):raise TypeError('selector must be callable')
         if not isinstance(self.policy_id,str) or not self.policy_id.strip():raise ValueError('nonempty policy_id required')
         if not isinstance(self.methods,(tuple,list)) or len(self.methods)<2:raise ValueError('at least two methods required')
         selected=[];bound=(IntegrationScheme,Collocation,Extrapolation,Nystrom,StabilizedRK,
-            NDF,AdaptiveNDF,VariableAdams,GeneralizedAlpha,SplitScheme)
+            NDF,AdaptiveNDF,VariableAdams,GeneralizedAlpha,SplitScheme,ExpandedRK)
         for method in self.methods:
             method=method if isinstance(method,bound) else getIntegrator(method)
             selected.append(method)

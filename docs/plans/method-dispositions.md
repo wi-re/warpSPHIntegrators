@@ -289,3 +289,5 @@ The Phase 6 three-stage scale limitation was resolved by the spatial backend;
 the s=3 methods are registered and higher stages 2–9 are supplied by a factory.
 See [the first registration](../development/phase8-wave9-validation.md) and
 [higher-stage validation](../development/higher-collocation-validation.md).
+
+`ExpandedRK` supplies 54 screened main maps and 19 companions from LowStorageRK, outside fixed registration. [The screening record](../development/expanded-rk-validation.md) distinguishes six omitted main methods and one omitted companion from low-storage execution work.

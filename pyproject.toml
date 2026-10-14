@@ -79,6 +79,7 @@ markers = [
   "newmark: Newmark-beta scheme",
   "rkn: explicit generalized Runge-Kutta-Nystrom backends",
   "extrapolation: fixed-target explicit extrapolation backends",
+  "expanded_rk: qualified low-storage source maps expanded to full RK",
   "convergence: cross-family order and embedded pairs",
   "reuse: cross-family first-stage reuse and FSAL",
   "geometry: cross-family Hamiltonian energy and symplecticity",

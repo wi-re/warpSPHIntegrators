@@ -30,7 +30,7 @@ def test_variable_coefficients_match_pinned_divided_difference_helpers(order,gri
     higher=adams_weights(np.r_[nodes,1.])
     assert np.allclose(np.r_[0.,am],source['abm'],atol=3e-14)
     assert np.allclose(higher-np.r_[0.,am],source['abm_source_error'],atol=3e-14)
-    for k in range(order):assert ab@nodes**k==pytest.approx(1/(k+1),abs=2e-13)
+    for k in range(order):assert ab@nodes**k==pytest.approx(1/(k+1),rel=0,abs=2e-13)
 
 
 def force(t,y):return -y+.2*y*y-.2*math.exp(-2*t)  # exact y=exp(-t)
@@ -50,7 +50,7 @@ def test_nonlinear_nonautonomous_order_on_alternating_step_sizes(order,kind):
         assert len(history)==order-1
         errors.append(abs(state.y.item()-math.exp(-1)))
     measured=math.log(errors[-2]/errors[-1],2)
-    assert measured==pytest.approx(order,abs=.35),(errors,measured)
+    assert measured==pytest.approx(order,rel=0,abs=.35),(errors,measured)
 
 
 @pytest.mark.parametrize('kind',['ab','abm'])
@@ -175,7 +175,7 @@ def test_ramped_startup_estimates_have_the_reported_local_orders():
         second=method(TensorState(torch.tensor([math.exp(h)],dtype=torch.float64),t=h),h,rhs,history=first.history)
         assert (first.estimate_order,second.estimate_order)==(2,3)
         errors[0].append(abs(first.error.y.item()));errors[1].append(abs(second.error.y.item()))
-    for q,values in zip((2,3),errors):assert math.log(values[-2]/values[-1],2)==pytest.approx(q,abs=.12)
+    for q,values in zip((2,3),errors):assert math.log(values[-2]/values[-1],2)==pytest.approx(q,rel=0,abs=.12)
 
 
 @dataclass
@@ -248,4 +248,4 @@ def test_backward_variable_history_and_restart_are_consistent():
     method=VariableAdams(4,'abm');rhs=tensor_rhs(force)
     first=solve(method,TensorState(torch.ones(1,dtype=torch.float64)),-.3,rhs,dt=.025)
     result=solve(method,None,-.5,rhs,restart=first.checkpoint)
-    assert result.successful and result.state.y.item()==pytest.approx(math.exp(.5),abs=1e-6)
+    assert result.successful and result.state.y.item()==pytest.approx(math.exp(.5),rel=0,abs=1e-6)

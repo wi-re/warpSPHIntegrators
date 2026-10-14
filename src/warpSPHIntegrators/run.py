@@ -229,7 +229,8 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
     from .extrapolation import Extrapolation
     from .switching import AlgorithmSwitch
     from .function_map import FunctionMap
-    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme,GeneralizedAlpha,Collocation,VariableAdams,StabilizedRK,Nystrom,NDF,AdaptiveNDF,Extrapolation,AlgorithmSwitch,FunctionMap)) else getIntegrator(scheme)
+    from .expanded_rk import ExpandedRK
+    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme,GeneralizedAlpha,Collocation,VariableAdams,StabilizedRK,Nystrom,NDF,AdaptiveNDF,Extrapolation,AlgorithmSwitch,FunctionMap,ExpandedRK)) else getIntegrator(scheme)
     if restart is not None:
         if restart.scheme != scheme.identifier.name:
             raise ValueError('Checkpoint scheme does not match')

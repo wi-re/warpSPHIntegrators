@@ -8,6 +8,12 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Added — Phase 8 backend expansion
 
+- Source-expanded full-stage RK factory: 54 screened main maps and 19 companion
+  estimates from all 60 pinned LowStorageRK constructors. Source time/order and
+  rounded-coefficient exceptions have individual dispositions. Standard RK
+  lifecycle/reruns, adaptive runs, gradients and portable restart are retained;
+  native low-storage execution remains separate.
+
 - Direct FunctionMap/StateMap stepping with an explicit tensor-map adapter,
   source t+h clock, owned map/lifecycle buffers, coupled endpoint quantities and
   portable tensor continuation. MapTransition uses a separate result transition

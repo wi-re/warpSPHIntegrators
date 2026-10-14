@@ -1,0 +1,1715 @@
+{
+  "source": "bae9b8e5f1d00e51c554648e5094e215164a19f8",
+  "tolerance": 1e-10,
+  "screen": {
+    "AlJahdaliAdv3S113": {
+      "order": 3,
+      "source_method": "AlJahdaliAdv3S113",
+      "phase": 1,
+      "main_order_defects": [
+        3.3306690738754696e-16,
+        2.220446049250313e-16,
+        1.6653345369377348e-16
+      ],
+      "time_node_defect": 3.3306690738754696e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "expanded_stages": 12,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ]
+    },
+    "AlJahdaliAdv3S154": {
+      "order": 4,
+      "source_method": "AlJahdaliAdv3S154",
+      "phase": 1,
+      "main_order_defects": [
+        2.220446049250313e-16,
+        4.996003610813204e-16,
+        4.996003610813204e-16,
+        4.996003610813204e-16
+      ],
+      "time_node_defect": 5.551115123125783e-16,
+      "initial_scale_defect": 2.220446049250313e-16,
+      "qualified": true,
+      "expanded_stages": 16,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ]
+    },
+    "AlJahdaliAdv3S165": {
+      "order": 5,
+      "source_method": "AlJahdaliAdv3S165",
+      "phase": 1,
+      "main_order_defects": [
+        5.88418203051333e-15,
+        2.220446049250313e-15,
+        3.774758283725532e-15,
+        4.884981308350689e-15,
+        5.412337245047638e-15
+      ],
+      "time_node_defect": 5.773159728050814e-15,
+      "initial_scale_defect": 2.220446049250313e-16,
+      "qualified": true,
+      "expanded_stages": 17,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    "AlJahdaliAdv3S42": {
+      "order": 2,
+      "source_method": "AlJahdaliAdv3S42",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.0
+      ],
+      "time_node_defect": 0.0,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "expanded_stages": 5,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "AlJahdaliAdv3S53": {
+      "order": 3,
+      "source_method": "AlJahdaliAdv3S53",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.0,
+        5.551115123125783e-17
+      ],
+      "time_node_defect": 2.220446049250313e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "expanded_stages": 6,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "AlJahdaliAdv3S64": {
+      "order": 4,
+      "source_method": "AlJahdaliAdv3S64",
+      "phase": 1,
+      "main_order_defects": [
+        3.6637359812630166e-15,
+        8.881784197001252e-16,
+        2.220446049250313e-15,
+        2.609024107869118e-15
+      ],
+      "time_node_defect": 3.6637359812630166e-15,
+      "initial_scale_defect": 2.220446049250313e-16,
+      "qualified": true,
+      "expanded_stages": 7,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    "AlJahdaliAdv3S82": {
+      "order": 2,
+      "source_method": "AlJahdaliAdv3S82",
+      "phase": 1,
+      "main_order_defects": [
+        8.881784197001252e-16,
+        4.440892098500626e-16
+      ],
+      "time_node_defect": 8.881784197001252e-16,
+      "initial_scale_defect": 4.440892098500626e-16,
+      "qualified": true,
+      "expanded_stages": 9,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    "AlJahdaliAdv3S85": {
+      "order": 5,
+      "source_method": "AlJahdaliAdv3S85",
+      "phase": 1,
+      "main_order_defects": [
+        2.7755575615628914e-15,
+        1.1102230246251565e-15,
+        3.885780586188048e-16,
+        2.7755575615628914e-16,
+        4.996003610813204e-16
+      ],
+      "time_node_defect": 2.7755575615628914e-15,
+      "initial_scale_defect": 8.881784197001252e-16,
+      "qualified": true,
+      "expanded_stages": 9,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    "AlJahdaliVor3S113": {
+      "order": 3,
+      "source_method": "AlJahdaliVor3S113",
+      "phase": 1,
+      "main_order_defects": [
+        5.329070518200751e-15,
+        1.3322676295501878e-15,
+        1.4988010832439613e-15
+      ],
+      "time_node_defect": 6.661338147750939e-15,
+      "initial_scale_defect": 1.1102230246251565e-16,
+      "qualified": true,
+      "expanded_stages": 12,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ]
+    },
+    "AlJahdaliVor3S154": {
+      "order": 4,
+      "source_method": "AlJahdaliVor3S154",
+      "phase": 1,
+      "main_order_defects": [
+        1.887379141862766e-15,
+        1.1657341758564144e-15,
+        1.27675647831893e-15,
+        1.7486012637846216e-15
+      ],
+      "time_node_defect": 2.220446049250313e-15,
+      "initial_scale_defect": 2.220446049250313e-16,
+      "qualified": true,
+      "expanded_stages": 16,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ]
+    },
+    "AlJahdaliVor3S165": {
+      "order": 5,
+      "source_method": "AlJahdaliVor3S165",
+      "phase": 1,
+      "main_order_defects": [
+        2.220446049250313e-16,
+        1.1102230246251565e-16,
+        1.3877787807814457e-16,
+        5.551115123125783e-17,
+        6.245004513516506e-17
+      ],
+      "time_node_defect": 5.551115123125783e-16,
+      "initial_scale_defect": 2.220446049250313e-16,
+      "qualified": true,
+      "expanded_stages": 17,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    "AlJahdaliVor3S42": {
+      "order": 2,
+      "source_method": "AlJahdaliVor3S42",
+      "phase": 1,
+      "main_order_defects": [
+        1.1102230246251565e-16,
+        0.0
+      ],
+      "time_node_defect": 1.1102230246251565e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "expanded_stages": 5,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "AlJahdaliVor3S53": {
+      "order": 3,
+      "source_method": "AlJahdaliVor3S53",
+      "phase": 1,
+      "main_order_defects": [
+        1.1102230246251565e-16,
+        0.0,
+        5.551115123125783e-17
+      ],
+      "time_node_defect": 1.1102230246251565e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "expanded_stages": 6,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "AlJahdaliVor3S64": {
+      "order": 4,
+      "source_method": "AlJahdaliVor3S64",
+      "phase": 1,
+      "main_order_defects": [
+        2.4424906541753444e-15,
+        1.1102230246251565e-15,
+        9.992007221626409e-16,
+        7.771561172376096e-16
+      ],
+      "time_node_defect": 2.4424906541753444e-15,
+      "initial_scale_defect": 2.220446049250313e-15,
+      "qualified": true,
+      "expanded_stages": 7,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    "AlJahdaliVor3S82": {
+      "order": 2,
+      "source_method": "AlJahdaliVor3S82",
+      "phase": 1,
+      "main_order_defects": [
+        1.9984014443252818e-15,
+        1.4432899320127035e-15
+      ],
+      "time_node_defect": 2.1094237467877974e-15,
+      "initial_scale_defect": 2.220446049250313e-16,
+      "qualified": true,
+      "expanded_stages": 9,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    "AlJahdaliVor3S85": {
+      "order": 5,
+      "source_method": "AlJahdaliVor3S85",
+      "phase": 1,
+      "main_order_defects": [
+        4.440892098500626e-16,
+        0.0,
+        1.1102230246251565e-16,
+        2.220446049250313e-16,
+        2.498001805406602e-16
+      ],
+      "time_node_defect": 4.440892098500626e-16,
+      "initial_scale_defect": 1.3322676295501878e-15,
+      "qualified": true,
+      "expanded_stages": 9,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    "CFRLDDRK64": {
+      "order": 4,
+      "source_method": "CFRLDDRK64",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        6.8833827526759706e-15,
+        9.381384558082573e-15,
+        9.880984919163893e-15
+      ],
+      "time_node_defect": 9.992007221626409e-15,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "expanded_stages": 7,
+      "source_to_expanded": [
+        0,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "CKLLSRK43_2": {
+      "order": 3,
+      "source_method": "CKLLSRK43_2",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        2.220446049250313e-16,
+        3.885780586188048e-16
+      ],
+      "time_node_defect": 0.0,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "comparison_defects": [
+        0.0,
+        0.0,
+        0.04604178550204624
+      ],
+      "observed_comparison_order": 2,
+      "source_pair_qualified": true,
+      "expanded_stages": 5,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "CKLLSRK54_3C": {
+      "order": 4,
+      "source_method": "CKLLSRK54_3C",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        1.1102230246251565e-16,
+        1.6653345369377348e-16,
+        1.6653345369377348e-16
+      ],
+      "time_node_defect": 0.14414587523285172,
+      "initial_scale_defect": 0.0,
+      "qualified": false,
+      "comparison_defects": [
+        0.0,
+        1.1102230246251565e-16,
+        1.1102230246251565e-16,
+        0.009682821958698296
+      ],
+      "observed_comparison_order": 3,
+      "source_pair_qualified": true
+    },
+    "CKLLSRK54_3C_3R": {
+      "order": 4,
+      "source_method": "CKLLSRK54_3C_3R",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.0,
+        5.551115123125783e-17,
+        5.551115123125783e-17
+      ],
+      "time_node_defect": 1.1102230246251565e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "comparison_defects": [
+        0.0,
+        0.0,
+        5.551115123125783e-17,
+        0.005952380952380952
+      ],
+      "observed_comparison_order": 3,
+      "source_pair_qualified": true,
+      "expanded_stages": 6,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "CKLLSRK54_3M_3R": {
+      "order": 4,
+      "source_method": "CKLLSRK54_3M_3R",
+      "phase": 1,
+      "main_order_defects": [
+        1.1102230246251565e-16,
+        0.0,
+        5.551115123125783e-17,
+        1.3877787807814457e-17
+      ],
+      "time_node_defect": 2.220446049250313e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "comparison_defects": [
+        0.0,
+        0.0,
+        5.551115123125783e-17,
+        0.008228470347968725
+      ],
+      "observed_comparison_order": 3,
+      "source_pair_qualified": true,
+      "expanded_stages": 6,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "CKLLSRK54_3M_4R": {
+      "order": 4,
+      "source_method": "CKLLSRK54_3M_4R",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        8.881784197001252e-16,
+        2.3869795029440866e-15,
+        2.6645352591003757e-15
+      ],
+      "time_node_defect": 1.1102230246251565e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "comparison_defects": [
+        8.881784197001252e-16,
+        0.0,
+        6.106226635438361e-16,
+        0.0032051282051283395
+      ],
+      "observed_comparison_order": 3,
+      "source_pair_qualified": true,
+      "expanded_stages": 6,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "CKLLSRK54_3N_3R": {
+      "order": 4,
+      "source_method": "CKLLSRK54_3N_3R",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.0,
+        2.7755575615628914e-17,
+        2.7755575615628914e-17
+      ],
+      "time_node_defect": 1.1102230246251565e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "comparison_defects": [
+        0.0,
+        0.0,
+        5.551115123125783e-17,
+        0.008125710446134832
+      ],
+      "observed_comparison_order": 3,
+      "source_pair_qualified": true,
+      "expanded_stages": 6,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "CKLLSRK54_3N_4R": {
+      "order": 4,
+      "source_method": "CKLLSRK54_3N_4R",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        5.551115123125783e-17,
+        5.551115123125783e-17,
+        5.551115123125783e-17
+      ],
+      "time_node_defect": 1.1102230246251565e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "comparison_defects": [
+        0.0,
+        5.551115123125783e-17,
+        5.551115123125783e-17,
+        0.00819700983331867
+      ],
+      "observed_comparison_order": 3,
+      "source_pair_qualified": true,
+      "expanded_stages": 6,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "CKLLSRK65_4M_4R": {
+      "order": 5,
+      "source_method": "CKLLSRK65_4M_4R",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.0,
+        5.551115123125783e-17,
+        5.551115123125783e-17,
+        2.7755575615628914e-17
+      ],
+      "time_node_defect": 1.1102230246251565e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "comparison_defects": [
+        0.0,
+        1.1102230246251565e-16,
+        1.6653345369377348e-16,
+        1.1102230246251565e-16,
+        0.004069618677626348
+      ],
+      "observed_comparison_order": 4,
+      "source_pair_qualified": true,
+      "expanded_stages": 7,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    "CKLLSRK75_4M_5R": {
+      "order": 5,
+      "source_method": "CKLLSRK75_4M_5R",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.0,
+        2.7755575615628914e-17,
+        8.326672684688674e-17,
+        1.3877787807814457e-16
+      ],
+      "time_node_defect": 2.220446049250313e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "comparison_defects": [
+        1.1102230246251565e-16,
+        5.551115123125783e-17,
+        5.551115123125783e-17,
+        1.1102230246251565e-16,
+        0.0009933201994326846
+      ],
+      "observed_comparison_order": 4,
+      "source_pair_qualified": true,
+      "expanded_stages": 8,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    "CKLLSRK85_4C_3R": {
+      "order": 5,
+      "source_method": "CKLLSRK85_4C_3R",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.0,
+        0.0,
+        1.3877787807814457e-17,
+        2.7755575615628914e-17
+      ],
+      "time_node_defect": 2.220446049250313e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "comparison_defects": [
+        0.0,
+        0.0,
+        5.551115123125783e-17,
+        4.163336342344337e-17,
+        0.0012546090893501283
+      ],
+      "observed_comparison_order": 4,
+      "source_pair_qualified": true,
+      "expanded_stages": 9,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    "CKLLSRK85_4FM_4R": {
+      "order": 5,
+      "source_method": "CKLLSRK85_4FM_4R",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        1.1102230246251565e-16,
+        5.551115123125783e-17,
+        4.163336342344337e-17,
+        1.3877787807814457e-17
+      ],
+      "time_node_defect": 1.1102230246251565e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "comparison_defects": [
+        0.0,
+        0.07180812530142355,
+        0.10777131901271553,
+        0.1257825300906667,
+        0.13430040095886275
+      ],
+      "observed_comparison_order": 1,
+      "source_pair_qualified": false,
+      "expanded_stages": 9,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    "CKLLSRK85_4M_3R": {
+      "order": 5,
+      "source_method": "CKLLSRK85_4M_3R",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.0,
+        5.551115123125783e-17,
+        1.3877787807814457e-17,
+        1.3877787807814457e-17
+      ],
+      "time_node_defect": 2.7755575615628914e-17,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "comparison_defects": [
+        6.661338147750939e-16,
+        1.1102230246251565e-16,
+        5.551115123125783e-17,
+        5.551115123125783e-17,
+        0.007235578463589243
+      ],
+      "observed_comparison_order": 4,
+      "source_pair_qualified": true,
+      "expanded_stages": 9,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    "CKLLSRK85_4P_3R": {
+      "order": 5,
+      "source_method": "CKLLSRK85_4P_3R",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.0,
+        5.551115123125783e-17,
+        5.551115123125783e-17,
+        5.551115123125783e-17
+      ],
+      "time_node_defect": 2.220446049250313e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "comparison_defects": [
+        2.220446049250313e-16,
+        0.0,
+        1.1102230246251565e-16,
+        5.551115123125783e-17,
+        0.0018333427131793888
+      ],
+      "observed_comparison_order": 4,
+      "source_pair_qualified": true,
+      "expanded_stages": 9,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    "CKLLSRK95_4C": {
+      "order": 5,
+      "source_method": "CKLLSRK95_4C",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.016972398104717845,
+        0.023894427685531322,
+        0.026547705997736593,
+        0.027020264486626158
+      ],
+      "time_node_defect": 1.1102230246251565e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": false,
+      "comparison_defects": [
+        0.0,
+        0.022835161789445446,
+        0.03095566879253947,
+        0.0315504711332949,
+        0.027732627105905006
+      ],
+      "observed_comparison_order": 1,
+      "source_pair_qualified": false
+    },
+    "CKLLSRK95_4M": {
+      "order": 5,
+      "source_method": "CKLLSRK95_4M",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.0,
+        0.0,
+        2.7755575615628914e-17,
+        8.326672684688674e-17
+      ],
+      "time_node_defect": 1.1102230246251565e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "comparison_defects": [
+        0.0,
+        5.551115123125783e-17,
+        5.551115123125783e-17,
+        5.551115123125783e-17,
+        0.002365274703178377
+      ],
+      "observed_comparison_order": 4,
+      "source_pair_qualified": true,
+      "expanded_stages": 10,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    "CKLLSRK95_4S": {
+      "order": 5,
+      "source_method": "CKLLSRK95_4S",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.0,
+        2.7755575615628914e-17,
+        1.3877787807814457e-17,
+        1.3877787807814457e-17
+      ],
+      "time_node_defect": 1.1102230246251565e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "comparison_defects": [
+        0.0,
+        0.0,
+        5.551115123125783e-17,
+        1.3877787807814457e-17,
+        0.0019034278690633066
+      ],
+      "observed_comparison_order": 4,
+      "source_pair_qualified": true,
+      "expanded_stages": 10,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    "CarpenterKennedy2N54": {
+      "order": 4,
+      "source_method": "CarpenterKennedy2N54",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.0,
+        5.551115123125783e-17,
+        1.3877787807814457e-17
+      ],
+      "time_node_defect": 1.1102230246251565e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "expanded_stages": 6,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "DGLDDRK73_C": {
+      "order": 3,
+      "source_method": "DGLDDRK73_C",
+      "phase": 1,
+      "main_order_defects": [
+        5.551115123125783e-16,
+        2.220446049250313e-16,
+        1.8596235662471372e-15
+      ],
+      "time_node_defect": 5.551115123125783e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "expanded_stages": 8,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    "DGLDDRK84_C": {
+      "order": 4,
+      "source_method": "DGLDDRK84_C",
+      "phase": 1,
+      "main_order_defects": [
+        6.328271240363392e-15,
+        1.1102230246251565e-15,
+        8.326672684688674e-16,
+        1.7763568394002505e-15
+      ],
+      "time_node_defect": 7.771561172376096e-15,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "expanded_stages": 9,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    "DGLDDRK84_F": {
+      "order": 4,
+      "source_method": "DGLDDRK84_F",
+      "phase": 1,
+      "main_order_defects": [
+        1.3322676295501878e-15,
+        8.881784197001252e-16,
+        2.1649348980190553e-15,
+        2.6645352591003757e-15
+      ],
+      "time_node_defect": 4.218847493575595e-15,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "expanded_stages": 9,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    "NDBLSRK124": {
+      "order": 4,
+      "source_method": "NDBLSRK124",
+      "phase": 1,
+      "main_order_defects": [
+        1.5543122344752192e-15,
+        1.1102230246251565e-16,
+        6.106226635438361e-16,
+        9.43689570931383e-16
+      ],
+      "time_node_defect": 3.219646771412954e-15,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "expanded_stages": 13,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "NDBLSRK134": {
+      "order": 4,
+      "source_method": "NDBLSRK134",
+      "phase": 1,
+      "main_order_defects": [
+        2.220446049250313e-16,
+        3.3306690738754696e-16,
+        1.942890293094024e-16,
+        4.718447854656915e-16
+      ],
+      "time_node_defect": 4.440892098500626e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "expanded_stages": 14,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ]
+    },
+    "NDBLSRK144": {
+      "order": 4,
+      "source_method": "NDBLSRK144",
+      "phase": 1,
+      "main_order_defects": [
+        3.552713678800501e-15,
+        2.220446049250313e-14,
+        3.136380044566067e-14,
+        3.552713678800501e-14
+      ],
+      "time_node_defect": 3.552713678800501e-15,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "expanded_stages": 15,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ]
+    },
+    "ORK256": {
+      "order": 2,
+      "source_method": "ORK256",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        5.292880000951072e-07
+      ],
+      "time_node_defect": 5.551115123125783e-17,
+      "initial_scale_defect": 0.0,
+      "qualified": false
+    },
+    "ParsaniKetchesonDeconinck3S105": {
+      "order": 5,
+      "source_method": "ParsaniKetchesonDeconinck3S105",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        1.1102230246251565e-16,
+        5.551115123125783e-17,
+        1.3877787807814457e-17,
+        5.551115123125783e-17
+      ],
+      "time_node_defect": 7.771561172376096e-16,
+      "initial_scale_defect": 4.440892098500626e-16,
+      "qualified": true,
+      "expanded_stages": 11,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    "ParsaniKetchesonDeconinck3S173": {
+      "order": 3,
+      "source_method": "ParsaniKetchesonDeconinck3S173",
+      "phase": 1,
+      "main_order_defects": [
+        8.881784197001252e-15,
+        1.6653345369377348e-15,
+        4.496403249731884e-15
+      ],
+      "time_node_defect": 1.3766765505351941e-14,
+      "initial_scale_defect": 2.220446049250313e-16,
+      "qualified": true,
+      "expanded_stages": 18,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ]
+    },
+    "ParsaniKetchesonDeconinck3S184": {
+      "order": 4,
+      "source_method": "ParsaniKetchesonDeconinck3S184",
+      "phase": 1,
+      "main_order_defects": [
+        1.2212453270876722e-15,
+        1.4988010832439613e-15,
+        1.7208456881689926e-15,
+        1.8041124150158794e-15
+      ],
+      "time_node_defect": 3.885780586188048e-15,
+      "initial_scale_defect": 3.3306690738754696e-16,
+      "qualified": true,
+      "expanded_stages": 19,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ]
+    },
+    "ParsaniKetchesonDeconinck3S205": {
+      "order": 5,
+      "source_method": "ParsaniKetchesonDeconinck3S205",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        7.216449660063518e-16,
+        1.0269562977782698e-15,
+        2.213507155346406e-15,
+        1.4710455076283324e-15
+      ],
+      "time_node_defect": 1.2212453270876722e-15,
+      "initial_scale_defect": 1.887379141862766e-15,
+      "qualified": true,
+      "expanded_stages": 21,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ]
+    },
+    "ParsaniKetchesonDeconinck3S32": {
+      "order": 2,
+      "source_method": "ParsaniKetchesonDeconinck3S32",
+      "phase": 1,
+      "main_order_defects": [
+        2.220446049250313e-16,
+        0.0
+      ],
+      "time_node_defect": 2.220446049250313e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "expanded_stages": 4,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "ParsaniKetchesonDeconinck3S53": {
+      "order": 3,
+      "source_method": "ParsaniKetchesonDeconinck3S53",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.0,
+        2.7755575615628914e-17
+      ],
+      "time_node_defect": 2.220446049250313e-16,
+      "initial_scale_defect": 1.1102230246251565e-16,
+      "qualified": true,
+      "expanded_stages": 6,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "ParsaniKetchesonDeconinck3S82": {
+      "order": 2,
+      "source_method": "ParsaniKetchesonDeconinck3S82",
+      "phase": 1,
+      "main_order_defects": [
+        1.887379141862766e-15,
+        3.3306690738754696e-16
+      ],
+      "time_node_defect": 2.220446049250313e-15,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "expanded_stages": 9,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    "ParsaniKetchesonDeconinck3S94": {
+      "order": 4,
+      "source_method": "ParsaniKetchesonDeconinck3S94",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        1.1102230246251565e-16,
+        5.551115123125783e-17,
+        1.1102230246251565e-16
+      ],
+      "time_node_defect": 6.661338147750939e-16,
+      "initial_scale_defect": 4.440892098500626e-16,
+      "qualified": true,
+      "expanded_stages": 10,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    "RDPK3Sp35": {
+      "order": 3,
+      "source_method": "RDPK3Sp35",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.0,
+        5.551115123125783e-17
+      ],
+      "time_node_defect": 1.1102230246251565e-16,
+      "initial_scale_defect": 1.1102230246251565e-16,
+      "qualified": true,
+      "comparison_defects": [
+        0.0,
+        0.0,
+        0.002780071588268901
+      ],
+      "observed_comparison_order": 2,
+      "source_pair_qualified": true,
+      "expanded_stages": 6,
+      "source_to_expanded": [
+        0,
+        0,
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "RDPK3Sp49": {
+      "order": 4,
+      "source_method": "RDPK3Sp49",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        5.551115123125783e-17,
+        5.551115123125783e-17,
+        1.1102230246251565e-16
+      ],
+      "time_node_defect": 2.220446049250313e-16,
+      "initial_scale_defect": 1.3322676295501878e-15,
+      "qualified": true,
+      "comparison_defects": [
+        0.0,
+        5.551115123125783e-17,
+        1.1102230246251565e-16,
+        0.003358676729171922
+      ],
+      "observed_comparison_order": 3,
+      "source_pair_qualified": true,
+      "expanded_stages": 10,
+      "source_to_expanded": [
+        0,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    "RDPK3Sp510": {
+      "order": 5,
+      "source_method": "RDPK3Sp510",
+      "phase": 1,
+      "main_order_defects": [
+        2.220446049250313e-16,
+        0.0,
+        5.551115123125783e-17,
+        1.3877787807814457e-17,
+        2.7755575615628914e-17
+      ],
+      "time_node_defect": 6.661338147750939e-16,
+      "initial_scale_defect": 2.220446049250313e-15,
+      "qualified": true,
+      "comparison_defects": [
+        0.0,
+        1.1102230246251565e-16,
+        5.551115123125783e-17,
+        5.551115123125783e-17,
+        0.0003693259387219927
+      ],
+      "observed_comparison_order": 4,
+      "source_pair_qualified": true,
+      "expanded_stages": 11,
+      "source_to_expanded": [
+        0,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    "RDPK3SpFSAL35": {
+      "order": 3,
+      "source_method": "RDPK3SpFSAL35",
+      "phase": 1,
+      "main_order_defects": [
+        1.1102230246251565e-16,
+        1.1102230246251565e-16,
+        1.1102230246251565e-16
+      ],
+      "time_node_defect": 1.1102230246251565e-16,
+      "initial_scale_defect": 2.220446049250313e-16,
+      "qualified": true,
+      "comparison_defects": [
+        2.220446049250313e-16,
+        1.6653345369377348e-16,
+        0.011800950616452088
+      ],
+      "observed_comparison_order": 2,
+      "source_pair_qualified": true,
+      "expanded_stages": 6,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "RDPK3SpFSAL49": {
+      "order": 4,
+      "source_method": "RDPK3SpFSAL49",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.0,
+        5.551115123125783e-17,
+        2.7755575615628914e-17
+      ],
+      "time_node_defect": 7.771561172376096e-16,
+      "initial_scale_defect": 1.4432899320127035e-15,
+      "qualified": true,
+      "comparison_defects": [
+        0.0,
+        1.1102230246251565e-16,
+        1.1102230246251565e-16,
+        0.01111828086479183
+      ],
+      "observed_comparison_order": 3,
+      "source_pair_qualified": true,
+      "expanded_stages": 10,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    "RDPK3SpFSAL510": {
+      "order": 5,
+      "source_method": "RDPK3SpFSAL510",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.0,
+        5.551115123125783e-17,
+        2.7755575615628914e-17,
+        5.551115123125783e-17
+      ],
+      "time_node_defect": 4.440892098500626e-16,
+      "initial_scale_defect": 6.661338147750939e-15,
+      "qualified": true,
+      "comparison_defects": [
+        0.0,
+        5.551115123125783e-17,
+        1.1102230246251565e-16,
+        2.7755575615628914e-17,
+        0.0008174868010940306
+      ],
+      "observed_comparison_order": 4,
+      "source_pair_qualified": true,
+      "expanded_stages": 11,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    "RK46NL": {
+      "order": 4,
+      "source_method": "RK46NL",
+      "phase": 1,
+      "main_order_defects": [
+        4.785061236134425e-14,
+        7.194245199571014e-14,
+        4.816980148092398e-13,
+        2.0296264668928643e-13
+      ],
+      "time_node_defect": 7.654987754790454e-13,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "expanded_stages": 7,
+      "source_to_expanded": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    "SHLDDRK52": {
+      "order": 2,
+      "source_method": "SHLDDRK52",
+      "phase": 1,
+      "main_order_defects": [
+        5.421053063114911e-07,
+        6.332563715072403e-07
+      ],
+      "time_node_defect": 5.421053063114911e-07,
+      "initial_scale_defect": 0.0,
+      "qualified": false
+    },
+    "SHLDDRK64": {
+      "order": 4,
+      "source_method": "SHLDDRK64",
+      "phase": 1,
+      "main_order_defects": [
+        1.5930271513031613e-07,
+        1.5915125628485072e-07,
+        1.6096985883118364e-07,
+        1.63232361682919e-07
+      ],
+      "time_node_defect": 1.622826194536131e-07,
+      "initial_scale_defect": 0.0,
+      "qualified": false
+    },
+    "SHLDDRK_2N_phase1": {
+      "order": 4,
+      "source_method": "SHLDDRK_2N",
+      "phase": 1,
+      "main_order_defects": [
+        6.536096619491616e-08,
+        6.618567693905675e-09,
+        7.878117214143998e-08,
+        1.1387360648873468e-07
+      ],
+      "time_node_defect": 6.536096619491616e-08,
+      "initial_scale_defect": 0.0,
+      "qualified": false
+    },
+    "SHLDDRK_2N_phase2": {
+      "order": 4,
+      "source_method": "SHLDDRK_2N",
+      "phase": 2,
+      "main_order_defects": [
+        3.2357279533545835e-07,
+        1.5355571614250607e-07,
+        2.347318214801497e-07,
+        2.7396207627483626e-07
+      ],
+      "time_node_defect": 5.423094322498656e-07,
+      "initial_scale_defect": 0.0,
+      "qualified": false
+    },
+    "TSLDDRK74": {
+      "order": 4,
+      "source_method": "TSLDDRK74",
+      "phase": 1,
+      "main_order_defects": [
+        0.0,
+        0.0,
+        1.1102230246251565e-16,
+        1.1102230246251565e-16
+      ],
+      "time_node_defect": 1.1102230246251565e-16,
+      "initial_scale_defect": 0.0,
+      "qualified": true,
+      "expanded_stages": 8,
+      "source_to_expanded": [
+        0,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    }
+  },
+  "qualified_methods": 54,
+  "qualified_pairs": 19
+}

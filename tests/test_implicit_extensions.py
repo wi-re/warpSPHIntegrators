@@ -36,7 +36,7 @@ def test_mebdf2_matches_unchanged_source_step_body(forced):
     state=TensorState(torch.tensor(record['initial'],dtype=torch.float64),t=record['t'])
     result=getIntegrator('mebdf2')(state,record['h'],tensor_rhs(implicit),solver_opts=OPTIONS)
     assert result.step_status.successful
-    assert result.state.y.tolist()==pytest.approx(record['state'],abs=2e-13)
+    assert result.state.y.tolist()==pytest.approx(record['state'],rel=0,abs=2e-13)
     assert record['solve_times']==pytest.approx([state.t+.1,state.t+.2,state.t+.1])
 
 
@@ -56,7 +56,7 @@ def test_cnlf2_matches_unchanged_source_step_body(forced,warm):
         IMEXRHS(explicit=tensor_rhs(explicit),implicit=tensor_rhs(implicit)),
         history=history,solver_opts=OPTIONS)
     assert result.step_status.successful
-    assert result.state.y.tolist()==pytest.approx(record['state'],abs=2e-13)
+    assert result.state.y.tolist()==pytest.approx(record['state'],rel=0,abs=2e-13)
     assert torch.equal(result.history.latest.update.dy,implicit(state.t,state.y))
 
 
@@ -76,7 +76,7 @@ def test_nonlinear_nonautonomous_second_order(name):
             tensor_rhs(lambda t,y:-y+.2*y*y-.2*math.exp(-2*t)),dt=h,solver_opts=OPTIONS)
         assert result.successful
         errors.append(abs(result.state.y.item()-math.exp(-1)))
-    assert math.log(errors[-2]/errors[-1],2)==pytest.approx(2,abs=.15)
+    assert math.log(errors[-2]/errors[-1],2)==pytest.approx(2,rel=0,abs=.15)
 
 
 def test_cnlf2_split_damped_rotation_order():
@@ -87,7 +87,7 @@ def test_cnlf2_split_damped_rotation_order():
     for h in [.05,.025,.0125]:
         result=solve('cnlf2',TensorState(torch.tensor([1.,0.],dtype=torch.float64)),1.,rhs,dt=h,solver_opts=OPTIONS)
         errors.append(torch.linalg.vector_norm(result.state.y-target).item())
-    assert math.log(errors[-2]/errors[-1],2)==pytest.approx(2,abs=.1)
+    assert math.log(errors[-2]/errors[-1],2)==pytest.approx(2,rel=0,abs=.1)
 
 
 def test_cnlf2_warm_oscillator_keeps_two_parity_energy_levels():
@@ -96,14 +96,14 @@ def test_cnlf2_warm_oscillator_keeps_two_parity_energy_levels():
     result=solve('cnlf2',TensorState(torch.tensor([1.,0.],dtype=torch.float64)),4.,rhs,dt=.1,
         solver_opts=OPTIONS,callback=lambda step:levels.append(float(step.result.state.y.square().sum())))
     assert result.successful
-    assert levels[::2]==pytest.approx([1/1.04]*20,abs=2e-12)
-    assert levels[1::2]==pytest.approx([1.]*20,abs=2e-12)
+    assert levels[::2]==pytest.approx([1/1.04]*20,rel=0,abs=2e-12)
+    assert levels[1::2]==pytest.approx([1.]*20,rel=0,abs=2e-12)
 
 
 def test_cnlf2_parasitic_mode_is_not_stiff_decay():
     result=solve('cnlf2',TensorState(torch.ones(1,dtype=torch.float64)),.2,
         tensor_rhs(lambda t,y:-1000*y),dt=.1,solver_opts=OPTIONS)
-    assert result.successful and result.state.y.item()==pytest.approx(-99/101,abs=1e-11)
+    assert result.successful and result.state.y.item()==pytest.approx(-99/101,rel=0,abs=1e-11)
     for mu in [.1,.8]:assert np.allclose(abs(np.roots([1,-2j*mu,-1])),1)
     assert max(abs(np.roots([1,.4,-1])))>1.1
 
@@ -112,7 +112,7 @@ def test_cnlf2_parasitic_mode_is_not_stiff_decay():
 def test_new_implicit_defaults_match_linear_and_scaled_newton_tolerances(name):
     result=solve(name,TensorState(torch.ones(1,dtype=torch.float64)),.2,
         tensor_rhs(lambda t,y:-y),dt=.025,solver=None)
-    assert result.successful and result.state.y.item()==pytest.approx(math.exp(-.2),abs=1e-4)
+    assert result.successful and result.state.y.item()==pytest.approx(math.exp(-.2),rel=0,abs=1e-4)
 
 
 class FailedSolver:

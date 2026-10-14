@@ -27,10 +27,10 @@ def test_collocation_source_and_order_identities(family,stages):
     for k in range(1,stages+1):
         assert np.allclose(tab.a@tab.c**(k-1),tab.c**k/k,atol=2e-14,rtol=2e-13)
     for k in range(1,method.order+1):
-        assert tab.b@tab.c**(k-1)==pytest.approx(1/k,abs=2e-14)
+        assert tab.b@tab.c**(k-1)==pytest.approx(1/k,rel=0,abs=2e-14)
     nodes=np.r_[0.,tab.c]
     for k in range(1,method.metadata.embedded_order+1):
-        assert tab.companion_b@nodes**(k-1)==pytest.approx(1/k,abs=2e-11)
+        assert tab.companion_b@nodes**(k-1)==pytest.approx(1/k,rel=0,abs=2e-11)
     degree=method.metadata.embedded_order
     assert abs(tab.companion_b@nodes**degree-1/(degree+1))>1e-8
     if family=='gauss':
@@ -67,8 +67,8 @@ def test_main_and_companion_rates_on_nonautonomous_polynomial(family,stages):
         main.append(abs(h*(tab.b@values)-h**(p+1)/(p+1)))
         values=(h*tab.c)**(q-1)
         errors.append(abs(h*(tab.b@values-tab.companion_b[1:]@values)))
-    assert math.log(main[0]/main[1],2)==pytest.approx(p+1,abs=1e-8)
-    assert math.log(errors[0]/errors[1],2)==pytest.approx(q,abs=1e-8)
+    assert math.log(main[0]/main[1],2)==pytest.approx(p+1,rel=0,abs=1e-8)
+    assert math.log(errors[0]/errors[1],2)==pytest.approx(q,rel=0,abs=1e-8)
 
 
 @pytest.mark.parametrize('family',['gauss','radau'])
@@ -81,14 +81,14 @@ def test_actual_step_adaptive_restart_gradients_and_input_ownership(family):
     first=solve(method,initial,.3,rhs,dt=.1,solver_opts=OPTIONS)
     continued=solve(method,None,.5,rhs,restart=first.checkpoint,solver_opts=OPTIONS)
     assert continued.successful and initial.t==0 and q.item()==1
-    assert continued.state.y.item()==pytest.approx(math.exp(-1),abs=1e-10)
+    assert continued.state.y.item()==pytest.approx(math.exp(-1),rel=0,abs=1e-10)
     dq,dk=torch.autograd.grad(continued.state.y.sum(),(q,k))
-    assert dq.item()==pytest.approx(math.exp(-1),abs=1e-9)
-    assert dk.item()==pytest.approx(-.5*math.exp(-1),abs=1e-9)
+    assert dq.item()==pytest.approx(math.exp(-1),rel=0,abs=1e-9)
+    assert dk.item()==pytest.approx(-.5*math.exp(-1),rel=0,abs=1e-9)
     adaptive=solve(method,TensorState(q.detach()),1.,tensor_rhs(lambda t,y:-2*y),dt=.5,
                    adaptive=True,rtol=1e-6,atol=1e-9,solver_opts=OPTIONS)
     assert adaptive.successful and adaptive.rejected_steps>0
-    assert adaptive.state.y.item()==pytest.approx(math.exp(-2),abs=1e-7)
+    assert adaptive.state.y.item()==pytest.approx(math.exp(-2),rel=0,abs=1e-7)
 
 
 def test_existing_three_stage_maps_are_preserved():

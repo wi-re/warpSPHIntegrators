@@ -38,3 +38,5 @@ uses the caller's requested output path. Running gallery scripts can overwrite
 tracked figures; review those changes. Record environment, hardware, size,
 tolerances and command with new benchmark conclusions. Historical records live
 under [numerical research](../docs/research/integrators/notes-index.md).
+
+`expanded_rk_backend.py` measures 54 qualified source-expanded RK maps on known reaction/spiral-heat problems and screens canonical coefficients against the fixed tableaus. Full-stage storage is retained.

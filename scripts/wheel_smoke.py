@@ -22,6 +22,7 @@ from warpSPHIntegrators import (
     Extrapolation, ExtrapolationQuadrature,
     AlgorithmSwitch,
     FunctionMap,tensor_map,MapTransition,
+    ExpandedRK,expanded_rk_methods,
 )
 
 
@@ -148,6 +149,12 @@ with tempfile.TemporaryDirectory() as directory:
     path=Path(directory)/'map.pt';save_checkpoint(mapped.checkpoint,path)
     mapped=solve(FunctionMap(),None,.6,tensor_map(lambda t,y,h:y*math.exp(-h)),restart=load_checkpoint(path))
 assert mapped.successful and abs(mapped.state.y.item()-math.exp(-.6))<1e-14
+assert len(expanded_rk_methods())==54
+expanded_records=[]
+expanded=solve(ExpandedRK('RDPK3SpFSAL510'),TensorState(torch.ones(1,dtype=torch.float64)),1.,rhs,
+    dt=.2,adaptive=True,rtol=1e-8,atol=1e-10,callback=expanded_records.append)
+assert expanded.successful and abs(expanded.state.y.item()-math.exp(-1))<2e-8
+assert expanded_records[-1].result.estimate_order==5
 print(f'Installed wheel {package.__version__}: all modules/exports, py.typed, '
       f'{len(filter_schemes(state_kind="tensor"))} tensor drivers, advanced state protocol, '
       'adaptive sampling/events, portable restart, stiff bootstrap, stage preconditioning, physical splitting and generalized-alpha continuation pass')

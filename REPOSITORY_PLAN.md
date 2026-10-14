@@ -29,7 +29,7 @@ quantity coupling and gradient checks. Subsequent reviewed backends supply
 collocation stages 2–9 with Schur spatial preconditioning, variable Adams,
 MEBDF2/CNLF2, Legendre/Gegenbauer stabilization, generalized Nyström, fixed and
 adaptive-order NDF, explicit extrapolation, owned algorithm switching and direct
-state maps. Their source/consumer/restart
+state maps and 54 screened full-stage RK expansions. Their source/consumer/restart
 evidence is linked below; remaining driver families retain their own gates.
 PESPH integration is later application work.**
 
@@ -210,8 +210,12 @@ must be recorded rather than counted as an implemented method.
   Implicit extrapolation and source-specific cache transfer retain their own contracts.
 - [ ] Keep waves 14–15 as prototypes until matrix/operator, multirate, and derivative
   contracts and cost models are convincing.
-- [ ] Screen wave 16 and maintain equivalence records; consider a genuine low-storage
-  execution path only when allocation measurements justify it.
+- [x] Screen all 60 wave-16 source methods and retain individual dispositions.
+  ExpandedRK supplies 54 qualified main maps / 19 estimates outside registration;
+  six source methods and one companion fail the binary64 gates. Canonical-map
+  comparisons find no fixed-tableau duplicates; [source/consumer evidence](docs/development/expanded-rk-validation.md).
+- [ ] Consider a genuine low-storage execution path when allocation measurements
+  justify it; the qualified expanded maps retain full-stage storage.
 
 Completion per batch: pinned coefficients, numerical property gates, gradient and
 adaptive coverage where applicable, complete user docs, disposition records, and a

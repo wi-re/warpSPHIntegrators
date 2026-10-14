@@ -187,6 +187,12 @@ assert scheme.has_error_estimate
 assert scheme.metadata.estimate_extra_stages == 1
 ```
 
+`ExpandedRK(method='CarpenterKennedy2N54')` supplies 54 checked full-stage RK
+maps from low-storage source recurrences. `expanded_rk_methods()` lists names;
+`expanded_rk_tableau(name)` exposes immutable coefficients. Nineteen methods
+have comparison estimates. [Source-expanded RK](families/expanded-rk) explains
+screening and the explicit absence of low-storage/FSAL execution claims.
+
 ## Results and history
 
 `FunctionMap()` applies a declared `StateMap` once per fixed step at t+h.

@@ -444,14 +444,14 @@ the adaptive-order variant.
 `OrdinaryDiffEqLowStorageRK`: AlJahdali* (16), CarpenterKennedy2N54, CFRLDDRK64,
 CKLLSRK* (15), DGLDDRK* (3), NDBLSRK* (3), ORK256,
 ParsaniKetchesonDeconinck* (9), RDPK3Sp* (6), RK46NL, SHLDDRK* (2), TSLDDRK74.
-Most are low-storage re-representations of methods already in or added by earlier
-waves → in this driver they are algebraically redundant (no storage benefit: our
-`RungeKuttaB` allocates a fresh stage state per stage). Batch screen: for each,
-transcribe, compare the one-step map against the full-storage counterpart, register
-only the genuinely new final maps (candidates: ParsaniKetchesonDeconinck3S105,
-ParsaniKetchesonDeconinck3S173/184/205 — high-stage SSP-family methods with no
-full-storage twin here; some CKLL* variants). Document the rest as redundant with a
-pointer to ODE.
+All 60 named constructors are now screened using their actual source step bodies.
+ExpandedRK exposes 54 main maps and 19 qualified companions outside the fixed
+registry, using full-stage storage. Six main source methods and one companion
+have individual deferred/excluded dispositions. Canonical A,b,c comparison finds
+no matches against 60 fixed explicit tableaus; the earlier presumption that most
+were redundant was not established. This screen alone does not prove inequivalence
+under every representation. Native low-storage execution remains separate.
+See [source and consumer validation](../development/expanded-rk-validation.md).
 
 ## Out of scope (documented in the family page, not added)
 

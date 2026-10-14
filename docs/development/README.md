@@ -28,3 +28,5 @@
 The [migration map](migration-map.json) records old and new paths. Root plan
 pointers and NOTES section aliases are temporary compatibility entry points;
 new links should target the maintained directories directly.
+
+[Expanded RK source screening and full-stage consumer validation](expanded-rk-validation.md).

@@ -29,6 +29,7 @@ const sidebars = {
         'families/newmark',
         'families/nystrom',
         'families/extrapolation',
+        'families/expanded-rk',
       ],
     },
     'solver',

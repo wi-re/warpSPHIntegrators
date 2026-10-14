@@ -30,8 +30,8 @@ def test_warm_kernel_transform_error_and_history_match_pinned_source(key):
     result=NDF(p)(state,r['h'],tensor_rhs(force),history=history,solver_opts=OPTIONS)
     assert result.step_status.successful
     assert np.allclose(ndf_difference_transform(p,r['ratio']),r['difference_transform'],atol=1e-14)
-    assert result.state.y.tolist()==pytest.approx(r['state'],abs=2e-13)
-    assert result.error.y.tolist()==pytest.approx(r['error'],abs=2e-13)
+    assert result.state.y.tolist()==pytest.approx(r['state'],rel=0,abs=2e-13)
+    assert result.error.y.tolist()==pytest.approx(r['error'],rel=0,abs=2e-13)
     assert torch.allclose(result.history.context['differences'],torch.tensor(r['output_differences'],dtype=torch.float64),atol=2e-13,rtol=0)
     assert torch.equal(history.context['differences'],differences)
     assert NDF(p).beta==pytest.approx(r['beta']) and NDF(p).error_constant==pytest.approx(r['error_constant'])
@@ -145,7 +145,7 @@ def test_warm_defect_exponent_on_exact_polynomial_history(order):
             differences=torch.stack(d),current=state.y.clone()))
         result=NDF(order)(state,h,tensor_rhs(lambda t,y:torch.full_like(y,t**order)),history=history,solver_opts=OPTIONS)
         errors.append(abs(result.error.y.item()))
-    assert math.log(errors[-2]/errors[-1],2)==pytest.approx(order+1,abs=.02)
+    assert math.log(errors[-2]/errors[-1],2)==pytest.approx(order+1,rel=0,abs=.02)
 
 
 def test_fifth_order_constant_step_main_weights_are_bdf5():
@@ -154,8 +154,8 @@ def test_fifth_order_constant_step_main_weights_are_bdf5():
     weights=[float(i==0)+sum((1-method.beta*h[j-1])*(-1)**i*math.comb(j,i)
         for j in range(max(1,i),p+1)) for i in range(p+1)]
     reference,beta=getBDFCoefficients(5)
-    assert weights[:-1]==pytest.approx(reference,abs=1e-14)
-    assert weights[-1]==pytest.approx(0,abs=1e-14) and method.beta==pytest.approx(beta)
+    assert weights[:-1]==pytest.approx(reference,rel=0,abs=1e-14)
+    assert weights[-1]==pytest.approx(0,rel=0,abs=1e-14) and method.beta==pytest.approx(beta)
 
 
 @pytest.mark.parametrize('order',[1,2,3,4,5])
@@ -172,9 +172,9 @@ def test_fixed_step_characteristic_roots_include_negative_real_decay(order):
     boundary=np.polyval(rho,r)/r**(order+1)
     if order==1:
         c=np.cos(theta)
-        assert boundary.real==pytest.approx((1-c)*(1-.37*c),abs=3e-14)
+        assert boundary.real==pytest.approx((1-c)*(1-.37*c),rel=0,abs=3e-14)
     elif order==2:
-        assert boundary.real==pytest.approx(2/3*(1-np.cos(theta))**3,abs=3e-14)
+        assert boundary.real==pytest.approx(2/3*(1-np.cos(theta))**3,rel=0,abs=3e-14)
     else:assert boundary.real.min()<-1e-5  # no full A-stability at orders 3–5
 
 
