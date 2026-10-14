@@ -191,6 +191,15 @@ must be recorded rather than counted as an implemented method.
   proposals, owned mature-history transitions, field-tolerance normalization and
   portable controller state. Exact upstream QNDF retry/discontinuity policy remains
   distinct. [Backend evidence](docs/development/adaptive-ndf-validation.md).
+- [ ] Resolve the remaining wave-10 history/controller candidates: adaptive
+  Adams, Nordsieck/AN5/JVODE variants and source-specific QNDF policies. Record
+  supported behavior, equivalences and justified dispositions individually;
+  existing fixed-target factories do not complete these distinct controllers.
+- [ ] Resolve the remaining wave-11 stabilized, Rosenbrock and exponential
+  candidates, plus approximate-matrix-factorization operator contracts. These
+  need recurrence/operator/solver and consumer gates, rather than only tableaus.
+- [ ] Resolve improved IRKN history and partitioned DIRK candidates from wave 12
+  with their startup, second-order state, solve and source qualifications.
 - [x] Prioritize a benchmarked niche: s=3 collocation improves known-consumer
   accuracy/work while passing the spatial bar. Generalized-alpha is source-confirmed
   and now has a [known two-mass consumer and linear prototype](docs/development/structural-demo-validation.md).
@@ -211,6 +220,8 @@ must be recorded rather than counted as an implemented method.
   clock, owned lifecycle and analytic recurrence/heat consumers;
   [backend evidence](docs/development/function-map-validation.md).
   Implicit extrapolation and source-specific cache transfer retain their own contracts.
+  Remaining implicit extrapolation, RKIP and IRKC candidates need their own
+  frozen-operator/solver and known-consumer gates.
 - [ ] Keep waves 14–15 as prototypes until matrix/operator, multirate, and derivative
   contracts and cost models are convincing.
 - [x] Screen all 60 wave-16 source methods and retain individual dispositions.
@@ -228,10 +239,41 @@ First batch validated: 7,096 passed, 621 skipped; installed-wheel, examples,
 catalog, repository links and site gates pass. Source/companion and actual
 registered-driver scale evidence are in [the batch record](docs/development/phase8-wave9-validation.md).
 
+### User-facing documentation pass after Phase 8
+
+Priority: immediately after Phase 8 backend completion, before Phase 9 performance
+work. Requested at user review on 14 October 2026. The revised README establishes
+the tone: explain the problem and behavior directly, use friendly method names
+alongside exact enum members, and show an understood runnable example before
+specialist detail. Backend interfaces should be settled before this full pass.
+
+- [ ] Review the documentation landing page, quick start, method-selection guide,
+  family guides, solver explanations, run/options/API pages, examples and notebook
+  introductions as one user journey. Explain terms and prerequisites where used.
+- [ ] Use friendly author/construction names consistently, retaining exact enum
+  members, signatures and variant distinctions so examples remain discoverable
+  and usable. Preserve source and numerical qualifications.
+- [ ] Explain what each family does, when to choose it, what its important
+  parameters mean and what its behavior looks like on a known problem. Keep
+  essential assumptions, limitations and practical advice on the relevant page.
+- [ ] Replace internal phase/wave shorthand and stale implementation status in
+  user-facing prose with current capabilities and plain explanations. Keep
+  development history and detailed provenance in their existing reference records.
+- [ ] Reconcile examples, benchmark interpretation, method properties and links
+  with the completed Phase 8 contracts; avoid making readers follow several
+  documents to understand a basic choice or run a first example.
+- [ ] Execute published examples and validate generated catalogs, links/anchors
+  and the documentation-site build. Review the rendered pages for readability.
+
+Completion: a new user can understand the available approaches, select a method,
+run a complete example and interpret its result from the user documentation.
+This is a documentation and usability pass; new numerical methods or backend
+performance projects remain separate work.
+
 ### Phase 9 Establish backend and performance projects
 
-Priority: guided by real SPH scale. Can follow Phase 3 without waiting for all
-catalog additions. Size: large.
+Priority: guided by real SPH scale. The planned sequence is Phase 8, the
+user-facing documentation pass, then this performance work. Size: large.
 
 - [ ] Profile full steps at realistic field/vector sizes on CPU and CUDA, separating
   RHS work, clone/update traffic, Krylov work, synchronization and graph memory.
