@@ -208,8 +208,10 @@ must be recorded rather than counted as an implemented method.
   with their startup, second-order state, solve and source qualifications.
   [The improved-IRKN source audit](docs/development/irkn-source-audit.md) now
   records constant-cache failures and order-two nonautonomous source startup.
-  Corrected-history controls isolate the seed problem; a qualified owned
-  package implementation still needs its own nonlinear/lifecycle/gradient gates.
+  ImprovedNystrom now implements corrected startup with source warm trajectories,
+  nonlinear/time-dependent order, lifecycle, gradients, guarded history, restart
+  and measured force/accuracy gates; [validation](docs/development/improved-nystrom-validation.md).
+  Partitioned DIRK retains its own solve/parallel-stage qualification.
 - [x] Prioritize a benchmarked niche: s=3 collocation improves known-consumer
   accuracy/work while passing the spatial bar. Generalized-alpha is source-confirmed
   and now has a [known two-mass consumer and linear prototype](docs/development/structural-demo-validation.md).

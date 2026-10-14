@@ -6122,7 +6122,7 @@
       "reason": "Actual source call accesses missing k\u2082 field",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 actual cache/step-body audit",
       "evidence": "docs/development/irkn-source-audit.md",
-      "intended_consumer": "Fixed-step velocity-independent mechanics; qualified package history/seed implementation remains open"
+      "intended_consumer": "Fixed-step velocity-independent mechanics; use ImprovedNystrom with separately qualified corrected startup"
     },
     {
       "name": "IRKN4 pinned constant-cache path",
@@ -6131,25 +6131,51 @@
       "reason": "No matching constant-cache step kernel in pinned RKN source; harness dispatch fails",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 actual cache/step-body audit",
       "evidence": "docs/development/irkn-source-audit.md",
-      "intended_consumer": "Fixed-step velocity-independent mechanics; qualified package history/seed implementation remains open"
+      "intended_consumer": "Fixed-step velocity-independent mechanics; use ImprovedNystrom with separately qualified corrected startup"
     },
     {
       "name": "IRKN3 pinned mutable source startup",
-      "status": "deferred",
+      "status": "excluded",
       "wave": 12,
-      "reason": "Autonomous order three but nonautonomous full-startup refinement is order two; corrected-history diagnostic needs package contract gates",
+      "reason": "Unmodified pinned startup loses nonautonomous order; corrected package startup has its own implemented disposition",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 actual cache/step-body audit",
       "evidence": "docs/development/irkn-source-audit.md",
-      "intended_consumer": "Fixed-step velocity-independent mechanics; qualified package history/seed implementation remains open"
+      "intended_consumer": "Fixed-step velocity-independent mechanics; use ImprovedNystrom with separately qualified corrected startup"
     },
     {
       "name": "IRKN4 pinned mutable source startup",
-      "status": "deferred",
+      "status": "excluded",
       "wave": 12,
-      "reason": "Autonomous order four but nonautonomous full-startup refinement is order two; corrected-history diagnostic needs package contract gates",
+      "reason": "Unmodified pinned startup loses nonautonomous order; corrected package startup has its own implemented disposition",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 actual cache/step-body audit",
       "evidence": "docs/development/irkn-source-audit.md",
-      "intended_consumer": "Fixed-step velocity-independent mechanics; qualified package history/seed implementation remains open"
+      "intended_consumer": "Fixed-step velocity-independent mechanics; use ImprovedNystrom with separately qualified corrected startup"
+    },
+    {
+      "name": "Improved Nystr\u00f6m 3 corrected-startup backend",
+      "status": "implemented",
+      "wave": 12,
+      "reason": "Pinned mutable warm recurrence with explicitly corrected physical old/end accelerations and correctly timed old substage seed",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 warm kernels; corrected startup is a documented transformation",
+      "implementation": "src/warpSPHIntegrators/improved_nystrom.py",
+      "tests": [
+        "tests/test_improved_nystrom.py"
+      ],
+      "evidence": "docs/development/improved-nystrom-validation.md",
+      "intended_consumer": "Smooth fixed-step velocity-independent mechanics with expensive forces; owned history and passive quantities"
+    },
+    {
+      "name": "Improved Nystr\u00f6m 4 corrected-startup backend",
+      "status": "implemented",
+      "wave": 12,
+      "reason": "Pinned mutable warm recurrence with explicitly corrected physical old/end accelerations and correctly timed old substage seed",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 warm kernels; corrected startup is a documented transformation",
+      "implementation": "src/warpSPHIntegrators/improved_nystrom.py",
+      "tests": [
+        "tests/test_improved_nystrom.py"
+      ],
+      "evidence": "docs/development/improved-nystrom-validation.md",
+      "intended_consumer": "Smooth fixed-step velocity-independent mechanics with expensive forces; owned history and passive quantities"
     }
   ]
 }

@@ -385,7 +385,10 @@ machinery.
 The [IRKN source-path audit](../development/irkn-source-audit.md) executes actual
 mutable kernels and records unusable constant-cache paths. Source time-dependent
 startup only achieves order two; corrected-history controls isolate the cache
-seed problem. These are source dispositions, not implemented IRKN backends.
+seed problem. ImprovedNystrom now implements the corrected seed and source warm
+recurrences, with nonlinear/time-dependent order, owned history, gradients,
+lifecycle and known-consumer force measurements;
+[implementation evidence](../development/improved-nystrom-validation.md).
 
 **Gate:** order on the oscillator/kepler second-order problems; Nystrom5th
 regression (the new driver must reproduce the existing hand-rolled method's order);

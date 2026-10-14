@@ -27,6 +27,10 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Added — Phase 8 backend expansion
 
+- Improved Nyström orders three and four with corrected nonautonomous startup,
+  source-checked warm recurrences, owned and guarded fixed-step history, component
+  quadratures, in-memory restart and force/accuracy measurements on known modes.
+
 - Adaptive Adams PECE target-order selection over orders 3–5, using pinned
   neighboring defects and bounded accepted-order policy. Includes owned history,
   trajectory guards, portable continuation, switching delegation and known

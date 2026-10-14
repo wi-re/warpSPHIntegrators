@@ -50,7 +50,7 @@ CATEGORIES = {
     'rosenbrock': ['test_rosenbrock.py'],
     'rkc': ['test_rkc.py','test_stabilized_backend.py'],
     'newmark': ['test_newmark.py','test_structural_demo.py','test_generalized_alpha.py'],
-    'rkn': ['test_nystrom.py'],
+    'rkn': ['test_nystrom.py', 'test_improved_nystrom.py'],
     'extrapolation': ['test_extrapolation.py'],
     'expanded_rk': ['test_expanded_rk.py'],
     # Cross-family properties over the whole registry.

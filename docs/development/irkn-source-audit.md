@@ -3,7 +3,9 @@
 The pinned IRKN3/IRKN4 candidates are **improved explicit history methods** for
 fixed-step, velocity-independent second-order ODEs. They are not implicit RKN
 methods. This audit records source-path failures before a production port; it
-adds no numerical driver, public factory or fixed catalog entry.
+added no numerical driver, public factory or fixed catalog entry. The subsequent
+[corrected package implementation](improved-nystrom-validation.md) now qualifies
+the explicit seed transformation, with separate source warm-step and backend gates.
 
 ## What executes independently
 
@@ -37,8 +39,8 @@ with both errors above 1e-11; near-floor fits are omitted and all raw errors rem
 |---|---|---|
 | IRKN3 constant cache | Step destructures k₂, but the source constant-cache type has no such field. The actual call raises FieldError before stepping. | Excluded as a usable pinned execution path |
 | IRKN4 constant cache | The RKN source supplies its coefficient cache but no matching constant-cache step body; minimal-harness dispatch raises MethodError. | Excluded as a usable pinned execution path; no claim about every external fallback |
-| IRKN3 mutable cache | Autonomous refinement is about order three; time-dependent full-startup trajectories converge at order two. | Deferred as an unrestricted nonautonomous port until startup/history is corrected and qualified |
-| IRKN4 mutable cache | Autonomous refinement is about order four; time-dependent full-startup trajectories converge at order two. | Same source/startup qualification gate |
+| IRKN3 mutable cache | Autonomous refinement is about order three; time-dependent full-startup trajectories converge at order two. | Unmodified startup excluded; corrected package seed qualified separately |
+| IRKN4 mutable cache | Autonomous refinement is about order four; time-dependent full-startup trajectories converge at order two. | Same source/startup distinction |
 
 On q''=t at 160 steps, source IRKN3 has position/velocity errors
 6.45e-6 / 6.51e-6; IRKN4 has 1.13e-5 / 1.14e-5. Observed velocity order is

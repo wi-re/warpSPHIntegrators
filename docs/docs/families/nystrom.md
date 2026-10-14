@@ -102,5 +102,56 @@ Portable custom-system serialization remains application-owned.
 The pinned `RKN4` formula is excluded: its velocity-only third-order condition
 is 1/12 instead of 1/6 and measured velocity convergence is order two. Under
 velocity-independent acceleration its position/final coefficients match
-Nystrom4VelocityIndependent. Improved history methods IRKN3/4 are separate work.
+Nystrom4VelocityIndependent.
 See [source, numerical and consumer evidence](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/nystrom-backend-validation.md).
+
+## Improved Nyström: reusing force history
+
+`ImprovedNystrom(3)` and `ImprovedNystrom(4)` use the previous velocity,
+physical acceleration and internal forces to reduce the work of a fixed step.
+They require velocity-independent acceleration and passive extra quantities.
+Use them for a smooth mechanical problem where evaluating forces is expensive
+and a fixed timestep is appropriate. They do not supply an error estimate or
+claim symplecticity. Damping through velocity-dependent forces needs another method.
+IRKN4 slightly amplifies undamped oscillations even at small steps; choose a
+symplectic method when long-time mechanical energy behavior is the priority.
+
+[example:run improved-nystrom]: #
+```python
+import math
+from warpSPHIntegrators import ImprovedNystrom, testing, solve
+
+problem = testing.oscillator_problem()
+method = ImprovedNystrom(4, structure='declared')
+first = solve(method, problem.initial(), .5, problem.rhs, dt=.03125)
+continued = solve(method, None, 1., problem.rhs, restart=first.checkpoint)
+assert continued.successful
+assert abs(continued.state.state.x.item() - problem.exact(1.)[0][0]) < 1e-6
+```
+
+With declared structure, the first step costs five full RHS calls for order
+three, six for order four; warm steps cost two and three respectively. The
+default probe adds the same structural checks as velocity-independent Nyström.
+The package corrects the pinned source's startup-history timing defect, rather
+than reproducing its observed order-two error on time-dependent forces.
+
+`solve` owns history. Direct callers feed each accepted `result.history` into
+the next call. A change in timestep, time, integrated values, tensor layout,
+method configuration or particle IDs restarts safely. If RHS parameters change,
+pass `restart_history=True`. Repeated restarts reduce the force-saving benefit.
+Checkpoints for these custom mechanical systems are supported in memory;
+portable serialization remains the application's responsibility.
+
+`ImprovedNystromWeights` pairs the current and retained old stage rates with
+separate position/velocity weights and an explicit previous-velocity contribution.
+A custom finalize hook must set `irkn_compatible=True`, handle those weights and
+preserve integrated values, time and IDs. These history methods cannot act as
+inner physical splitting flows.
+
+On 4,096 nonlinear forced oscillator modes, sixteen steps of size .0625 used
+51 RHS calls for order four versus 64 for Nyström's fourth-order one-step
+method. Maximum position/velocity errors were 1.33e-6/4.91e-6 versus
+1.08e-5/3.32e-5. Cheap tensor RHS timings favored the one-step method: retaining
+and checking history has overhead. This is a measured force/accuracy niche,
+not a general wall-clock speed claim.
+See [corrected-source and consumer validation](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/improved-nystrom-validation.md).

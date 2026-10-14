@@ -23,6 +23,7 @@ from warpSPHIntegrators import (
     AlgorithmSwitch,
     FunctionMap,tensor_map,MapTransition,
     ExpandedRK,expanded_rk_methods,
+    ImprovedNystrom,
 )
 
 
@@ -86,6 +87,8 @@ fourth = solve(Yoshida4('Implicit Midpoint',LinearExponentialFlow(torch.tensor([
                solver_opts={'matvec':'jvp','tol':1e-12,'newton_tol':1e-9})
 assert fourth.successful and abs(fourth.state.y.item()-math.exp(-.5))<1e-6
 mechanics = testing.oscillator_problem()
+improved=solve(ImprovedNystrom(4,'declared'),mechanics.initial(),.5,mechanics.rhs,dt=.03125)
+assert improved.successful and abs(improved.state.state.x.item()-mechanics.exact(.5)[0][0])<1e-6
 alpha = solve(GeneralizedAlpha(.5),mechanics.initial(),.2,mechanics.rhs,dt=.01,
               solver_opts={'matvec':'jvp','tol':1e-12,'newton_tol':1e-7})
 continued = solve(GeneralizedAlpha(.5),None,.35,mechanics.rhs,restart=alpha.checkpoint,

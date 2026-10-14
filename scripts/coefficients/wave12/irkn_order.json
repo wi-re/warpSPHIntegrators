@@ -1,0 +1,16 @@
+{
+  "construction": "Independent exact symbolic Taylor jets for a smooth general f(t,q), exact old trajectory anchors and correctly timed substages",
+  "sympy": "1.14.0",
+  "records": {
+    "IRKN3": {
+      "position_residual_through_order": "0",
+      "velocity_residual_through_order": "0",
+      "order": 3
+    },
+    "IRKN4": {
+      "position_residual_through_order": "0",
+      "velocity_residual_through_order": "0",
+      "order": 4
+    }
+  }
+}

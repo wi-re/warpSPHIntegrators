@@ -68,6 +68,7 @@ from .nystrom import Nystrom, NystromTableau, NystromWeights, nystrom_tableau
 from .ndf import NDF, NDFQuadrature, ndf_difference_transform
 from .adaptive_ndf import AdaptiveNDF, ndf_order_proposals
 from .adaptive_adams import AdaptiveAdams, adams_order_choice
+from .improved_nystrom import ImprovedNystrom, ImprovedNystromWeights
 from .extrapolation import Extrapolation, ExtrapolationQuadrature, extrapolation_coefficients
 from .switching import AlgorithmSwitch
 from .function_map import FunctionMap,StateMap,MapTransition,tensor_map
@@ -123,6 +124,7 @@ __version__ = "0.6.1"
 
 __all__ = [
     "AdaptiveAdams", "adams_order_choice",
+    "ImprovedNystrom", "ImprovedNystromWeights",
     "NDF", "NDFQuadrature", "ndf_difference_transform",
     "AdaptiveNDF", "ndf_order_proposals",
     "Extrapolation", "ExtrapolationQuadrature", "extrapolation_coefficients",

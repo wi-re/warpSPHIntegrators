@@ -69,6 +69,14 @@ extra quantities. `nystrom_tableau` exposes immutable coefficients;
 velocity/quantity quadratures for custom finalization and physical composition.
 See [the mechanics and heat example](families/nystrom).
 
+`ImprovedNystrom(order=4)` supplies fixed-step improved Nyström orders three and
+four with corrected startup history. It requires velocity-independent forces
+and passive extra fields. `ImprovedNystromWeights` includes retained old stage
+rates and a previous-velocity contribution; custom finalize must opt into
+`irkn_compatible=True`. State/step/layout changes restart history; changed RHS
+parameters require `restart_history=True`. No error estimate or physical-subflow
+support. See [force-history mechanics](families/nystrom#improved-nyström-reusing-force-history).
+
 ## Second-order numerical damping
 
 `GeneralizedAlpha(rho_inf=.5)` binds a classical fixed-step mechanics driver.
