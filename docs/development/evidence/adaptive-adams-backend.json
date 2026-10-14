@@ -1,0 +1,1434 @@
+{
+  "cpu_model": "Intel(R) Core(TM) Ultra 9 285K",
+  "device": "cpu",
+  "dtype": "float64",
+  "threads": 1,
+  "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:36:31) [GCC 14.3.0]",
+  "torch": "2.13.0+cu130",
+  "platform": "Linux-7.0.0-30-generic-x86_64-with-glibc2.39",
+  "cases": [
+    {
+      "n": 64,
+      "problem": "reaction",
+      "method": "Adaptive Adams PECE (orders 3\u20133)",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 58,
+      "rejected": 3,
+      "rhs_entries": 199,
+      "seconds": 0.16263207513839006,
+      "max_error": 7.023705270364777e-06,
+      "accepted_order_counts": {
+        "3": 58
+      },
+      "order_transitions": [
+        {
+          "t": 0.001991448613725617,
+          "order": 3
+        }
+      ]
+    },
+    {
+      "n": 64,
+      "problem": "reaction",
+      "method": "Adaptive Adams PECE (orders 3\u20133)",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 307,
+      "rejected": 8,
+      "rhs_entries": 985,
+      "seconds": 0.7660824651829898,
+      "max_error": 4.452474060973044e-08,
+      "accepted_order_counts": {
+        "3": 307
+      },
+      "order_transitions": [
+        {
+          "t": 6.287379406352262e-05,
+          "order": 3
+        }
+      ]
+    },
+    {
+      "n": 64,
+      "problem": "reaction",
+      "method": "Adaptive Adams PECE (orders 3\u20134)",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 42,
+      "rejected": 4,
+      "rhs_entries": 154,
+      "seconds": 0.1474048481322825,
+      "max_error": 2.8437246982022588e-06,
+      "accepted_order_counts": {
+        "3": 6,
+        "4": 36
+      },
+      "order_transitions": [
+        {
+          "t": 0.001991448613725617,
+          "order": 3
+        },
+        {
+          "t": 0.2452400430839504,
+          "order": 4
+        }
+      ]
+    },
+    {
+      "n": 64,
+      "problem": "reaction",
+      "method": "Adaptive Adams PECE (orders 3\u20134)",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 153,
+      "rejected": 8,
+      "rhs_entries": 527,
+      "seconds": 0.5348205720074475,
+      "max_error": 1.4218516596747888e-08,
+      "accepted_order_counts": {
+        "3": 11,
+        "4": 142
+      },
+      "order_transitions": [
+        {
+          "t": 6.287379406352262e-05,
+          "order": 3
+        },
+        {
+          "t": 0.036517879224632614,
+          "order": 4
+        },
+        {
+          "t": 3.9878119295112175,
+          "order": 3
+        }
+      ]
+    },
+    {
+      "n": 64,
+      "problem": "reaction",
+      "method": "Adaptive Adams PECE (orders 3\u20135)",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 39,
+      "rejected": 6,
+      "rhs_entries": 163,
+      "seconds": 0.17148242378607392,
+      "max_error": 1.6739820723249334e-06,
+      "accepted_order_counts": {
+        "3": 9,
+        "4": 5,
+        "5": 25
+      },
+      "order_transitions": [
+        {
+          "t": 0.001991448613725617,
+          "order": 3
+        },
+        {
+          "t": 0.2452400430839504,
+          "order": 4
+        },
+        {
+          "t": 0.6663710494340027,
+          "order": 5
+        },
+        {
+          "t": 3.9870398215191587,
+          "order": 3
+        }
+      ]
+    },
+    {
+      "n": 64,
+      "problem": "reaction",
+      "method": "Adaptive Adams PECE (orders 3\u20135)",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 98,
+      "rejected": 6,
+      "rhs_entries": 336,
+      "seconds": 0.464979181997478,
+      "max_error": 6.319755445523267e-09,
+      "accepted_order_counts": {
+        "3": 6,
+        "4": 5,
+        "5": 87
+      },
+      "order_transitions": [
+        {
+          "t": 6.287379406352262e-05,
+          "order": 3
+        },
+        {
+          "t": 0.036517879224632614,
+          "order": 4
+        },
+        {
+          "t": 0.1479253196420991,
+          "order": 5
+        }
+      ]
+    },
+    {
+      "n": 64,
+      "problem": "reaction",
+      "method": "Variable Adams-ABM 3",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 58,
+      "rejected": 3,
+      "rhs_entries": 199,
+      "seconds": 0.09383563604205847,
+      "max_error": 7.023705270364777e-06,
+      "accepted_order_counts": {
+        "3": 58
+      },
+      "order_transitions": [
+        {
+          "t": 0.001991448613725617,
+          "order": 3
+        }
+      ]
+    },
+    {
+      "n": 64,
+      "problem": "reaction",
+      "method": "Variable Adams-ABM 3",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 307,
+      "rejected": 8,
+      "rhs_entries": 985,
+      "seconds": 0.48772226879373193,
+      "max_error": 4.452474060973044e-08,
+      "accepted_order_counts": {
+        "3": 307
+      },
+      "order_transitions": [
+        {
+          "t": 6.287379406352262e-05,
+          "order": 3
+        }
+      ]
+    },
+    {
+      "n": 64,
+      "problem": "reaction",
+      "method": "Variable Adams-ABM 4",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 41,
+      "rejected": 5,
+      "rhs_entries": 158,
+      "seconds": 0.0926691279746592,
+      "max_error": 3.0120150870784415e-06,
+      "accepted_order_counts": {
+        "4": 41
+      },
+      "order_transitions": [
+        {
+          "t": 0.001991448613725617,
+          "order": 4
+        }
+      ]
+    },
+    {
+      "n": 64,
+      "problem": "reaction",
+      "method": "Variable Adams-ABM 4",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 148,
+      "rejected": 7,
+      "rhs_entries": 493,
+      "seconds": 0.320745212957263,
+      "max_error": 1.4139959941643354e-08,
+      "accepted_order_counts": {
+        "4": 148
+      },
+      "order_transitions": [
+        {
+          "t": 6.287379406352262e-05,
+          "order": 4
+        }
+      ]
+    },
+    {
+      "n": 64,
+      "problem": "reaction",
+      "method": "Variable Adams-ABM 5",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 34,
+      "rejected": 6,
+      "rhs_entries": 144,
+      "seconds": 0.10303833801299334,
+      "max_error": 1.511818123861022e-06,
+      "accepted_order_counts": {
+        "5": 34
+      },
+      "order_transitions": [
+        {
+          "t": 0.001991448613725617,
+          "order": 5
+        }
+      ]
+    },
+    {
+      "n": 64,
+      "problem": "reaction",
+      "method": "Variable Adams-ABM 5",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 95,
+      "rejected": 7,
+      "rhs_entries": 338,
+      "seconds": 0.2725419793277979,
+      "max_error": 6.367441468188573e-09,
+      "accepted_order_counts": {
+        "5": 95
+      },
+      "order_transitions": [
+        {
+          "t": 6.287379406352262e-05,
+          "order": 5
+        }
+      ]
+    },
+    {
+      "n": 64,
+      "problem": "reaction",
+      "method": "Dormand-Prince 5(4)",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 23,
+      "rejected": 0,
+      "rhs_entries": 161,
+      "seconds": 0.02620692178606987,
+      "max_error": 3.320231315904164e-08,
+      "accepted_order_counts": {
+        "5": 23
+      },
+      "order_transitions": [
+        {
+          "t": 0.02,
+          "order": 5
+        }
+      ]
+    },
+    {
+      "n": 64,
+      "problem": "reaction",
+      "method": "Dormand-Prince 5(4)",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 80,
+      "rejected": 0,
+      "rhs_entries": 560,
+      "seconds": 0.08981447434052825,
+      "max_error": 4.309367120959584e-11,
+      "accepted_order_counts": {
+        "5": 80
+      },
+      "order_transitions": [
+        {
+          "t": 0.02,
+          "order": 5
+        }
+      ]
+    },
+    {
+      "n": 64,
+      "problem": "spiral_heat",
+      "method": "Adaptive Adams PECE (orders 3\u20133)",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 72,
+      "rejected": 4,
+      "rhs_entries": 248,
+      "seconds": 0.18658821284770966,
+      "max_error": 0.0035485437766293315,
+      "accepted_order_counts": {
+        "3": 72
+      },
+      "order_transitions": [
+        {
+          "t": 0.0006814711488204161,
+          "order": 3
+        }
+      ],
+      "heat_error": 0.0025782659858500923,
+      "total_energy_defect": 0.00437646602967201
+    },
+    {
+      "n": 64,
+      "problem": "spiral_heat",
+      "method": "Adaptive Adams PECE (orders 3\u20133)",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 431,
+      "rejected": 9,
+      "rhs_entries": 1348,
+      "seconds": 1.1040580458939075,
+      "max_error": 1.5582962436977432e-05,
+      "accepted_order_counts": {
+        "3": 431
+      },
+      "order_transitions": [
+        {
+          "t": 1.9909251953967782e-05,
+          "order": 3
+        }
+      ],
+      "heat_error": 1.1281634670512464e-05,
+      "total_energy_defect": 1.8482648044770844e-05
+    },
+    {
+      "n": 64,
+      "problem": "spiral_heat",
+      "method": "Adaptive Adams PECE (orders 3\u20134)",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 57,
+      "rejected": 7,
+      "rhs_entries": 212,
+      "seconds": 0.21165360696613789,
+      "max_error": 0.0014166958896827953,
+      "accepted_order_counts": {
+        "3": 6,
+        "4": 51
+      },
+      "order_transitions": [
+        {
+          "t": 0.0006814711488204161,
+          "order": 3
+        },
+        {
+          "t": 0.19310756000543938,
+          "order": 4
+        }
+      ],
+      "heat_error": 0.0004664998496201611,
+      "total_energy_defect": 0.0005207121649641877
+    },
+    {
+      "n": 64,
+      "problem": "spiral_heat",
+      "method": "Adaptive Adams PECE (orders 3\u20134)",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 233,
+      "rejected": 8,
+      "rhs_entries": 751,
+      "seconds": 0.8381429463624954,
+      "max_error": 5.063501815283367e-06,
+      "accepted_order_counts": {
+        "3": 6,
+        "4": 227
+      },
+      "order_transitions": [
+        {
+          "t": 1.9909251953967782e-05,
+          "order": 3
+        },
+        {
+          "t": 0.011890122496696878,
+          "order": 4
+        }
+      ],
+      "heat_error": 6.942293440115321e-08,
+      "total_energy_defect": 5.211706894936441e-07
+    },
+    {
+      "n": 64,
+      "problem": "spiral_heat",
+      "method": "Adaptive Adams PECE (orders 3\u20135)",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 41,
+      "rejected": 5,
+      "rhs_entries": 158,
+      "seconds": 0.19063717871904373,
+      "max_error": 0.0022011820523145653,
+      "accepted_order_counts": {
+        "3": 6,
+        "4": 5,
+        "5": 30
+      },
+      "order_transitions": [
+        {
+          "t": 0.0006814711488204161,
+          "order": 3
+        },
+        {
+          "t": 0.19310756000543938,
+          "order": 4
+        },
+        {
+          "t": 0.595095505718168,
+          "order": 5
+        }
+      ],
+      "heat_error": 0.0009510284459938734,
+      "total_energy_defect": 0.002077785074224847
+    },
+    {
+      "n": 64,
+      "problem": "spiral_heat",
+      "method": "Adaptive Adams PECE (orders 3\u20135)",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 120,
+      "rejected": 6,
+      "rhs_entries": 406,
+      "seconds": 0.5801128237508237,
+      "max_error": 7.83486172728498e-06,
+      "accepted_order_counts": {
+        "3": 6,
+        "4": 5,
+        "5": 109
+      },
+      "order_transitions": [
+        {
+          "t": 1.9909251953967782e-05,
+          "order": 3
+        },
+        {
+          "t": 0.011890122496696878,
+          "order": 4
+        },
+        {
+          "t": 0.09389648586834573,
+          "order": 5
+        }
+      ],
+      "heat_error": 5.524680797064363e-06,
+      "total_energy_defect": 9.265681402026438e-06
+    },
+    {
+      "n": 64,
+      "problem": "spiral_heat",
+      "method": "Variable Adams-ABM 3",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 72,
+      "rejected": 4,
+      "rhs_entries": 248,
+      "seconds": 0.12118284590542316,
+      "max_error": 0.0035485437766293315,
+      "accepted_order_counts": {
+        "3": 72
+      },
+      "order_transitions": [
+        {
+          "t": 0.0006814711488204161,
+          "order": 3
+        }
+      ],
+      "heat_error": 0.0025782659858500923,
+      "total_energy_defect": 0.00437646602967201
+    },
+    {
+      "n": 64,
+      "problem": "spiral_heat",
+      "method": "Variable Adams-ABM 3",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 431,
+      "rejected": 9,
+      "rhs_entries": 1348,
+      "seconds": 0.7104507721960545,
+      "max_error": 1.5582962436977432e-05,
+      "accepted_order_counts": {
+        "3": 431
+      },
+      "order_transitions": [
+        {
+          "t": 1.9909251953967782e-05,
+          "order": 3
+        }
+      ],
+      "heat_error": 1.1281634670512464e-05,
+      "total_energy_defect": 1.8482648044770844e-05
+    },
+    {
+      "n": 64,
+      "problem": "spiral_heat",
+      "method": "Variable Adams-ABM 4",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 57,
+      "rejected": 8,
+      "rhs_entries": 219,
+      "seconds": 0.13632575562223792,
+      "max_error": 0.00146570039107341,
+      "accepted_order_counts": {
+        "4": 57
+      },
+      "order_transitions": [
+        {
+          "t": 0.0006814711488204161,
+          "order": 4
+        }
+      ],
+      "heat_error": 0.00034556297787896595,
+      "total_energy_defect": 0.0003625182207170896
+    },
+    {
+      "n": 64,
+      "problem": "spiral_heat",
+      "method": "Variable Adams-ABM 4",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 232,
+      "rejected": 9,
+      "rhs_entries": 755,
+      "seconds": 0.5203637308441103,
+      "max_error": 5.0643317620890915e-06,
+      "accepted_order_counts": {
+        "4": 232
+      },
+      "order_transitions": [
+        {
+          "t": 1.9909251953967782e-05,
+          "order": 4
+        }
+      ],
+      "heat_error": 6.619735587465314e-08,
+      "total_energy_defect": 5.251860911714701e-07
+    },
+    {
+      "n": 64,
+      "problem": "spiral_heat",
+      "method": "Variable Adams-ABM 5",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 38,
+      "rejected": 6,
+      "rhs_entries": 160,
+      "seconds": 0.11683393502607942,
+      "max_error": 0.0024118327789935945,
+      "accepted_order_counts": {
+        "5": 38
+      },
+      "order_transitions": [
+        {
+          "t": 0.0006814711488204161,
+          "order": 5
+        }
+      ],
+      "heat_error": 0.0016083061022012513,
+      "total_energy_defect": 0.0029361344531898537
+    },
+    {
+      "n": 64,
+      "problem": "spiral_heat",
+      "method": "Variable Adams-ABM 5",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 122,
+      "rejected": 10,
+      "rhs_entries": 460,
+      "seconds": 0.35505141504108906,
+      "max_error": 8.010274101521997e-06,
+      "accepted_order_counts": {
+        "5": 122
+      },
+      "order_transitions": [
+        {
+          "t": 1.9909251953967782e-05,
+          "order": 5
+        }
+      ],
+      "heat_error": 5.789841299674858e-06,
+      "total_energy_defect": 9.60139317784936e-06
+    },
+    {
+      "n": 64,
+      "problem": "spiral_heat",
+      "method": "Dormand-Prince 5(4)",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 29,
+      "rejected": 0,
+      "rhs_entries": 203,
+      "seconds": 0.03566322801634669,
+      "max_error": 3.025970470132977e-05,
+      "accepted_order_counts": {
+        "5": 29
+      },
+      "order_transitions": [
+        {
+          "t": 0.02,
+          "order": 5
+        }
+      ],
+      "heat_error": 3.025970470132977e-05,
+      "total_energy_defect": 4.152448182959123e-05
+    },
+    {
+      "n": 64,
+      "problem": "spiral_heat",
+      "method": "Dormand-Prince 5(4)",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 123,
+      "rejected": 3,
+      "rhs_entries": 882,
+      "seconds": 0.1525119598954916,
+      "max_error": 1.4317200591751345e-08,
+      "accepted_order_counts": {
+        "5": 123
+      },
+      "order_transitions": [
+        {
+          "t": 0.02,
+          "order": 5
+        }
+      ],
+      "heat_error": 1.2509978219998885e-08,
+      "total_energy_defect": 1.9159265063350972e-08
+    },
+    {
+      "n": 4096,
+      "problem": "reaction",
+      "method": "Adaptive Adams PECE (orders 3\u20133)",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 58,
+      "rejected": 3,
+      "rhs_entries": 199,
+      "seconds": 0.16484158486127853,
+      "max_error": 6.9524363506337505e-06,
+      "accepted_order_counts": {
+        "3": 58
+      },
+      "order_transitions": [
+        {
+          "t": 0.002002369842300301,
+          "order": 3
+        }
+      ]
+    },
+    {
+      "n": 4096,
+      "problem": "reaction",
+      "method": "Adaptive Adams PECE (orders 3\u20133)",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 303,
+      "rejected": 6,
+      "rhs_entries": 951,
+      "seconds": 0.6935343476943672,
+      "max_error": 4.426506167859445e-08,
+      "accepted_order_counts": {
+        "3": 303
+      },
+      "order_transitions": [
+        {
+          "t": 6.32193506149217e-05,
+          "order": 3
+        }
+      ]
+    },
+    {
+      "n": 4096,
+      "problem": "reaction",
+      "method": "Adaptive Adams PECE (orders 3\u20134)",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 42,
+      "rejected": 4,
+      "rhs_entries": 154,
+      "seconds": 0.11571041215211153,
+      "max_error": 2.728888734857861e-06,
+      "accepted_order_counts": {
+        "3": 6,
+        "4": 36
+      },
+      "order_transitions": [
+        {
+          "t": 0.002002369842300301,
+          "order": 3
+        },
+        {
+          "t": 0.24676320758969028,
+          "order": 4
+        }
+      ]
+    },
+    {
+      "n": 4096,
+      "problem": "reaction",
+      "method": "Adaptive Adams PECE (orders 3\u20134)",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 148,
+      "rejected": 5,
+      "rhs_entries": 483,
+      "seconds": 0.40462871734052896,
+      "max_error": 1.4094361324747118e-08,
+      "accepted_order_counts": {
+        "3": 6,
+        "4": 142
+      },
+      "order_transitions": [
+        {
+          "t": 6.32193506149217e-05,
+          "order": 3
+        },
+        {
+          "t": 0.03673932874956972,
+          "order": 4
+        }
+      ]
+    },
+    {
+      "n": 4096,
+      "problem": "reaction",
+      "method": "Adaptive Adams PECE (orders 3\u20135)",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 36,
+      "rejected": 5,
+      "rhs_entries": 139,
+      "seconds": 0.1257893079891801,
+      "max_error": 1.693278880236489e-06,
+      "accepted_order_counts": {
+        "3": 6,
+        "4": 5,
+        "5": 25
+      },
+      "order_transitions": [
+        {
+          "t": 0.002002369842300301,
+          "order": 3
+        },
+        {
+          "t": 0.24676320758969028,
+          "order": 4
+        },
+        {
+          "t": 0.6707102121577213,
+          "order": 5
+        }
+      ]
+    },
+    {
+      "n": 4096,
+      "problem": "reaction",
+      "method": "Adaptive Adams PECE (orders 3\u20135)",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 98,
+      "rejected": 6,
+      "rhs_entries": 336,
+      "seconds": 0.35009723296388984,
+      "max_error": 6.399517212592881e-09,
+      "accepted_order_counts": {
+        "3": 6,
+        "4": 5,
+        "5": 87
+      },
+      "order_transitions": [
+        {
+          "t": 6.32193506149217e-05,
+          "order": 3
+        },
+        {
+          "t": 0.03673932874956972,
+          "order": 4
+        },
+        {
+          "t": 0.14888856295515032,
+          "order": 5
+        }
+      ]
+    },
+    {
+      "n": 4096,
+      "problem": "reaction",
+      "method": "Variable Adams-ABM 3",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 58,
+      "rejected": 3,
+      "rhs_entries": 199,
+      "seconds": 0.07613097317516804,
+      "max_error": 6.9524363506337505e-06,
+      "accepted_order_counts": {
+        "3": 58
+      },
+      "order_transitions": [
+        {
+          "t": 0.002002369842300301,
+          "order": 3
+        }
+      ]
+    },
+    {
+      "n": 4096,
+      "problem": "reaction",
+      "method": "Variable Adams-ABM 3",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 303,
+      "rejected": 6,
+      "rhs_entries": 951,
+      "seconds": 0.3870870927348733,
+      "max_error": 4.426506167859445e-08,
+      "accepted_order_counts": {
+        "3": 303
+      },
+      "order_transitions": [
+        {
+          "t": 6.32193506149217e-05,
+          "order": 3
+        }
+      ]
+    },
+    {
+      "n": 4096,
+      "problem": "reaction",
+      "method": "Variable Adams-ABM 4",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 41,
+      "rejected": 5,
+      "rhs_entries": 158,
+      "seconds": 0.07291806302964687,
+      "max_error": 2.8875238256105204e-06,
+      "accepted_order_counts": {
+        "4": 41
+      },
+      "order_transitions": [
+        {
+          "t": 0.002002369842300301,
+          "order": 4
+        }
+      ]
+    },
+    {
+      "n": 4096,
+      "problem": "reaction",
+      "method": "Variable Adams-ABM 4",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 152,
+      "rejected": 10,
+      "rhs_entries": 538,
+      "seconds": 0.25949056493118405,
+      "max_error": 1.4346214624247344e-08,
+      "accepted_order_counts": {
+        "4": 152
+      },
+      "order_transitions": [
+        {
+          "t": 6.32193506149217e-05,
+          "order": 4
+        }
+      ]
+    },
+    {
+      "n": 4096,
+      "problem": "reaction",
+      "method": "Variable Adams-ABM 5",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 34,
+      "rejected": 6,
+      "rhs_entries": 144,
+      "seconds": 0.07875901600345969,
+      "max_error": 1.5156856203457636e-06,
+      "accepted_order_counts": {
+        "5": 34
+      },
+      "order_transitions": [
+        {
+          "t": 0.002002369842300301,
+          "order": 5
+        }
+      ]
+    },
+    {
+      "n": 4096,
+      "problem": "reaction",
+      "method": "Variable Adams-ABM 5",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 95,
+      "rejected": 7,
+      "rhs_entries": 338,
+      "seconds": 0.20617434941232204,
+      "max_error": 6.398081267913747e-09,
+      "accepted_order_counts": {
+        "5": 95
+      },
+      "order_transitions": [
+        {
+          "t": 6.32193506149217e-05,
+          "order": 5
+        }
+      ]
+    },
+    {
+      "n": 4096,
+      "problem": "reaction",
+      "method": "Dormand-Prince 5(4)",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 23,
+      "rejected": 0,
+      "rhs_entries": 161,
+      "seconds": 0.022439274936914444,
+      "max_error": 3.438589025691642e-08,
+      "accepted_order_counts": {
+        "5": 23
+      },
+      "order_transitions": [
+        {
+          "t": 0.02,
+          "order": 5
+        }
+      ]
+    },
+    {
+      "n": 4096,
+      "problem": "reaction",
+      "method": "Dormand-Prince 5(4)",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 79,
+      "rejected": 0,
+      "rhs_entries": 553,
+      "seconds": 0.07587466621771455,
+      "max_error": 4.036144855834589e-11,
+      "accepted_order_counts": {
+        "5": 79
+      },
+      "order_transitions": [
+        {
+          "t": 0.02,
+          "order": 5
+        }
+      ]
+    },
+    {
+      "n": 4096,
+      "problem": "spiral_heat",
+      "method": "Adaptive Adams PECE (orders 3\u20133)",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 71,
+      "rejected": 4,
+      "rhs_entries": 245,
+      "seconds": 0.18149446602910757,
+      "max_error": 0.0036088414100474697,
+      "accepted_order_counts": {
+        "3": 71
+      },
+      "order_transitions": [
+        {
+          "t": 0.0006823082798059844,
+          "order": 3
+        }
+      ],
+      "heat_error": 0.002620532840464207,
+      "total_energy_defect": 0.004450178075565525
+    },
+    {
+      "n": 4096,
+      "problem": "spiral_heat",
+      "method": "Adaptive Adams PECE (orders 3\u20133)",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 430,
+      "rejected": 7,
+      "rhs_entries": 1339,
+      "seconds": 1.0644258200190961,
+      "max_error": 1.5687899365401936e-05,
+      "accepted_order_counts": {
+        "3": 430
+      },
+      "order_transitions": [
+        {
+          "t": 1.9943586089566204e-05,
+          "order": 3
+        }
+      ],
+      "heat_error": 1.1422796467652763e-05,
+      "total_energy_defect": 1.867251132975367e-05
+    },
+    {
+      "n": 4096,
+      "problem": "spiral_heat",
+      "method": "Adaptive Adams PECE (orders 3\u20134)",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 57,
+      "rejected": 7,
+      "rhs_entries": 212,
+      "seconds": 0.19283469393849373,
+      "max_error": 0.0014503449408392044,
+      "accepted_order_counts": {
+        "3": 6,
+        "4": 51
+      },
+      "order_transitions": [
+        {
+          "t": 0.0006823082798059844,
+          "order": 3
+        },
+        {
+          "t": 0.19337228892138358,
+          "order": 4
+        }
+      ],
+      "heat_error": 0.00047753896362034975,
+      "total_energy_defect": 0.0005342957711257368
+    },
+    {
+      "n": 4096,
+      "problem": "spiral_heat",
+      "method": "Adaptive Adams PECE (orders 3\u20134)",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 232,
+      "rejected": 8,
+      "rhs_entries": 748,
+      "seconds": 0.7502798293717206,
+      "max_error": 5.134421930702571e-06,
+      "accepted_order_counts": {
+        "3": 6,
+        "4": 226
+      },
+      "order_transitions": [
+        {
+          "t": 1.9943586089566204e-05,
+          "order": 3
+        },
+        {
+          "t": 0.011910784545786007,
+          "order": 4
+        }
+      ],
+      "heat_error": 7.012761932267964e-08,
+      "total_energy_defect": 5.280689997499977e-07
+    },
+    {
+      "n": 4096,
+      "problem": "spiral_heat",
+      "method": "Adaptive Adams PECE (orders 3\u20135)",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 41,
+      "rejected": 5,
+      "rhs_entries": 158,
+      "seconds": 0.16574545297771692,
+      "max_error": 0.0022906251824797996,
+      "accepted_order_counts": {
+        "3": 6,
+        "4": 5,
+        "5": 30
+      },
+      "order_transitions": [
+        {
+          "t": 0.0006823082798059844,
+          "order": 3
+        },
+        {
+          "t": 0.19337228892138358,
+          "order": 4
+        },
+        {
+          "t": 0.598370132463246,
+          "order": 5
+        }
+      ],
+      "heat_error": 0.0009815263768193083,
+      "total_energy_defect": 0.0021468856519861745
+    },
+    {
+      "n": 4096,
+      "problem": "spiral_heat",
+      "method": "Adaptive Adams PECE (orders 3\u20135)",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 119,
+      "rejected": 6,
+      "rhs_entries": 403,
+      "seconds": 0.48417492117732763,
+      "max_error": 8.093030414269009e-06,
+      "accepted_order_counts": {
+        "3": 6,
+        "4": 5,
+        "5": 108
+      },
+      "order_transitions": [
+        {
+          "t": 1.9943586089566204e-05,
+          "order": 3
+        },
+        {
+          "t": 0.011910784545786007,
+          "order": 4
+        },
+        {
+          "t": 0.09441712291169674,
+          "order": 5
+        }
+      ],
+      "heat_error": 5.690847589834291e-06,
+      "total_energy_defect": 9.558138779564018e-06
+    },
+    {
+      "n": 4096,
+      "problem": "spiral_heat",
+      "method": "Variable Adams-ABM 3",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 71,
+      "rejected": 4,
+      "rhs_entries": 245,
+      "seconds": 0.11392451077699661,
+      "max_error": 0.0036088414100474697,
+      "accepted_order_counts": {
+        "3": 71
+      },
+      "order_transitions": [
+        {
+          "t": 0.0006823082798059844,
+          "order": 3
+        }
+      ],
+      "heat_error": 0.002620532840464207,
+      "total_energy_defect": 0.004450178075565525
+    },
+    {
+      "n": 4096,
+      "problem": "spiral_heat",
+      "method": "Variable Adams-ABM 3",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 430,
+      "rejected": 7,
+      "rhs_entries": 1339,
+      "seconds": 0.6660091797821224,
+      "max_error": 1.5687899365401936e-05,
+      "accepted_order_counts": {
+        "3": 430
+      },
+      "order_transitions": [
+        {
+          "t": 1.9943586089566204e-05,
+          "order": 3
+        }
+      ],
+      "heat_error": 1.1422796467652763e-05,
+      "total_energy_defect": 1.867251132975367e-05
+    },
+    {
+      "n": 4096,
+      "problem": "spiral_heat",
+      "method": "Variable Adams-ABM 4",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 59,
+      "rejected": 9,
+      "rhs_entries": 248,
+      "seconds": 0.12721001217141747,
+      "max_error": 0.001524922534492379,
+      "accepted_order_counts": {
+        "4": 59
+      },
+      "order_transitions": [
+        {
+          "t": 0.0006823082798059844,
+          "order": 4
+        }
+      ],
+      "heat_error": 0.0003607818077427938,
+      "total_energy_defect": 0.0003812204417441012
+    },
+    {
+      "n": 4096,
+      "problem": "spiral_heat",
+      "method": "Variable Adams-ABM 4",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 231,
+      "rejected": 9,
+      "rhs_entries": 752,
+      "seconds": 0.4581414149142802,
+      "max_error": 5.137171454921985e-06,
+      "accepted_order_counts": {
+        "4": 231
+      },
+      "order_transitions": [
+        {
+          "t": 1.9943586089566204e-05,
+          "order": 4
+        }
+      ],
+      "heat_error": 6.706483018925624e-08,
+      "total_energy_defect": 5.321372300581828e-07
+    },
+    {
+      "n": 4096,
+      "problem": "spiral_heat",
+      "method": "Variable Adams-ABM 5",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 38,
+      "rejected": 6,
+      "rhs_entries": 160,
+      "seconds": 0.10030433209612966,
+      "max_error": 0.002484105350492871,
+      "accepted_order_counts": {
+        "5": 38
+      },
+      "order_transitions": [
+        {
+          "t": 0.0006823082798059844,
+          "order": 5
+        }
+      ],
+      "heat_error": 0.0016606019271503403,
+      "total_energy_defect": 0.003022153986779186
+    },
+    {
+      "n": 4096,
+      "problem": "spiral_heat",
+      "method": "Variable Adams-ABM 5",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 116,
+      "rejected": 7,
+      "rhs_entries": 405,
+      "seconds": 0.2845790609717369,
+      "max_error": 8.22944968775774e-06,
+      "accepted_order_counts": {
+        "5": 116
+      },
+      "order_transitions": [
+        {
+          "t": 1.9943586089566204e-05,
+          "order": 5
+        }
+      ],
+      "heat_error": 5.966024917702928e-06,
+      "total_energy_defect": 9.884638681012525e-06
+    },
+    {
+      "n": 4096,
+      "problem": "spiral_heat",
+      "method": "Dormand-Prince 5(4)",
+      "rtol": 1e-05,
+      "atol": 1.0000000000000001e-07,
+      "successful": true,
+      "accepted": 29,
+      "rejected": 0,
+      "rhs_entries": 203,
+      "seconds": 0.03774332394823432,
+      "max_error": 3.127457575541337e-05,
+      "accepted_order_counts": {
+        "5": 29
+      },
+      "order_transitions": [
+        {
+          "t": 0.02,
+          "order": 5
+        }
+      ],
+      "heat_error": 3.127457575541337e-05,
+      "total_energy_defect": 4.284664382997461e-05
+    },
+    {
+      "n": 4096,
+      "problem": "spiral_heat",
+      "method": "Dormand-Prince 5(4)",
+      "rtol": 1e-08,
+      "atol": 1e-10,
+      "successful": true,
+      "accepted": 122,
+      "rejected": 2,
+      "rhs_entries": 868,
+      "seconds": 0.15953381033614278,
+      "max_error": 1.4657588587319026e-08,
+      "accepted_order_counts": {
+        "5": 122
+      },
+      "order_transitions": [
+        {
+          "t": 0.02,
+          "order": 5
+        }
+      ],
+      "heat_error": 1.2801013415941753e-08,
+      "total_energy_defect": 1.9610912393996927e-08
+    }
+  ],
+  "qualification": "Known nonlinear forced reaction and damped rotation/thermal budget, T=4, rates .1\u20133. RHS entries include rejected attempts. Equal tolerances are not equal-accuracy speed comparisons. No stiff/SPH or complete source-controller equivalence claim.",
+  "source_sha256": {
+    "benchmarks/adaptive_adams_backend.py": "374ed28a6ce26b7ac8911c3baf500949fba6d541e22b9fa63399a52b743b9453",
+    "src/warpSPHIntegrators/adaptive_adams.py": "78f9b4957e81cf717de0e42336604bc6b0659332596fe23e68373bc449206fee",
+    "src/warpSPHIntegrators/variable_adams.py": "a1f9c8113ca878daac70ad8c18b591c71f25b7d0103c18b007c4c86595feeae7",
+    "src/warpSPHIntegrators/run.py": "e563c4505e240bf7bf6f522fe3b0c9406f5d466e71401ad26d221c57ded70e19"
+  }
+}

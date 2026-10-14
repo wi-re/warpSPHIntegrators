@@ -193,6 +193,12 @@ maps from low-storage source recurrences. `expanded_rk_methods()` lists names;
 have comparison estimates. [Source-expanded RK](families/expanded-rk) explains
 screening and the explicit absence of low-storage/FSAL execution claims.
 
+`AdaptiveAdams(max_order=5)` supplies accepted target-order selection over
+variable-step PECE orders 3–5. `adams_order_choice` exposes the bounded mature
+neighbor comparison. Completed and next orders live in history context;
+per-result estimate exponents include startup. See [adaptive Adams](families/multistep-explicit#let-adams-select-its-target-order)
+for source/controller boundaries and measured accuracy/work limitations.
+
 ## Results and history
 
 `FunctionMap()` applies a declared `StateMap` once per fixed step at t+h.

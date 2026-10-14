@@ -45,3 +45,5 @@ under [numerical research](../docs/research/integrators/notes-index.md).
 known damped-oscillator comparison, including directly counted RHS/GMRES work.
 It writes `docs/development/evidence/readme-oscillator.json`, the README result
 table and `docs/assets/readme-*.png`. Install `.[benchmark]` for plotting dependencies.
+
+`adaptive_adams_backend.py` compares accepted order-3–5 selection with fixed-target PECE and DP5 on known reaction and damped-rotation/heat vectors; it records order histories, RHS entries, global errors and energy defects.

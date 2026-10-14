@@ -1,0 +1,41 @@
+{
+  "started_utc": "2026-10-14T22:33:35.574633+00:00",
+  "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:36:31) [GCC 14.3.0]",
+  "torch": "2.13.0+cu130",
+  "numpy": "2.5.2",
+  "pytest": "9.1.1",
+  "device": "cpu",
+  "platform": "Linux-7.0.0-30-generic-x86_64-with-glibc2.39",
+  "package": "0.5.0",
+  "git_head": "832e2e078053f5bbd9bf56f0132503f3bd0d4c68",
+  "gate_sha256": "7e7ca4e2eb1d8aefc145c5186e805ffe300724de822794390d2dc18351136912",
+  "workers_per_run": 8,
+  "parallel_shards": 1,
+  "numerical_threads_per_worker": 1,
+  "runs": [
+    {
+      "label": "full",
+      "expression": null,
+      "command": [
+        "/home/lu26029/miniconda3/envs/warp/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "-n",
+        "8",
+        "--dist=worksteal",
+        "--durations=20",
+        "--junitxml=/home/lu26029/dev/warpSPHIntegrators/.tmp/phase8/adaptive-adams-final/full.xml"
+      ],
+      "seconds": 324.705,
+      "exit_code": 0,
+      "log": "/home/lu26029/dev/warpSPHIntegrators/.tmp/phase8/adaptive-adams-final/full.txt",
+      "failures": [],
+      "tests_count": 9056,
+      "failures_count": 0,
+      "errors_count": 0,
+      "skipped_count": 639
+    }
+  ],
+  "seconds": 324.716
+}

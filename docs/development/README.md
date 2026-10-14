@@ -32,3 +32,5 @@ new links should target the maintained directories directly.
 [Expanded RK source screening and full-stage consumer validation](expanded-rk-validation.md).
 
 [Front-page explanations, generated scheme tables and oscillator measurements](readme-validation.md).
+
+[Adaptive Adams accepted-order control and known-consumer validation](adaptive-adams-validation.md).

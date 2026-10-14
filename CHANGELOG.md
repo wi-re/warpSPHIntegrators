@@ -22,6 +22,11 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Added — Phase 8 backend expansion
 
+- Adaptive Adams PECE target-order selection over orders 3–5, using pinned
+  neighboring defects and bounded accepted-order policy. Includes owned history,
+  trajectory guards, portable continuation, switching delegation and known
+  reaction/rotation-heat measurements; full source 1–12/FSAL control is separate.
+
 - Source-expanded full-stage RK factory: 54 screened main maps and 19 companion
   estimates from all 60 pinned LowStorageRK constructors. Source time/order and
   rounded-coefficient exceptions have individual dispositions. Standard RK

@@ -94,3 +94,5 @@ the packaged fourteen-method coefficient module against that oracle. Runtime
 needs the generated Python module only, not Julia or an external JSON data file.
 
 `wave16/oracle.jl` executes 60 LowStorageRK constructors and 61 alternating/nonalternating branches, with nonlinear and scalar-refinement controls. `wave16/generate.py --check` verifies rooted-tree/time-node screening and the generated immutable full-stage RK coefficient module; see [the validation record](../../docs/development/expanded-rk-validation.md).
+
+`wave10/adaptive_adams.jl` executes actual VCABM constant-cache helpers on uniform/irregular basis histories and the mature accepted-order branch on 243 normalized-error cases. Package startup/maturity, lower-order bound and retry policy are explicitly separate.

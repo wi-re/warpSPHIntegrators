@@ -2,7 +2,7 @@
 
 `AlgorithmSwitch(methods, selector, policy_id)` chooses one complete integrator
 for each trial. It supports registered methods and the Collocation, Extrapolation,
-Nystrom, StabilizedRK, GeneralizedAlpha, VariableAdams, NDF, AdaptiveNDF and
+Nystrom, StabilizedRK, GeneralizedAlpha, VariableAdams, AdaptiveAdams, NDF, AdaptiveNDF, ExpandedRK and
 physical SplitScheme factories. This is algorithm selection, separate from
 splitting a physical RHS into subflows.
 
@@ -44,7 +44,7 @@ with `restart_history=True` after changing RHS parameters or a derivative
 discontinuity. Warm numeric methods must preserve the initial integrated anchor.
 
 The runner uses the selected child's per-result estimator exponent and delegates
-accepted step-size control to that child. NDF holds and AdaptiveNDF order changes
+accepted step-size control to that child. NDF holds and AdaptiveNDF/AdaptiveAdams order changes
 operate on unwrapped owned history before external commit. Rejections discard
 the trial's selection/history; the policy sees the last accepted index again.
 Solver/RHS work diagnostics come from the actual selected method.

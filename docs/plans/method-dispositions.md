@@ -291,3 +291,5 @@ See [the first registration](../development/phase8-wave9-validation.md) and
 [higher-stage validation](../development/higher-collocation-validation.md).
 
 `ExpandedRK` supplies 54 screened main maps and 19 companions from LowStorageRK, outside fixed registration. [The screening record](../development/expanded-rk-validation.md) distinguishes six omitted main methods and one omitted companion from low-storage execution work.
+
+`AdaptiveAdams` supplies bounded accepted PECE target orders 3–5, with [source defects, policy and consumer evidence](../development/adaptive-adams-validation.md). Full source order-1–12/FSAL/startup semantics remain distinct.

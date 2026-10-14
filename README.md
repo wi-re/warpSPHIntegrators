@@ -687,7 +687,7 @@ contracts allow it.
 |---|---|---|
 | `Collocation` | Gauss / Radau, 2–9 stages | Orders $2s$ / $2s-1$, coupled implicit solves; high orders can reach binary64/solve floors |
 | `GeneralizedAlpha` | `rho_inf` in [0,1] | Second-order constant-mass mechanics with selective high-frequency damping and accepted acceleration history |
-| `VariableAdams` | AB / ABM, orders 3–5 | Variable-step history and ramped comparison control |
+| `VariableAdams` / `AdaptiveAdams` | AB / ABM orders 3–5; accepted PECE target-order selection | Variable-step history and ramped comparison control; bounded adaptive-order policy |
 | `StabilizedRK` | RKL1/2, RKG1/2 | Supplied stages or negative-real spectral bound; full-stage storage |
 | `Nystrom` | 14 qualified VI/VD configurations | Second-order mechanics with position/velocity/quantity quadratures; structure assumptions are checked or declared |
 | `NDF` / `AdaptiveNDF` | Fixed target 1–5 / accepted target-order selection | Implicit difference history with quasi-constant step policy; distinct from the full upstream controller |

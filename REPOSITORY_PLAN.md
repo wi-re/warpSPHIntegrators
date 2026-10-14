@@ -195,6 +195,10 @@ must be recorded rather than counted as an implemented method.
   Adams, Nordsieck/AN5/JVODE variants and source-specific QNDF policies. Record
   supported behavior, equivalences and justified dispositions individually;
   existing fixed-target factories do not complete these distinct controllers.
+  AdaptiveAdams now supplies source-checked neighboring defects and accepted
+  target orders 3–5, with portable history, switching and consumer gates;
+  [evidence](docs/development/adaptive-adams-validation.md). Full source VCABM
+  startup/orders 1–12/FSAL and Nordsieck/AN5/JVODE remain separate work.
 - [ ] Resolve the remaining wave-11 stabilized, Rosenbrock and exponential
   candidates, plus approximate-matrix-factorization operator contracts. These
   need recurrence/operator/solver and consumer gates, rather than only tableaus.

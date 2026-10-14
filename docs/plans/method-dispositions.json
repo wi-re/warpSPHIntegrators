@@ -6075,6 +6075,45 @@
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0",
       "evidence": "docs/development/expanded-rk-validation.md",
       "intended_consumer": "Revisit only after source/precision contract correction"
+    },
+    {
+      "name": "Adaptive Adams PECE maximum order 3 backend",
+      "status": "implemented",
+      "wave": 10,
+      "reason": "Source neighboring defects and mature branch; bounded package order/maturity/startup/retry policy",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; AdamsBashforthMoulton 2.2.0 VCABM helpers and accepted-order branch",
+      "implementation": "src/warpSPHIntegrators/adaptive_adams.py",
+      "tests": [
+        "tests/test_adaptive_adams.py"
+      ],
+      "evidence": "docs/development/adaptive-adams-validation.md",
+      "intended_consumer": "Smooth nonstiff full-state trajectories; automatic target-order baseline with explicit observed local/global and cost qualifications"
+    },
+    {
+      "name": "Adaptive Adams PECE maximum order 4 backend",
+      "status": "implemented",
+      "wave": 10,
+      "reason": "Source neighboring defects and mature branch; bounded package order/maturity/startup/retry policy",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; AdamsBashforthMoulton 2.2.0 VCABM helpers and accepted-order branch",
+      "implementation": "src/warpSPHIntegrators/adaptive_adams.py",
+      "tests": [
+        "tests/test_adaptive_adams.py"
+      ],
+      "evidence": "docs/development/adaptive-adams-validation.md",
+      "intended_consumer": "Smooth nonstiff full-state trajectories; automatic target-order baseline with explicit observed local/global and cost qualifications"
+    },
+    {
+      "name": "Adaptive Adams PECE maximum order 5 backend",
+      "status": "implemented",
+      "wave": 10,
+      "reason": "Source neighboring defects and mature branch; bounded package order/maturity/startup/retry policy",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; AdamsBashforthMoulton 2.2.0 VCABM helpers and accepted-order branch",
+      "implementation": "src/warpSPHIntegrators/adaptive_adams.py",
+      "tests": [
+        "tests/test_adaptive_adams.py"
+      ],
+      "evidence": "docs/development/adaptive-adams-validation.md",
+      "intended_consumer": "Smooth nonstiff full-state trajectories; automatic target-order baseline with explicit observed local/global and cost qualifications"
     }
   ]
 }

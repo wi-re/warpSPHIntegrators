@@ -55,6 +55,56 @@ copied fields come from the corrected physical state; warm AB/ABM therefore cost
 two/three RHS calls, including re-evaluation of the start and corrected endpoint.
 These are explicit nonstiff methods. See [backend evidence](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/variable-adams-validation.md).
 
+## Let Adams select its target order
+
+`AdaptiveAdams(max_order=5)` adapts the target order between three and the
+configured maximum (3–5). It starts at target three with the same DP5 bootstrap
+and per-step estimate exponents as VariableAdams. Once history is mature, it
+compares source-derived neighboring-order defects using the runner's field norm.
+It keeps accepted derivatives when changing order and holds the timestep for
+one step. Direct calls and fixed-step runs keep their current target order.
+
+[example:run adaptive_adams]: #
+```python
+import math
+import torch
+from warpSPHIntegrators import AdaptiveAdams, TensorState, tensor_rhs, solve
+
+records = []
+method = AdaptiveAdams(max_order=5)
+result = solve(method, TensorState(torch.ones(4, dtype=torch.float64)), 4.,
+               tensor_rhs(lambda t, y: -y), dt=.01,
+               adaptive=True, rtol=1e-8, atol=1e-10, callback=records.append)
+assert result.successful
+assert {r.result.history.context['last_order'] for r in records} == {3, 4, 5}
+assert abs(result.state.y[0].item() - math.exp(-4)) < 1e-7
+```
+
+`order` is None because target order changes. The history context records
+`last_order` for the completed step and `order` for the next target. The actual
+controller exponent is on `IntegrationResult.estimate_order`, including startup.
+`adams_order_choice` exposes the bounded mature neighbor comparison. Selection
+waits for p+1 warm accepted steps; a zero defect does not promote order. Adjacent
+defects add state arithmetic but no RHS evaluations. Warm steps retain the
+VariableAdams three-call lifecycle and corrected endpoint refresh.
+
+The source is pinned VCABM, but this is a bounded package controller, not its
+complete order-1–12 startup/FSAL/retry policy. `solve` owns rejection and commits
+order/history together. Manual loops must pass accepted history. Edited values,
+layout/dtype/time/IDs, foreign history or excessive step ratios reset before
+history is consumed. Pass `restart_history=True` after changing RHS parameters.
+Tensor-file continuation and AlgorithmSwitch delegation are supported. Physical
+splitting, dense output and events are not added by this controller.
+
+On a 4,096-component known reaction vector at local rtol=1e-8, target-order
+selection uses 336 RHS entries with 6.40e-9 final max error, versus fixed target
+three's 951/4.43e-8 and fixed target five's 338/6.40e-9. On a damped rotation/
+heat vector, however, the same tolerance gives 8.09e-6 max error versus DP5's
+1.47e-8. Requested local tolerances do not guarantee global observable error.
+The current controller also costs more wall time than fixed target five on
+these cheap RHS functions; fewer RHS entries alone do not establish a speedup.
+See [source and consumer evidence](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/adaptive-adams-validation.md).
+
 ## Adams-Bashforth (pure predictor)
 
 `AB2`–`AB5` evaluate the RHS **once** per step (at the new point) and apply the

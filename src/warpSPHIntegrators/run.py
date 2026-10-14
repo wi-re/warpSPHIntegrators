@@ -225,12 +225,13 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
     from .stabilized import StabilizedRK
     from .nystrom import Nystrom
     from .ndf import NDF
+    from .adaptive_adams import AdaptiveAdams
     from .adaptive_ndf import AdaptiveNDF
     from .extrapolation import Extrapolation
     from .switching import AlgorithmSwitch
     from .function_map import FunctionMap
     from .expanded_rk import ExpandedRK
-    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme,GeneralizedAlpha,Collocation,VariableAdams,StabilizedRK,Nystrom,NDF,AdaptiveNDF,Extrapolation,AlgorithmSwitch,FunctionMap,ExpandedRK)) else getIntegrator(scheme)
+    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme,GeneralizedAlpha,Collocation,VariableAdams,StabilizedRK,Nystrom,NDF,AdaptiveNDF,AdaptiveAdams,Extrapolation,AlgorithmSwitch,FunctionMap,ExpandedRK)) else getIntegrator(scheme)
     if restart is not None:
         if restart.scheme != scheme.identifier.name:
             raise ValueError('Checkpoint scheme does not match')

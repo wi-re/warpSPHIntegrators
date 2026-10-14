@@ -310,6 +310,10 @@ implicit startup, accepted quasi-constant blocks and portable restart.
 [Evidence](../development/ndf-backend-validation.md). AdaptiveNDF adds accepted
 target-order selection with source-checked candidate mathematics and explicit
 package maturity/startup/retry policies; [evidence](../development/adaptive-ndf-validation.md).
+AdaptiveAdams adds bounded accepted target orders 3–5 over PECE, with source
+neighbor-defect/selection oracles, owned history and known reaction/rotation-heat
+consumers; [evidence](../development/adaptive-adams-validation.md). It does not
+implement the full VCABM order-1–12/FSAL/startup/controller policy.
 Full upstream QNDF retry/discontinuity semantics, Nordsieck/BDF variants and AMF remain separate backend work; frontend availability
 is not an implementation gate.
 

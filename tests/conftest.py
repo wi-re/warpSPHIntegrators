@@ -42,7 +42,7 @@ CATEGORIES = {
     'prrk': ['test_prrk.py'],
     'bdf': ['test_bdf.py','test_stiff_startup.py','test_ndf.py','test_adaptive_ndf.py'],
     'am': ['test_am.py'],
-    'multistep': ['test_multistep.py','test_variable_adams.py'],
+    'multistep': ['test_multistep.py','test_variable_adams.py','test_adaptive_adams.py'],
     'ark': ['test_ark.py'],
     'imex': ['test_imex.py', 'test_imexmultistep.py', 'test_implicit_extensions.py'],
     'fullyimplicit': ['test_fullyimplicit.py','test_implicit_prototypes.py','test_firk_wave9.py','test_collocation_factory.py'],
