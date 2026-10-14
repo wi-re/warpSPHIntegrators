@@ -12,8 +12,8 @@ from numbers import Real
 from types import SimpleNamespace
 
 from .catalog import SchemeMetadata
-from .fields import get_reference_state, state_difference
-from .rkc import _reference_lincomb, _rkl2_coeffs
+from .fields import get_reference_state, state_difference, integrated_field_names
+from .rkc import _rkl2_coeffs
 from .specs import IntegrationResult, StageResult
 from .util import initializeSystem, finalizeSystem, updateStep, updateStateEuler, reject_prior_step
 
@@ -160,9 +160,14 @@ class StabilizedRK:
             updates.append(derivative);auxes.append(aux)
             current=base.initializeNewState(*args,**kwargs)
             ref=get_reference_state(current)
-            combined=_reference_lincomb(get_reference_state(y0),[
-                (get_reference_state(y0),1-coeff.mu[j]-coeff.nu[j]),
-                (get_reference_state(previous),coeff.mu[j]),(get_reference_state(previous2),coeff.nu[j])])
+            base_ref=get_reference_state(y0)
+            previous_ref=get_reference_state(previous);previous2_ref=get_reference_state(previous2)
+            # Difference form preserves zero-rate components exactly and avoids
+            # cancellation between large common offsets in the three states.
+            combined={name:getattr(base_ref,name)
+                +coeff.mu[j]*(getattr(previous_ref,name)-getattr(base_ref,name))
+                +coeff.nu[j]*(getattr(previous2_ref,name)-getattr(base_ref,name))
+                for name in integrated_field_names(base)}
             for name,value in combined.items():setattr(ref,name,value)
             current=updateStateEuler(current,derivative,dt*coeff.mtilde[j],copyState=False,**kwargs)
             if coeff.gtilde[j]:current=updateStateEuler(current,f0,dt*coeff.gtilde[j],copyState=False,**kwargs)

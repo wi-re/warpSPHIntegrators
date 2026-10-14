@@ -23,6 +23,10 @@ are recorded in [the higher-stage validation](../development/higher-collocation-
 Fixed classical AB5/AM5 PECE, MEBDF2 and CNLF2 are registered wave-10 additions.
 `StabilizedRK` binds RKL1/2 and RKG1/2 outside the fixed catalog, with
 [source/time/scale and lifecycle evidence](../development/stabilized-backend-validation.md).
+`Nystrom` supplies fourteen qualified mechanics configurations with component
+quadratures and [source/order/thermal evidence](../development/nystrom-backend-validation.md).
+The pinned RKN4 candidate is excluded for its velocity-order limitation and
+restricted equivalence; improved IRKN history is separate backend work.
 
 ## Source pin and transformations
 

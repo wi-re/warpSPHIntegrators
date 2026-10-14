@@ -64,6 +64,7 @@ from .generalized_alpha import GeneralizedAlpha, GeneralizedAlphaMemory
 from .collocation import Collocation, collocation_tableau
 from .variable_adams import VariableAdams, adams_weights
 from .stabilized import StabilizedRK, stabilized_coefficients, stabilized_interval
+from .nystrom import Nystrom, NystromTableau, NystromWeights, nystrom_tableau
 from .dirk import (TRBDF2, MEBDF2, ESDIRK324L2SA, ESDIRK436L2SA,
                    Kvaerno3, Kvaerno4, Kvaerno5, KenCarp3, KenCarp4, KenCarp47, KenCarp5,
                    KenCarp58, ESDIRK325L2SA, ESDIRK436L2SA2, ESDIRK437L2SA, ESDIRK547L2SA2,
@@ -114,6 +115,7 @@ from .drift import DriftField, drift_fields, drift_fields_active
 __version__ = "0.6.1"
 
 __all__ = [
+    "Nystrom", "NystromTableau", "NystromWeights", "nystrom_tableau",
     "StabilizedRK", "stabilized_coefficients", "stabilized_interval",
     "MEBDF2", "CNLF2",
     "ABM5",

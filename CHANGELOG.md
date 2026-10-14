@@ -8,6 +8,11 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Added — Phase 8 backend expansion
 
+- Fourteen parameterized generalized Nyström backends, with explicit velocity/
+  thermal coupling contracts and public component quadratures for finalization
+  and physical composition. The pinned RKN4 velocity-order limitation is recorded.
+- Stabilized recurrences now preserve zero-rate fields exactly in increment form.
+
 - Stage-bound Legendre/Gegenbauer RKL1/2 and RKG1/2 backends, with consistent
   time-dependent stages, spectral-bound sizing, adaptive Euler comparisons,
   owned full-state lifecycle and portable tensor continuation.

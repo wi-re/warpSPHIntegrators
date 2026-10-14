@@ -50,6 +50,7 @@ CATEGORIES = {
     'rosenbrock': ['test_rosenbrock.py'],
     'rkc': ['test_rkc.py','test_stabilized_backend.py'],
     'newmark': ['test_newmark.py','test_structural_demo.py','test_generalized_alpha.py'],
+    'rkn': ['test_nystrom.py'],
     # Cross-family properties over the whole registry.
     'convergence': ['test_convergence.py', 'test_embedded.py'],
     'reuse': ['test_step_reuse.py'],

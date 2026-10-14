@@ -1,0 +1,100 @@
+# Phase 8 — generalized Nyström backend
+
+The parameterized `Nystrom` factory supplies fourteen source-backed explicit
+mechanics configurations outside the fixed catalog (still 142). The source
+pin is OrdinaryDiffEq 7.8.1, monorepo tree bae9b8e5f1d00e51c554648e5094e215164a19f8,
+RKN 2.2.0. A stdlib Julia oracle executes unchanged tableau constructors and
+constant-cache VI/VD step bodies with minimal ArrayPartition/cache scaffolding.
+It records fifteen constructors and thirty autonomous/forced coupled nonlinear
+maps, including the rejected RKN4 candidate. Dense-output bookkeeping is replaced;
+full solver/controller/FSAL equivalence is not claimed. Difference weights are
+applied independently to recorded source stages. Re-running the promoted script
+reproduces the complete tracked output.
+
+All fourteen qualified constructors and their source states/stage times/errors
+agree. Nonlinear nonautonomous trajectories measure orders four through eight;
+DPRKN12 has an independently checked oscillator polynomial through order twelve
+and a coarse high-frequency oscillator refinement above binary64 rounding.
+The generic exponential manufactured solution floors out for DPRKN12 and is not
+used to claim a measured twelfth order. Error exponents are 4/5/5/5/7/11 for
+DPRKN4/5/6/6FM/8/12, 4/5/6 for ERKN4/5/7, and 4/5 for FineRKN4/5. ERKN5 has
+only position error weights; the velocity estimate is explicitly zero.
+
+Velocity-independent formulas hold stage velocity fixed and require passive
+extra integrated fields. Default AD/perturbed-velocity probes operate on owned
+preprocessed buffers; a declared mode accepts an explicitly verified acceleration
+contract. Both policies check kinematics and passive quantities at actual stages.
+Velocity-dependent formulas lift arbitrary coupled first-order quantities through
+abar/bp/bptilde as velocities of unused dummy coordinates. Nonlinear coupled
+mechanics/quantity tests measure full order, including different field shapes.
+
+The component quadrature is public as NystromWeights on IntegrationResult.quadrature.
+Custom finalize explicitly opts in; physical compositions suppress inner hooks
+and retain each substep's weights for the outer hook. Tests cover field ownership,
+copied endpoint fields, counters, failed/nonfinite rollback, gradients, adaptive
+refinement, in-memory restart, dtype/shape and parameter guards. Tensor-only
+portable serialization is not extended to arbitrary custom systems.
+
+The pinned RKN4 candidate fails the velocity-only order-three condition:
+bp*abar*c=1/12 rather than 1/6. Its v'=−v convergence measures order two.
+Its a,b,bp,c equal Nystrom4VelocityIndependent's, so the restricted map is already
+available and no misleading order-four velocity-dependent factory is added.
+IRKN3/4 are improved history methods, not implicit solvers; they retain separate
+source/cache/order gates. No source ERKN frequency parameter is invented and
+none of the new methods is advertised as automatically symplectic.
+
+Composition testing also exposed a rounding defect in the stabilized weighted
+state sum: a zero-rate configuration could move by one ulp. The equivalent
+increment recurrence now preserves such fields exactly and reduces cancellation
+of common offsets. Source/stability/order checks pass, and the twelve fresh-
+process diffusion plus accuracy/adaptive benchmark cases pass again under the
+unchanged scale bar. This is an arithmetic correction, not a changed polynomial.
+Separability checks also compare acceleration values at perturbed velocities,
+using the already evaluated probe buffers. A detached velocity dependence can
+otherwise return a zero JVP and receive an incorrect positive certificate. This
+adds no RHS calls and diagnostics detach their scalar values from gradient graphs.
+
+The final full CPU gate passes **7,554 tests, 639 skipped**, zero failures/errors,
+in 340.12 seconds of pytest time (341.4 seconds with orchestration). Eight workers
+use one numerical thread each; the stored fingerprint matches final source,
+tests and shard/config files. All 118 focused Nyström cases pass; the combined
+Nyström/stabilized/composition/partition subset has 231 passing cases.
+The new rkn category belongs to exactly one CI shard. The isolated installed
+0.6.1 wheel passes imports/exports, 135 tensor drivers and Nyström continuation/
+quadrature callbacks. It packages the generated Python coefficients without a
+runtime JSON/Julia dependency. Shared numerical dependencies are used with project
+imports isolated outside the checkout. All 43 published Python blocks execute,
+with 13 labeled sketches. Catalog, repository links and production site build pass.
+Editable test metadata remains historical 0.5.0; source/wheel remain 0.6.1.
+
+The 92 fixed-step consumer cases cover fourteen qualified methods, RK4/DP5
+baselines and a physical Strang variant, N=64/4096, h=0.1/0.05 and undamped or
+rate-0.4 damped modes. Frequencies span 1–4. The analytic reference includes heat
+generated by damping and a constant mechanical-plus-thermal total energy. At
+N=4096,h=0.1, declared-contract DPRKN6 uses 70 RHS calls with 9.71e-8 position
+and 2.79e-7 velocity errors, versus DP5's 61 calls and 1.18e-5/8.79e-6 errors.
+Default probing adds 60 RHS entries without changing the main map. This records
+an accuracy/work trade and its verification overhead, not equal-accuracy timing.
+
+On damped modes FineRKN5 uses 80 calls with 2.06e-7/4.68e-7 position/velocity
+errors, 6.21e-7 heat error and 9.37e-8 total-energy defect. DP5 uses 61 calls and
+has 1.03e-4 heat error on this grid. Strang remains globally second order and has
+different splitting error. These are finite-horizon toy observations, not SPH
+conservation guarantees. DPRKN12 reaches rounding on the fine consumer grid;
+its order qualification uses the separate coarse oscillator and polynomial tests.
+
+Consumer evidence: [mechanics/heat and source screening](evidence/nystrom-backend.json),
+[repeated stabilized scale/accuracy gate](evidence/nystrom-stabilized-regression.json).
+Final gates: [full CPU report](evidence/nystrom-backend-full.json) and
+[installed wheel](evidence/nystrom-backend-wheel.json).
+
+```bash
+julia --startup-file=no scripts/coefficients/wave12/nystrom.jl /path/to/OrdinaryDiffEq/OnlvZ
+python examples/nystrom_demo.py --method FineRKN5 --n 64 --dt .05
+python benchmarks/nystrom_backend.py
+python -m pytest -q tests/test_nystrom.py tests/test_operator_splitting.py tests/test_stabilized_backend.py
+python scripts/validate_test_gate.py --mode full --workers 8 --output-dir .tmp/phase8/nystrom-final
+python scripts/validate_wheel.py --reuse-dependencies --output-dir .tmp/phase8/nystrom-wheel
+```
+
+Evidence: [pinned source oracle](../../scripts/coefficients/wave12/nystrom.json).

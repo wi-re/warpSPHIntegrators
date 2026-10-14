@@ -25,6 +25,7 @@ const sidebars = {
         'families/rosenbrock',
         'families/exponential',
         'families/newmark',
+        'families/nystrom',
       ],
     },
     'solver',

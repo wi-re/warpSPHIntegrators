@@ -4831,6 +4831,186 @@
       ],
       "evidence": "docs/development/stabilized-backend-validation.md",
       "intended_consumer": "Diffusion-like negative-real spectra with a supplied bound; no general nonnormal stability guarantee"
+    },
+    {
+      "name": "DPRKN12 parameterized backend",
+      "status": "implemented",
+      "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl DPRKN12Tableau",
+      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "tests": [
+        "tests/test_nystrom.py"
+      ],
+      "evidence": "docs/development/nystrom-backend-validation.md",
+      "intended_consumer": "Explicit velocity-independent mechanics with passive extra fields"
+    },
+    {
+      "name": "DPRKN4 parameterized backend",
+      "status": "implemented",
+      "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl DPRKN4Tableau",
+      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "tests": [
+        "tests/test_nystrom.py"
+      ],
+      "evidence": "docs/development/nystrom-backend-validation.md",
+      "intended_consumer": "Explicit velocity-independent mechanics with passive extra fields"
+    },
+    {
+      "name": "DPRKN5 parameterized backend",
+      "status": "implemented",
+      "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl DPRKN5Tableau",
+      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "tests": [
+        "tests/test_nystrom.py"
+      ],
+      "evidence": "docs/development/nystrom-backend-validation.md",
+      "intended_consumer": "Explicit velocity-independent mechanics with passive extra fields"
+    },
+    {
+      "name": "DPRKN6 parameterized backend",
+      "status": "implemented",
+      "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl DPRKN6Tableau",
+      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "tests": [
+        "tests/test_nystrom.py"
+      ],
+      "evidence": "docs/development/nystrom-backend-validation.md",
+      "intended_consumer": "Explicit velocity-independent mechanics with passive extra fields"
+    },
+    {
+      "name": "DPRKN6FM parameterized backend",
+      "status": "implemented",
+      "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl DPRKN6FMTableau",
+      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "tests": [
+        "tests/test_nystrom.py"
+      ],
+      "evidence": "docs/development/nystrom-backend-validation.md",
+      "intended_consumer": "Explicit velocity-independent mechanics with passive extra fields"
+    },
+    {
+      "name": "DPRKN8 parameterized backend",
+      "status": "implemented",
+      "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl DPRKN8Tableau",
+      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "tests": [
+        "tests/test_nystrom.py"
+      ],
+      "evidence": "docs/development/nystrom-backend-validation.md",
+      "intended_consumer": "Explicit velocity-independent mechanics with passive extra fields"
+    },
+    {
+      "name": "ERKN4 parameterized backend",
+      "status": "implemented",
+      "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl ERKN4Tableau",
+      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "tests": [
+        "tests/test_nystrom.py"
+      ],
+      "evidence": "docs/development/nystrom-backend-validation.md",
+      "intended_consumer": "Explicit velocity-independent mechanics with passive extra fields"
+    },
+    {
+      "name": "ERKN5 parameterized backend",
+      "status": "implemented",
+      "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl ERKN5Tableau",
+      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "tests": [
+        "tests/test_nystrom.py"
+      ],
+      "evidence": "docs/development/nystrom-backend-validation.md",
+      "intended_consumer": "Explicit velocity-independent mechanics with passive extra fields"
+    },
+    {
+      "name": "ERKN7 parameterized backend",
+      "status": "implemented",
+      "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl ERKN7Tableau",
+      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "tests": [
+        "tests/test_nystrom.py"
+      ],
+      "evidence": "docs/development/nystrom-backend-validation.md",
+      "intended_consumer": "Explicit velocity-independent mechanics with passive extra fields"
+    },
+    {
+      "name": "FineRKN4 parameterized backend",
+      "status": "implemented",
+      "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl FineRKN4Tableau",
+      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "tests": [
+        "tests/test_nystrom.py"
+      ],
+      "evidence": "docs/development/nystrom-backend-validation.md",
+      "intended_consumer": "Explicit velocity-dependent mechanics with evolving quantities"
+    },
+    {
+      "name": "FineRKN5 parameterized backend",
+      "status": "implemented",
+      "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl FineRKN5Tableau",
+      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "tests": [
+        "tests/test_nystrom.py"
+      ],
+      "evidence": "docs/development/nystrom-backend-validation.md",
+      "intended_consumer": "Explicit velocity-dependent mechanics with evolving quantities"
+    },
+    {
+      "name": "Nystrom4 parameterized backend",
+      "status": "implemented",
+      "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl Nystrom4Tableau",
+      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "tests": [
+        "tests/test_nystrom.py"
+      ],
+      "evidence": "docs/development/nystrom-backend-validation.md",
+      "intended_consumer": "Explicit velocity-dependent mechanics with evolving quantities"
+    },
+    {
+      "name": "Nystrom4VelocityIndependent parameterized backend",
+      "status": "implemented",
+      "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl Nystrom4VelocityIndependentTableau",
+      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "tests": [
+        "tests/test_nystrom.py"
+      ],
+      "evidence": "docs/development/nystrom-backend-validation.md",
+      "intended_consumer": "Explicit velocity-independent mechanics with passive extra fields"
+    },
+    {
+      "name": "Nystrom5VelocityIndependent parameterized backend",
+      "status": "implemented",
+      "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl Nystrom5VelocityIndependentTableau",
+      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "tests": [
+        "tests/test_nystrom.py"
+      ],
+      "evidence": "docs/development/nystrom-backend-validation.md",
+      "intended_consumer": "Explicit velocity-independent mechanics with passive extra fields"
+    },
+    {
+      "name": "RKN4 pinned velocity-dependent candidate",
+      "status": "excluded",
+      "reason": "Velocity-only third-order condition bp*abar*c is 1/12 instead of 1/6 and measured convergence is order two; restricted VI coefficients equal Nystrom4VelocityIndependent",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl RKN4Tableau",
+      "implementation": null,
+      "tests": [
+        "tests/test_nystrom.py"
+      ],
+      "evidence": "docs/development/nystrom-backend-validation.md",
+      "intended_consumer": "Use qualified Nystrom4 for velocity dependence or Nystrom4VelocityIndependent under its passive/VI contract"
     }
   ]
 }

@@ -88,3 +88,7 @@ MEBDF2 and CNLF2 constant-cache steps with independent dense Newton increments.
 `wave11/stabilized.jl` executes RKL1/2 and RKG1/2 constant-cache steps at supplied
 fixed stages, including nonautonomous stage times. Each checks the complete
 monorepo tree and records its replaced scaffolding/controller qualifications.
+`wave12/nystrom.jl` executes fifteen RKN constructors and VI/VD nonlinear step
+bodies, including RKN4's screened limitation. `wave12/generate.py --check` verifies
+the packaged fourteen-method coefficient module against that oracle. Runtime
+needs the generated Python module only, not Julia or an external JSON data file.

@@ -2,16 +2,18 @@
 
 **Status: waves 1–8 committed; Phase 8 implements the first wave-9 batch
 (three-stage Gauss/Radau) and a parameterized classical generalized-alpha driver.
-Parameterized Gauss/Radau stages 2–9 are also implemented with source/numerical/
-spatial gates; remaining waves 10–16 members retain their gates.**
-The registry contains 140 schemes (139 before fixed ABM5; 137 before the first
+Parameterized Gauss/Radau stages 2–9, variable Adams, MEBDF2/CNLF2, stabilized
+Legendre/Gegenbauer and fourteen generalized Nyström backends are implemented
+with source/numerical/consumer gates; remaining waves 10–16 members retain theirs.**
+The registry contains 142 schemes (140 before MEBDF2/CNLF2; 139 before fixed ABM5; 137 before the first
 wave-9 batch; 64 at planning time).
 The current execution gates are in [REPOSITORY_PLAN.md](../../REPOSITORY_PLAN.md).
 
 Scope: the schemes present in local **OrdinaryDiffEq v7.8.1** but missing from this
 library, staged into 16 waves ordered by complexity. Waves 1–5 cover the SSPRK gap;
 waves 6–16 cover the rest of the ODE catalog. Every wave is independently shippable
-(one bundled commit, full suite green) — stop at any wave boundary.
+(reviewed backend batches with full suite green). The current user direction is
+to continue through the backend backlog between those batches.
 
 ## Reconciled dispositions
 

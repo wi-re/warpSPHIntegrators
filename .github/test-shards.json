@@ -2,7 +2,7 @@
   "core or solvers or rhs or prrk or reuse",
   "dirk or fullyimplicit or newmark or ark",
   "bdf or am or multistep or imex",
-  "rkc or rosenbrock or exponential or geometry",
+  "rkc or rosenbrock or exponential or geometry or rkn",
   "convergence or gradients",
   "stability"
 ]

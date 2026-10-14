@@ -77,6 +77,7 @@ markers = [
   "rosenbrock: Rosenbrock-W (ROS3P)",
   "rkc: RKC1/RKC2 and RKL2 stabilised explicit methods",
   "newmark: Newmark-beta scheme",
+  "rkn: explicit generalized Runge-Kutta-Nystrom backends",
   "convergence: cross-family order and embedded pairs",
   "reuse: cross-family first-stage reuse and FSAL",
   "geometry: cross-family Hamiltonian energy and symplecticity",

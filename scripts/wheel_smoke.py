@@ -18,7 +18,7 @@ from warpSPHIntegrators import (
     stage_block_preconditioner,
     stage_shifted_preconditioner,
     ConservativeDissipativeRHS, Strang, Yoshida4, LinearExponentialFlow,
-    GeneralizedAlpha, Collocation, VariableAdams, StabilizedRK,
+    GeneralizedAlpha, Collocation, VariableAdams, StabilizedRK, Nystrom, NystromWeights,
 )
 
 
@@ -106,6 +106,12 @@ assert restored.successful and abs(restored.state.y.item()-math.exp(-.4))<1e-4
 stabilized=solve(StabilizedRK('rkg2',lambda_max=100.),TensorState(torch.ones(3,dtype=torch.float64)),.4,
     rhs,dt=.1,adaptive=True,rtol=1e-6,atol=1e-9)
 assert stabilized.successful and torch.allclose(stabilized.state.y,torch.full((3,),math.exp(-.4),dtype=torch.float64),atol=2e-6)
+quadratures=[]
+rkn=solve(Nystrom('FineRKN5'),mechanics.initial(),.2,mechanics.rhs,dt=.025,
+    callback=lambda record:quadratures.append(record.result.quadrature))
+rkn=solve(Nystrom('FineRKN5'),None,.4,mechanics.rhs,restart=rkn.checkpoint)
+assert rkn.successful and isinstance(quadratures[-1],NystromWeights)
+assert abs(rkn.state.state.x.item()-mechanics.exact(.4)[0][0])<1e-8
 print(f'Installed wheel {package.__version__}: all modules/exports, py.typed, '
       f'{len(filter_schemes(state_kind="tensor"))} tensor drivers, advanced state protocol, '
       'adaptive sampling/events, portable restart, stiff bootstrap, stage preconditioning, physical splitting and generalized-alpha continuation pass')

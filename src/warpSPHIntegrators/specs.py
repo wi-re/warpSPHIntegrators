@@ -90,6 +90,9 @@ class IntegrationResult:
     #: A startup/variable-order driver can emit an estimate with a different
     #: exponent than its steady scheme metadata. None uses the scheme default.
     estimate_order: Optional[int] = None
+    #: Optional component quadrature metadata for drivers with different position,
+    #: velocity and quantity weights (e.g. NystromWeights). Paired with stages.
+    quadrature: Optional[Any] = None
 
     @property
     def step_status(self):

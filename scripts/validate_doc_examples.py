@@ -22,6 +22,7 @@ PAGES += ('docs/docs/tensor-ode.md', 'docs/docs/runs.md', 'docs/docs/operator-sp
 PAGES += ('docs/docs/families/coupled-rk.md',)
 PAGES += ('docs/docs/families/multistep-explicit.md',)
 PAGES += ('docs/docs/families/relaxed-chebyshev.md',)
+PAGES += ('docs/docs/families/nystrom.md',)
 FENCE = re.compile(r'^```python[^\n]*\n(.*?)^```[ \t]*$', re.M | re.S)
 ANNOTATION = re.compile(r'\[example:(run|skip|include) ([^\n]+?)\]: #\s*$')
 

@@ -60,6 +60,15 @@ returns immutable recurrence weights and consistent stage times;
 Endpoint refresh costs one RHS beyond the recurrence's stage count. See
 [the contracts and executable example](families/relaxed-chebyshev).
 
+## Explicit Nyström mechanics
+
+`Nystrom(method='DPRKN6')` binds fourteen explicit RKN configurations, with
+different contracts for velocity-independent/dependent acceleration and evolving
+extra quantities. `nystrom_tableau` exposes immutable coefficients;
+`NystromWeights` on `IntegrationResult.quadrature` preserves distinct position/
+velocity/quantity quadratures for custom finalization and physical composition.
+See [the mechanics and heat example](families/nystrom).
+
 ## Second-order numerical damping
 
 `GeneralizedAlpha(rho_inf=.5)` binds a classical fixed-step mechanics driver.

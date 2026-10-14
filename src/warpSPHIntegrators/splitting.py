@@ -57,7 +57,7 @@ def classify_separable(rhs,state,*,dt=1.,probes=3,atol=1e-10,seed=0,rhs_args=(),
         update=evaluate(value)
         return getattr(update,find_tagged_field(update,tag='velocity_derivative').name)
     generator=torch.Generator(device=v.device).manual_seed(seed)
-    force=extra=0.
+    force=extra=0.;baseline_acceleration=None
     try:
         for i in range(probes):
             direction=torch.randn(v.shape,dtype=v.dtype,device=v.device,generator=generator)
@@ -65,8 +65,14 @@ def classify_separable(rhs,state,*,dt=1.,probes=3,atol=1e-10,seed=0,rhs_args=(),
             point=v if i==0 else v+direction*(1+torch.linalg.vector_norm(v))
             _,derivative=torch.func.jvp(acceleration,(point,),(direction,))
             if not torch.isfinite(derivative).all():return SeparabilityResult(False,float('inf'),None,'nonfinite force derivative')
-            force=max(force,float(torch.linalg.vector_norm(derivative)))
+            force=max(force,float(torch.linalg.vector_norm(derivative).detach()))
             update=evaluate(point)
+            value=getattr(update,find_tagged_field(update,tag='velocity_derivative').name)
+            if not torch.isfinite(value).all():return SeparabilityResult(False,float('inf'),None,'nonfinite acceleration')
+            if baseline_acceleration is None:baseline_acceleration=value.detach().clone()
+            else:
+                distance=torch.linalg.vector_norm(point-v).clamp_min(torch.finfo(v.dtype).eps)
+                force=max(force,float((torch.linalg.vector_norm(value-baseline_acceleration)/distance).detach()))
             drift=getattr(update,position.metadata['update_key'])
             if not torch.allclose(drift,point,rtol=0,atol=atol):
                 return SeparabilityResult(False,force,extra,'position rate does not equal velocity')
@@ -74,7 +80,7 @@ def classify_separable(rhs,state,*,dt=1.,probes=3,atol=1e-10,seed=0,rhs_args=(),
                 if field.name not in (position.name,velocity.name) and field.name in integrated_field_names(state):
                     rate=getattr(update,field.metadata['update_key'])
                     if not torch.isfinite(rate).all():return SeparabilityResult(False,force,float('inf'),'nonfinite quantity rate')
-                    extra=max(extra,float(torch.linalg.vector_norm(rate)))
+                    extra=max(extra,float(torch.linalg.vector_norm(rate).detach()))
     except (RuntimeError,NotImplementedError,LookupError) as error:
         return SeparabilityResult(False,None,None,f'probe unsupported: {type(error).__name__}')
     passed=math.isfinite(force) and math.isfinite(extra) and force<=atol and extra<=atol
@@ -250,7 +256,11 @@ def compose(parts,coefficients,*,order=1,name='Composition',conservative_options
     palindromic; higher-order dissipative compositions remain gated.
     """
     if type(order) is not int or order not in (1,2):raise ValueError('Supported composition orders are 1 and 2')
-    entries=tuple((part,method if isinstance(method,(IntegrationScheme,LinearExponentialFlow)) else getIntegrator(method)) for part,method in parts)
+    from .nystrom import Nystrom
+    from .stabilized import StabilizedRK
+    from .collocation import Collocation
+    bound=(IntegrationScheme,LinearExponentialFlow,Nystrom,StabilizedRK,Collocation)
+    entries=tuple((part,method if isinstance(method,bound) else getIntegrator(method)) for part,method in parts)
     weights=tuple(float(c) for c in coefficients)
     if not entries or len(entries)!=len(weights) or any(not math.isfinite(c) for c in weights):raise ValueError('Matching finite parts/coefficients required')
     for part,method in entries:
