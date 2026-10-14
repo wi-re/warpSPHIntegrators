@@ -765,7 +765,7 @@ def _default_norm(rtol: float, atol: float):
 
 
 def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
-        name: str = 'DIRK', solver: Optional[NonlinearSolver] = None, **kwargs):
+        name: str = 'DIRK', solver: Optional[NonlinearSolver] = None, warmStart=None, **kwargs):
     """One DIRK step. `tableau.a`'s diagonal may be nonzero; those stages solve implicitly.
 
     First-stage reuse (`priorStep`) is implemented for the tableaus that satisfy both
@@ -778,6 +778,12 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
     tableau -- SDIRK2's implicit first stage, the single-stage backward Euler and
     implicit midpoint -- cannot consume a reused `k0`, so it rejects `priorStep` with
     the same warning every other non-reuse scheme in this library gives.
+
+    `warmStart=StageResult` optionally seeds an implicit first stage with the
+    previous first-stage derivative. It changes only the Newton initial guess,
+    never reuses a derivative as a solved stage. Explicit-first tableaus refuse it.
+    Preconditioner context includes dt, stage_index, stage_time and
+    stage_coefficient=dt*a_ii; driver-owned values override caller context keys.
 
     `history=`, `rtol=`/`atol=` (the default Picard-convergence norm's tolerances, only
     used when `solver_opts={'tol': ...}` requests early exit -- the default fixed
@@ -796,6 +802,9 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
     """
     verbose = bool(kwargs.get('verbose', False))
     solver = solver or JFNKSolver()
+    if warmStart is not None:
+        if tableau.a[0,0] == 0 or not isinstance(warmStart, StageResult) or warmStart.update is None:
+            raise ValueError('DIRK warmStart needs a StageResult for an implicit first stage')
     history = kwargs.pop('history', None)
     priorStep = kwargs.pop('priorStep', None)
     # Reuse is valid for exactly the stiffly-accurate tableaus with an explicit first
@@ -854,10 +863,16 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
                         return updateStateEuler(base_state, k, a_ii * dt, copyState=True, **kwargs)
 
                     y0 = base_state.initializeNewState(*args, **kwargs)
+                    if i == 0 and warmStart is not None:
+                        y0 = updateStateEuler(y0,warmStart.update,a_ii*dt,copyState=False,**kwargs)
                     y0.t = t_i
                     if verbose:
                         print(f"[Integrator] DIRK stage {i}: solving Y = base + {a_ii:.4f}*dt*f(Y) at t={t_i:.4f}")
-                    solve_result = solver.solve(step_fn, y0, norm, **solver_opts)
+                    stage_opts = dict(solver_opts)
+                    context = dict(stage_opts.get('preconditioner_context',getattr(solver,'preconditioner_context',None)) or {})
+                    context.update(dt=dt,stage_index=i,stage_time=t_i,stage_coefficient=float(a_ii*dt))
+                    stage_opts['preconditioner_context'] = context
+                    solve_result = solver.solve(step_fn, y0, norm, **stage_opts)
                     solver_diagnostics.append(record_solve_diagnostics(solve_result))
                     # `box['Y']`/`box['k']` come from the *last* `step_fn` call, i.e. the
                     # last RHS evaluation of this stage -- the same "buffer the last

@@ -211,7 +211,7 @@ def test_history_as_prior_step_reproduces_manual_priorstep_reuse():
 def test_history_kwarg_is_inert_for_schemes_that_do_not_use_it(scheme):
     """Every scheme must at least tolerate history= without crashing (S5)."""
     prob = testing.PROBLEMS['oscillator']()
-    result = scheme(prob.initial(), dt=0.1, f=prob.rhs, history=StepHistory(maxlen=2))
+    result = scheme(prob.initial(), dt=0.1, f=prob.rhs, history=StepHistory(maxlen=max(2,scheme.metadata.history_length)))
     assert result.state is not None
 
 

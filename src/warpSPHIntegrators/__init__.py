@@ -52,6 +52,7 @@ from .solvers import (NonlinearSolver, FixedPointSolver, RelaxedFixedPointSolver
                      SolveDiagnostics, SolveResult, SolverOptions)
 from .jfnk import (JFNKSolver, fd_matvec, jvp_matvec, gmres,
                   identity_preconditioner, diagonal_preconditioner)
+from .preconditioners import stage_block_preconditioner
 from .bdf import BDF1, BDF2, BDF3, BDF4, BDF5
 from .multistep import AM2, AM3, AM4
 from .imex import IMEXEuler
@@ -107,6 +108,7 @@ from .drift import DriftField, drift_fields, drift_fields_active
 __version__ = "0.6.1"
 
 __all__ = [
+    "stage_block_preconditioner",
     "save_checkpoint", "load_checkpoint",
     "solve", "assess_step", "snapshot_state", "StepStatus", "StepRecord",
     "RunSample", "RunResult", "RunError", "RunCheckpoint", "Event", "EventHit",

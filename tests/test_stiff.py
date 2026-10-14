@@ -74,20 +74,10 @@ def test_implicit_state_space_schemes_remain_bounded_on_nonlinear_stiff_relaxati
 
 @pytest.mark.parametrize('scheme_name', ['BDF3', 'BDF4', 'BDF5', 'SBDF3'])
 def test_higher_order_bdf_with_threaded_history_tracks_stiff_relaxation(scheme_name):
-    """BDF3-5 (and SBDF3, whose implicit backbone is BDF3) at a rate their
-    *explicit* Dormand-Prince startup can absorb.
+    """BDF3-5 and the pure-implicit SBDF3 limit at rate 10.
 
-    rate=10 (stiff scale z = 1): the startup steps are stable and the threaded
-    history drives the full BDF formula. rate=100 (like the test above) is out of
-    reach for a different reason: the startup is explicit, so it needs `order - 1`
-    consecutive stable *explicit* steps at dt=0.1 (DP5 amplifies the stiff
-    transient by ~1e3 per step at z = -10), and BDF3-5's own A(alpha) damping
-    along the negative real axis (|R(-10)| ~= 0.2-0.3 per step) cannot recover
-    from two or more compounded startup steps (BDF2's single startup step can:
-    |R_BDF2(-10)| ~= 0.21 damps it away). That is a
-    property of the shared DP5 startup design (NOTES.md S3.7), not of the BDF
-    formulas -- which is why this test threads history with maxlen = scheme.steps
-    instead of the maxlen=1 the one-step schemes above use.
+    BDF3-5 now have implicit starters; the rate-100 bootstrap/order regression
+    is in test_stiff_startup.py. Actual IMEX splits retain their DP5 starter.
     """
     scheme = getIntegrator(scheme_name)
     system = testing.PROBLEMS['oscillator']().initial()

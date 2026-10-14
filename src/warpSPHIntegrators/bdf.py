@@ -4,9 +4,9 @@ BDF1 is backward Euler. BDF2-BDF5 store one prior-state snapshot per past step i
 ``StepHistory`` and solve the full multistep residual using the same matrix-free
 Newton interface as DIRK: the history enters only as state values, the right-hand
 side is evaluated once, at the new grid time, so the standard BDF formula keeps its
-claimed order on non-autonomous problems. Cold calls (history shorter than
-``order - 1``) use Dormand-Prince 5(4), matching the existing multistep family's
-safe high-order fallback until the caller threads a history object.
+claimed order on non-autonomous problems. BDF3-5 cold calls use order-matched
+L-stable implicit RK starters. BDF2 retains DP5 by default; startup='implicit'
+selects TR-BDF2. startup='explicit' retains the historical DP5 comparison path.
 
 The coefficients are derived from the BDF order conditions (verified in
 ``tests/test_bdf.py``); BDF1/2 are A-stable, BDF3-BDF5 are A(alpha)-stable with
@@ -16,6 +16,7 @@ cone half-angles 86.03 deg / 73.35 deg / 51.84 deg.
 from typing import Optional
 
 from .butcher import DormandPrince
+from .dirk import TRBDF2, ESDIRK324L2SA, KenCarp4, KenCarp5
 from .fields import (
     flatten_integrated,
     get_reference_state,
@@ -77,14 +78,26 @@ def getBDFCoefficients(order: int):
 
 
 def BDF(initial_state, dt, f, order: int, *args, history: Optional[StepHistory] = None,
-        solver: Optional[NonlinearSolver] = None, **kwargs):
+        solver: Optional[NonlinearSolver] = None, startup=None, **kwargs):
     """One BDF1-BDF5 step, using a high-order starter until history is ready."""
     state_weights, coefficient = getBDFCoefficients(order)
+    startup = ('implicit' if order >= 3 else 'explicit') if startup is None else startup
+    if startup not in ('implicit', 'explicit'):
+        raise ValueError("BDF startup must be 'implicit' or 'explicit'")
     reject_prior_step(f'BDF{order}', kwargs.pop('priorStep', None))
     needed = order - 1
     history = history if history is not None else StepHistory(maxlen=max(1, needed))
+    if history.maxlen < max(1,needed):
+        raise ValueError(f'BDF{order} needs history capacity >= {max(1,needed)}')
+    if history.latest is not None and abs(history.latest.dt-dt) > 1e-12*max(abs(dt),abs(history.latest.dt)):
+        history = StepHistory(history.maxlen)
     if len(history) < needed:
-        starter_result = DormandPrince(initial_state, dt, f, *args, **kwargs)
+        starter = ({2:TRBDF2,3:ESDIRK324L2SA,4:KenCarp4,5:KenCarp5}[order]
+                   if startup == 'implicit' else DormandPrince)
+        starter_options = dict(kwargs)
+        if startup == 'implicit' and solver is not None:
+            starter_options['solver'] = solver
+        starter_result = starter(initial_state, dt, f, *args, **starter_options)
         first_stage = starter_result.stages[0]
         starter_history = history.pushed(HistoryEntry(
             t=float(initial_state.t), dt=dt, update=first_stage.update,
@@ -94,6 +107,7 @@ def BDF(initial_state, dt, f, order: int, *args, history: Optional[StepHistory] 
             state=starter_result.state,
             stages=starter_result.stages,
             history=starter_history,
+            solver_diagnostics=starter_result.solver_diagnostics,
         )
     initializeSystem(initial_state, dt, *args, **kwargs)
 

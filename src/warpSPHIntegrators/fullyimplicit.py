@@ -1,7 +1,7 @@
 """Coupled (block) fully implicit Runge-Kutta driver (NOTES.md S3.18, Phase 6).
 
 A DIRK solves its ``s`` stage equations as ``s`` *sequential* solves, because
-``a_ij == 0`` for ``i != j`` makes stage ``i`` a function of already-known stages
+``a_ij == 0`` for ``j > i`` makes stage ``i`` a function of already-known stages
 alone. A *coupled* fully implicit tableau -- Gauss-Legendre 2, Radau IIA s=2 --
 has nonzero off-diagonal entries, so stage ``i`` references the still-unknown
 stage ``j != i`` and the ``s`` stage equations form one ``s``-by-``s`` coupled
@@ -67,7 +67,7 @@ class BlockTableau(NamedTuple):
     a: np.ndarray
     b: np.ndarray
     c: np.ndarray
-    companion_b: np.ndarray
+    companion_b: Optional[np.ndarray]
 
 
 def _default_norm(rtol: float, atol: float):
@@ -92,6 +92,9 @@ def fullyImplicitBlock(initialState, dt, f, tableau: BlockTableau, *args,
     ``Y_i ~= y^n + dt * sum_j a_ij k_j(previous)`` instead of the cold guess
     ``y^n`` -- exposed as a plain flag, since warm starting helps on stiff
     problems with similar steps and costs nothing when it does not.
+    Preconditioner context includes dt, tableau_a and stage_times; driver-owned
+    values override caller context keys. A tableau with companion_b=None emits
+    no error estimate, supporting unregistered research prototypes.
     ``priorStep`` (first-stage reuse) is always rejected: a coupled tableau has
     no explicit first stage to splice a previous step's derivative into.
     ``history=``, ``rtol=``/``atol=`` (the solve's norm tolerances), and
@@ -110,7 +113,10 @@ def fullyImplicitBlock(initialState, dt, f, tableau: BlockTableau, *args,
         if len(warmStart) != s:
             raise ValueError(
                 f"{name}: warmStart must have one StageResult per stage ({s}), got {len(warmStart)}")
-    solver_opts = kwargs.get('solver_opts', {})
+    solver_opts = dict(kwargs.get('solver_opts', {}))
+    context = dict(solver_opts.get('preconditioner_context',getattr(solver,'preconditioner_context',None)) or {})
+    context.update(dt=dt,tableau_a=tableau.a,stage_times=tuple(float(initialState.t+c*dt) for c in tableau.c))
+    solver_opts['preconditioner_context'] = context
     norm = _default_norm(kwargs.get('rtol', 1e-3), kwargs.get('atol', 1e-6))
 
     with record_function("[Integration] FullyImplicitBlock"):
@@ -197,7 +203,7 @@ def fullyImplicitBlock(initialState, dt, f, tableau: BlockTableau, *args,
         # on the initial state, so its value is order-independent.)
         companion_b = tableau.companion_b
         k0 = None
-        if float(companion_b[0]) != 0.0:
+        if companion_b is not None and float(companion_b[0]) != 0.0:
             k0_buf = initialState.initializeNewState(*args, **kwargs)
             k0_buf.t = float(initialState.t)
             k0, _r0 = updateStep(initialState, k0_buf, dt, f, *args, **kwargs)
@@ -232,9 +238,11 @@ def fullyImplicitBlock(initialState, dt, f, tableau: BlockTableau, *args,
         k_all = ([k0] + ks) if k0 is not None else ks
 
         y_main = _weighted_update(initialState, ks, tableau.b, dt, *args, **kwargs)
-        y_embed = _weighted_update(initialState, k_all, companion_b, dt, *args, **kwargs)
-        error = state_difference(y_main, y_embed)
-        error.t = float(initialState.t + dt)
+        error = None
+        if companion_b is not None:
+            y_embed = _weighted_update(initialState, k_all, companion_b, dt, *args, **kwargs)
+            error = state_difference(y_main, y_embed)
+            error.t = float(initialState.t + dt)
         y_main.t = float(initialState.t + dt)
 
         stages = [StageResult(aux=r, update=k) for r, k in zip(rs, ks)]

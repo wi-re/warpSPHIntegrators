@@ -619,9 +619,12 @@ EXPECTED_VERDICTS = {
     'Newmark': (None, None, False),
     'BDF1': (None, 5.0, True),
     'BDF2': (None, 1.5, False),
-    'BDF3': (None, 1.5, False),
-    'BDF4': (None, 1.5, False),
-    'BDF5': (None, 1.5, False),
+    # Phase 6: the cold-call classifier now measures the implicit starters,
+    # not the full history-dependent BDF formula. TVD through CFL 5 is finite
+    # measured coverage, not a proof of unconditional multistep TVD.
+    'BDF3': (None, 5.0, True),
+    'BDF4': (None, 5.0, True),
+    'BDF5': (None, 5.0, True),
     'IMEX Euler': (None, 5.0, True),
     'Adams-Bashforth 2': (None, 1.5, False),
     'Adams-Bashforth 3': (None, 1.5, False),
@@ -675,7 +678,8 @@ EXPECTED_VERDICTS = {
     # the cap the BDF/AB/AM family carries. The one-step trapezoidal DIRK
     # scheme skips the startup and reaches 5.0.
     'SBDF2': (None, 1.5, False),
-    'SBDF3': (None, 1.5, False),
+    # Bare-RHS SBDF3 delegates to BDF3's new implicit startup. Splits retain DP5.
+    'SBDF3': (None, 5.0, True),
     'CNAB2': (None, 1.5, False),
 }
 
@@ -699,3 +703,13 @@ def test_classifier_verdicts_match_the_recorded_landscape(s):
         assert v.ssp_cfl == pytest.approx(ssp, abs=2e-3)
     assert v.tvd_cfl == tvd
     assert v.unconditional == uncond
+
+
+@pytest.mark.parametrize('name',['BDF3','BDF4','BDF5'])
+def test_legacy_explicit_bdf_startup_retains_its_measured_cfl_cap(name):
+    """The Phase 6 opt-in legacy path retains the previous numerical landscape."""
+    from functools import partial
+    scheme=getIntegrator(name)
+    legacy=scheme._replace(function=partial(scheme.function,startup='explicit'))
+    verdict=tvd_analysis.classify_tvd(legacy,advection('step'),CFLS,DT_SCALE,mu_max=4.)
+    assert verdict.tvd_cfl==1.5 and not verdict.unconditional

@@ -57,7 +57,8 @@ def _final_state(scheme, prob):
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         for _ in range(_golden()['n_steps']):
-            system = scheme(system, dt=_golden()['dt'], f=prob.rhs).state
+            options = {'startup':'explicit'} if scheme.name in ('BDF3','BDF4','BDF5') else {}
+            system = scheme(system, dt=_golden()['dt'], f=prob.rhs, **options).state
     s = get_reference_state(system)
     return {'x': s.x.detach().cpu().tolist(),
             'u': s.u.detach().cpu().tolist(),
@@ -70,6 +71,9 @@ def _final_state(scheme, prob):
 
 def test_bitidentical_bare_callable_trajectories():
     """Every registered scheme reproduces the pre-refactor golden on the oscillator.
+
+    BDF3-5 explicitly select the legacy DP5 bootstrap: Phase 6 intentionally
+    changes the default startup, independently of RHS dispatch.
 
     The golden (``tests/data/bitident_golden.json``) was captured *before* the
     RHS refactor; the plain-callable dispatch (a bare ``f`` resolves to

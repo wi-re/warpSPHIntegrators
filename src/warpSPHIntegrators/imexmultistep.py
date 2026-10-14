@@ -64,7 +64,7 @@ from typing import Optional
 import numpy as np
 from torch.profiler import record_function
 
-from .bdf import _copy_integrated, _linear_combination, getBDFCoefficients
+from .bdf import BDF, _copy_integrated, _linear_combination, getBDFCoefficients
 from .butcher import DormandPrince
 from .fields import get_reference_state, state_difference, state_norm
 from .history import HistoryEntry, StepHistory
@@ -133,6 +133,11 @@ def SBDF(initial_state, dt, f, order: int, *args, history: Optional[StepHistory]
     state_weights, beta = getBDFCoefficients(order)
     extrap = _extrapolation_weights(order)
     reject_prior_step(name, kwargs.pop('priorStep', None))
+    resolved = resolve(f, scheme_name=name)
+    if resolved.explicit is None:
+        # Preserve the exact BDF pure-implicit limit, including its startup,
+        # failure reporting and timestep/history guards.
+        return BDF(initial_state,dt,f,order,*args,history=history,solver=solver,**kwargs)
     needed = order - 1
     history = history if history is not None else StepHistory(maxlen=max(1, needed))
     if len(history) < needed:

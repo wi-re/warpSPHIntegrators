@@ -15,6 +15,7 @@ from warpSPHIntegrators import (
     TensorState, tensor_rhs, getIntegrator, getPreferredIntegrator, filter_schemes,
     StepHistory, SemilinearRHS, testing, get_reference_state,
     solve, Event, save_checkpoint, load_checkpoint,
+    stage_block_preconditioner,
 )
 
 
@@ -54,6 +55,15 @@ with tempfile.TemporaryDirectory() as directory:
     resumed = solve('Dormand-Prince 5(4)',None,2.,rhs,restart=load_checkpoint(path),
                     events=[Event(lambda t,s:s.y[0].item()-.2,terminal=True)])
 assert resumed.termination == 'event' and abs(resumed.state.t-math.log(5)) < 1e-7
+stiff = solve('BDF5',TensorState(torch.ones(1,dtype=torch.float64)),1.,
+              tensor_rhs(lambda t,y:-100*y),dt=.1,
+              solver_opts={'matvec':'jvp','tol':1e-12,'newton_tol':1e-9})
+assert stiff.successful and abs(stiff.state.y.item()) < .001
+rates = torch.logspace(0,4,32,dtype=torch.float64)
+block = getIntegrator('Radau IIA s=2')(TensorState(torch.ones_like(rates)),.01,
+            tensor_rhs(lambda t,y:-rates*y),solver_opts={'matvec':'jvp',
+            'tol':1e-10,'newton_tol':1e-7,'preconditioner':stage_block_preconditioner(-rates)})
+assert block.step_status.tolerance_converged
 print(f'Installed wheel {package.__version__}: all modules/exports, py.typed, '
       f'{len(filter_schemes(state_kind="tensor"))} tensor drivers, advanced state protocol, '
-      'adaptive sampling/events and portable restart pass')
+      'adaptive sampling/events, portable restart, stiff bootstrap and stage preconditioning pass')
