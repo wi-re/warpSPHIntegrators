@@ -345,7 +345,7 @@ order**. Symplectic Euler does not; it keeps second order either way.
 | **Leap-Frog** | 2 (1 if `f` sees velocity) | 1 | Synchronised form |
 | **PEFRL** | 4 (1 if `f` sees velocity) | refused | High-order Forest–Ruth, position-first |
 | **VEFRL** | 4 (1 if `f` sees velocity) | refused | Velocity-first variant |
-| **Gauss-Legendre 2** | 4 | refused | Coupled 2-stage Gauss collocation, one block JFNK solve per step; the library's only symplectic method above order 2 — pinned by measurement, since its tableau is *not* A-symmetric |
+| **Gauss-Legendre 2** | 4 | refused | Coupled 2-stage Gauss collocation, one block JFNK solve per step; symplectic RK identity checked alongside nonlinear geometric measurements |
 
 ### TVD and Conservative Schemes
 
@@ -484,7 +484,7 @@ function, symplecticity):
 
 | Scheme | Order | Stability | Use Case |
 |--------|-------|-----------|----------|
-| **Gauss-Legendre 2** | 4 | A, not L, symplectic (measured) | The library's only symplectic method above order 2. Its tableau is *not* A-symmetric (`a_12 != a_21`), so the symplecticity is pinned by measurement — phase-area defect 3.05e-13 under the strict solve — not by a coefficient symmetry; not L-stable (`R(-100) = 0.887`, `R(z) -> 1` as `z -> -inf`) |
+| **Gauss-Legendre 2** | 4 | A, not L, symplectic (measured) | Satisfies the RK symplectic identity; strict-solve phase-area defect 3.05e-13; not L-stable (`R(-100) = 0.887`, `R(z) -> 1` as `z -> -inf`) |
 | **Radau IIA s=2** | 3 | L, stiffly accurate | The no-compromise stiff workhorse: damps the whole negative real axis (`|R(-100)| ≈ 0.019`) with no A(α)-cone restriction, stiffly accurate so the endpoint stage is `f(t^{n+1}, y^{n+1})` |
 
 [example:run quickstart]: #
@@ -742,7 +742,7 @@ position-only Hamiltonian.
 | ESDIRK3(2)4L[2]SA | 3 | DIRK | L-stable, stiffly accurate, explicit first stage | no |
 | ESDIRK4(3)6L[2]SA | 4 | DIRK | L-stable, stiffly accurate, explicit first stage | no |
 | Newmark | 2 | Implicit second-order | Average acceleration is oscillator-unconditionally stable | linear only |
-| Gauss-Legendre 2 | 4 | Coupled block RK | A-stable, not L-stable; one 2xN JFNK block solve per step; symplectic for separable Hamiltonians (measured — tableau not A-symmetric) | yes, conditional |
+| Gauss-Legendre 2 | 4 | Coupled block RK | A-stable, not L-stable; one 2xN JFNK block solve per step; symplectic RK for Hamiltonian dynamics with converged solves | yes, solved |
 | Radau IIA s=2 | 3 | Coupled block RK | L-stable, stiffly accurate; one 2xN JFNK block solve per step; damps the whole negative real axis | no |
 | BDF1 | 1 | Implicit multistep | L-stable | no |
 | BDF2 | 2 | Implicit multistep | A-stable | no |

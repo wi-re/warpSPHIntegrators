@@ -113,6 +113,51 @@ def catalog_markdown(data):
     return '\n'.join(lines)
 
 
+def readme_catalog(data):
+    """Compact complete front-page registry, kept beside the authored guidance."""
+    lines = []
+    geometric = {'Semi-Implicit Euler', 'Symplectic Euler', 'Leap Frog',
+                 'Velocity Verlet', 'PEFRL', 'VEFRL'}
+    for family in data['families']:
+        lines += [f"### {family['label']} ({family['count']})", '',
+                  '| Scheme | Order | Stored stages | Estimate | Stability / structure |',
+                  '|---|---:|---|---|---|']
+        for s in data['schemes']:
+            if s['family'] != family['name']:
+                continue
+            stages = str(s['stage_count']) if s['stage_count'] is not None else 'driver'
+            if s['required_options']:
+                stages = 'variable'
+            if s['estimate_extra_stages']:
+                stages += f" + {s['estimate_extra_stages']}"
+            estimate = (f"{s['order']}({s['embedded_order']}), q={s['estimate_order']}"
+                        if s['estimate_order'] is not None else '—')
+            if s['fsal']:
+                estimate += '; FSAL'
+            properties = [s['stability']] if s['stability'] else []
+            if properties and s['family'] == 'IMEX':
+                properties = [f"implicit part: {s['stability']}"]
+            elif properties and s['family'] == 'Exponential':
+                properties = [f"linear test: {s['stability']}"]
+            elif s['family'] == 'Newmark':
+                properties = ['bounded linear oscillator (default parameters)']
+            if s['name'] in geometric:
+                properties.append('symplectic for separable Hamiltonians')
+            elif s['name'] == 'Implicit Midpoint' or s['name'].startswith('Gauss-Legendre'):
+                properties.append('symplectic with converged solves')
+            elif s['name'] == 'Newmark' or s['name'].startswith('Trapezoidal'):
+                properties.append('linear oscillator area preservation')
+            if s['name'].startswith(('SSP', 'TVD')):
+                properties.append('SSP under step/history bounds' if s['history_length']
+                                  else 'SSP under its CFL bound')
+            if s['history_length']:
+                properties.append('history required')
+            lines.append(f"| {s['name']} | {s['order']} | {stages} | {estimate} | "
+                         f"{'; '.join(properties) or '—'} |")
+        lines.append('')
+    return '\n'.join(lines)
+
+
 def artifacts(root=ROOT):
     data = snapshot()
     result = {
@@ -124,6 +169,8 @@ def artifacts(root=ROOT):
         text = (root / page).read_text()
         if '[catalog:summary:start]' in text:
             text = region(text, 'summary', summary_text(data))
+        if page == 'README.md' and '[catalog:schemes:start]' in text:
+            text = region(text, 'schemes', readme_catalog(data))
         # Included examples are displayed verbatim.
         if page in ('README.md', 'docs/docs/index.md', 'docs/docs/tensor-ode.md'):
             text = re.sub(r'(\[example:include ([^\n]+)\]: #\n```python\n).*?^```',

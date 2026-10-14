@@ -13,8 +13,9 @@ oscillation around the true energy.
 
 :::note
 The separability caveat is load-bearing and measured, not folklore: with a
-**velocity-dependent** force the order-2+ members drop to first order
-(NOTES.md, "Still open"). The order-1 members are unaffected by definition.
+**velocity-dependent** force Leap Frog, Velocity Verlet, PEFRL and VEFRL drop to
+first order (NOTES.md, "Still open"). The second-order Symplectic Euler variant
+retains order two on the tested damped problems; the order-one member is unaffected.
 :::
 
 Two evaluations per step for the order-2 members, four for the order-4
@@ -120,8 +121,9 @@ grows **linearly in $T$** (secular), while Velocity Verlet and PEFRL stay flat
 `tests/test_hamiltonian.py` pins the shadow-Hamiltonian defect at
 $\sim 10^{-13}$ (strict solve). On Kepler, the Verlet family's action-area
 defect is $\sim 10^{-9}$ (default solve) vs. $\sim 10^{-13}$ strict
-(the historical Kepler-orbit plot (not retained in this checkout)). The library's only symplectic method **above
-order 2** is Gauss-Legendre 2 — see [coupled-rk](coupled-rk).
+(the historical Kepler-orbit plot (not retained in this checkout)). PEFRL/VEFRL
+and Gauss collocation provide orders above two under their respective structural
+and solve assumptions — see [coupled-rk](coupled-rk).
 
 ## References
 

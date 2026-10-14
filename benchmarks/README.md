@@ -40,3 +40,8 @@ tolerances and command with new benchmark conclusions. Historical records live
 under [numerical research](../docs/research/integrators/notes-index.md).
 
 `expanded_rk_backend.py` measures 54 qualified source-expanded RK maps on known reaction/spiral-heat problems and screens canonical coefficients against the fixed tableaus. Full-stage storage is retained.
+
+`readme_gallery.py` regenerates the compact front-page stability panels and the
+known damped-oscillator comparison, including directly counted RHS/GMRES work.
+It writes `docs/development/evidence/readme-oscillator.json`, the README result
+table and `docs/assets/readme-*.png`. Install `.[benchmark]` for plotting dependencies.

@@ -130,9 +130,11 @@ An implicit-first DIRK can accept `warmStart=previous.stages[0]`; coupled RK
 accepts the full previous stage list. These are guesses, never derivative reuse.
 They remain opt-in: Phase 6's measured transients show no consistent gain, and a
 warm guess can cost more than a cold solve. The local stage-block approximation
-passes reaction cases but fails the diffusion scale gate; higher-stage prototypes
-remain unregistered. See the
-[Phase 6 evidence](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/phase6-validation.md).
+passes reaction cases but fails the original diffusion scale gate. Shifted spatial
+solves subsequently qualified fixed s=3 registrations, and real Schur spatial
+preconditioning supports the parameterized stages 2–9 backend. See the
+[Phase 6 evidence](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/phase6-validation.md)
+and [higher-stage qualification](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/higher-collocation-validation.md).
 
 ## Spatial solves for coupled stages
 
@@ -184,7 +186,9 @@ keep their own stepping loop, `adaptive.py` also exposes the original helpers:
   quartic at the fraction `theta` of a step, with exact endpoint reproduction.
 
 [The generated catalog](catalog) lists every estimate emitter and exponent.
-Multistep schemes emit no estimates, and changing dt restarts their history.
+The fixed-catalog multistep schemes emit no estimates, and changing dt restarts
+their history. VariableAdams, NDF and AdaptiveNDF instead provide their own
+comparison exponents and variable-history/control contracts.
 Use [the run API](runs) for acceptance/rejection, final-time clipping and state/history
 commit, or retain a caller-owned loop with these helpers.
 

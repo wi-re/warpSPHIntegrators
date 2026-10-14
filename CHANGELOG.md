@@ -6,6 +6,16 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ## [Unreleased]
 
+### Documentation
+
+- Restore a self-contained README with method-selection advice, TVD/SSP,
+  symplecticity, A/L-stability and JFNK explanations, analytic damped-oscillator
+  examples, readable stability figures and measured benchmark tables. Generate
+  the full fixed-scheme list from the runtime catalog and show parameterized
+  backends separately. Include scripts and machine-readable results for the new
+  front-page figures.
+
+
 ### Added — Phase 8 backend expansion
 
 - Source-expanded full-stage RK factory: 54 screened main maps and 19 companion

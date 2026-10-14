@@ -41,8 +41,11 @@ PESPH integration is later application work.**
   dispositions, source pins, constructors, transformations, tests and consumers.
 - [x] Organize specialist plans and dated records, with a measurement index and
   compatibility anchors for old numbered references.
-- [x] Shorten README; document environments, category gates, multicore execution,
-  registration, provenance and release validation in CONTRIBUTING.
+- [x] Consolidate documentation; document environments, category gates, multicore
+  execution, registration, provenance and release validation in CONTRIBUTING.
+  The initially shortened README was subsequently expanded at user review to
+  restore self-contained explanations, method advice, the complete scheme list,
+  understood examples, stability galleries and benchmark results.
 - [x] Relocate notebooks, benchmarks and assets; repair paths; promote durable
   coefficient/oracle tools and evidence before ignoring preserved scratch output.
 

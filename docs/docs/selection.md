@@ -69,11 +69,12 @@ regions. The KenCarp/ARS names here provide the implicit half only.
   pairs; `warmStart=` takes the previous converged stage *states* as the block
   solve's initial guess for the coupled tableaus. Everything else refuses with
   a warning.
-- **History.** The multistep schemes (AB, ABM-PECE, BDF, AM, SBDF/CNAB) need
-  `history=` threaded across calls (`StepHistory(maxlen=order - 1)`). Forgetting
-  it does **not** corrupt the trajectory — they bootstrap with Dormand–Prince
-  5(4) instead, which is *more* accurate, so you silently pay DP5's cost every
-  step.
+- **History.** Manual multistep loops must thread accepted `result.history` into
+  the next step. Missing history repeatedly invokes startup, changing cost and
+  potentially effective trajectory order. Implicit BDF uses order-matched
+  implicit starters; other families have their own startup contracts. `solve`
+  manages history and compatible reuse. Fixed-coefficient drivers restart on
+  changed timesteps; VariableAdams/NDF provide distinct variable-history policies.
 - **Gradients.** Ordinary explicit drivers use `torch.autograd`; nonlinear
   implicit drivers reattach the converged solution using the implicit function
   theorem, with an adjoint solve for each forward stage/block solve. The Newton
