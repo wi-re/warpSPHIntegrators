@@ -259,7 +259,8 @@ def compose(parts,coefficients,*,order=1,name='Composition',conservative_options
     from .nystrom import Nystrom
     from .stabilized import StabilizedRK
     from .collocation import Collocation
-    bound=(IntegrationScheme,LinearExponentialFlow,Nystrom,StabilizedRK,Collocation)
+    from .extrapolation import Extrapolation
+    bound=(IntegrationScheme,LinearExponentialFlow,Nystrom,StabilizedRK,Collocation,Extrapolation)
     entries=tuple((part,method if isinstance(method,bound) else getIntegrator(method)) for part,method in parts)
     weights=tuple(float(c) for c in coefficients)
     if not entries or len(entries)!=len(weights) or any(not math.isfinite(c) for c in weights):raise ValueError('Matching finite parts/coefficients required')

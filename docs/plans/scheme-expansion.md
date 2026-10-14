@@ -4,7 +4,7 @@
 (three-stage Gauss/Radau) and a parameterized classical generalized-alpha driver.
 Parameterized Gauss/Radau stages 2–9, variable Adams, MEBDF2/CNLF2, stabilized
 Legendre/Gegenbauer, fourteen generalized Nyström, fixed-order NDF 1–5 and
-adaptive NDF target-order backends are implemented
+adaptive NDF target-order and explicit extrapolation backends are implemented
 with source/numerical/consumer gates; remaining waves 10–16 members retain theirs.**
 The registry contains 142 schemes (140 before MEBDF2/CNLF2; 139 before fixed ABM5; 137 before the first
 wave-9 batch; 64 at planning time).
@@ -383,6 +383,11 @@ history/startup/order for improved IRKN; block-solve scale for PDIRK at s>2.
 
 ## Wave 13 — new medium drivers (C4, ~11 methods)
 
+`Extrapolation(base, order)` supplies fixed-target Euler orders 2–8 and even
+midpoint orders 2–10 with source fixed-column maps, estimator/quantity/lifecycle
+contracts, adaptive timestep and physical composition. Source adaptive-order/work
+controllers and internal threading remain distinct. [Evidence](../development/extrapolation-validation.md).
+
 - Extrapolation family (`OrdinaryDiffEqExtrapolation`, 7 methods): AitkenNeville,
   ExtrapolationMidpointDeuflhard, ExtrapolationMidpointHairerWanner,
   ImplicitDeuflhardExtrapolation, ImplicitEulerBarycentricExtrapolation,
@@ -393,7 +398,10 @@ history/startup/order for improved IRKN; block-solve scale for PDIRK at s>2.
 - IRKC (`OrdinaryDiffEqStabilizedIRK`): stabilized implicit RK via Chebyshev
   polynomials — needs a linear (Krylov) solver per stage; rides the frozen-operator
   GMRES pattern from `rosenbrock.py`.
-- FunctionMap (`OrdinaryDiffEqFunctionMap`): integration composed with a fixed map.
+- FunctionMap (`OrdinaryDiffEqFunctionMap`): direct discrete state map, evaluated
+  at t+dt in the inspected step body; scale_by_time adds dt*f to the old state.
+  It is not an ODE step followed by an arbitrary projection. Specify map/RHS,
+  lifecycle and time semantics before implementation.
 - Composite (`OrdinaryDiffEqCore.CompositeAlgorithm`): **algorithm switching**
   with choice/cache transitions, not the physical flow composition implemented
   in Phase 7. Design its run/restart/adaptive semantics separately.

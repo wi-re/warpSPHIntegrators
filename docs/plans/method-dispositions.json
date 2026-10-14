@@ -5102,6 +5102,175 @@
       ],
       "evidence": "docs/development/adaptive-ndf-validation.md",
       "intended_consumer": "Dissipative ODEs with unknown appropriate target order, explicit RHS and owned full-state quantities"
+    },
+    {
+      "name": "Euler extrapolation order 2 backend",
+      "status": "implemented",
+      "wave": 13,
+      "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
+      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "tests": [
+        "tests/test_extrapolation.py"
+      ],
+      "evidence": "docs/development/extrapolation-validation.md",
+      "intended_consumer": "Smooth nonstiff coupled ODEs; high-order midpoint has a measured accuracy/work niche on analytic reaction/rotation vectors"
+    },
+    {
+      "name": "Euler extrapolation order 3 backend",
+      "status": "implemented",
+      "wave": 13,
+      "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
+      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "tests": [
+        "tests/test_extrapolation.py"
+      ],
+      "evidence": "docs/development/extrapolation-validation.md",
+      "intended_consumer": "Smooth nonstiff coupled ODEs; high-order midpoint has a measured accuracy/work niche on analytic reaction/rotation vectors"
+    },
+    {
+      "name": "Euler extrapolation order 4 backend",
+      "status": "implemented",
+      "wave": 13,
+      "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
+      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "tests": [
+        "tests/test_extrapolation.py"
+      ],
+      "evidence": "docs/development/extrapolation-validation.md",
+      "intended_consumer": "Smooth nonstiff coupled ODEs; high-order midpoint has a measured accuracy/work niche on analytic reaction/rotation vectors"
+    },
+    {
+      "name": "Euler extrapolation order 5 backend",
+      "status": "implemented",
+      "wave": 13,
+      "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
+      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "tests": [
+        "tests/test_extrapolation.py"
+      ],
+      "evidence": "docs/development/extrapolation-validation.md",
+      "intended_consumer": "Smooth nonstiff coupled ODEs; high-order midpoint has a measured accuracy/work niche on analytic reaction/rotation vectors"
+    },
+    {
+      "name": "Euler extrapolation order 6 backend",
+      "status": "implemented",
+      "wave": 13,
+      "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
+      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "tests": [
+        "tests/test_extrapolation.py"
+      ],
+      "evidence": "docs/development/extrapolation-validation.md",
+      "intended_consumer": "Smooth nonstiff coupled ODEs; high-order midpoint has a measured accuracy/work niche on analytic reaction/rotation vectors"
+    },
+    {
+      "name": "Euler extrapolation order 7 backend",
+      "status": "implemented",
+      "wave": 13,
+      "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
+      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "tests": [
+        "tests/test_extrapolation.py"
+      ],
+      "evidence": "docs/development/extrapolation-validation.md",
+      "intended_consumer": "Smooth nonstiff coupled ODEs; high-order midpoint has a measured accuracy/work niche on analytic reaction/rotation vectors"
+    },
+    {
+      "name": "Euler extrapolation order 8 backend",
+      "status": "implemented",
+      "wave": 13,
+      "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
+      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "tests": [
+        "tests/test_extrapolation.py"
+      ],
+      "evidence": "docs/development/extrapolation-validation.md",
+      "intended_consumer": "Smooth nonstiff coupled ODEs; high-order midpoint has a measured accuracy/work niche on analytic reaction/rotation vectors"
+    },
+    {
+      "name": "Midpoint extrapolation order 2 backend",
+      "status": "implemented",
+      "wave": 13,
+      "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
+      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "tests": [
+        "tests/test_extrapolation.py"
+      ],
+      "evidence": "docs/development/extrapolation-validation.md",
+      "intended_consumer": "Smooth nonstiff coupled ODEs; high-order midpoint has a measured accuracy/work niche on analytic reaction/rotation vectors"
+    },
+    {
+      "name": "Midpoint extrapolation order 4 backend",
+      "status": "implemented",
+      "wave": 13,
+      "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
+      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "tests": [
+        "tests/test_extrapolation.py"
+      ],
+      "evidence": "docs/development/extrapolation-validation.md",
+      "intended_consumer": "Smooth nonstiff coupled ODEs; high-order midpoint has a measured accuracy/work niche on analytic reaction/rotation vectors"
+    },
+    {
+      "name": "Midpoint extrapolation order 6 backend",
+      "status": "implemented",
+      "wave": 13,
+      "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
+      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "tests": [
+        "tests/test_extrapolation.py"
+      ],
+      "evidence": "docs/development/extrapolation-validation.md",
+      "intended_consumer": "Smooth nonstiff coupled ODEs; high-order midpoint has a measured accuracy/work niche on analytic reaction/rotation vectors"
+    },
+    {
+      "name": "Midpoint extrapolation order 8 backend",
+      "status": "implemented",
+      "wave": 13,
+      "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
+      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "tests": [
+        "tests/test_extrapolation.py"
+      ],
+      "evidence": "docs/development/extrapolation-validation.md",
+      "intended_consumer": "Smooth nonstiff coupled ODEs; high-order midpoint has a measured accuracy/work niche on analytic reaction/rotation vectors"
+    },
+    {
+      "name": "Midpoint extrapolation order 10 backend",
+      "status": "implemented",
+      "wave": 13,
+      "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
+      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "tests": [
+        "tests/test_extrapolation.py"
+      ],
+      "evidence": "docs/development/extrapolation-validation.md",
+      "intended_consumer": "Smooth nonstiff coupled ODEs; high-order midpoint has a measured accuracy/work niche on analytic reaction/rotation vectors"
+    },
+    {
+      "name": "Euler/midpoint order-two extrapolation main maps",
+      "status": "equivalent",
+      "wave": 13,
+      "reason": "Both equal registered explicit midpoint; Euler comparison and factory representation are distinct, with no duplicate fixed registration",
+      "source": "Pinned fixed-column recurrence and independent nonlinear/time-dependent map comparison",
+      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "tests": [
+        "tests/test_extrapolation.py"
+      ],
+      "evidence": "docs/development/extrapolation-validation.md",
+      "intended_consumer": "Use the factory for its comparison/quadrature contract"
     }
   ]
 }

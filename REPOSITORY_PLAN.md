@@ -25,7 +25,11 @@ separate actions. **Phase 8 is underway: its first reviewed batch registers
 Gauss-Legendre 3 / Radau IIA s=3 after their source, companion, scale and numerical
 gates. A parameterized generalized-alpha driver now qualifies selective damping
 on the known structural consumer, with accepted acceleration, restart, lifecycle,
-quantity coupling and gradient checks. Higher stages and other driver families retain their own gates.
+quantity coupling and gradient checks. Subsequent reviewed backends supply
+collocation stages 2–9 with Schur spatial preconditioning, variable Adams,
+MEBDF2/CNLF2, Legendre/Gegenbauer stabilization, generalized Nyström, fixed and
+adaptive-order NDF, and explicit extrapolation. Their source/consumer/restart
+evidence is linked below; remaining driver families retain their own gates.
 PESPH integration is later application work.**
 
 ## Phase 3 completion record
@@ -194,6 +198,9 @@ must be recorded rather than counted as an implemented method.
   compatibility and a measured advantage.
 - [ ] Advance wave 12/13 work through Phase 7 where contracts overlap. Design
   extrapolation and map semantics independently where they do not.
+  Explicit Euler/midpoint extrapolation now has fixed-column source, order,
+  quantity, gradient, adaptive and composition gates; [backend evidence](docs/development/extrapolation-validation.md).
+  Implicit extrapolation, maps and algorithm switching retain their own contracts.
 - [ ] Keep waves 14–15 as prototypes until matrix/operator, multirate, and derivative
   contracts and cost models are convincing.
 - [ ] Screen wave 16 and maintain equivalence records; consider a genuine low-storage

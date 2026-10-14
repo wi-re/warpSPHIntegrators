@@ -30,6 +30,8 @@ restricted equivalence; improved IRKN history is separate backend work.
 
 `NDF` supplies fixed target orders 1–5 with [difference-state/source/consumer evidence](../development/ndf-backend-validation.md). Its fifth-order constant-step main map equals BDF5; its variable history and policy are distinct. `AdaptiveNDF` adds [accepted-order selection](../development/adaptive-ndf-validation.md) with explicit package policies. Full upstream QNDF rejection/discontinuity semantics remain separate.
 
+`Extrapolation` supplies twelve fixed-target Euler/midpoint configurations with [source/quantity/work evidence](../development/extrapolation-validation.md). Both order-two main maps equal explicit midpoint and remain outside fixed registration.
+
 ## Source pin and transformations
 
 Expansion waves use OrdinaryDiffEq **7.8.1**, metapackage git tree

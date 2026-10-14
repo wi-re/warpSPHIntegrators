@@ -189,6 +189,13 @@ assert scheme.metadata.estimate_extra_stages == 1
 
 ## Results and history
 
+`Extrapolation(base='midpoint', order=4)` supplies fixed-target explicit Euler
+orders 2–8 and even midpoint orders 2–10. `extrapolation_coefficients` exposes
+immutable column weights; `ExtrapolationQuadrature` on the result exposes
+full-state affine weights and column stage indices. Adaptive timestep, gradients,
+physical composition and portable tensor continuation share the normal runner.
+See [the extrapolation contract](families/extrapolation).
+
 `NDF(order=3, max_step_ratio=2.)` supplies fixed-target-order implicit NDF
 stepping with owned backward differences, accepted quasi-constant timestep
 blocks and portable tensor restart. `ndf_difference_transform(order, ratio)`

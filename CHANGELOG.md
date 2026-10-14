@@ -8,6 +8,11 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Added — Phase 8 backend expansion
 
+- Explicit Euler/midpoint extrapolation factories with pinned nonlinear source
+  maps, exact-derived column coefficients, full-state affine quadratures,
+  adaptive timestep and composition support. Fixed target orders remain distinct
+  from source adaptive-order/threaded and frozen-Jacobian implicit controllers.
+
 - Adaptive NDF target-order selection with normalized neighboring defects,
   mature history transitions and portable controller state. Candidate ratios
   match 135 pinned source-controller cases; startup/retry policies are explicit.

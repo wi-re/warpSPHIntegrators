@@ -26,6 +26,7 @@ const sidebars = {
         'families/exponential',
         'families/newmark',
         'families/nystrom',
+        'families/extrapolation',
       ],
     },
     'solver',

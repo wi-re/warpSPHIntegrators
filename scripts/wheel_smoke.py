@@ -19,6 +19,7 @@ from warpSPHIntegrators import (
     stage_shifted_preconditioner,
     ConservativeDissipativeRHS, Strang, Yoshida4, LinearExponentialFlow,
     GeneralizedAlpha, Collocation, VariableAdams, StabilizedRK, Nystrom, NystromWeights, NDF, AdaptiveNDF,
+    Extrapolation, ExtrapolationQuadrature,
 )
 
 
@@ -125,6 +126,11 @@ with tempfile.TemporaryDirectory() as directory:
     path=Path(directory)/'adaptive-ndf.pt';save_checkpoint(adaptive_ndf.checkpoint,path)
     resumed_ndf=solve(AdaptiveNDF(),None,2.,rhs,restart=load_checkpoint(path))
 assert resumed_ndf.successful and abs(resumed_ndf.state.y.item()-math.exp(-2))<2e-6
+extrapolation_records=[]
+extrapolated=solve(Extrapolation('midpoint',6),TensorState(torch.ones(1,dtype=torch.float64)),1.,rhs,
+    dt=.2,adaptive=True,rtol=1e-8,atol=1e-10,callback=extrapolation_records.append)
+assert extrapolated.successful and abs(extrapolated.state.y.item()-math.exp(-1))<2e-8
+assert isinstance(extrapolation_records[-1].result.quadrature,ExtrapolationQuadrature)
 print(f'Installed wheel {package.__version__}: all modules/exports, py.typed, '
       f'{len(filter_schemes(state_kind="tensor"))} tensor drivers, advanced state protocol, '
       'adaptive sampling/events, portable restart, stiff bootstrap, stage preconditioning, physical splitting and generalized-alpha continuation pass')
