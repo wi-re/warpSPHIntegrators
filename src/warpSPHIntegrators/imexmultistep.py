@@ -70,7 +70,7 @@ from .fields import get_reference_state, state_difference, state_norm
 from .history import HistoryEntry, StepHistory
 from .jfnk import JFNKSolver
 from .rhs import resolve
-from .solvers import NonlinearSolver
+from .solvers import record_solve_diagnostics, NonlinearSolver
 from .specs import IntegrationResult, StageResult
 from .util import (finalizeSystem, initializeSystem, reject_prior_step,
                   updateStateEuler, updateStep)
@@ -184,7 +184,7 @@ def SBDF(initial_state, dt, f, order: int, *args, history: Optional[StepHistory]
 
         new_state = solve_result.y
         new_state.t = float(initial_state.t + dt)
-        diag = solve_result.diagnostics
+        diag = record_solve_diagnostics(solve_result)
         if diag is not None:
             diag = dataclasses.replace(diag, rhs_evaluations=diag.rhs_evaluations + extra_evals)
         finalizeSystem(new_state, initial_state, dt, (explicit_auxes, last_aux),
@@ -253,7 +253,7 @@ def CNAB2(initial_state, dt, f, *args, history: Optional[StepHistory] = None,
 
         new_state = solve_result.y
         new_state.t = float(initial_state.t + dt)
-        diag = solve_result.diagnostics
+        diag = record_solve_diagnostics(solve_result)
         if diag is not None:
             diag = dataclasses.replace(diag, rhs_evaluations=diag.rhs_evaluations + extra_evals)
         finalizeSystem(new_state, initial_state, dt, (explicit_auxes, last_aux),

@@ -33,7 +33,7 @@ from .butcher import _error_estimate, _weighted_update, butcherTableau
 from .fields import get_reference_state, integrated_field_names, state_difference, state_norm
 from .history import HistoryEntry
 from .jfnk import JFNKSolver
-from .solvers import FixedPointSolver, NonlinearSolver
+from .solvers import record_solve_diagnostics, FixedPointSolver, NonlinearSolver
 from .specs import IntegrationResult, StageResult
 from .util import (finalizeSystem, initializeSystem, reject_prior_step,
                   unpack_prior_step, updateStateEuler, updateStep)
@@ -858,7 +858,7 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
                     if verbose:
                         print(f"[Integrator] DIRK stage {i}: solving Y = base + {a_ii:.4f}*dt*f(Y) at t={t_i:.4f}")
                     solve_result = solver.solve(step_fn, y0, norm, **solver_opts)
-                    solver_diagnostics.append(solve_result.diagnostics)
+                    solver_diagnostics.append(record_solve_diagnostics(solve_result))
                     # `box['Y']`/`box['k']` come from the *last* `step_fn` call, i.e. the
                     # last RHS evaluation of this stage -- the same "buffer the last
                     # evaluation ran on" convention `butcher.RungeKuttaB` uses for its
@@ -866,7 +866,7 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
                     # construction (that is what `step_fn` just returned), so `(k_i,
                     # box['Y'])` satisfy the stage equation the way a converged Picard
                     # iterate is supposed to, not an approximation one iteration behind.
-                    if isinstance(solver, JFNKSolver):
+                    if isinstance(solver, JFNKSolver) or 'k' not in box:
                         # Finite-difference Krylov probes use isolated cloned states,
                         # so re-evaluate the converged stage on this driver's buffer.
                         # That gives copied fields their standard last-stage lifecycle.

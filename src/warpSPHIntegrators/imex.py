@@ -5,7 +5,7 @@ from typing import Optional
 from .fields import get_reference_state, integrated_field_names, state_difference, state_norm
 from .jfnk import JFNKSolver
 from .rhs import resolve
-from .solvers import NonlinearSolver
+from .solvers import record_solve_diagnostics, NonlinearSolver
 from .specs import IntegrationResult, StageResult
 from .util import finalizeSystem, initializeSystem, reject_prior_step, updateStateEuler, updateStep
 
@@ -66,7 +66,7 @@ def IMEXEuler(initial_state, dt, f, *args, solver: Optional[NonlinearSolver] = N
                    lastStageSystem=last_stage, **kwargs)
     return IntegrationResult(
         state=new_state, stages=[StageResult(aux=aux, update=implicit_update)],
-        solver_diagnostics=solve_result.diagnostics)
+        solver_diagnostics=record_solve_diagnostics(solve_result))
 
 
 IMEXEuler.__name__ = 'IMEXEuler'

@@ -16,7 +16,7 @@ from typing import Any, Optional, Tuple
 from .fields import get_reference_state, get_tagged_attr, state_difference, state_norm
 from .history import HistoryEntry
 from .jfnk import JFNKSolver
-from .solvers import FixedPointSolver, NonlinearSolver
+from .solvers import record_solve_diagnostics, FixedPointSolver, NonlinearSolver
 from .specs import IntegrationResult, StageResult, explicit_step
 from .util import (
     applyQuantityUpdate,
@@ -153,7 +153,7 @@ def newmark(state, dt, f, *args,
         state=new_state,
         stages=[StageResult(aux=last_r, update=last_update)],
         history=history,
-        solver_diagnostics=result.diagnostics,
+        solver_diagnostics=record_solve_diagnostics(result),
     )
 
 

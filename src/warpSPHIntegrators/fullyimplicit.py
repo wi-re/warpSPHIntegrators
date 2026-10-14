@@ -46,7 +46,7 @@ from .fields import (BlockState, get_reference_state, integrated_field_names,
                      state_difference, state_norm)
 from .history import HistoryEntry
 from .jfnk import JFNKSolver
-from .solvers import NonlinearSolver
+from .solvers import record_solve_diagnostics, NonlinearSolver
 from .specs import IntegrationResult, StageResult
 from .util import (finalizeSystem, initializeSystem, reject_prior_step,
                   updateStateEuler, updateStep)
@@ -177,7 +177,7 @@ def fullyImplicitBlock(initialState, dt, f, tableau: BlockTableau, *args,
 
         # One map evaluation is `s` RHS evaluations, so the solver's counters
         # count map evaluations, not force evaluations: scale them up.
-        diag = solve_result.diagnostics
+        diag = record_solve_diagnostics(solve_result)
         if diag is not None:
             diag = dataclasses.replace(
                 diag,
@@ -202,7 +202,7 @@ def fullyImplicitBlock(initialState, dt, f, tableau: BlockTableau, *args,
             k0_buf.t = float(initialState.t)
             k0, _r0 = updateStep(initialState, k0_buf, dt, f, *args, **kwargs)
 
-        if isinstance(solver, JFNKSolver):
+        if isinstance(solver, JFNKSolver) or 'ks' not in box:
             # Finite-difference / forward-mode Krylov probes ran on isolated (and,
             # for the JVP, dual) clones, so re-evaluate the converged block on this
             # driver's own buffers: one fresh buffer per substate, seeded with the

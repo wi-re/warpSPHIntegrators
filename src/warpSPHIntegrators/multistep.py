@@ -34,7 +34,7 @@ from .butcher import DormandPrince, _weighted_update
 from .fields import state_difference, state_norm
 from .history import HistoryEntry, StepHistory
 from .jfnk import JFNKSolver
-from .solvers import NonlinearSolver
+from .solvers import record_solve_diagnostics, NonlinearSolver
 from .specs import IntegrationResult, StageResult
 from .util import finalizeSystem, initializeSystem, reject_prior_step, updateStateEuler, updateStep
 
@@ -285,7 +285,7 @@ def AdamsMoulton(initialState, dt, f, order: int, *args,
             state=new_state,
             stages=[StageResult(aux=last_aux, update=last_update)],
             history=new_history,
-            solver_diagnostics=solve_result.diagnostics,
+            solver_diagnostics=record_solve_diagnostics(solve_result),
         )
 
 

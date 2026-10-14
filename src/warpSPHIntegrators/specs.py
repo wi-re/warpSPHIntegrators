@@ -88,6 +88,12 @@ class IntegrationResult:
     #: One diagnostics object per nonlinear stage, or one for a single-stage method.
     solver_diagnostics: Optional[Any] = None
 
+    @property
+    def step_status(self):
+        """Finite-state and solver outcome without conflating stagnation with tolerance."""
+        from .run import assess_step
+        return assess_step(self)
+
 
 def blend_state(
     *,

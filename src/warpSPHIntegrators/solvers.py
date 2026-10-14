@@ -9,7 +9,7 @@ is written once against the protocol and gets a solver swapped under it without 
 rewrite -- that pluggability, not any one solver, is the point of landing this now.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import math
 from numbers import Integral, Real
 from collections.abc import Mapping
@@ -62,6 +62,13 @@ class SolveDiagnostics:
     #: JFNK line-search rejections of a damped Newton correction; 0 when line
     #: search is off and for the fixed-point solvers.
     line_search_backtracks: int = 0
+    converged: Optional[bool] = None
+
+
+def record_solve_diagnostics(result):
+    """Preserve a custom solver's success bit even when it supplies no diagnostics."""
+    diagnostics = result.diagnostics or SolveDiagnostics(termination='unknown')
+    return replace(diagnostics, converged=bool(result.converged))
 
 
 class SolverOptions(TypedDict, total=False):

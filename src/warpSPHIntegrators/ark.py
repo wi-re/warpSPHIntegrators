@@ -70,7 +70,7 @@ from .fields import get_reference_state, integrated_field_names, state_differenc
 from .history import HistoryEntry
 from .jfnk import JFNKSolver
 from .rhs import resolve
-from .solvers import NonlinearSolver
+from .solvers import record_solve_diagnostics, NonlinearSolver
 from .specs import IntegrationResult, StageResult
 from .util import finalizeSystem, initializeSystem, reject_prior_step, updateStateEuler, updateStep
 
@@ -304,9 +304,9 @@ def ARK(initialState, dt, f, tableau: AdditiveTableau, *args,
                         print(f"[Integrator] {name} stage {i}: solving "
                               f"Y = base + {a_ii:.4f}*dt*f_imp(Y) at t={t_i:.4f}")
                     solve_result = solver.solve(step_fn, y0, norm, **solver_opts)
-                    solver_diagnostics.append(solve_result.diagnostics)
+                    solver_diagnostics.append(record_solve_diagnostics(solve_result))
 
-                    if isinstance(solver, JFNKSolver):
+                    if isinstance(solver, JFNKSolver) or 'k' not in box:
                         # Finite-difference Krylov probes use isolated clones, so
                         # re-evaluate the converged stage on this driver's buffer to
                         # give copied fields their standard last-stage lifecycle.

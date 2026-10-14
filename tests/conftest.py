@@ -30,6 +30,7 @@ CATEGORIES = {
         'test_state.py',
         'test_test_gates.py',
         'test_tensor.py',
+        'test_run.py',
     ],
     # The JFNK / GMRES solver core and its preconditioning hooks.
     'solvers': [
