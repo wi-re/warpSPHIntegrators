@@ -28,6 +28,8 @@ quadratures and [source/order/thermal evidence](../development/nystrom-backend-v
 The pinned RKN4 candidate is excluded for its velocity-order limitation and
 restricted equivalence; improved IRKN history is separate backend work.
 
+`NDF` supplies fixed target orders 1–5 with [difference-state/source/consumer evidence](../development/ndf-backend-validation.md). Its fifth-order constant-step main map equals BDF5; its variable history and policy are distinct. Adaptive-order QNDF remains separate.
+
 ## Source pin and transformations
 
 Expansion waves use OrdinaryDiffEq **7.8.1**, metapackage git tree

@@ -189,6 +189,13 @@ assert scheme.metadata.estimate_extra_stages == 1
 
 ## Results and history
 
+`NDF(order=3, max_step_ratio=2.)` supplies fixed-target-order implicit NDF
+stepping with owned backward differences, accepted quasi-constant timestep
+blocks and portable tensor restart. `ndf_difference_transform(order, ratio)`
+exposes immutable source R*U coefficients. `NDFQuadrature(known_state, weights,
+bootstrap)` describes its affine full-state step, including implicit RK startup.
+See [the history and lifecycle contract](families/multistep-implicit).
+
 | Name | Signature (abridged) | Purpose |
 |---|---|---|
 | `IntegrationResult` | `IntegrationResult(state, stages=..., error=None, history=None, solver_diagnostics=None)` | What every scheme returns |

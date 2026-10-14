@@ -72,11 +72,10 @@ class IntegrationResult:
         stages: List of StageResult, one per RK stage. Each contains the auxiliary
                 return value (aux) and the k-value (update) from that stage.
                 Access the last stage with stages[-1] to get (aux, k) for priorStep.
-        error:  For embedded pairs only, otherwise None. A state of the same type as
-                `state` whose integrated fields hold the difference between the
-                propagated solution and the lower-order embedded one. Drives step
-                size control; the initial state cancels, so this is a pure
-                difference, not a state you can continue integrating from.
+        error:  Optional local error/difference estimate. Integrated fields contain
+                an estimate, not another trajectory state. It can come from a
+                lower-/same-order comparison or a method-specific defect. Its
+                exponent comes from estimate_order or the scheme metadata.
         history: Accepted history/memory, when supplied or owned by a history-
                 dependent driver. Feed it back as `history=` on the next step;
                 the run API owns this threading automatically.

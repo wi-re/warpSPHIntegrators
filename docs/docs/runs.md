@@ -144,6 +144,16 @@ Nonterminal hits are output records and do not split the integration grid.
 
 ## Restart checkpoints
 
+History methods may expose `next_step_size(result, h, proposal)` to constrain
+the runner's accepted adaptive proposal. The result owns trial memory; the hook
+returns a positive finite magnitude before the external transaction commits.
+NDF uses this to hold quasi-constant blocks. Rejection still shrinks immediately.
+
+Portable history entries may have `update=None, aux=None` when the method stores
+its state entirely in `history.context`. These serialize with a null stage;
+older checkpoint entries with tensor updates continue to load. NDF's difference
+tensors and accepted-step counter are included in this weights-only payload.
+
 Every result contains an isolated `RunCheckpoint`: accepted state, history, FSAL
 stage, last/next step and controller configuration. Resume with `state=None` and
 `restart=checkpoint`; the scheme and stepping mode must match. Tolerances, bounds,

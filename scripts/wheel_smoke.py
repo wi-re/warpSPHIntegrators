@@ -18,7 +18,7 @@ from warpSPHIntegrators import (
     stage_block_preconditioner,
     stage_shifted_preconditioner,
     ConservativeDissipativeRHS, Strang, Yoshida4, LinearExponentialFlow,
-    GeneralizedAlpha, Collocation, VariableAdams, StabilizedRK, Nystrom, NystromWeights,
+    GeneralizedAlpha, Collocation, VariableAdams, StabilizedRK, Nystrom, NystromWeights, NDF,
 )
 
 
@@ -112,6 +112,12 @@ rkn=solve(Nystrom('FineRKN5'),mechanics.initial(),.2,mechanics.rhs,dt=.025,
 rkn=solve(Nystrom('FineRKN5'),None,.4,mechanics.rhs,restart=rkn.checkpoint)
 assert rkn.successful and isinstance(quadratures[-1],NystromWeights)
 assert abs(rkn.state.state.x.item()-mechanics.exact(.4)[0][0])<1e-8
+ndf=solve(NDF(3),TensorState(torch.ones(1,dtype=torch.float64)),.3,rhs,dt=.025)
+assert ndf.history.latest.update is None and ndf.history.context['phase']=='warm'
+with tempfile.TemporaryDirectory() as directory:
+    path=Path(directory)/'ndf.pt';save_checkpoint(ndf.checkpoint,path)
+    restored=solve(NDF(3),None,.6,rhs,restart=load_checkpoint(path))
+assert restored.successful and abs(restored.state.y.item()-math.exp(-.6))<1e-5
 print(f'Installed wheel {package.__version__}: all modules/exports, py.typed, '
       f'{len(filter_schemes(state_kind="tensor"))} tensor drivers, advanced state protocol, '
       'adaptive sampling/events, portable restart, stiff bootstrap, stage preconditioning, physical splitting and generalized-alpha continuation pass')

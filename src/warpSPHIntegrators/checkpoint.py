@@ -27,6 +27,7 @@ def save_checkpoint(checkpoint, path):
         return aux is None or isinstance(aux,(tuple,list)) and all(empty_aux(v) for v in aux)
 
     def stage(update, aux):
+        if update is None and aux is None:return None  # cache-only history entry
         if type(update) is not _TensorUpdate or not empty_aux(aux):
             raise TypeError('Portable checkpoints require tensor updates without auxiliary objects')
         return dict(dy=update.dy.detach().clone(),aux=aux)
@@ -56,7 +57,8 @@ def load_checkpoint(path, *, map_location=None):
         raise ValueError('Unsupported checkpoint format')
     def state(value):
         return None if value is None else TensorState(value['y'],t=value['t'])
-    entries = [HistoryEntry(e['t'],e['dt'],_TensorUpdate(e['stage']['dy']),e['stage']['aux'],state(e['state']))
+    entries = [HistoryEntry(e['t'],e['dt'],None if e['stage'] is None else _TensorUpdate(e['stage']['dy']),
+                           None if e['stage'] is None else e['stage']['aux'],state(e['state']))
                for e in payload['history']]
     prior = None if payload['prior'] is None else StageResult(payload['prior']['aux'],_TensorUpdate(payload['prior']['dy']))
     return RunCheckpoint(payload['scheme'],state(payload['state']),

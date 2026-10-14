@@ -5011,6 +5011,84 @@
       ],
       "evidence": "docs/development/nystrom-backend-validation.md",
       "intended_consumer": "Use qualified Nystrom4 for velocity dependence or Nystrom4VelocityIndependent under its passive/VI contract"
+    },
+    {
+      "name": "NDF 1 fixed-target-order backend",
+      "status": "implemented",
+      "wave": 10,
+      "reason": "Source-checked warm difference kernel, polynomial resampling, implicit RK startup and quasi-constant accepted-step policy; outside fixed catalog. Upstream adaptive-order QNDF controller remains separate.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; BDF 2.4.5 QNDFConstantCache, U!, calc_R!, update_D! and kappa defaults",
+      "implementation": "src/warpSPHIntegrators/ndf.py",
+      "tests": [
+        "tests/test_ndf.py"
+      ],
+      "evidence": "docs/development/ndf-backend-validation.md",
+      "intended_consumer": "Variable-step dissipative ODEs with explicit RHS, full-state fields and shifted nonlinear preconditioning"
+    },
+    {
+      "name": "NDF 2 fixed-target-order backend",
+      "status": "implemented",
+      "wave": 10,
+      "reason": "Source-checked warm difference kernel, polynomial resampling, implicit RK startup and quasi-constant accepted-step policy; outside fixed catalog. Upstream adaptive-order QNDF controller remains separate.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; BDF 2.4.5 QNDFConstantCache, U!, calc_R!, update_D! and kappa defaults",
+      "implementation": "src/warpSPHIntegrators/ndf.py",
+      "tests": [
+        "tests/test_ndf.py"
+      ],
+      "evidence": "docs/development/ndf-backend-validation.md",
+      "intended_consumer": "Variable-step dissipative ODEs with explicit RHS, full-state fields and shifted nonlinear preconditioning"
+    },
+    {
+      "name": "NDF 3 fixed-target-order backend",
+      "status": "implemented",
+      "wave": 10,
+      "reason": "Source-checked warm difference kernel, polynomial resampling, implicit RK startup and quasi-constant accepted-step policy; outside fixed catalog. Upstream adaptive-order QNDF controller remains separate.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; BDF 2.4.5 QNDFConstantCache, U!, calc_R!, update_D! and kappa defaults",
+      "implementation": "src/warpSPHIntegrators/ndf.py",
+      "tests": [
+        "tests/test_ndf.py"
+      ],
+      "evidence": "docs/development/ndf-backend-validation.md",
+      "intended_consumer": "Variable-step dissipative ODEs with explicit RHS, full-state fields and shifted nonlinear preconditioning"
+    },
+    {
+      "name": "NDF 4 fixed-target-order backend",
+      "status": "implemented",
+      "wave": 10,
+      "reason": "Source-checked warm difference kernel, polynomial resampling, implicit RK startup and quasi-constant accepted-step policy; outside fixed catalog. Upstream adaptive-order QNDF controller remains separate.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; BDF 2.4.5 QNDFConstantCache, U!, calc_R!, update_D! and kappa defaults",
+      "implementation": "src/warpSPHIntegrators/ndf.py",
+      "tests": [
+        "tests/test_ndf.py"
+      ],
+      "evidence": "docs/development/ndf-backend-validation.md",
+      "intended_consumer": "Variable-step dissipative ODEs with explicit RHS, full-state fields and shifted nonlinear preconditioning"
+    },
+    {
+      "name": "NDF 5 fixed-target-order backend",
+      "status": "implemented",
+      "wave": 10,
+      "reason": "Source-checked warm difference kernel, polynomial resampling, implicit RK startup and quasi-constant accepted-step policy; outside fixed catalog. Upstream adaptive-order QNDF controller remains separate.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; BDF 2.4.5 QNDFConstantCache, U!, calc_R!, update_D! and kappa defaults",
+      "implementation": "src/warpSPHIntegrators/ndf.py",
+      "tests": [
+        "tests/test_ndf.py"
+      ],
+      "evidence": "docs/development/ndf-backend-validation.md",
+      "intended_consumer": "Variable-step dissipative ODEs with explicit RHS, full-state fields and shifted nonlinear preconditioning"
+    },
+    {
+      "name": "NDF5 constant-step main map",
+      "status": "equivalent",
+      "wave": 10,
+      "reason": "kappa_5=0 gives BDF5 main coefficients; difference history, bootstrap, defect and timestep policy remain distinct",
+      "source": "OrdinaryDiffEq BDF 2.4.5 pinned QNDF defaults",
+      "implementation": "src/warpSPHIntegrators/ndf.py",
+      "tests": [
+        "tests/test_ndf.py"
+      ],
+      "evidence": "docs/development/ndf-backend-validation.md",
+      "intended_consumer": "Use NDF factory for its variable-history policy; avoid duplicate fixed registration"
     }
   ]
 }

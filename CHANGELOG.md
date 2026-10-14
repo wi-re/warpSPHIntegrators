@@ -8,6 +8,11 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Added — Phase 8 backend expansion
 
+- Fixed-target-order NDF 1–5 with source-checked difference resampling, implicit
+  RK startup, quasi-constant adaptive step blocks, full-state affine quadratures
+  and portable history. Rapid caller timestep changes safely restart instead of
+  exciting the measured fifth-order alternating-grid computational mode.
+
 - Fourteen parameterized generalized Nyström backends, with explicit velocity/
   thermal coupling contracts and public component quadratures for finalization
   and physical composition. The pinned RKN4 velocity-order limitation is recorded.

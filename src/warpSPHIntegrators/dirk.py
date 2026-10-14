@@ -771,7 +771,8 @@ def _default_norm(rtol: float, atol: float):
 
 
 def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
-        name: str = 'DIRK', solver: Optional[NonlinearSolver] = None, warmStart=None, **kwargs):
+        name: str = 'DIRK', solver: Optional[NonlinearSolver] = None, warmStart=None,
+        _initialize=True, _finalize=True, **kwargs):
     """One DIRK step. `tableau.a`'s diagonal may be nonzero; those stages solve implicitly.
 
     First-stage reuse (`priorStep`) is implemented for the tableaus that satisfy both
@@ -823,7 +824,7 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
     norm = _default_norm(kwargs.get('rtol', 1e-3), kwargs.get('atol', 1e-6))
 
     with record_function("[Integration] DIRK"):
-        initializeSystem(initialState, dt, *args, **kwargs)
+        if _initialize:initializeSystem(initialState, dt, *args, **kwargs)
         ks, rs = [], []
         solver_diagnostics = []
         stage_state = None
@@ -918,8 +919,9 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
             if not isinstance(tableau.b, tuple):
                 new_state = _weighted_update(initialState, ks, tableau.b, dt, *args, **kwargs)
                 new_state.t = float(initialState.t + dt)
-                finalizeSystem(new_state, initialState, dt, rs, ks, tableau.b,
-                               *args, lastStageSystem=lastStageState, **kwargs)
+                if _finalize:
+                    finalizeSystem(new_state, initialState, dt, rs, ks, tableau.b,
+                                   *args, lastStageSystem=lastStageState, **kwargs)
                 return IntegrationResult(
                     state=new_state, stages=stages, history=_next_history(),
                     solver_diagnostics=solver_diagnostics)
@@ -928,8 +930,9 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
             new_state = _weighted_update(initialState, ks, b_main, dt, *args, **kwargs)
             new_state.t = float(initialState.t + dt)
             error = _error_estimate(initialState, ks, b_main, b_embedded, dt, *args, **kwargs)
-            finalizeSystem(new_state, initialState, dt, rs, ks, b_main,
-                           *args, lastStageSystem=lastStageState, **kwargs)
+            if _finalize:
+                finalizeSystem(new_state, initialState, dt, rs, ks, b_main,
+                               *args, lastStageSystem=lastStageState, **kwargs)
             return IntegrationResult(
                 state=new_state, stages=stages, error=error, history=_next_history(),
                 solver_diagnostics=solver_diagnostics)

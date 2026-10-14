@@ -2,7 +2,7 @@
 sidebar_label: Multistep (implicit)
 ---
 
-# Implicit linear multistep — BDF & Adams-Moulton (`MultistepImplicit`) — 8 schemes
+# Implicit multistep — BDF, Adams-Moulton and NDF
 
 The implicit multistep family: **BDF1-BDF5** (`bdf.py`) and the
 JFNK-corrected **Adams-Moulton 2-4** (`multistep.py`). One step = one
@@ -93,6 +93,72 @@ the multistep's reuse mechanism.
   use for stiff *dissipative* problems where the explicit CFL is the cost.
 - **AM2-4 (implicit)**: the trapezoidal rule and its higher-order siblings —
   symmetric (AM2) or higher-order with a bounded region, one solve per step.
+
+## NDF: variable-step backward differences
+
+`NDF(order=1..5, max_step_ratio=2.)` binds a fixed target order outside the
+142-method catalog. It supplies the pinned QNDF warm difference kernel and
+polynomial timestep resampling, with an order-preserving implicit RK startup.
+It supports coupled integrated fields, adaptive acceptance and portable tensor
+history without requiring a frontend consumer.
+
+[example:run implicit variable-history NDF]: #
+```python
+import math
+import torch
+from warpSPHIntegrators import NDF, TensorState, tensor_rhs, solve
+
+rhs = tensor_rhs(lambda t, y: -y)
+first = solve(NDF(3), TensorState(torch.ones(4, dtype=torch.float64)),
+              .3, rhs, dt=.025)
+continued = solve(NDF(3), None, .6, rhs, restart=first.checkpoint)
+assert continued.successful
+assert torch.allclose(continued.state.y,
+                      torch.full((4,), math.exp(-.6), dtype=torch.float64),
+                      atol=1e-5, rtol=0)
+```
+
+For order p, with backward differences D1 through Dp, the warm solve uses
+`prediction = y + sum(Di)`, `phi = sum(H_i*Di)` and
+`y_new = prediction - beta*phi + beta*h*f(t+h,y_new)`.
+Here H_i is the harmonic sum and
+`beta = 1 / ((1-kappa)*H_p)`; kappa is
+`(-.185, -1/9, -.0823, -.0415, 0)` for orders 1–5. The local defect is
+`(kappa*H_p + 1/(p+1))*(y_new-prediction)`, with exponent p+1.
+Order five has the BDF5 constant-step main map. The different history,
+startup, error and timestep policy are why this is a separate factory.
+
+The accepted-step policy holds h for at least p+1 equal steps and uses a growth
+deadband. Rejected trials may shrink immediately. Direct callers thread
+`result.history`; changing a warm step size too soon restarts with the implicit
+RK starter. Ratios beyond `max_step_ratio` also restart before memory is used.
+This matters: arbitrary alternating steps can amplify a fifth-order computational
+mode even when each ratio is below two. Quasi-constant blocks avoid that measured
+counterexample; they are not a proof for every variable grid or nonnormal system.
+The upstream variable-order QNDF controller is a separate backend extension.
+
+The first p steps use TR-BDF2 (orders 1–2), ESDIRK324L2SA (3), KenCarp4 (4) or
+KenCarp5 (5). Their estimator exponents are 2/3/3/4/5, then p+1 on warm steps.
+The runner reads `result.estimate_order`. Each warm step uses one nonlinear solve
+and a physical endpoint RHS refresh. Preconditioners receive the protected
+`stage_coefficient=beta*h`. Diagnostics include bootstrap and refresh work.
+
+History owns its tensors and records state values, layout, dtype, IDs and time.
+Changed state values or invalid memory restart automatically. Use
+`restart_history=True` after changing RHS parameters or introducing a derivative
+discontinuity. Warm initialize and all finalize hooks must preserve integrated
+values, time and IDs. Custom finalize opts into `ndf_compatible=True` and reads
+`NDFQuadrature` on `result.quadrature`: its `known_state` and `weights` express
+the full affine step. Bootstrap weights are the starter's weights plus a
+zero-weight endpoint; warm weights contain only beta. Copied endpoint fields
+are refreshed. Arbitrary projections require a history restart contract and
+are rejected by this driver.
+
+The implementation is for explicit ODE right-hand sides. It does not supply
+mass matrices, DAEs, dense output, adaptive order or source-controller/FSAL
+equivalence. Fixed-step characteristic-root checks include negative-real decay
+at all five orders; orders 3–5 have boundaries entering the left half-plane and
+do not have full A-stability. Local defect tolerances do not bound global error.
 
 ## References
 

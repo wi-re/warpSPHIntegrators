@@ -3,7 +3,7 @@
 **Status: waves 1–8 committed; Phase 8 implements the first wave-9 batch
 (three-stage Gauss/Radau) and a parameterized classical generalized-alpha driver.
 Parameterized Gauss/Radau stages 2–9, variable Adams, MEBDF2/CNLF2, stabilized
-Legendre/Gegenbauer and fourteen generalized Nyström backends are implemented
+Legendre/Gegenbauer, fourteen generalized Nyström and fixed-order NDF 1–5 backends are implemented
 with source/numerical/consumer gates; remaining waves 10–16 members retain theirs.**
 The registry contains 142 schemes (140 before MEBDF2/CNLF2; 139 before fixed ABM5; 137 before the first
 wave-9 batch; 64 at planning time).
@@ -303,8 +303,11 @@ MEBDF2 now uses its equivalent one-step SDIRK form; CNLF2 supplies the source
 IMEX-Euler start and Crank–Nicolson–Leapfrog history formula. Both have nonlinear
 step-body oracles, ownership/gradient/restart tests and known-consumer measurements;
 the fixed catalog is 142. [Evidence](../development/implicit-extensions-validation.md).
-Adaptive order selection, Nordsieck/NDF/BDF variants and AMF remain separate
-backend work; frontend availability is not an implementation gate.
+Fixed-target-order NDF 1–5 now supplies source-checked differences, resampling,
+implicit startup, accepted quasi-constant blocks and portable restart.
+[Evidence](../development/ndf-backend-validation.md). Adaptive order selection,
+Nordsieck/BDF variants and AMF remain separate backend work; frontend availability
+is not an implementation gate.
 
 - `bdf.py`: NordsieckBDF (Nordsieck-form BDF), QNDF / QNDF1 / QNDF2
   (quasi-constant-step NDF — inspect order/history semantics), MEBDF2 (modified extended BDF).

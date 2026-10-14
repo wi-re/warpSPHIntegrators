@@ -40,7 +40,7 @@ CATEGORIES = {
     # Family-specific drivers and tableaus.
     'dirk': ['test_dirk.py'],
     'prrk': ['test_prrk.py'],
-    'bdf': ['test_bdf.py','test_stiff_startup.py'],
+    'bdf': ['test_bdf.py','test_stiff_startup.py','test_ndf.py'],
     'am': ['test_am.py'],
     'multistep': ['test_multistep.py','test_variable_adams.py'],
     'ark': ['test_ark.py'],

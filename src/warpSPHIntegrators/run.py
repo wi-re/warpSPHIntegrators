@@ -224,7 +224,8 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
     from .variable_adams import VariableAdams
     from .stabilized import StabilizedRK
     from .nystrom import Nystrom
-    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme,GeneralizedAlpha,Collocation,VariableAdams,StabilizedRK,Nystrom)) else getIntegrator(scheme)
+    from .ndf import NDF
+    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme,GeneralizedAlpha,Collocation,VariableAdams,StabilizedRK,Nystrom,NDF)) else getIntegrator(scheme)
     if restart is not None:
         if restart.scheme != scheme.identifier.name:
             raise ValueError('Checkpoint scheme does not match')
@@ -385,6 +386,13 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
                 rejected += 1
                 step_size = abs(terminal.t-float(current.t))
                 continue  # recompute the truncated step, including its lifecycle and history
+            next_size=min(maximum,propose_dt(error,h,estimate_order)) if adaptive else nominal
+            if adaptive and hasattr(scheme,'next_step_size'):
+                next_size=scheme.next_step_size(result,h,next_size)
+                if isinstance(next_size,bool) or not isinstance(next_size,Real) or not math.isfinite(next_size) or next_size<=0:
+                    raise ValueError('Method next_step_size must return a positive finite number')
+            if adaptive and hasattr(scheme,'max_step_ratio'):
+                next_size=min(next_size,h*scheme.max_step_ratio)
             if transaction is not None:
                 transaction.commit(token,snapshot(result))
                 active = False
@@ -412,9 +420,7 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
             sample(t,value); index += 1
         if save_steps:
             sample(float(current.t),current)
-        step_size = min(maximum,propose_dt(error,h,estimate_order)) if adaptive else nominal
-        if adaptive and hasattr(scheme,'max_step_ratio'):
-            step_size=min(step_size,h*scheme.max_step_ratio)
+        step_size=next_size
         if callback is not None and callback(snapshot(StepRecord(signed_h,result,status,error))) is False:
             sample(float(current.t),current)
             return finish('callback')
