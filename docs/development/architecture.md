@@ -43,8 +43,9 @@ still own acceptance/rejection and trajectory orchestration.
 Numerical stepping is PyTorch based. Warp array clone dispatch and Warp-backed
 downstream RHS operations do not establish a native Warp integrator backend.
 Buffer pools, graph capture and gradient ownership remain future design work.
-`fluid_only` metadata is currently not consumed by the drivers; particle masking
-is the user's system's responsibility until Phase 4 specifies the contract.
+The unused `fluid_only` option was removed after checking this package and the
+local warpSPH / warpSPHCore checkouts. Particle masking remains the user's
+system/RHS responsibility; integrated fields do not imply particle selection.
 Velocity-dependent forces violate the assumptions of several geometric methods;
 the measured order loss is retained as a regression control. Explicit DP5 startup
 can limit stiff BDF3–5 trajectories even where the steady-state formula is stable.

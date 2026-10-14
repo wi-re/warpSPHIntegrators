@@ -16,7 +16,7 @@ rest. The [Quick Start](quickstart) shows a full minimal example.
 | Name | Signature (abridged) | Purpose |
 |---|---|---|
 | `BaseState` | `@dataclass class BaseState` | Base for state classes; fields are annotated with a behavior decorator |
-| `integrated` | `integrated(update_key, fluid_only=True, ...)` | Field advanced by the scheme; `update_key` names the derivative on the update structure |
+| `integrated` | `integrated(update_key, *, default=..., ...)` | Field advanced by the scheme; `update_key` names the derivative on the update structure |
 | `constant` / `copied` / `ephemeral` / `custom` | `constant(default=..., ...)`, ... | The other field behaviors (see the Quick Start's behavior table) |
 | `tagged` | `tagged(*, tags=None, role=None, ...)` | Field on the update dataclass (no integration behavior) |
 | `reference_state` | `reference_state(*, tags=None, ...)` | System field that references the current state |
@@ -30,6 +30,11 @@ rest. The [Quick Start](quickstart) shows a full minimal example.
 | `integrated_field_names` | `integrated_field_names(state) -> list[str]` | Names of the integrated fields |
 | `flatten_integrated` / `unflatten_integrated` | `flatten_integrated(state) -> torch.Tensor` | Flat-vector view of the integrated fields (what the JFNK matvec sees) |
 | `replace_integrated_fields` | `replace_integrated_fields(template, replacements)` | Build a state with selected fields swapped |
+
+Particle selection and boundary masking are handled by the user's system/RHS.
+`integrated` supplies field/update metadata and does not apply a particle mask.
+The unused `fluid_only` argument and automatic metadata entry were removed;
+defaults and other options are keyword-only.
 
 ## Update specs
 

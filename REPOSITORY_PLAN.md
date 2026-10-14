@@ -41,8 +41,10 @@ Priority: high. Size: medium.
 - [ ] Add the tensor adapter and catalog filter API with complete minimal examples.
 - [ ] Document a common option surface and scheme-specific options. Validate critical
   solver options while preserving intentional passthrough to the RHS.
-- [ ] Resolve the unused `fluid_only` declaration with documented caller behavior
-  and a tested masking contract, including implicit unknowns and gradients.
+- [x] Remove unused `fluid_only` after checking warpSPHIntegrators, warpSPH and
+  warpSPHCore for callers/metadata consumers. Document system/RHS ownership of
+  particle masking; do not introduce a mask flag without a consumer.
+  [Consumer audit and validation](docs/development/fluid-only-removal.md).
 - [ ] Define a compatible future for `getPreferredScheme` and metadata for
   separability, drift fields, history, estimates and dense output.
 - [ ] Declare development/example/benchmark dependencies and test an installed

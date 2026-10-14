@@ -11,6 +11,7 @@
 - [Phase 1 validation](phase1-validation.md)
 - [Phase 2 validation](phase2-validation.md)
 - [Phase 3 migration and validation](phase3-validation.md)
+- [Unused fluid-only option audit/removal](fluid-only-removal.md)
 - [Examples](../../examples/README.md) and [benchmarks](../../benchmarks/README.md)
 - [Coefficient extraction/oracle tools](../../scripts/coefficients/README.md)
 

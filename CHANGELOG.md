@@ -6,6 +6,14 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ## [Unreleased]
 
+### Removed — unused integrated-field option
+
+- Removed `integrated(..., fluid_only=...)` and its automatic field metadata:
+  no drivers or callers consumed it in the checked warpSPHIntegrators, warpSPH
+  and warpSPHCore checkouts. Particle masking remains system/RHS behavior.
+  `integrated` now accepts only `update_key` positionally; use `default=` for
+  defaults. Old positional flag calls fail instead of becoming field defaults.
+
 ### Changed — repository organization (Phase 3)
 
 - Consolidated current work in `REPOSITORY_PLAN.md`, added contributor/multicore

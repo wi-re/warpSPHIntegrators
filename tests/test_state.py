@@ -38,6 +38,16 @@ def _mixed():
     return MixedState(x=torch.arange(3, dtype=torch.float64), scratch=torch.ones(3))
 
 
+@pytest.mark.parametrize('call', [
+    lambda: integrated('dxdt', fluid_only=False),
+    lambda: integrated('dxdt', False),
+])
+def test_removed_particle_flag_cannot_become_a_field_default(call):
+    """Reject old flag calls instead of silently interpreting False as a default."""
+    with pytest.raises(TypeError):
+        call()
+
+
 # --------------------------------------------------------------------------- #
 # NOTES 2.5 -- nograd() on a state with non-tensor fields                      #
 # --------------------------------------------------------------------------- #

@@ -42,9 +42,8 @@ def tagged(*, default=MISSING, default_factory=MISSING, role=None, tags=None, me
 
 def integrated(
     update_key: str,
-    fluid_only: bool = True,
-    default=MISSING,
     *,
+    default=MISSING,
     default_factory=MISSING,
     role=None,
     tags=None,
@@ -52,6 +51,9 @@ def integrated(
     drift_key: Optional[str] = None,
 ):
     """Updated via integrateQ. Cloned in initializeNewState.
+
+    Particle selection and boundary masking belong to the system's update
+    methods or RHS; this declaration does not apply a particle mask.
 
     ``drift_key`` declares a *drift field* (``drift.py``): a configuration
     quantity whose rate ``update.<update_key>`` contains a part that is linear in
@@ -69,7 +71,6 @@ def integrated(
             tags=tags,
             metadata=metadata,
             update_key=update_key,
-            fluid_only=fluid_only,
             **({'drift_key': drift_key} if drift_key is not None else {}),
         )
     }
