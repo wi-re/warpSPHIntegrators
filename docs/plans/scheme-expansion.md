@@ -5,7 +5,7 @@
 Parameterized Gauss/Radau stages 2–9, variable Adams, MEBDF2/CNLF2, stabilized
 Legendre/Gegenbauer, fourteen generalized Nyström, fixed-order NDF 1–5 and
 adaptive NDF target-order, explicit extrapolation and owned algorithm switching
-backends are implemented
+and direct state-map backends are implemented
 with source/numerical/consumer gates; remaining waves 10–16 members retain theirs.**
 The registry contains 142 schemes (140 before MEBDF2/CNLF2; 139 before fixed ABM5; 137 before the first
 wave-9 batch; 64 at planning time).
@@ -401,8 +401,9 @@ controllers and internal threading remain distinct. [Evidence](../development/ex
   GMRES pattern from `rosenbrock.py`.
 - FunctionMap (`OrdinaryDiffEqFunctionMap`): direct discrete state map, evaluated
   at t+dt in the inspected step body; scale_by_time adds dt*f to the old state.
-  It is not an ODE step followed by an arbitrary projection. Specify map/RHS,
-  lifecycle and time semantics before implementation.
+  FunctionMap/StateMap now implements the explicit map contract with separate
+  result transition metadata, coupled endpoint lifecycle and portable restart;
+  the scaled branch is an explicit map wrapper. [Evidence](../development/function-map-validation.md).
 - Composite (`OrdinaryDiffEqCore.CompositeAlgorithm`): **algorithm switching**
   with choice/cache transitions, not the physical flow composition implemented
   in Phase 7. AlgorithmSwitch now supplies pure accepted-selection state, owned

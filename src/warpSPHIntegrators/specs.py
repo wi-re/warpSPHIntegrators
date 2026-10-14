@@ -92,6 +92,9 @@ class IntegrationResult:
     #: Optional component quadrature metadata for drivers with different position,
     #: velocity and quantity weights (e.g. NystromWeights). Paired with stages.
     quadrature: Optional[Any] = None
+    #: Optional non-ODE transition record (e.g. MapTransition). A complete map
+    #: is distinct from derivative/quadrature weights over stages.
+    transition: Optional[Any] = None
 
     @property
     def step_status(self):

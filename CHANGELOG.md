@@ -8,6 +8,11 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Added — Phase 8 backend expansion
 
+- Direct FunctionMap/StateMap stepping with an explicit tensor-map adapter,
+  source t+h clock, owned map/lifecycle buffers, coupled endpoint quantities and
+  portable tensor continuation. MapTransition uses a separate result transition
+  field; complete maps are distinct from derivative quadratures and ODE rates.
+
 - Transactional algorithm switching with pure state/previous-index policies,
   owned child history, safe cache resets, delegated adaptive order/step control
   and portable nested tensor restart. Declared-bound toy consumers compare

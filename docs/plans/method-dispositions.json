@@ -5284,6 +5284,32 @@
       ],
       "evidence": "docs/development/algorithm-switch-validation.md",
       "intended_consumer": "Known varying-stiffness problems with declared bounds or other pure state-based selection policies"
+    },
+    {
+      "name": "FunctionMap direct-map backend",
+      "status": "implemented",
+      "wave": 13,
+      "reason": "Explicit StateMap/tensor_map declaration, source endpoint clock, owned complete-state transitions, endpoint lifecycle/quantity and portable restart; separate result transition metadata, no ODE order/error claim",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; FunctionMap 2.2.1 constant-cache step-body oracle",
+      "implementation": "src/warpSPHIntegrators/function_map.py",
+      "tests": [
+        "tests/test_function_map.py"
+      ],
+      "evidence": "docs/development/function-map-validation.md",
+      "intended_consumer": "Fixed-layout discrete maps and known analytic state transformations, including coupled thermal quantities"
+    },
+    {
+      "name": "FunctionMap scale_by_time source branch",
+      "status": "equivalent",
+      "wave": 13,
+      "reason": "Expressed explicitly as StateMap y+h*rate(t_next,y_old); source nonlinear/time-dependent values tested without a public overloaded derivative/map flag. Not old-clock Euler equivalence in general.",
+      "source": "Pinned FunctionMap 2.2.1 source step body",
+      "implementation": "src/warpSPHIntegrators/function_map.py",
+      "tests": [
+        "tests/test_function_map.py"
+      ],
+      "evidence": "docs/development/function-map-validation.md",
+      "intended_consumer": "Explicit map callback when the source scaled convention is desired"
     }
   ]
 }

@@ -189,6 +189,12 @@ assert scheme.metadata.estimate_extra_stages == 1
 
 ## Results and history
 
+`FunctionMap()` applies a declared `StateMap` once per fixed step at t+h.
+`tensor_map(map, **parameters)` adapts `(t_next, y_old, h, ...) -> y_next`.
+`MapTransition` on `IntegrationResult.transition` describes the complete state
+change separately from derivative quadrature. Direct maps have no continuous
+order or adaptive estimate; see [the map contract](function-maps).
+
 `AlgorithmSwitch(methods, selector, policy_id)` selects a complete method per
 trial, retains same-child history and cold-starts on switches. It delegates
 accepted adaptive policies and checkpoints nested child memory. `order` is None;

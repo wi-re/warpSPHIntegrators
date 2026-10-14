@@ -69,6 +69,7 @@ from .ndf import NDF, NDFQuadrature, ndf_difference_transform
 from .adaptive_ndf import AdaptiveNDF, ndf_order_proposals
 from .extrapolation import Extrapolation, ExtrapolationQuadrature, extrapolation_coefficients
 from .switching import AlgorithmSwitch
+from .function_map import FunctionMap,StateMap,MapTransition,tensor_map
 from .dirk import (TRBDF2, MEBDF2, ESDIRK324L2SA, ESDIRK436L2SA,
                    Kvaerno3, Kvaerno4, Kvaerno5, KenCarp3, KenCarp4, KenCarp47, KenCarp5,
                    KenCarp58, ESDIRK325L2SA, ESDIRK436L2SA2, ESDIRK437L2SA, ESDIRK547L2SA2,
@@ -123,6 +124,7 @@ __all__ = [
     "AdaptiveNDF", "ndf_order_proposals",
     "Extrapolation", "ExtrapolationQuadrature", "extrapolation_coefficients",
     "AlgorithmSwitch",
+    "FunctionMap", "StateMap", "MapTransition", "tensor_map",
     "Nystrom", "NystromTableau", "NystromWeights", "nystrom_tableau",
     "StabilizedRK", "stabilized_coefficients", "stabilized_interval",
     "MEBDF2", "CNLF2",

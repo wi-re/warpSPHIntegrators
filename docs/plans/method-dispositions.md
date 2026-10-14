@@ -34,6 +34,8 @@ restricted equivalence; improved IRKN history is separate backend work.
 
 `AlgorithmSwitch` supplies [owned history and accepted-control selection](../development/algorithm-switch-validation.md), with cold transitions and explicit differences from upstream cache transfer.
 
+`FunctionMap` supplies [explicit complete-state transitions](../development/function-map-validation.md); the source scaled convention is an explicit map wrapper, with no overloaded rate/map flag.
+
 ## Source pin and transformations
 
 Expansion waves use OrdinaryDiffEq **7.8.1**, metapackage git tree

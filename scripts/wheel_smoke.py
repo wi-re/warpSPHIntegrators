@@ -21,6 +21,7 @@ from warpSPHIntegrators import (
     GeneralizedAlpha, Collocation, VariableAdams, StabilizedRK, Nystrom, NystromWeights, NDF, AdaptiveNDF,
     Extrapolation, ExtrapolationQuadrature,
     AlgorithmSwitch,
+    FunctionMap,tensor_map,MapTransition,
 )
 
 
@@ -139,6 +140,14 @@ with tempfile.TemporaryDirectory() as directory:
     path=Path(directory)/'switch.pt';save_checkpoint(switched.checkpoint,path)
     switched=solve(switch,None,.6,rhs,restart=load_checkpoint(path))
 assert switched.successful and abs(switched.state.y.item()-math.exp(-.6))<1e-5
+map_records=[]
+mapped=solve(FunctionMap(),TensorState(torch.ones(1,dtype=torch.float64)),.3,
+    tensor_map(lambda t,y,h:y*math.exp(-h)),dt=.1,callback=map_records.append)
+assert isinstance(map_records[-1].result.transition,MapTransition) and map_records[-1].result.quadrature is None
+with tempfile.TemporaryDirectory() as directory:
+    path=Path(directory)/'map.pt';save_checkpoint(mapped.checkpoint,path)
+    mapped=solve(FunctionMap(),None,.6,tensor_map(lambda t,y,h:y*math.exp(-h)),restart=load_checkpoint(path))
+assert mapped.successful and abs(mapped.state.y.item()-math.exp(-.6))<1e-14
 print(f'Installed wheel {package.__version__}: all modules/exports, py.typed, '
       f'{len(filter_schemes(state_kind="tensor"))} tensor drivers, advanced state protocol, '
       'adaptive sampling/events, portable restart, stiff bootstrap, stage preconditioning, physical splitting and generalized-alpha continuation pass')
