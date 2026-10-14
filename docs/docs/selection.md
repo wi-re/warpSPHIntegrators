@@ -34,9 +34,10 @@ the full registry reference.
 | Cheapest adaptive | **Bogacki–Shampine 3(2)** | FSAL: 3 evaluations/step under reuse |
 | Conservation laws / SSP | **SSP-RK3** or **TVD-RK2/3**; **SSPRK(10,4)** for order 4 | Strong-stability-preserving; SSPRK(10,4) has the exact SSP coefficient 6.0 at the cost of 10 evaluations |
 | Hamiltonian, long runs | **Symplectic Euler** (velocity-dependent force) / **Velocity Verlet** (separable) | Energy error stays in an $O(dt^p)$ band instead of drifting. **Trap:** Verlet, Leap-Frog and the Forest–Ruth variants drop to *first* order under a velocity-dependent force — every real SPH momentum equation. Symplectic Euler keeps second order either way. |
-| Hamiltonian, order > 2 | **Gauss-Legendre 2** | The only symplectic scheme above order 2 (order 4, symplecticity pinned by measurement); one block JFNK solve per step |
+| Hamiltonian, order > 2 | **Gauss-Legendre 2/3** | Symplectic collocation at orders 4/6; one block JFNK solve per step |
 | Long runs, cheap RHS | **Adams-Bashforth 4/5** | One force evaluation per step — *if* you thread `history=` (see below) |
-| Second-order structural system | **Newmark** | $\beta/\gamma$ parametrization, A-stable for $\gamma \ge \tfrac12$ |
+| Second-order structural system | **Newmark** | Default $\beta=1/4$, $\gamma=1/2$ is unconditionally stable for linear mechanics; other parameters need their stability conditions |
+| Controllable damping of fast structural modes | **GeneralizedAlpha(rho_inf)** factory | Fixed-step constant-mass mechanics; accepted acceleration memory; see [the known consumer](structural-demo) |
 
 ## Stiff problems
 

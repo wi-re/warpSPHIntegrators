@@ -4,7 +4,7 @@ Install the package from the checkout root with `python -m pip install -e '.[exa
 This supplies matplotlib, tqdm and Jupyter in addition to the numerical package.
 
 - [Operator splitting](operator_splitting.py): declared physical parts and Strang with an exact linear flow.
-- [Structural modes](structural_modes.py): two coupled masses, known slow/fast motion and a linear generalized-alpha prototype compared with registered Newmark.
+- [Structural modes](structural_modes.py): two coupled masses, known slow/fast motion, the generalized-alpha package driver, an independent dense reference and registered Newmark.
 - [Controlled run](run_ode.py): adaptive acceptance, sampling, events and restart.
 - [Tensor ODE](tensor_ode.py): ordinary `(t, y)` callback, no lifecycle implementation.
 - [Harmonic oscillator](harmonic_oscillator.py): standalone float64 CPU example;

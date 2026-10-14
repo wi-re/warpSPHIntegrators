@@ -1,5 +1,9 @@
 # Structural toy consumer — 14 October 2026
 
+This records the initial prototype batch. The subsequent package driver and its
+accepted-memory/numerical/work gates are recorded in
+[the generalized-alpha follow-up](generalized-alpha-validation.md).
+
 The user requested an understood demo consumer to evaluate a phase-8 method and
 show its behavior. This batch supplies a two-mass structural problem, a dense
 linear generalized-alpha prototype, a registered Newmark baseline, a known modal

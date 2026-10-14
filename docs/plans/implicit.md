@@ -54,11 +54,14 @@ and the git history; the pre-2026-09-15 text of this file remains in git.
 
 ### Families not yet represented (Phase 12)
 
-- [ ] **Generalized-alpha / HHT-alpha.** The natural sibling of the registered
-  Newmark: adds controllable high-frequency numerical dissipation, and is close to
-  a parameter generalization of the existing `newmark.py`. Relevant to
-  structural/solid SPH. Gated on a concrete downstream need plus a cost comparison
-  against the Phase 8 baseline.
+- [x] **Classical second-order generalized-alpha.** Repository Phase 8 supplies
+  the parameterized `GeneralizedAlpha(rho_inf)` factory, accepted acceleration
+  memory and a known two-mass consumer. It passes refinement, damping, lifecycle,
+  quantity coupling, restart and gradient gates, with measured work versus Newmark.
+  [Evidence](../development/generalized-alpha-validation.md). Large structural/SPH
+  solve scaling remains a separate application gate.
+- [ ] **HHT-alpha.** A distinct parameter family still needs its own consumer,
+  force/time convention and numerical/work gates.
 - [x] **SSPRK(5,4) / SSPRK54.** Registered and validated in expansion wave 1
   (2026-10-12). See [section 3.21](../research/integrators/notes-3-21.md) for
   coefficient provenance and the measured/source SSP discrepancies.

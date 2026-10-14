@@ -1,0 +1,146 @@
+{
+  "dtype": "float64",
+  "device": "cpu",
+  "threads": 1,
+  "solver_options": {
+    "matvec": "jvp",
+    "tol": 1e-12,
+    "newton_tol": 1e-07
+  },
+  "behavior": [
+    {
+      "rho_inf": 0.0,
+      "max_displacement_difference": 4.564404409990175e-14,
+      "max_velocity_difference": 6.329381463388017e-13,
+      "endpoint_algorithmic_acceleration_difference": 4.141131881851834e-14,
+      "modal_energy_retained": [
+        0.9877781744745424,
+        7.745825609684845e-29
+      ],
+      "seconds": 1.0203892509452999,
+      "steps": 120,
+      "gmres_iterations": 467,
+      "rhs_evaluations": 1654,
+      "solver_reported_rhs_evaluations": 720,
+      "all_tolerance": true
+    },
+    {
+      "rho_inf": 0.5,
+      "max_displacement_difference": 3.136380044566067e-14,
+      "max_velocity_difference": 2.858824288409778e-14,
+      "endpoint_algorithmic_acceleration_difference": 4.629630012686903e-14,
+      "modal_energy_retained": [
+        0.9994704658376687,
+        1.5334427335048577e-20
+      ],
+      "seconds": 0.6272655469365418,
+      "steps": 120,
+      "gmres_iterations": 480,
+      "rhs_evaluations": 1680,
+      "solver_reported_rhs_evaluations": 720,
+      "all_tolerance": true
+    },
+    {
+      "rho_inf": 0.8,
+      "max_displacement_difference": 2.3439583607398617e-14,
+      "max_velocity_difference": 3.186340080674199e-14,
+      "endpoint_algorithmic_acceleration_difference": 1.4477308241112041e-13,
+      "modal_energy_retained": [
+        0.9999741427504945,
+        0.004582573369804235
+      ],
+      "seconds": 0.6421012179926038,
+      "steps": 120,
+      "gmres_iterations": 480,
+      "rhs_evaluations": 1680,
+      "solver_reported_rhs_evaluations": 720,
+      "all_tolerance": true
+    },
+    {
+      "rho_inf": 1.0,
+      "max_displacement_difference": 6.050715484207103e-14,
+      "max_velocity_difference": 2.1671553440683056e-13,
+      "endpoint_algorithmic_acceleration_difference": 1.3303136370268476e-11,
+      "modal_energy_retained": [
+        1.000000000000017,
+        1.0000000000003082
+      ],
+      "seconds": 0.6458365810103714,
+      "steps": 120,
+      "gmres_iterations": 480,
+      "rhs_evaluations": 1680,
+      "solver_reported_rhs_evaluations": 720,
+      "all_tolerance": true
+    }
+  ],
+  "registered_newmark_work": {
+    "seconds": 0.3543307539075613,
+    "steps": 120,
+    "gmres_iterations": 360,
+    "rhs_evaluations": 840,
+    "solver_reported_rhs_evaluations": 240,
+    "all_tolerance": true
+  },
+  "order": [
+    {
+      "rho_inf": 0.0,
+      "dt": [
+        0.1,
+        0.05,
+        0.025,
+        0.0125,
+        0.00625
+      ],
+      "errors": [
+        0.033314482230245385,
+        0.009985670378890409,
+        0.0026599296978944806,
+        0.0006804840940409413,
+        0.000171706127887214
+      ],
+      "measured_order": 1.986619912396456
+    },
+    {
+      "rho_inf": 0.5,
+      "dt": [
+        0.1,
+        0.05,
+        0.025,
+        0.0125,
+        0.00625
+      ],
+      "errors": [
+        0.011669188456672551,
+        0.0030002713377478324,
+        0.0007567068977628248,
+        0.0001897715974560022,
+        4.7502688991901936e-05
+      ],
+      "measured_order": 1.9981829969656177
+    },
+    {
+      "rho_inf": 1.0,
+      "dt": [
+        0.1,
+        0.05,
+        0.025,
+        0.0125,
+        0.00625
+      ],
+      "errors": [
+        0.00804354496235789,
+        0.002032497005108624,
+        0.0005094782751342982,
+        0.0001274542439343092,
+        3.186885394389457e-05
+      ],
+      "measured_order": 1.9997603691111476
+    }
+  ],
+  "qualification": "Same physical consumer, timestep and JVP solver tolerances; generalized-alpha solves augmented state/acceleration and makes two RHS evaluations per map. Tiny filtered modal energies reflect numerical floors.",
+  "source_sha256": {
+    "src/warpSPHIntegrators/generalized_alpha.py": "3c255a02d0473fee2adbbdc575e340dd56b059c3848c154a84d27e61d3180323",
+    "examples/structural_modes.py": "c12ae79e41cbb1977725fc5f808a0392ecc7e37a6bfe975dc4b5289fa41f30c8",
+    "benchmarks/generalized_alpha.py": "d08f6e0cb0e709e694c9ad184fd8c3208fbb02a00fe3bab94a0046daa406ba81"
+  }
+}

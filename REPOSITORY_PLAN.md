@@ -23,7 +23,9 @@ waves 1–8 and the first s=3 wave-9 batch are complete with recorded exceptions
 the remaining batches are subject to the gates below. Commit creation and package publication are
 separate actions. **Phase 8 is underway: its first reviewed batch registers
 Gauss-Legendre 3 / Radau IIA s=3 after their source, companion, scale and numerical
-gates. Higher stages and new driver families retain their own gates.
+gates. A parameterized generalized-alpha driver now qualifies selective damping
+on the known structural consumer, with accepted acceleration, restart, lifecycle,
+quantity coupling and gradient checks. Higher stages and other driver families retain their own gates.
 PESPH integration is later application work.**
 
 ## Phase 3 completion record
@@ -150,7 +152,9 @@ Priority: after reliable gates and a concrete benefit. Size: varies by driver.
   accuracy/work while passing the spatial bar. Generalized-alpha is source-confirmed
   and now has a [known two-mass consumer and linear prototype](docs/development/structural-demo-validation.md).
   It demonstrates selective damping and identifies pinned-source parameter/memory
-  issues; production acceleration/restart/lifecycle contracts remain to implement.
+  issues. The parameterized package driver now carries accepted acceleration
+  through failures, shortened steps and in-memory restart, with nonlinear/time-dependent
+  force, quantity, lifecycle and gradient gates. [Driver validation](docs/development/generalized-alpha-validation.md).
   Further Rosenbrock additions need stage-driver
   compatibility and a measured advantage.
 - [ ] Advance wave 12/13 work through Phase 7 where contracts overlap. Design

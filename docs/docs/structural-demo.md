@@ -4,12 +4,14 @@ title: Structural dynamics demo
 
 # Two masses, two known modes
 
-This consumer evaluates a linear generalized-alpha prototype against the actual
-registered Newmark driver and a known solution. Run from the checkout root:
+This consumer evaluates the package's generalized-alpha driver against an
+independent dense linear solve, registered Newmark and a known solution.
+Run from the checkout root:
 
 ```bash
 python examples/structural_modes.py
 python benchmarks/structural_modes.py
+python benchmarks/generalized_alpha.py
 ```
 
 The first command prints the slow/fast energy retained. The second writes a
@@ -26,6 +28,42 @@ assert ratios[0] > .999
 assert ratios[1] < 1e-15
 print('Slow/fast modal energy retained:', ratios.tolist())
 ```
+
+## Run the package driver
+
+`GeneralizedAlpha(rho_inf=.5)` is a parameterized fixed-step factory. It accepts
+tagged position/velocity systems through the same protocol as Newmark. The
+runner carries algorithmic acceleration in `result.history` and in its in-memory
+checkpoint. A direct stepping loop must pass each accepted `result.history` into
+the next call; starting with empty history initializes physical acceleration.
+
+[example:run generalized_alpha_consumer]: #
+```python
+import runpy
+
+demo = runpy.run_path('examples/structural_modes.py')
+model = demo['two_mass_problem']()
+states, result = demo['generalized_alpha_trajectory'](model, .1, 1., .5)
+assert result.successful
+assert result.accepted_steps == 10
+assert result.history.latest.state.rho_inf == .5
+print('Accepted steps:', result.accepted_steps)
+```
+
+The factory supports explicit acceleration for constant-mass mechanics, including
+nonlinear, velocity-dependent and time-dependent forces. Extra integrated
+quantities use a coupled endpoint trapezoid and enter the force at the weighted
+state. Position rate must equal velocity. Initialization can set the initial
+state; when resuming memory, initialization and finalization must preserve
+integrated values. Copied fields come from the final endpoint RHS evaluation.
+
+Checkpoint/state/history form one accepted trajectory; do not attach its history
+to manually edited fields. Changed time, parameters, tensor layout or particle
+IDs are rejected. Step shortening preserves acceleration. A rejected trial
+preserves accepted state/history through the runner; external lifecycle effects
+still require its transaction hooks. Custom systems use application serialization
+for portable restart. The factory has no estimator, dense output or event
+localization and is separate from the 139 fixed catalog entries.
 
 ## What the problem means
 
@@ -64,7 +102,7 @@ $$
 
 These agree with [PETSc's second-order generalized-alpha implementation](https://petsc.org/release/src/ts/impls/implicit/alpha/alpha2.c.html)
 after converting its new-state alpha weights. `rho_inf=1` recovers undamped
-average-acceleration Newmark; smaller values add high-frequency numerical damping.
+average-acceleration Newmark for linear forces; smaller values add high-frequency numerical damping.
 The parameter is a limiting amplification factor, not a fraction of energy
 removed on every finite-frequency step.
 
@@ -99,11 +137,15 @@ dense/matrix-free solve paths, so their raw runtimes are not a backend speed com
 
 ## Scope and source checks
 
-This is a dense, constant-matrix, unforced **linear demo prototype**, outside the
-139-method catalog. It does not add a production generalized-alpha driver,
-adaptive estimator or restart format. Production work must retain algorithmic
-acceleration in accepted/rejected state, gradients and checkpoints, define
-initialization/timestep changes and preserve lifecycle/quantity semantics.
+The independent prototype remains a dense, constant-matrix, unforced linear
+reference. The package driver solves augmented physical state and algorithmic
+acceleration with the existing nonlinear solver stack. On the 120-step behavior
+run it agrees with the dense reference within 7e-14 in displacement and retains
+second-order refinement. Directly counted work is 1,680 RHS evaluations and 480
+GMRES iterations at rho=.5, versus Newmark's 840 evaluations and 360 iterations
+with the same problem and solver tolerances. This small consumer establishes
+behavior and its measured cost; large structural/SPH solve scaling remains a
+separate downstream gate. See [the driver validation](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/generalized-alpha-validation.md).
 
 The pinned OrdinaryDiffEq source refreshes acceleration and uses a beta formula
 that differs from the classical scheme. The demo includes separate negative

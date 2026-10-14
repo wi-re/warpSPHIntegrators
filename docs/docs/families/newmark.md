@@ -62,7 +62,8 @@ refused; `history=` is threaded like the other one-step implicit schemes.
 ## References
 
 The [two-mass structural demo](../structural-demo) compares the actual registered
-driver against an exact modal solution and a generalized-alpha prototype. It
+driver and the parameterized package `GeneralizedAlpha` against an exact modal
+solution and an independent dense generalized-alpha reference. It
 shows why preserving an underresolved fast mode's energy is not the same as
 representing its motion accurately.
 

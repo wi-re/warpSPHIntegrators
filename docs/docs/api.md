@@ -33,6 +33,16 @@ accepted by `solve`. `LinearExponentialFlow` supports small dense linear flows;
 `classify_separable` returns a `SeparabilityResult` with measured local diagnostics.
 See [the runnable guide and qualifications](operator-splitting).
 
+## Second-order numerical damping
+
+`GeneralizedAlpha(rho_inf=.5)` binds a classical fixed-step mechanics driver.
+Pass the factory to `solve` with a tagged position/velocity system and explicit
+constant-mass acceleration RHS. The runner carries accepted algorithmic
+acceleration through shortened steps and in-memory checkpoints.
+`GeneralizedAlphaMemory` is stored in `HistoryEntry.state`; direct stepping loops
+must feed accepted `result.history` back into the next call. This parameterized
+factory is separate from the fixed catalog. See [the consumer and scope](structural-demo).
+
 ## State and fields
 
 | Name | Signature (abridged) | Purpose |

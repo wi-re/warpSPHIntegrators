@@ -1,7 +1,8 @@
 # Scheme expansion plan — OrdinaryDiffEq gap (staged by family and complexity)
 
-**Status: waves 1–8 committed; the first wave-9 batch is implemented in Phase 8
-(three-stage Gauss/Radau), while higher stages and waves 10–16 remain gated.**
+**Status: waves 1–8 committed; Phase 8 implements the first wave-9 batch
+(three-stage Gauss/Radau) and a parameterized classical generalized-alpha driver.
+Higher stages and the remaining waves 10–16 members retain their gates.**
 The registry contains 139 schemes (137 before this batch; 64 at planning time).
 The current execution gates are in [REPOSITORY_PLAN.md](../../REPOSITORY_PLAN.md).
 
@@ -313,7 +314,11 @@ variants; they are not interchangeable with fixed-coefficient BDF tableaus.
 - `exponential.py`: the remaining ODE exponential-RK members (ETDRK2 / EXPRB53
   candidates — macro-generated source members include ETDRK2/3/4, HochOst4,
   Exp4, EPIRK4/5, EXPRB53s3 and Exprb32/43; explicit struct grep alone missed them).
-- `newmark.py`: GeneralizedAlpha (Hughes–Liu).
+- `generalized_alpha.py`: classical second-order GeneralizedAlpha (Chung–Hulbert).
+  Implemented as a parameterized fixed-step factory, separate from the fixed
+  catalog; [consumer and driver evidence](../development/generalized-alpha-validation.md).
+  The pinned Newmark constructor's parameter and acceleration-refresh issues
+  are recorded in the independent structural source audit.
 
 **Gate:** real-axis stability interval per method (the selling point of this family);
 semilinear split tests; GMRES cost accounting where a solve is involved.
@@ -321,7 +326,7 @@ semilinear split tests; GMRES cost accounting where a solve is involved.
 The [reproducible Phase 8 source inventory](../development/evidence/phase8-source-inventory.json)
 records all nine package versions, declarations/order expressions and source hashes
 for waves 10–11. These are inventories, not coefficient/equivalence approvals.
-GeneralizedAlpha needs weighted second-order residuals and a parameter contract;
+GeneralizedAlpha now has weighted second-order residuals and a parameter/memory contract;
 stabilized methods need recurrences/stage selection, and exponential methods need
 phi/Krylov formulas. None is assumed to be a plain-tableau transcription.
 

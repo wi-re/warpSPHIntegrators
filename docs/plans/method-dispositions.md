@@ -12,6 +12,9 @@ Parameterized physical splitting factories and the dense linear flow added in
 execution Phase 7 are outside the fixed registration ledger. Their contracts,
 Yoshida coefficient source and toy validation are recorded in
 [the Phase 7 record](../development/phase7-foundation-validation.md).
+The Phase 8 `GeneralizedAlpha(rho_inf)` factory is also outside that fixed ledger;
+its classical parameter source, accepted acceleration, structural consumer and
+numerical/work gates are recorded in [the driver validation](../development/generalized-alpha-validation.md).
 
 ## Source pin and transformations
 
