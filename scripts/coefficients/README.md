@@ -96,3 +96,5 @@ needs the generated Python module only, not Julia or an external JSON data file.
 `wave16/oracle.jl` executes 60 LowStorageRK constructors and 61 alternating/nonalternating branches, with nonlinear and scalar-refinement controls. `wave16/generate.py --check` verifies rooted-tree/time-node screening and the generated immutable full-stage RK coefficient module; see [the validation record](../../docs/development/expanded-rk-validation.md).
 
 `wave10/adaptive_adams.jl` executes actual VCABM constant-cache helpers on uniform/irregular basis histories and the mature accepted-order branch on 243 normalized-error cases. Package startup/maturity, lower-order bound and retry policy are explicitly separate.
+
+`wave12/irkn_audit.jl` executes pinned IRKN3/4 cache constructors and mutable step kernels on 48 analytic trajectories, captures constant-cache failures and compares explicit corrected-history controls. It preserves actual call counts separately from source diagnostics; [findings](../../docs/development/irkn-source-audit.md).

@@ -1,6 +1,8 @@
 # Repository execution plan
 
 Updated 14 October 2026. This is the authoritative current task list.
+Current publishing instruction: keep subsequent commits local. The user will
+push manually after local work is finished; avoid triggering long cloud CI runs.
 Specialist designs retain source inventories and implementation gates under
 [docs/plans](docs/plans/README.md); historical task statements in numerical records
 are superseded by this plan. The [original audit](docs/development/repository-audit-2026-10-14.md)
@@ -204,6 +206,10 @@ must be recorded rather than counted as an implemented method.
   need recurrence/operator/solver and consumer gates, rather than only tableaus.
 - [ ] Resolve improved IRKN history and partitioned DIRK candidates from wave 12
   with their startup, second-order state, solve and source qualifications.
+  [The improved-IRKN source audit](docs/development/irkn-source-audit.md) now
+  records constant-cache failures and order-two nonautonomous source startup.
+  Corrected-history controls isolate the seed problem; a qualified owned
+  package implementation still needs its own nonlinear/lifecycle/gradient gates.
 - [x] Prioritize a benchmarked niche: s=3 collocation improves known-consumer
   accuracy/work while passing the spatial bar. Generalized-alpha is source-confirmed
   and now has a [known two-mass consumer and linear prototype](docs/development/structural-demo-validation.md).

@@ -382,6 +382,11 @@ velocity-independent RKN with history, not implicit JFNK). Plus **PDIRK44**
 (position and velocity each run a DIRK half), comparable in scale to the ARK pair
 machinery.
 
+The [IRKN source-path audit](../development/irkn-source-audit.md) executes actual
+mutable kernels and records unusable constant-cache paths. Source time-dependent
+startup only achieves order two; corrected-history controls isolate the cache
+seed problem. These are source dispositions, not implemented IRKN backends.
+
 **Gate:** order on the oscillator/kepler second-order problems; Nystrom5th
 regression (the new driver must reproduce the existing hand-rolled method's order);
 history/startup/order for improved IRKN; block-solve scale for PDIRK at s>2.

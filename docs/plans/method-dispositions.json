@@ -6114,6 +6114,42 @@
       ],
       "evidence": "docs/development/adaptive-adams-validation.md",
       "intended_consumer": "Smooth nonstiff full-state trajectories; automatic target-order baseline with explicit observed local/global and cost qualifications"
+    },
+    {
+      "name": "IRKN3 pinned constant-cache path",
+      "status": "excluded",
+      "wave": 12,
+      "reason": "Actual source call accesses missing k\u2082 field",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 actual cache/step-body audit",
+      "evidence": "docs/development/irkn-source-audit.md",
+      "intended_consumer": "Fixed-step velocity-independent mechanics; qualified package history/seed implementation remains open"
+    },
+    {
+      "name": "IRKN4 pinned constant-cache path",
+      "status": "excluded",
+      "wave": 12,
+      "reason": "No matching constant-cache step kernel in pinned RKN source; harness dispatch fails",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 actual cache/step-body audit",
+      "evidence": "docs/development/irkn-source-audit.md",
+      "intended_consumer": "Fixed-step velocity-independent mechanics; qualified package history/seed implementation remains open"
+    },
+    {
+      "name": "IRKN3 pinned mutable source startup",
+      "status": "deferred",
+      "wave": 12,
+      "reason": "Autonomous order three but nonautonomous full-startup refinement is order two; corrected-history diagnostic needs package contract gates",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 actual cache/step-body audit",
+      "evidence": "docs/development/irkn-source-audit.md",
+      "intended_consumer": "Fixed-step velocity-independent mechanics; qualified package history/seed implementation remains open"
+    },
+    {
+      "name": "IRKN4 pinned mutable source startup",
+      "status": "deferred",
+      "wave": 12,
+      "reason": "Autonomous order four but nonautonomous full-startup refinement is order two; corrected-history diagnostic needs package contract gates",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 actual cache/step-body audit",
+      "evidence": "docs/development/irkn-source-audit.md",
+      "intended_consumer": "Fixed-step velocity-independent mechanics; qualified package history/seed implementation remains open"
     }
   ]
 }
