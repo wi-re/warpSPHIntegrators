@@ -99,6 +99,41 @@ helps only weakly (condition number 5.06 on the 256-DOF block system) — the
 block system's spectrum is a two-dimensional annulus, not a diagonal-dominant
 cluster (NOTES.md §3.18).
 
+## Stage-aware preconditioning and warm guesses
+
+Coupled RK supplies `dt`, `tableau_a` and `stage_times` in preconditioner context.
+`stage_block_preconditioner(jacobian_diagonal)` accepts a flattened length-N
+Jacobian diagonal, an s-by-N tensor or `(BlockState, context) -> tensor`. It
+factors an s-by-s matrix per DOF, retaining stage coupling while omitting spatial
+and field off-diagonals. LU storage is O(s²N), cached within one Newton iterate.
+This is a forward preconditioner; the adjoint retains its existing matrix-free
+transpose solve. For example:
+
+[example:run stage-preconditioner]: #
+```python
+import torch
+from warpSPHIntegrators import TensorState, tensor_rhs, getIntegrator, stage_block_preconditioner
+
+rates = torch.logspace(0, 3, 64, dtype=torch.float64)
+state = TensorState(torch.ones_like(rates))
+rhs = tensor_rhs(lambda t, y: -rates*y)
+result = getIntegrator('Radau IIA s=2')(state, .01, rhs, solver_opts={
+    'matvec': 'jvp', 'tol': 1e-10, 'newton_tol': 1e-7,
+    'preconditioner': stage_block_preconditioner(-rates),
+})
+assert result.step_status.tolerance_converged
+```
+
+DIRK supplies `dt`, `stage_index`, `stage_time` and
+`stage_coefficient=dt*a_ii`. Driver-owned context keys override application keys.
+An implicit-first DIRK can accept `warmStart=previous.stages[0]`; coupled RK
+accepts the full previous stage list. These are guesses, never derivative reuse.
+They remain opt-in: Phase 6's measured transients show no consistent gain, and a
+warm guess can cost more than a cold solve. The local stage-block approximation
+passes reaction cases but fails the diffusion scale gate; higher-stage prototypes
+remain unregistered. See the
+[Phase 6 evidence](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/phase6-validation.md).
+
 ## Adaptive step control
 
 The [run API](runs) owns adaptive acceptance and rollback. For applications that

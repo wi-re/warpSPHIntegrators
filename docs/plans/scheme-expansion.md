@@ -29,7 +29,7 @@ Waves 1–8 are implemented with these explicit exceptions:
   equivalence statement was incorrect). ARS222/232 share their
   stored implicit tableau; SDIRK22 is excluded because its
   algorithm constructor returns Trapezoid, despite a separately stored compact tableau.
-- Wave 9 lists **seven stage configurations**; names and upstream order/stage
+- The historical wave 9 list mixed stage configurations with order-based Radau names; upstream order/stage
   conventions must be resolved before implementation and scaling gates.
 
 ## Source of truth (citation chain)
@@ -245,16 +245,31 @@ Landing: one bundled wave 8 / Phase 1 commit. The numerical evidence remains
 in NOTES §3.28 and the Phase 1 validation record.
 Package metadata remains 0.6.1; these changes are unreleased.
 
-### Wave 9 — FIRK block tableaus (`OrdinaryDiffEqFIRK`, seven listed stage configurations)
+<a id="wave-9--firk-block-tableaus-ordinarydiffeqfirk-seven-listed-stage-configurations"></a>
 
-Gauss-Legendre s=3, 4, 5; Radau IIA s=3, 4, 5, 9.
+### Wave 9 — FIRK tableaus — scale gate failed, registrations deferred
 
-**Gate (hard dependency):** the coupled-block s=3 scale proof from the
-`IMPLICIT_ROADMAP` open items (s=2 gate = 256 DOF / 1536 unknowns). This wave does
-not start until that proof lands. ODE v7.8.1 has **no Lobatto III A/B** (verified —
-FIRK = AdaptiveRadau, GaussLegendre, RadauIIA3/5/9), so there is no Lobatto gap to
-fill. Symplecticity of odd-s Gauss-Legendre for separable Hamiltonians: extend the
-`tests/test_hamiltonian.py` measurement per s.
+The original list mixed stage counts and upstream propagated-order names. Gauss
+s=3/4/5 means orders 6/8/10. Upstream RadauIIA3 is order 3, s=2 (already ours);
+RadauIIA5 is order 5, s=3; RadauIIA9 is order 9, s=5. Radau stages 4/9 would
+mean orders 7/17 and cannot be inferred from those algorithm names. Re-enumerate
+the pinned source before any future transcription. The current
+[primary documentation](https://docs.sciml.ai/OrdinaryDiffEq/stable/implicit/FIRK/)
+confirms order-based Radau names; this is not a new v7.8.1 coefficient oracle.
+
+**Hard gate failed in repository Phase 6.** Three-stage Gauss/Radau prototypes
+verify collocation, propagated orders 6/5, stability, Gauss symmetry/symplectic
+identities and state/parameter gradients. They intentionally carry no companion
+estimate. The 114-configuration CPU sweep shows a local stage-block preconditioner
+helps reaction problems but exceeds the Krylov work bar at diffusion N=256 and
+fails tolerance at N=1024. The registry stays at 137. See
+[the measurement and gate decision](../development/phase6-validation.md).
+
+Reopen only after spatial/field-aware preconditioning meets the same recorded
+work, memory, failure and time bar on the challenging spatial case. Registration
+then still requires companions/estimate rates, coefficient/source validation and
+complete numerical/gradient gates. No Lobatto addition is implied; its partitioned
+interface remains a separate design.
 
 ## Wave 10 — multistep extensions (C3/C4, ~16 methods)
 

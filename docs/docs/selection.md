@@ -43,7 +43,7 @@ the full registry reference.
 | Situation | Start with | Why / caveat |
 |---|---|---|
 | General stiff, no structure | **Radau IIA s=2** or **ESDIRK3(2)4L[2]SA** | Radau: L-stable, damps the whole negative real axis (no A(α) cone). ESDIRK: order 3, L-stable, *stiffly accurate* so first-stage reuse is lossless; embedded (3,2) pair |
-| High order, moderate stiffness | **BDF3–BDF5** | The A(α) cone shrinks with order (BDF3: 86.03°, BDF5: 51.84°) — stiff *oscillatory* modes outside the cone are not damped. Cold-start ceiling: the Dormand–Prince bootstrap is explicit with a boundary at $\lvert z\rvert \approx 3.3$, so BDF3–5 cannot *start* at $dt\cdot\text{rate} \gtrsim 3.3$ |
+| High order, moderate stiffness | **BDF3–BDF5** | The A(α) cone shrinks with order (BDF3: 86.03°, BDF5: 51.84°) — stiff *oscillatory* modes outside the cone are not damped. Order-matched implicit starters remove the old explicit cold-start ceiling; stiffness-dependent accuracy and the steady-state cone still apply |
 | Strong damping, low order fine | **BDF1/BDF2**, **TR-BDF2**, **SDIRK2** | L-stable; BDF2 is the one-step-history workhorse |
 | Parabolic, but no solves allowed | **RKC2** / **RKL2** | Chebyshev/Legendre super-timestepping: stage count $s$ grows like $\sqrt{dt\cdot\lvert\lambda_{max}\rvert}$, so a huge $dt$ costs many *cheap* stages. Built for real (negative) eigenvalues — not oscillatory. Measured fewer total RHS evaluations than BE/BDF2/TR-BDF2 on the diffusion benchmark |
 | Stiff, Jacobian–vector products available | **ROS3P** | Order-3 Rosenbrock-W: A-stable (not L), linearly implicit — one JVP per stage, no nonlinear solve; built-in order-2 estimator |

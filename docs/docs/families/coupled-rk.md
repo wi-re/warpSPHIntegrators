@@ -20,8 +20,8 @@ Y_i - y^n - \mathrm{dt}\,\sum_{j=1}^{s} a_{ij}\, k_j(Y_1, \dots, Y_s) = 0,
 $$
 
 is solved by `JFNKSolver` in a single call per step (the default matvec is the
-**exact JVP** of the block map, `matvec='jvp'` — one forward pass, no
-`fd_eps`). One step costs $s$ RHS evaluations inside the solve plus the
+finite-difference map derivative; select the **exact JVP** with
+`solver_opts={'matvec': 'jvp'}` for forward AD without `fd_eps`). One step costs $s$ RHS evaluations inside the solve plus the
 Krylov matvecs.
 
 Driver conventions (NOTES.md §3.18):
@@ -29,12 +29,13 @@ Driver conventions (NOTES.md §3.18):
 - `history=` is bookkeeping only; `priorStep=` is **refused** — a coupled
   tableau has no stage that can be consumed alone, and the reuse analyses in
   `reuse.py` both assume a stage that can be solved without the others.
-  `warmStart=` accepts an explicit previous block iterate instead (a caller
-  that can prove the warm start is valid).
+  `warmStart=` accepts a list of previous stage derivatives (`result.stages`),
+  predicting the current stage states as a Newton initial guess.
 - The step's `SolveDiagnostics` is scaled by $s$ (`rhs_evaluations` and
-  `gmres_iterations` × $s$), so the work-unit invariant
-  `total = rhs_evaluations + gmres_iterations` keeps counting physical work
-  at the per-step level (the user's confirmed choice).
+  `gmres_iterations` × $s$). These counters describe solver-internal map/Krylov
+  work; final-stage re-evaluation, companion and gradient work add RHS calls.
+  Phase 6 divides Krylov counts by $s$ and instruments actual RHS calls for
+  end-to-end work comparisons.
 - Each scheme carries a **null-stage order-2 companion**: the 2-stage-only
   order-2 embedded pair is degenerate (it is $b$ itself), so the companion
   quadrature is taken over $(k_0, k_1, k_2)$ with the null stage $k_0 =
@@ -65,16 +66,13 @@ $$
 Not stiffly accurate ($c_2 \neq 1$). Companion:
 $\bar b = (1/6,\ (5-\sqrt3)/12,\ (5+\sqrt3)/12)$.
 
-**Symplectic for separable Hamiltonians — pinned by measurement, not by the
-folklore argument**: the tableau is *not* A-symmetric ($a_{12} \neq a_{21}$),
-so the standard "A-symmetric collocation ⇒ symplectic" shortcut does not
-apply; the library measures it instead. Strict solve: phase-area defect
-$3.05\times10^{-13}$ (oscillator), Kepler-form defect $4.87\times10^{-9}$
-(default solve) — `tests/test_hamiltonian.py`. It is the library's only
-symplectic method above order 2 (the position/velocity family tops out at
-order 4 with PEFRL/VEFRL, which are geometric compositions rather than
-collocation).
-
+**Symplectic:** the algebraic identity
+$b_i a_{ij}+b_j a_{ji}=b_i b_j$ holds. The RK method is also symmetric under
+time reversal: $a_{ij}+a_{s+1-i,s+1-j}=b_j$, with mirrored weights and nodes.
+Neither property requires the matrix identity $a=a^T$, which this tableau does
+not satisfy. The earlier “A-symmetric” wording confused these distinct notions.
+The strict-solve oscillator/Kepler measurements in `tests/test_hamiltonian.py`
+remain numerical checks of the implementation.
 The negative $a_{12}$ makes the implicit solution **non-monotone**: on the
 256-DOF advection scale gate (CFL 100, step IC) the true method value is
 $\max|u| = 1.6903$ — a bounded Gibbs-like overshoot of the exact
@@ -101,9 +99,8 @@ $$
 
 Companion: $\bar b = (2/7,\ 9/28,\ 11/28)$. Not symplectic (measured: linear
 area defect $2.44\times10^{-2}$; absent from the symplectic sets in
-`tests/test_hamiltonian.py`). On the stiff scalar $y' = -100y$ it damps the
-mode to $7\times10^{-11}$ in a **single** step, versus $\sim 4$ steps for
-Gauss-Legendre 2 (the L-stability gap in action; `tests/test_stiff.py`).
+`tests/test_hamiltonian.py`). For a scalar stiff mode, each step damps by $|R(z)|$; at $z=-10$,
+that factor is about 0.0959 versus 0.3023 for Gauss-Legendre 2.
 
 ## Cost and the GMRES finding
 
@@ -123,6 +120,17 @@ Benchmark: `benchmarks/blockrk_benchmark.py` → `docs/assets/blockrk_benchmark.
 RK4 secular); (2) stiff damping at $z = -10$ across the implicit family
 (Radau 0.0959, BDF5 0.65, GL2 0.30, trapezoidal 0.67); (3) the order ladder
 (GL2 3.98, Radau 3.00, vs. the explicit/implicit references).
+
+## Phase 6 scale decision
+
+A local stage-block preconditioner and three-stage Gauss/Radau prototypes are
+measured on reaction and mesh-refined diffusion systems at N=64/256/1024. The
+reaction cases pass; diffusion exceeds the work bar at N=256 and fails tolerance
+at N=1024, including the two-stage baselines. No higher-stage method is registered.
+The next prerequisite is spatial/field-aware preconditioning, followed by
+companion/gradient/source gates. See
+[the recorded gate and benchmark](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/phase6-validation.md)
+and [preconditioner usage](../solver).
 
 ## References
 

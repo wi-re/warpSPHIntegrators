@@ -1,0 +1,5548 @@
+{
+  "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:36:31) [GCC 14.3.0]",
+  "torch": "2.13.0+cu130",
+  "device": "cpu",
+  "dtype": "float64",
+  "threads": 1,
+  "sizes": [
+    64,
+    256,
+    1024
+  ],
+  "dt": 0.05,
+  "steps": 3,
+  "repeats": 2,
+  "definition": "all block/cold s=3 cases: zero tolerance failures, <=120 Krylov iterations per step, <=3x corresponding s=2 time and RHS work, <=256 MiB additional peak RSS, through N>=1024",
+  "passed": false,
+  "gate": [
+    {
+      "scheme": "gauss3",
+      "n": 64,
+      "problem": "reaction",
+      "passed": true,
+      "time_ratio": 1.5295634512904097,
+      "work_ratio": 1.4516129032258065,
+      "failures": 0
+    },
+    {
+      "scheme": "radau3",
+      "n": 64,
+      "problem": "reaction",
+      "passed": true,
+      "time_ratio": 1.3282428015135597,
+      "work_ratio": 1.32,
+      "failures": 0
+    },
+    {
+      "scheme": "gauss3",
+      "n": 256,
+      "problem": "reaction",
+      "passed": true,
+      "time_ratio": 1.4950577862561836,
+      "work_ratio": 1.4516129032258065,
+      "failures": 0
+    },
+    {
+      "scheme": "radau3",
+      "n": 256,
+      "problem": "reaction",
+      "passed": true,
+      "time_ratio": 1.544555371935733,
+      "work_ratio": 1.434782608695652,
+      "failures": 0
+    },
+    {
+      "scheme": "gauss3",
+      "n": 1024,
+      "problem": "reaction",
+      "passed": true,
+      "time_ratio": 1.4099474065914872,
+      "work_ratio": 1.3448275862068966,
+      "failures": 0
+    },
+    {
+      "scheme": "radau3",
+      "n": 1024,
+      "problem": "reaction",
+      "passed": true,
+      "time_ratio": 1.6627701003049717,
+      "work_ratio": 1.434782608695652,
+      "failures": 0
+    },
+    {
+      "scheme": "gauss3",
+      "n": 64,
+      "problem": "diffusion",
+      "passed": true,
+      "time_ratio": 1.4442012959143151,
+      "work_ratio": 1.4222222222222223,
+      "failures": 0
+    },
+    {
+      "scheme": "radau3",
+      "n": 64,
+      "problem": "diffusion",
+      "passed": true,
+      "time_ratio": 1.4341699468944649,
+      "work_ratio": 1.3576642335766422,
+      "failures": 0
+    },
+    {
+      "scheme": "gauss3",
+      "n": 256,
+      "problem": "diffusion",
+      "passed": false,
+      "time_ratio": 1.4966374764027013,
+      "work_ratio": 1.5076400679117148,
+      "failures": 0
+    },
+    {
+      "scheme": "radau3",
+      "n": 256,
+      "problem": "diffusion",
+      "passed": false,
+      "time_ratio": 1.492228097986788,
+      "work_ratio": 1.4728370221327969,
+      "failures": 0
+    },
+    {
+      "scheme": "gauss3",
+      "n": 1024,
+      "problem": "diffusion",
+      "passed": false,
+      "time_ratio": 1.4487422114557622,
+      "work_ratio": 1.4989953114534493,
+      "failures": 2
+    },
+    {
+      "scheme": "radau3",
+      "n": 1024,
+      "problem": "diffusion",
+      "passed": false,
+      "time_ratio": 1.4120770540478673,
+      "work_ratio": 1.4989953114534493,
+      "failures": 2
+    }
+  ],
+  "results": [
+    {
+      "scheme": "gauss2",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.5026789845433086,
+      "total_seconds": 3.4791873120702803,
+      "median_rhs_calls": 621.0,
+      "rhs_calls": [
+        699,
+        621,
+        585,
+        699,
+        621,
+        585
+      ],
+      "krylov_iterations": [
+        335.0,
+        298.0,
+        280.0,
+        335.0,
+        298.0,
+        280.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        1.2839793026188683e-07,
+        7.212068615427068e-07,
+        3.5177049427202857e-07,
+        1.2839793026188683e-07,
+        7.212068615427068e-07,
+        3.5177049427202857e-07
+      ],
+      "peak_rss_mib": 651.45703125,
+      "baseline_peak_rss_mib": 500.8125,
+      "additional_peak_rss_mib": 150.64453125,
+      "failure_rate": 0.0,
+      "solution_sha256": "86a88ad843c38cbadce493094e0811649e7656049b4e2d2d0a384decbfa692c7",
+      "max_abs_final_solution": 1.0504408897419633
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.05351332016289234,
+      "total_seconds": 0.7090010917745531,
+      "median_rhs_calls": 79.0,
+      "rhs_calls": [
+        91,
+        79,
+        77,
+        91,
+        79,
+        77
+      ],
+      "krylov_iterations": [
+        40.0,
+        34.0,
+        33.0,
+        40.0,
+        34.0,
+        33.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        2.6508836987559586e-07,
+        1.0813951849966538e-07,
+        3.15781032173767e-08,
+        2.6508836987559586e-07,
+        1.0813951849966538e-07,
+        3.15781032173767e-08
+      ],
+      "peak_rss_mib": 651.26953125,
+      "baseline_peak_rss_mib": 500.50390625,
+      "additional_peak_rss_mib": 150.765625,
+      "failure_rate": 0.0,
+      "solution_sha256": "d5147b315c262fa9ccd6bf22c71ced59a8d6346d3a7b8c75be04b8235084ba03",
+      "max_abs_final_solution": 1.0504408897418327
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.01694652088917792,
+      "total_seconds": 0.5038145538419485,
+      "median_rhs_calls": 31.0,
+      "rhs_calls": [
+        31,
+        31,
+        31,
+        31,
+        31,
+        31
+      ],
+      "krylov_iterations": [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        4.9861128670969447e-08,
+        2.7210076325838286e-08,
+        2.2430385827361474e-08,
+        4.9861128670969447e-08,
+        2.7210076325838286e-08,
+        2.2430385827361474e-08
+      ],
+      "peak_rss_mib": 651.66015625,
+      "baseline_peak_rss_mib": 500.74609375,
+      "additional_peak_rss_mib": 150.9140625,
+      "failure_rate": 0.0,
+      "solution_sha256": "defa5290cd5df831fcc0253e55a9477cbd597461218516ce8e487a9bfa173c79",
+      "max_abs_final_solution": 1.0504408897417772
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.01640877523459494,
+      "total_seconds": 0.483103740029037,
+      "median_rhs_calls": 31.0,
+      "rhs_calls": [
+        31,
+        31,
+        27,
+        31,
+        31,
+        27
+      ],
+      "krylov_iterations": [
+        10.0,
+        10.0,
+        8.0,
+        10.0,
+        10.0,
+        8.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        4.9861128670969447e-08,
+        2.0614581407976242e-09,
+        1.6751262188320112e-09,
+        4.9861128670969447e-08,
+        2.0614581407976242e-09,
+        1.6751262188320112e-09
+      ],
+      "peak_rss_mib": 651.703125,
+      "baseline_peak_rss_mib": 500.79296875,
+      "additional_peak_rss_mib": 150.91015625,
+      "failure_rate": 0.0,
+      "solution_sha256": "26ccf8dbfbfcd187d5136d5cc212c142d5dbc055d4cacb04a793c9ff4bdaff3b",
+      "max_abs_final_solution": 1.050440889741798
+    },
+    {
+      "scheme": "radau2",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 4,
+      "failures": 2,
+      "median_seconds": 0.6056105101015419,
+      "total_seconds": 2.8151060193777084,
+      "median_rhs_calls": 755.0,
+      "rhs_calls": [
+        823,
+        687,
+        823,
+        687
+      ],
+      "krylov_iterations": [
+        395.0,
+        328.0,
+        395.0,
+        328.0
+      ],
+      "newton_map_evaluations": [
+        5.0,
+        6.0,
+        5.0,
+        6.0
+      ],
+      "residuals": [
+        2.1805375486940013e-07,
+        2.050653416499409e-06,
+        2.1805375486940013e-07,
+        2.050653416499409e-06
+      ],
+      "peak_rss_mib": 651.28125,
+      "baseline_peak_rss_mib": 500.6328125,
+      "additional_peak_rss_mib": 150.6484375,
+      "failure_rate": 0.5,
+      "solution_sha256": "459a2e3eead329f1b9df56387706c35f0a3b7c9f650295018f091eec61ab409e",
+      "max_abs_final_solution": 1.067350151771822
+    },
+    {
+      "scheme": "radau2",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.059304423397406936,
+      "total_seconds": 0.7571461275219917,
+      "median_rhs_calls": 81.0,
+      "rhs_calls": [
+        109,
+        81,
+        69,
+        109,
+        81,
+        69
+      ],
+      "krylov_iterations": [
+        49.0,
+        36.0,
+        30.0,
+        49.0,
+        36.0,
+        30.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        3.0,
+        3.0,
+        4.0,
+        3.0,
+        3.0
+      ],
+      "residuals": [
+        3.945670185638835e-07,
+        6.158894597864652e-07,
+        9.59320475037161e-07,
+        3.945670185638835e-07,
+        6.158894597864652e-07,
+        9.59320475037161e-07
+      ],
+      "peak_rss_mib": 651.5859375,
+      "baseline_peak_rss_mib": 500.8125,
+      "additional_peak_rss_mib": 150.7734375,
+      "failure_rate": 0.0,
+      "solution_sha256": "59950333f11cee1d31a48b28453579bbf432fa4e83a3882451da6f933f7c8c90",
+      "max_abs_final_solution": 1.0504574748889453
+    },
+    {
+      "scheme": "radau2",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.013764631701633334,
+      "total_seconds": 0.4691158914938569,
+      "median_rhs_calls": 25.0,
+      "rhs_calls": [
+        31,
+        23,
+        25,
+        31,
+        23,
+        25
+      ],
+      "krylov_iterations": [
+        10.0,
+        7.0,
+        8.0,
+        10.0,
+        7.0,
+        8.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        3.0,
+        3.0,
+        4.0,
+        3.0,
+        3.0
+      ],
+      "residuals": [
+        1.8680694366788476e-07,
+        2.0162161714808697e-07,
+        3.4236862462386363e-09,
+        1.8680694366788476e-07,
+        2.0162161714808697e-07,
+        3.4236862462386363e-09
+      ],
+      "peak_rss_mib": 651.77734375,
+      "baseline_peak_rss_mib": 500.8515625,
+      "additional_peak_rss_mib": 150.92578125,
+      "failure_rate": 0.0,
+      "solution_sha256": "933775610706e0b569a140348b3fa1ad11e8c8b2c7ad36094f48fce8024e41b2",
+      "max_abs_final_solution": 1.0504574748889353
+    },
+    {
+      "scheme": "radau2",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.01676078513264656,
+      "total_seconds": 0.5127349831163883,
+      "median_rhs_calls": 31.0,
+      "rhs_calls": [
+        31,
+        31,
+        23,
+        31,
+        31,
+        23
+      ],
+      "krylov_iterations": [
+        10.0,
+        10.0,
+        7.0,
+        10.0,
+        10.0,
+        7.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        3.0,
+        4.0,
+        4.0,
+        3.0
+      ],
+      "residuals": [
+        1.8680694366788476e-07,
+        2.5377696023455504e-07,
+        3.496370671816962e-08,
+        1.8680694366788476e-07,
+        2.5377696023455504e-07,
+        3.496370671816962e-08
+      ],
+      "peak_rss_mib": 651.5546875,
+      "baseline_peak_rss_mib": 500.640625,
+      "additional_peak_rss_mib": 150.9140625,
+      "failure_rate": 0.0,
+      "solution_sha256": "bfaa5cfb6a8cc557f4044638d9ff3b0959d2c75aa510c297acb1c5a7d4ce454c",
+      "max_abs_final_solution": 1.0504574748889357
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 192,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 4,
+      "failures": 2,
+      "median_seconds": 1.0520709014963359,
+      "total_seconds": 4.5913122203201056,
+      "median_rhs_calls": 1182.0,
+      "rhs_calls": [
+        1236,
+        1128,
+        1236,
+        1128
+      ],
+      "krylov_iterations": [
+        396.0,
+        360.0,
+        396.0,
+        360.0
+      ],
+      "newton_map_evaluations": [
+        5.0,
+        6.0,
+        5.0,
+        6.0
+      ],
+      "residuals": [
+        1.227791511427557e-07,
+        1.0927957695719295e-06,
+        1.227791511427557e-07,
+        1.0927957695719295e-06
+      ],
+      "peak_rss_mib": 652.16796875,
+      "baseline_peak_rss_mib": 501.0234375,
+      "additional_peak_rss_mib": 151.14453125,
+      "failure_rate": 0.5,
+      "solution_sha256": "e731527cae04ab1f31b4ef2eb04eeefd329652ce9d062707fe6618128877d6ba",
+      "max_abs_final_solution": 1.0673510742579124
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 192,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.13790562492795289,
+      "total_seconds": 1.27811196167022,
+      "median_rhs_calls": 174.0,
+      "rhs_calls": [
+        207,
+        174,
+        159,
+        207,
+        174,
+        159
+      ],
+      "krylov_iterations": [
+        64.0,
+        53.0,
+        48.0,
+        64.0,
+        53.0,
+        48.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        1.0936618445737746e-07,
+        2.619240444246712e-07,
+        3.841653063336821e-07,
+        1.0936618445737746e-07,
+        2.619240444246712e-07,
+        3.841653063336821e-07
+      ],
+      "peak_rss_mib": 652.3671875,
+      "baseline_peak_rss_mib": 501.16796875,
+      "additional_peak_rss_mib": 151.19921875,
+      "failure_rate": 0.0,
+      "solution_sha256": "66e6dc7952a69c1fb6a1f7fc50a5c3dd76041714c90ea11ca0675c11246b757a",
+      "max_abs_final_solution": 1.0504738312696198
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 192,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.025920778978616,
+      "total_seconds": 0.5560639067552984,
+      "median_rhs_calls": 45.0,
+      "rhs_calls": [
+        45,
+        45,
+        45,
+        45,
+        45,
+        45
+      ],
+      "krylov_iterations": [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        4.880029955383713e-08,
+        1.6028348025559485e-08,
+        1.1042473097485787e-08,
+        4.880029955383713e-08,
+        1.6028348025559485e-08,
+        1.1042473097485787e-08
+      ],
+      "peak_rss_mib": 652.59375,
+      "baseline_peak_rss_mib": 501.24609375,
+      "additional_peak_rss_mib": 151.34765625,
+      "failure_rate": 0.0,
+      "solution_sha256": "4a27e6881333a62ec92be7fd9fe237d5b48f1ee854a42405a333222c7be0dd98",
+      "max_abs_final_solution": 1.0504738312697688
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 192,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.02961581409908831,
+      "total_seconds": 0.5673869182355702,
+      "median_rhs_calls": 48.0,
+      "rhs_calls": [
+        45,
+        54,
+        48,
+        45,
+        54,
+        48
+      ],
+      "krylov_iterations": [
+        10.0,
+        12.0,
+        11.0,
+        10.0,
+        12.0,
+        11.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        5.0,
+        4.0,
+        4.0,
+        5.0,
+        4.0
+      ],
+      "residuals": [
+        4.880029955383713e-08,
+        6.151996131764e-11,
+        4.106887995435855e-07,
+        4.880029955383713e-08,
+        6.151996131764e-11,
+        4.106887995435855e-07
+      ],
+      "peak_rss_mib": 652.296875,
+      "baseline_peak_rss_mib": 500.9609375,
+      "additional_peak_rss_mib": 151.3359375,
+      "failure_rate": 0.0,
+      "solution_sha256": "a03702942fd298b019a02c4ecb0c5ccb917e84dbb5617b771f14001332018701",
+      "max_abs_final_solution": 1.0504738312697137
+    },
+    {
+      "scheme": "radau3",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 192,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 4,
+      "failures": 2,
+      "median_seconds": 1.2249549482949078,
+      "total_seconds": 5.31260602036491,
+      "median_rhs_calls": 1438.5,
+      "rhs_calls": [
+        1494,
+        1383,
+        1494,
+        1383
+      ],
+      "krylov_iterations": [
+        480.0,
+        442.0,
+        480.0,
+        442.0
+      ],
+      "newton_map_evaluations": [
+        5.0,
+        7.0,
+        5.0,
+        7.0
+      ],
+      "residuals": [
+        4.4604671846266745e-07,
+        1.993683836978225e-06,
+        4.4604671846266745e-07,
+        1.993683836978225e-06
+      ],
+      "peak_rss_mib": 652.11328125,
+      "baseline_peak_rss_mib": 501.01171875,
+      "additional_peak_rss_mib": 151.1015625,
+      "failure_rate": 0.5,
+      "solution_sha256": "7e4bb774c1b79a4e081645d16b98ee2e24823a2ef5375c07a1c1ff09ad910211",
+      "max_abs_final_solution": 1.067351074342914
+    },
+    {
+      "scheme": "radau3",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 192,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 4,
+      "failures": 2,
+      "median_seconds": 0.19198439503088593,
+      "total_seconds": 1.164563371334225,
+      "median_rhs_calls": 235.5,
+      "rhs_calls": [
+        273,
+        198,
+        273,
+        198
+      ],
+      "krylov_iterations": [
+        84.0,
+        59.0,
+        84.0,
+        59.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        5.0,
+        4.0,
+        5.0
+      ],
+      "residuals": [
+        2.425405015047561e-07,
+        2.79281324243545e-06,
+        2.425405015047561e-07,
+        2.79281324243545e-06
+      ],
+      "peak_rss_mib": 652.0546875,
+      "baseline_peak_rss_mib": 500.859375,
+      "additional_peak_rss_mib": 151.1953125,
+      "failure_rate": 0.5,
+      "solution_sha256": "d291e81ea8224e72f4d4f19a22dd61c8fed051375b32e948d112ab001fd9643d",
+      "max_abs_final_solution": 1.067351074342865
+    },
+    {
+      "scheme": "radau3",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 192,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.018282772973179817,
+      "total_seconds": 0.5144951534457505,
+      "median_rhs_calls": 33.0,
+      "rhs_calls": [
+        45,
+        33,
+        33,
+        45,
+        33,
+        33
+      ],
+      "krylov_iterations": [
+        10.0,
+        7.0,
+        7.0,
+        10.0,
+        7.0,
+        7.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        3.0,
+        3.0,
+        4.0,
+        3.0,
+        3.0
+      ],
+      "residuals": [
+        1.0535637690079905e-07,
+        1.4835979803746045e-07,
+        1.4873837164266065e-09,
+        1.0535637690079905e-07,
+        1.4835979803746045e-07,
+        1.4873837164266065e-09
+      ],
+      "peak_rss_mib": 652.3359375,
+      "baseline_peak_rss_mib": 500.98828125,
+      "additional_peak_rss_mib": 151.34765625,
+      "failure_rate": 0.0,
+      "solution_sha256": "88133d9f38705792356bda64e80f885ec572c9d9deb8f15d88815ce88ca3e733",
+      "max_abs_final_solution": 1.0504579517395536
+    },
+    {
+      "scheme": "radau3",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 192,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.025580999674275517,
+      "total_seconds": 0.5378435738384724,
+      "median_rhs_calls": 45.0,
+      "rhs_calls": [
+        45,
+        45,
+        33,
+        45,
+        45,
+        33
+      ],
+      "krylov_iterations": [
+        10.0,
+        10.0,
+        7.0,
+        10.0,
+        10.0,
+        7.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        3.0,
+        4.0,
+        4.0,
+        3.0
+      ],
+      "residuals": [
+        1.0535637690079905e-07,
+        1.8927500865267757e-07,
+        7.091280653108858e-09,
+        1.0535637690079905e-07,
+        1.8927500865267757e-07,
+        7.091280653108858e-09
+      ],
+      "peak_rss_mib": 652.41015625,
+      "baseline_peak_rss_mib": 500.99609375,
+      "additional_peak_rss_mib": 151.4140625,
+      "failure_rate": 0.0,
+      "solution_sha256": "f08647e199c4fcfa9f5aaf8f538dbdb1c452f9ba0f583793bb7c449761399a44",
+      "max_abs_final_solution": 1.0504579517395543
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 4,
+      "failures": 2,
+      "median_seconds": 0.2191832426469773,
+      "total_seconds": 1.2636937350034714,
+      "median_rhs_calls": 256.0,
+      "rhs_calls": [
+        282,
+        230,
+        282,
+        230
+      ],
+      "krylov_iterations": [
+        268.0,
+        212.0,
+        268.0,
+        212.0
+      ],
+      "newton_map_evaluations": [
+        8.0,
+        10.0,
+        8.0,
+        10.0
+      ],
+      "residuals": [
+        5.758243013591623e-08,
+        2.469214229206003e-06,
+        5.758243013591623e-08,
+        2.469214229206003e-06
+      ],
+      "peak_rss_mib": 650.921875,
+      "baseline_peak_rss_mib": 500.3359375,
+      "additional_peak_rss_mib": 150.5859375,
+      "failure_rate": 0.5,
+      "solution_sha256": "843c0301c695921a0caf7388883512c66794c646786e797ff88be37a60e8f2b2",
+      "max_abs_final_solution": 1.0673263479708597
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 2,
+      "median_seconds": 0.011307614389806986,
+      "total_seconds": 0.47015204513445497,
+      "median_rhs_calls": 22.0,
+      "rhs_calls": [
+        30,
+        22,
+        22,
+        30,
+        22,
+        22
+      ],
+      "krylov_iterations": [
+        20.0,
+        14.0,
+        12.0,
+        20.0,
+        14.0,
+        12.0
+      ],
+      "newton_map_evaluations": [
+        8.0,
+        6.0,
+        8.0,
+        8.0,
+        6.0,
+        8.0
+      ],
+      "residuals": [
+        1.5806060953926044e-07,
+        1.0794866106294257e-07,
+        1.002254071812654e-06,
+        1.5806060953926044e-07,
+        1.0794866106294257e-07,
+        1.002254071812654e-06
+      ],
+      "peak_rss_mib": 651.23046875,
+      "baseline_peak_rss_mib": 500.6484375,
+      "additional_peak_rss_mib": 150.58203125,
+      "failure_rate": 0.3333333333333333,
+      "solution_sha256": "fd102ec19e25cb45decc899377846a7fe008777f39250db69a40183cb873d6f6",
+      "max_abs_final_solution": 1.0504467005592146
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "reaction",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "diagonal",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 2,
+      "median_seconds": 0.013720549177378416,
+      "total_seconds": 0.4777296925894916,
+      "median_rhs_calls": 26.0,
+      "rhs_calls": [
+        30,
+        26,
+        23,
+        30,
+        26,
+        23
+      ],
+      "krylov_iterations": [
+        20.0,
+        17.0,
+        13.0,
+        20.0,
+        17.0,
+        13.0
+      ],
+      "newton_map_evaluations": [
+        8.0,
+        7.0,
+        8.0,
+        8.0,
+        7.0,
+        8.0
+      ],
+      "residuals": [
+        1.5806060953926044e-07,
+        1.0739178732780803e-07,
+        1.0022538765513379e-06,
+        1.5806060953926044e-07,
+        1.0739178732780803e-07,
+        1.0022538765513379e-06
+      ],
+      "peak_rss_mib": 651.36328125,
+      "baseline_peak_rss_mib": 500.796875,
+      "additional_peak_rss_mib": 150.56640625,
+      "failure_rate": 0.3333333333333333,
+      "solution_sha256": "b6e277ba4c37d59fda880da1851c922027dc323aab3f581bed74638c54a452c6",
+      "max_abs_final_solution": 1.0504467005592146
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.668274512514472,
+      "total_seconds": 4.5012149177491665,
+      "median_rhs_calls": 785.0,
+      "rhs_calls": [
+        853,
+        785,
+        765,
+        853,
+        785,
+        765
+      ],
+      "krylov_iterations": [
+        410.0,
+        377.0,
+        367.0,
+        410.0,
+        377.0,
+        367.0
+      ],
+      "newton_map_evaluations": [
+        5.0,
+        5.0,
+        5.0,
+        5.0,
+        5.0,
+        5.0
+      ],
+      "residuals": [
+        9.83767410015229e-08,
+        1.631410470483457e-07,
+        6.182816784015837e-07,
+        9.83767410015229e-08,
+        1.631410470483457e-07,
+        6.182816784015837e-07
+      ],
+      "peak_rss_mib": 651.44140625,
+      "baseline_peak_rss_mib": 500.75,
+      "additional_peak_rss_mib": 150.69140625,
+      "failure_rate": 0.0,
+      "solution_sha256": "eeba4cd30d0b60249a899d8b2cf953e005a5535113ca99f9b0f4c4378f291121",
+      "max_abs_final_solution": 1.0679751551074246
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.05599431484006345,
+      "total_seconds": 0.7619779431261122,
+      "median_rhs_calls": 79.0,
+      "rhs_calls": [
+        93,
+        79,
+        77,
+        93,
+        79,
+        77
+      ],
+      "krylov_iterations": [
+        41.0,
+        34.0,
+        33.0,
+        41.0,
+        34.0,
+        33.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        4.170845826869138e-08,
+        1.0520655259890841e-07,
+        3.874886190799895e-08,
+        4.170845826869138e-08,
+        1.0520655259890841e-07,
+        3.874886190799895e-08
+      ],
+      "peak_rss_mib": 651.70703125,
+      "baseline_peak_rss_mib": 500.671875,
+      "additional_peak_rss_mib": 151.03515625,
+      "failure_rate": 0.0,
+      "solution_sha256": "253a000ddf893e3215ff797a4a3ce3bb4d2887673261629e565ccbacd03faf25",
+      "max_abs_final_solution": 1.0679751551074264
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.01760179130360484,
+      "total_seconds": 0.5059738727286458,
+      "median_rhs_calls": 31.0,
+      "rhs_calls": [
+        31,
+        31,
+        31,
+        31,
+        31,
+        31
+      ],
+      "krylov_iterations": [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        7.82527363556457e-08,
+        2.516238976130773e-08,
+        1.8695133654294146e-08,
+        7.82527363556457e-08,
+        2.516238976130773e-08,
+        1.8695133654294146e-08
+      ],
+      "peak_rss_mib": 651.6796875,
+      "baseline_peak_rss_mib": 500.72265625,
+      "additional_peak_rss_mib": 150.95703125,
+      "failure_rate": 0.0,
+      "solution_sha256": "fada11f95f4617e0ac63de0c6aff409400f4177161a1ca10647e205cdbf0cdbc",
+      "max_abs_final_solution": 1.067975155107462
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.016688737086951733,
+      "total_seconds": 0.5000570495612919,
+      "median_rhs_calls": 31.0,
+      "rhs_calls": [
+        31,
+        31,
+        27,
+        31,
+        31,
+        27
+      ],
+      "krylov_iterations": [
+        10.0,
+        10.0,
+        8.0,
+        10.0,
+        10.0,
+        8.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        7.82527363556457e-08,
+        2.981380308386232e-10,
+        4.47226471672465e-10,
+        7.82527363556457e-08,
+        2.981380308386232e-10,
+        4.47226471672465e-10
+      ],
+      "peak_rss_mib": 651.7734375,
+      "baseline_peak_rss_mib": 500.80078125,
+      "additional_peak_rss_mib": 150.97265625,
+      "failure_rate": 0.0,
+      "solution_sha256": "4b352cdf5bb843de36a41c12c15b770aca40b6244d0a5dcf4bd639467c609d3e",
+      "max_abs_final_solution": 1.06797515510745
+    },
+    {
+      "scheme": "radau2",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 2,
+      "median_seconds": 0.8542215048801154,
+      "total_seconds": 5.621565404348075,
+      "median_rhs_calls": 1027.0,
+      "rhs_calls": [
+        1151,
+        1027,
+        961,
+        1151,
+        1027,
+        961
+      ],
+      "krylov_iterations": [
+        554.0,
+        494.0,
+        460.0,
+        554.0,
+        494.0,
+        460.0
+      ],
+      "newton_map_evaluations": [
+        6.0,
+        6.0,
+        7.0,
+        6.0,
+        6.0,
+        7.0
+      ],
+      "residuals": [
+        1.2845372070618996e-07,
+        9.011705965037941e-07,
+        1.1105109912734461e-06,
+        1.2845372070618996e-07,
+        9.011705965037941e-07,
+        1.1105109912734461e-06
+      ],
+      "peak_rss_mib": 651.078125,
+      "baseline_peak_rss_mib": 500.5390625,
+      "additional_peak_rss_mib": 150.5390625,
+      "failure_rate": 0.3333333333333333,
+      "solution_sha256": "f85ae8f433486343534ef33497de5224be000f3621848e0945e68c3ae5865d29",
+      "max_abs_final_solution": 1.0679749346960146
+    },
+    {
+      "scheme": "radau2",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.0613086000084877,
+      "total_seconds": 0.8191840355284512,
+      "median_rhs_calls": 81.0,
+      "rhs_calls": [
+        111,
+        81,
+        71,
+        111,
+        81,
+        71
+      ],
+      "krylov_iterations": [
+        50.0,
+        36.0,
+        31.0,
+        50.0,
+        36.0,
+        31.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        3.0,
+        3.0,
+        4.0,
+        3.0,
+        3.0
+      ],
+      "residuals": [
+        8.669239697298583e-08,
+        6.224807629972633e-07,
+        6.556823609149794e-07,
+        8.669239697298583e-08,
+        6.224807629972633e-07,
+        6.556823609149794e-07
+      ],
+      "peak_rss_mib": 651.94921875,
+      "baseline_peak_rss_mib": 500.95703125,
+      "additional_peak_rss_mib": 150.9921875,
+      "failure_rate": 0.0,
+      "solution_sha256": "f1e7b3edebdf19e5db6b9eb64c69f5be09014b37d7aba40b2df0550857cb00ca",
+      "max_abs_final_solution": 1.0679749346960101
+    },
+    {
+      "scheme": "radau2",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.012171569047495723,
+      "total_seconds": 0.49028114695101976,
+      "median_rhs_calls": 23.0,
+      "rhs_calls": [
+        31,
+        23,
+        23,
+        31,
+        23,
+        23
+      ],
+      "krylov_iterations": [
+        10.0,
+        7.0,
+        7.0,
+        10.0,
+        7.0,
+        7.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        3.0,
+        3.0,
+        4.0,
+        3.0,
+        3.0
+      ],
+      "residuals": [
+        2.5872082163467685e-07,
+        1.7673627523386484e-07,
+        2.926376120445388e-09,
+        2.5872082163467685e-07,
+        1.7673627523386484e-07,
+        2.926376120445388e-09
+      ],
+      "peak_rss_mib": 651.85546875,
+      "baseline_peak_rss_mib": 500.8671875,
+      "additional_peak_rss_mib": 150.98828125,
+      "failure_rate": 0.0,
+      "solution_sha256": "993a8ec3671c687c6c6d00049d610fa4a2bcc5fe70b6354f51c6e9a7de366adb",
+      "max_abs_final_solution": 1.0679749346960183
+    },
+    {
+      "scheme": "radau2",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.017452921718358994,
+      "total_seconds": 0.5041009178385139,
+      "median_rhs_calls": 31.0,
+      "rhs_calls": [
+        31,
+        31,
+        23,
+        31,
+        31,
+        23
+      ],
+      "krylov_iterations": [
+        10.0,
+        10.0,
+        7.0,
+        10.0,
+        10.0,
+        7.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        3.0,
+        4.0,
+        4.0,
+        3.0
+      ],
+      "residuals": [
+        2.5872082163467685e-07,
+        4.053608359154802e-07,
+        7.455005786991132e-08,
+        2.5872082163467685e-07,
+        4.053608359154802e-07,
+        7.455005786991132e-08
+      ],
+      "peak_rss_mib": 651.75390625,
+      "baseline_peak_rss_mib": 500.80078125,
+      "additional_peak_rss_mib": 150.953125,
+      "failure_rate": 0.0,
+      "solution_sha256": "d25ee5c7249b4bb88c2b3abed051277876acdec25edfcd17c402881afae5d7b1",
+      "max_abs_final_solution": 1.0679749346960148
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 768,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 1.2398352220188826,
+      "total_seconds": 7.817575416062027,
+      "median_rhs_calls": 1443.0,
+      "rhs_calls": [
+        1494,
+        1443,
+        1353,
+        1494,
+        1443,
+        1353
+      ],
+      "krylov_iterations": [
+        480.0,
+        463.0,
+        434.0,
+        480.0,
+        463.0,
+        434.0
+      ],
+      "newton_map_evaluations": [
+        5.0,
+        5.0,
+        5.0,
+        5.0,
+        5.0,
+        5.0
+      ],
+      "residuals": [
+        9.222121206643259e-08,
+        1.7005840809784114e-07,
+        3.489532765363761e-07,
+        9.222121206643259e-08,
+        1.7005840809784114e-07,
+        3.489532765363761e-07
+      ],
+      "peak_rss_mib": 652.484375,
+      "baseline_peak_rss_mib": 501.171875,
+      "additional_peak_rss_mib": 151.3125,
+      "failure_rate": 0.0,
+      "solution_sha256": "2483b971e2a5430edbe938eff97853020644703e1bf822b21f9d8e0d6de5054f",
+      "max_abs_final_solution": 1.067975153674831
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 768,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.15128965373151004,
+      "total_seconds": 1.3195650982670486,
+      "median_rhs_calls": 180.0,
+      "rhs_calls": [
+        207,
+        180,
+        162,
+        207,
+        180,
+        162
+      ],
+      "krylov_iterations": [
+        64.0,
+        55.0,
+        49.0,
+        64.0,
+        55.0,
+        49.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        1.3049644395332152e-07,
+        2.7022839082397517e-08,
+        4.892835386380534e-08,
+        1.3049644395332152e-07,
+        2.7022839082397517e-08,
+        4.892835386380534e-08
+      ],
+      "peak_rss_mib": 652.5,
+      "baseline_peak_rss_mib": 501.05078125,
+      "additional_peak_rss_mib": 151.44921875,
+      "failure_rate": 0.0,
+      "solution_sha256": "6e786a97d8ea159171ffffb061b84a758899d0b251f61ed0862f2860a68ed896",
+      "max_abs_final_solution": 1.06797515367483
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 768,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.026315695140510798,
+      "total_seconds": 0.553866567555815,
+      "median_rhs_calls": 45.0,
+      "rhs_calls": [
+        45,
+        45,
+        45,
+        45,
+        45,
+        45
+      ],
+      "krylov_iterations": [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        6.721782531756519e-08,
+        1.3185100641712918e-08,
+        8.646521856385328e-09,
+        6.721782531756519e-08,
+        1.3185100641712918e-08,
+        8.646521856385328e-09
+      ],
+      "peak_rss_mib": 652.48046875,
+      "baseline_peak_rss_mib": 501.05078125,
+      "additional_peak_rss_mib": 151.4296875,
+      "failure_rate": 0.0,
+      "solution_sha256": "dfc4e9d851cc38054f7aabb0994adb69760c83d88357fc393cefeaf1f640346f",
+      "max_abs_final_solution": 1.0679751536748374
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 768,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.030271769035607576,
+      "total_seconds": 0.5724564511328936,
+      "median_rhs_calls": 48.0,
+      "rhs_calls": [
+        45,
+        54,
+        48,
+        45,
+        54,
+        48
+      ],
+      "krylov_iterations": [
+        10.0,
+        12.0,
+        11.0,
+        10.0,
+        12.0,
+        11.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        5.0,
+        4.0,
+        4.0,
+        5.0,
+        4.0
+      ],
+      "residuals": [
+        6.721782531756519e-08,
+        5.175484708416134e-11,
+        9.126859639150408e-07,
+        6.721782531756519e-08,
+        5.175484708416134e-11,
+        9.126859639150408e-07
+      ],
+      "peak_rss_mib": 652.5859375,
+      "baseline_peak_rss_mib": 501.18359375,
+      "additional_peak_rss_mib": 151.40234375,
+      "failure_rate": 0.0,
+      "solution_sha256": "bc2bda77787b9fe1330e97565607a6797a03eed2d083e9f2d9247a253365fd41",
+      "max_abs_final_solution": 1.067975153674837
+    },
+    {
+      "scheme": "radau3",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 768,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 1.5296878304798156,
+      "total_seconds": 9.547712184954435,
+      "median_rhs_calls": 1788.0,
+      "rhs_calls": [
+        1866,
+        1788,
+        1668,
+        1866,
+        1788,
+        1668
+      ],
+      "krylov_iterations": [
+        600.0,
+        574.0,
+        536.0,
+        600.0,
+        574.0,
+        536.0
+      ],
+      "newton_map_evaluations": [
+        6.0,
+        6.0,
+        6.0,
+        6.0,
+        6.0,
+        6.0
+      ],
+      "residuals": [
+        6.282209268275257e-07,
+        9.592220642053609e-07,
+        9.93073378998637e-07,
+        6.282209268275257e-07,
+        9.592220642053609e-07,
+        9.93073378998637e-07
+      ],
+      "peak_rss_mib": 652.5,
+      "baseline_peak_rss_mib": 501.18359375,
+      "additional_peak_rss_mib": 151.31640625,
+      "failure_rate": 0.0,
+      "solution_sha256": "fbe5fa92bba1ddb785f84565fb4b29f324c4d847fb10fee842af0d3bdedbcde9",
+      "max_abs_final_solution": 1.0679751540552935
+    },
+    {
+      "scheme": "radau3",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 768,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.1601630246732384,
+      "total_seconds": 1.4490258651785553,
+      "median_rhs_calls": 192.0,
+      "rhs_calls": [
+        276,
+        192,
+        159,
+        276,
+        192,
+        159
+      ],
+      "krylov_iterations": [
+        85.0,
+        59.0,
+        48.0,
+        85.0,
+        59.0,
+        48.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        3.0,
+        3.0,
+        4.0,
+        3.0,
+        3.0
+      ],
+      "residuals": [
+        1.1692219599248943e-07,
+        8.769720445246078e-07,
+        9.226604169976385e-07,
+        1.1692219599248943e-07,
+        8.769720445246078e-07,
+        9.226604169976385e-07
+      ],
+      "peak_rss_mib": 652.55078125,
+      "baseline_peak_rss_mib": 501.10546875,
+      "additional_peak_rss_mib": 151.4453125,
+      "failure_rate": 0.0,
+      "solution_sha256": "58934c44d89d1ee457b5b0328db7c291fbcbc6cb3b225bcd36e66256757e237b",
+      "max_abs_final_solution": 1.0679751540552909
+    },
+    {
+      "scheme": "radau3",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 768,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.018799662357196212,
+      "total_seconds": 0.5251141199842095,
+      "median_rhs_calls": 33.0,
+      "rhs_calls": [
+        45,
+        33,
+        33,
+        45,
+        33,
+        33
+      ],
+      "krylov_iterations": [
+        10.0,
+        7.0,
+        7.0,
+        10.0,
+        7.0,
+        7.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        3.0,
+        3.0,
+        4.0,
+        3.0,
+        3.0
+      ],
+      "residuals": [
+        1.5188491481307396e-07,
+        8.315269946843712e-08,
+        1.5373234368734387e-09,
+        1.5188491481307396e-07,
+        8.315269946843712e-08,
+        1.5373234368734387e-09
+      ],
+      "peak_rss_mib": 652.38671875,
+      "baseline_peak_rss_mib": 500.984375,
+      "additional_peak_rss_mib": 151.40234375,
+      "failure_rate": 0.0,
+      "solution_sha256": "29fc2daa4fe604688b4e74b130f8d280914ad94f675b0f716154a23d645d58c2",
+      "max_abs_final_solution": 1.0679751540553004
+    },
+    {
+      "scheme": "radau3",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 768,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.02747294958680868,
+      "total_seconds": 0.5455554532818496,
+      "median_rhs_calls": 45.0,
+      "rhs_calls": [
+        45,
+        45,
+        33,
+        45,
+        45,
+        33
+      ],
+      "krylov_iterations": [
+        10.0,
+        10.0,
+        7.0,
+        10.0,
+        10.0,
+        7.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        3.0,
+        4.0,
+        4.0,
+        3.0
+      ],
+      "residuals": [
+        1.5188491481307396e-07,
+        2.4675591690454863e-07,
+        9.593115472518639e-09,
+        1.5188491481307396e-07,
+        2.4675591690454863e-07,
+        9.593115472518639e-09
+      ],
+      "peak_rss_mib": 652.44140625,
+      "baseline_peak_rss_mib": 501.015625,
+      "additional_peak_rss_mib": 151.42578125,
+      "failure_rate": 0.0,
+      "solution_sha256": "ca30d2fdca39f9411218d7152752fb65c8d8529b2fdad7226bb03e268fbbeea5",
+      "max_abs_final_solution": 1.0679751540552958
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 4,
+      "failures": 2,
+      "median_seconds": 0.45658246194943786,
+      "total_seconds": 2.2128878962248564,
+      "median_rhs_calls": 508.0,
+      "rhs_calls": [
+        576,
+        440,
+        576,
+        440
+      ],
+      "krylov_iterations": [
+        552.0,
+        417.0,
+        552.0,
+        417.0
+      ],
+      "newton_map_evaluations": [
+        8.0,
+        10.0,
+        8.0,
+        10.0
+      ],
+      "residuals": [
+        1.5247290961783944e-07,
+        1.4414994566966853e-06,
+        1.5247290961783944e-07,
+        1.4414994566966853e-06
+      ],
+      "peak_rss_mib": 651.23828125,
+      "baseline_peak_rss_mib": 500.64453125,
+      "additional_peak_rss_mib": 150.59375,
+      "failure_rate": 0.5,
+      "solution_sha256": "72480c00ea6d4154fb9fabdbf3bb2e6727155244645b1ecc43e8fb75b5c9fd9d",
+      "max_abs_final_solution": 1.0839454896851919
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.011133506195619702,
+      "total_seconds": 0.4635955966077745,
+      "median_rhs_calls": 22.0,
+      "rhs_calls": [
+        29,
+        22,
+        20,
+        29,
+        22,
+        20
+      ],
+      "krylov_iterations": [
+        19.0,
+        14.0,
+        12.0,
+        19.0,
+        14.0,
+        12.0
+      ],
+      "newton_map_evaluations": [
+        8.0,
+        6.0,
+        6.0,
+        8.0,
+        6.0,
+        6.0
+      ],
+      "residuals": [
+        1.727730456665779e-07,
+        1.0173203351529596e-07,
+        2.1492861581126146e-07,
+        1.727730456665779e-07,
+        1.0173203351529596e-07,
+        2.1492861581126146e-07
+      ],
+      "peak_rss_mib": 651.5546875,
+      "baseline_peak_rss_mib": 500.7578125,
+      "additional_peak_rss_mib": 150.796875,
+      "failure_rate": 0.0,
+      "solution_sha256": "9598947e779b4127295f5a2fe5bbeaa2fcf7e5662b7abab50ddee59432128c12",
+      "max_abs_final_solution": 1.0679716769841217
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "reaction",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "diagonal",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.013604137115180492,
+      "total_seconds": 0.4743805448524654,
+      "median_rhs_calls": 26.0,
+      "rhs_calls": [
+        29,
+        26,
+        21,
+        29,
+        26,
+        21
+      ],
+      "krylov_iterations": [
+        19.0,
+        17.0,
+        13.0,
+        19.0,
+        17.0,
+        13.0
+      ],
+      "newton_map_evaluations": [
+        8.0,
+        7.0,
+        6.0,
+        8.0,
+        7.0,
+        6.0
+      ],
+      "residuals": [
+        1.727730456665779e-07,
+        1.7416752713034977e-07,
+        2.1492876556367838e-07,
+        1.727730456665779e-07,
+        1.7416752713034977e-07,
+        2.1492876556367838e-07
+      ],
+      "peak_rss_mib": 651.42578125,
+      "baseline_peak_rss_mib": 500.640625,
+      "additional_peak_rss_mib": 150.78515625,
+      "failure_rate": 0.0,
+      "solution_sha256": "da25eff35a5b41e9d78eb54fe909c8a19e6d7af6fb022628e6b4638eed16c692",
+      "max_abs_final_solution": 1.0679716769841192
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.7469926381018013,
+      "total_seconds": 4.943446351680905,
+      "median_rhs_calls": 827.0,
+      "rhs_calls": [
+        889,
+        827,
+        803,
+        889,
+        827,
+        803
+      ],
+      "krylov_iterations": [
+        427.0,
+        397.0,
+        386.0,
+        427.0,
+        397.0,
+        386.0
+      ],
+      "newton_map_evaluations": [
+        5.0,
+        5.0,
+        5.0,
+        5.0,
+        5.0,
+        5.0
+      ],
+      "residuals": [
+        6.872347276578264e-08,
+        8.923529147340641e-08,
+        2.690582011675794e-07,
+        6.872347276578264e-08,
+        8.923529147340641e-08,
+        2.690582011675794e-07
+      ],
+      "peak_rss_mib": 651.6640625,
+      "baseline_peak_rss_mib": 500.6171875,
+      "additional_peak_rss_mib": 151.046875,
+      "failure_rate": 0.0,
+      "solution_sha256": "20fd5e46fc1a0aaea1696063d1f99604bbccb98c799a816b6e1d18cc1548b4a1",
+      "max_abs_final_solution": 1.0820533789857227
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.05970949959009886,
+      "total_seconds": 0.7723493478260934,
+      "median_rhs_calls": 81.0,
+      "rhs_calls": [
+        93,
+        81,
+        77,
+        93,
+        81,
+        77
+      ],
+      "krylov_iterations": [
+        41.0,
+        35.0,
+        33.0,
+        41.0,
+        35.0,
+        33.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        4.4651698954278804e-08,
+        6.058740188854897e-08,
+        2.6395565224029472e-08,
+        4.4651698954278804e-08,
+        6.058740188854897e-08,
+        2.6395565224029472e-08
+      ],
+      "peak_rss_mib": 652.1796875,
+      "baseline_peak_rss_mib": 500.80859375,
+      "additional_peak_rss_mib": 151.37109375,
+      "failure_rate": 0.0,
+      "solution_sha256": "ee1038011b7c9651336a604c9a8f2bac927082233dacd20161fb5bd09d9cc7a2",
+      "max_abs_final_solution": 1.0820533789857167
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.016008670208975673,
+      "total_seconds": 0.4964703992009163,
+      "median_rhs_calls": 29.0,
+      "rhs_calls": [
+        29,
+        29,
+        27,
+        29,
+        29,
+        27
+      ],
+      "krylov_iterations": [
+        9.0,
+        9.0,
+        8.0,
+        9.0,
+        9.0,
+        8.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        5.910694540698902e-08,
+        2.3677958203666414e-08,
+        1.8359786085364048e-08,
+        5.910694540698902e-08,
+        2.3677958203666414e-08,
+        1.8359786085364048e-08
+      ],
+      "peak_rss_mib": 651.6484375,
+      "baseline_peak_rss_mib": 500.48046875,
+      "additional_peak_rss_mib": 151.16796875,
+      "failure_rate": 0.0,
+      "solution_sha256": "323574b99c0d653c1295ea1bc76206119f8eebdf2552368dc1c643174fb8a2da",
+      "max_abs_final_solution": 1.0820533789857556
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.017104219878092408,
+      "total_seconds": 0.502798980101943,
+      "median_rhs_calls": 29.0,
+      "rhs_calls": [
+        29,
+        31,
+        27,
+        29,
+        31,
+        27
+      ],
+      "krylov_iterations": [
+        9.0,
+        10.0,
+        8.0,
+        9.0,
+        10.0,
+        8.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        5.910694540698902e-08,
+        1.9156336052819627e-10,
+        4.2014047494081875e-10,
+        5.910694540698902e-08,
+        1.9156336052819627e-10,
+        4.2014047494081875e-10
+      ],
+      "peak_rss_mib": 651.8828125,
+      "baseline_peak_rss_mib": 500.5390625,
+      "additional_peak_rss_mib": 151.34375,
+      "failure_rate": 0.0,
+      "solution_sha256": "8b92b83135deb679e4e397b19e41c655ca7406338ac7d11881ee192ef07b1b25",
+      "max_abs_final_solution": 1.0820533789857416
+    },
+    {
+      "scheme": "radau2",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.9388171799946576,
+      "total_seconds": 6.135597729124129,
+      "median_rhs_calls": 1087.0,
+      "rhs_calls": [
+        1213,
+        1087,
+        997,
+        1213,
+        1087,
+        997
+      ],
+      "krylov_iterations": [
+        584.0,
+        523.0,
+        480.0,
+        584.0,
+        523.0,
+        480.0
+      ],
+      "newton_map_evaluations": [
+        6.0,
+        6.0,
+        5.0,
+        6.0,
+        6.0,
+        5.0
+      ],
+      "residuals": [
+        7.172301769554417e-08,
+        4.3860413972417326e-07,
+        9.362089971621457e-07,
+        7.172301769554417e-08,
+        4.3860413972417326e-07,
+        9.362089971621457e-07
+      ],
+      "peak_rss_mib": 651.5546875,
+      "baseline_peak_rss_mib": 500.52734375,
+      "additional_peak_rss_mib": 151.02734375,
+      "failure_rate": 0.0,
+      "solution_sha256": "6c282fc6e3c12e679ae2c2d5401e53eb6def9ca1c0d0d69481e9b410c4af2fa1",
+      "max_abs_final_solution": 1.0820531780144886
+    },
+    {
+      "scheme": "radau2",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.06271342723630369,
+      "total_seconds": 0.8127482789568603,
+      "median_rhs_calls": 81.0,
+      "rhs_calls": [
+        111,
+        81,
+        73,
+        111,
+        81,
+        73
+      ],
+      "krylov_iterations": [
+        50.0,
+        36.0,
+        32.0,
+        50.0,
+        36.0,
+        32.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        3.0,
+        3.0,
+        4.0,
+        3.0,
+        3.0
+      ],
+      "residuals": [
+        8.548194330087446e-08,
+        6.250897626631547e-07,
+        1.2582952232922725e-07,
+        8.548194330087446e-08,
+        6.250897626631547e-07,
+        1.2582952232922725e-07
+      ],
+      "peak_rss_mib": 651.96484375,
+      "baseline_peak_rss_mib": 500.671875,
+      "additional_peak_rss_mib": 151.29296875,
+      "failure_rate": 0.0,
+      "solution_sha256": "7d6b3ee56d5be55dfe0410862928f9c965720027ebd21a5b6321139225a018d1",
+      "max_abs_final_solution": 1.0820531780144866
+    },
+    {
+      "scheme": "radau2",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.01246018591336906,
+      "total_seconds": 0.49014880042523146,
+      "median_rhs_calls": 23.0,
+      "rhs_calls": [
+        33,
+        23,
+        23,
+        33,
+        23,
+        23
+      ],
+      "krylov_iterations": [
+        11.0,
+        7.0,
+        7.0,
+        11.0,
+        7.0,
+        7.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        3.0,
+        3.0,
+        4.0,
+        3.0,
+        3.0
+      ],
+      "residuals": [
+        4.4511399377014015e-10,
+        1.7560312812076845e-07,
+        2.7977125105577555e-09,
+        4.4511399377014015e-10,
+        1.7560312812076845e-07,
+        2.7977125105577555e-09
+      ],
+      "peak_rss_mib": 652.140625,
+      "baseline_peak_rss_mib": 500.7421875,
+      "additional_peak_rss_mib": 151.3984375,
+      "failure_rate": 0.0,
+      "solution_sha256": "2e28029c3482b17591f38e1a9459764ba9d69ea8cc4163d63bcee06320ba11b5",
+      "max_abs_final_solution": 1.0820531780144866
+    },
+    {
+      "scheme": "radau2",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.017496320651844144,
+      "total_seconds": 0.5000835303217173,
+      "median_rhs_calls": 31.0,
+      "rhs_calls": [
+        33,
+        31,
+        23,
+        33,
+        31,
+        23
+      ],
+      "krylov_iterations": [
+        11.0,
+        10.0,
+        7.0,
+        11.0,
+        10.0,
+        7.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        3.0,
+        4.0,
+        4.0,
+        3.0
+      ],
+      "residuals": [
+        4.4511399377014015e-10,
+        3.3745406711516364e-07,
+        7.667821252885555e-08,
+        4.4511399377014015e-10,
+        3.3745406711516364e-07,
+        7.667821252885555e-08
+      ],
+      "peak_rss_mib": 652.0859375,
+      "baseline_peak_rss_mib": 500.73828125,
+      "additional_peak_rss_mib": 151.34765625,
+      "failure_rate": 0.0,
+      "solution_sha256": "55158d00521e850a45c1e0b38bb5b5d791203266f3547aa1661423fdc97c4afb",
+      "max_abs_final_solution": 1.0820531780144822
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 3072,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 1.3253229805268347,
+      "total_seconds": 8.241384181659669,
+      "median_rhs_calls": 1494.0,
+      "rhs_calls": [
+        1494,
+        1494,
+        1416,
+        1494,
+        1494,
+        1416
+      ],
+      "krylov_iterations": [
+        480.0,
+        480.0,
+        454.0,
+        480.0,
+        480.0,
+        454.0
+      ],
+      "newton_map_evaluations": [
+        5.0,
+        5.0,
+        5.0,
+        5.0,
+        5.0,
+        5.0
+      ],
+      "residuals": [
+        1.1772955965488629e-07,
+        1.1971073648227123e-07,
+        1.6722289793288872e-07,
+        1.1772955965488629e-07,
+        1.1971073648227123e-07,
+        1.6722289793288872e-07
+      ],
+      "peak_rss_mib": 652.9140625,
+      "baseline_peak_rss_mib": 501.3828125,
+      "additional_peak_rss_mib": 151.53125,
+      "failure_rate": 0.0,
+      "solution_sha256": "9f74a3c4c13c377e407276edbdba2409f2d41ece31173b3cf6546129b0b04318",
+      "max_abs_final_solution": 1.082053377692031
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 3072,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.15057244896888733,
+      "total_seconds": 1.3378482647240162,
+      "median_rhs_calls": 180.0,
+      "rhs_calls": [
+        210,
+        180,
+        162,
+        210,
+        180,
+        162
+      ],
+      "krylov_iterations": [
+        65.0,
+        55.0,
+        49.0,
+        65.0,
+        55.0,
+        49.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        3.944840932000079e-08,
+        1.996810160383786e-08,
+        4.5729994095928114e-08,
+        3.944840932000079e-08,
+        1.996810160383786e-08,
+        4.5729994095928114e-08
+      ],
+      "peak_rss_mib": 652.95703125,
+      "baseline_peak_rss_mib": 501.265625,
+      "additional_peak_rss_mib": 151.69140625,
+      "failure_rate": 0.0,
+      "solution_sha256": "cf88635d2b31bb0c37dc7c1070b6a1daba920e6f01d105bb1033afe0dde44bb2",
+      "max_abs_final_solution": 1.082053377692031
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 3072,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.02257138304412365,
+      "total_seconds": 0.5511713861487806,
+      "median_rhs_calls": 39.0,
+      "rhs_calls": [
+        42,
+        39,
+        39,
+        42,
+        39,
+        39
+      ],
+      "krylov_iterations": [
+        9.0,
+        8.0,
+        8.0,
+        9.0,
+        8.0,
+        8.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        4.7525914580408804e-08,
+        1.2897908063186197e-08,
+        8.362741901761938e-09,
+        4.7525914580408804e-08,
+        1.2897908063186197e-08,
+        8.362741901761938e-09
+      ],
+      "peak_rss_mib": 652.77734375,
+      "baseline_peak_rss_mib": 501.0546875,
+      "additional_peak_rss_mib": 151.72265625,
+      "failure_rate": 0.0,
+      "solution_sha256": "18a6014f121507a0caf97f9b46821dc94f84121e4f48b66cd457b5e1ea04c455",
+      "max_abs_final_solution": 1.08205337769204
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 3072,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.028119064401835203,
+      "total_seconds": 0.5622031278908253,
+      "median_rhs_calls": 48.0,
+      "rhs_calls": [
+        42,
+        48,
+        48,
+        42,
+        48,
+        48
+      ],
+      "krylov_iterations": [
+        9.0,
+        10.0,
+        10.0,
+        9.0,
+        10.0,
+        10.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        5.0,
+        5.0,
+        4.0,
+        5.0,
+        5.0
+      ],
+      "residuals": [
+        4.7525914580408804e-08,
+        3.3378850943789634e-11,
+        1.87137778359019e-11,
+        4.7525914580408804e-08,
+        3.3378850943789634e-11,
+        1.87137778359019e-11
+      ],
+      "peak_rss_mib": 652.7109375,
+      "baseline_peak_rss_mib": 500.92578125,
+      "additional_peak_rss_mib": 151.78515625,
+      "failure_rate": 0.0,
+      "solution_sha256": "6b46b0c0e5ff3f7d643f9cd78a90947b538c5d1815022987049ade10ef82b581",
+      "max_abs_final_solution": 1.0820533776920414
+    },
+    {
+      "scheme": "radau3",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 3072,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 1.6800873931497335,
+      "total_seconds": 10.295057151000947,
+      "median_rhs_calls": 1866.0,
+      "rhs_calls": [
+        1866,
+        1866,
+        1755,
+        1866,
+        1866,
+        1755
+      ],
+      "krylov_iterations": [
+        600.0,
+        600.0,
+        564.0,
+        600.0,
+        600.0,
+        564.0
+      ],
+      "newton_map_evaluations": [
+        6.0,
+        6.0,
+        6.0,
+        6.0,
+        6.0,
+        6.0
+      ],
+      "residuals": [
+        9.291615798648077e-07,
+        6.294838309006934e-07,
+        4.768569324156161e-07,
+        9.291615798648077e-07,
+        6.294838309006934e-07,
+        4.768569324156161e-07
+      ],
+      "peak_rss_mib": 652.64453125,
+      "baseline_peak_rss_mib": 501.08984375,
+      "additional_peak_rss_mib": 151.5546875,
+      "failure_rate": 0.0,
+      "solution_sha256": "04d8387b5e13b1861958dc93cb56345d19bb46849063afb501369533210323bf",
+      "max_abs_final_solution": 1.082053378077661
+    },
+    {
+      "scheme": "radau3",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 3072,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.16715815011411905,
+      "total_seconds": 1.5003856937400997,
+      "median_rhs_calls": 195.0,
+      "rhs_calls": [
+        279,
+        195,
+        162,
+        279,
+        195,
+        162
+      ],
+      "krylov_iterations": [
+        86.0,
+        60.0,
+        49.0,
+        86.0,
+        60.0,
+        49.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        3.0,
+        3.0,
+        4.0,
+        3.0,
+        3.0
+      ],
+      "residuals": [
+        5.3764368507119356e-08,
+        4.338127810419293e-07,
+        4.157573246348573e-07,
+        5.3764368507119356e-08,
+        4.338127810419293e-07,
+        4.157573246348573e-07
+      ],
+      "peak_rss_mib": 652.4921875,
+      "baseline_peak_rss_mib": 500.80859375,
+      "additional_peak_rss_mib": 151.68359375,
+      "failure_rate": 0.0,
+      "solution_sha256": "2fd33c79a59d5e582890c19aa132f30b543d84a0c057e7fd575450f800f748d6",
+      "max_abs_final_solution": 1.0820533780776602
+    },
+    {
+      "scheme": "radau3",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 3072,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.020718424580991268,
+      "total_seconds": 0.5599331073462963,
+      "median_rhs_calls": 33.0,
+      "rhs_calls": [
+        45,
+        33,
+        33,
+        45,
+        33,
+        33
+      ],
+      "krylov_iterations": [
+        10.0,
+        7.0,
+        7.0,
+        10.0,
+        7.0,
+        7.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        3.0,
+        3.0,
+        4.0,
+        3.0,
+        3.0
+      ],
+      "residuals": [
+        1.073720748395996e-07,
+        8.327118159206188e-08,
+        1.4906869843942272e-09,
+        1.073720748395996e-07,
+        8.327118159206188e-08,
+        1.4906869843942272e-09
+      ],
+      "peak_rss_mib": 652.48828125,
+      "baseline_peak_rss_mib": 501.015625,
+      "additional_peak_rss_mib": 151.47265625,
+      "failure_rate": 0.0,
+      "solution_sha256": "c02fc659a8641fd76b3d7637a5e9f7a4979b9272f3623ec0b32f84d5a5917f6e",
+      "max_abs_final_solution": 1.0820533780776704
+    },
+    {
+      "scheme": "radau3",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 3072,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.024828818393871188,
+      "total_seconds": 0.5511851636692882,
+      "median_rhs_calls": 42.0,
+      "rhs_calls": [
+        45,
+        42,
+        33,
+        45,
+        42,
+        33
+      ],
+      "krylov_iterations": [
+        10.0,
+        9.0,
+        7.0,
+        10.0,
+        9.0,
+        7.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        3.0,
+        4.0,
+        4.0,
+        3.0
+      ],
+      "residuals": [
+        1.073720748395996e-07,
+        2.2661125063372636e-07,
+        9.767684271023369e-09,
+        1.073720748395996e-07,
+        2.2661125063372636e-07,
+        9.767684271023369e-09
+      ],
+      "peak_rss_mib": 652.77734375,
+      "baseline_peak_rss_mib": 501.05078125,
+      "additional_peak_rss_mib": 151.7265625,
+      "failure_rate": 0.0,
+      "solution_sha256": "7b6971b5652b558559b984c0948bc0f0bb5980f5b2a706ef0a5bc7fbbd229b40",
+      "max_abs_final_solution": 1.0820533780776649
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 2,
+      "median_seconds": 0.4192059552296996,
+      "total_seconds": 3.0549146845005453,
+      "median_rhs_calls": 454.0,
+      "rhs_calls": [
+        600,
+        454,
+        396,
+        600,
+        454,
+        396
+      ],
+      "krylov_iterations": [
+        575.0,
+        434.0,
+        376.0,
+        575.0,
+        434.0,
+        376.0
+      ],
+      "newton_map_evaluations": [
+        8.0,
+        6.0,
+        8.0,
+        8.0,
+        6.0,
+        8.0
+      ],
+      "residuals": [
+        8.188029869389914e-08,
+        8.801054545972374e-07,
+        1.0098593665744305e-06,
+        8.188029869389914e-08,
+        8.801054545972374e-07,
+        1.0098593665744305e-06
+      ],
+      "peak_rss_mib": 651.35546875,
+      "baseline_peak_rss_mib": 500.45703125,
+      "additional_peak_rss_mib": 150.8984375,
+      "failure_rate": 0.3333333333333333,
+      "solution_sha256": "72589f2eb9774fe6d0c2063f3202b10db8d06631b3e5f6ecd7f7d5e5c49dac9c",
+      "max_abs_final_solution": 1.0820504952170442
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.012124931905418634,
+      "total_seconds": 0.4830965199507773,
+      "median_rhs_calls": 22.0,
+      "rhs_calls": [
+        27,
+        22,
+        20,
+        27,
+        22,
+        20
+      ],
+      "krylov_iterations": [
+        17.0,
+        14.0,
+        12.0,
+        17.0,
+        14.0,
+        12.0
+      ],
+      "newton_map_evaluations": [
+        8.0,
+        6.0,
+        6.0,
+        8.0,
+        6.0,
+        6.0
+      ],
+      "residuals": [
+        1.5485286907761873e-07,
+        1.0087486805000456e-07,
+        2.1285018092653958e-07,
+        1.5485286907761873e-07,
+        1.0087486805000456e-07,
+        2.1285018092653958e-07
+      ],
+      "peak_rss_mib": 651.94140625,
+      "baseline_peak_rss_mib": 500.8515625,
+      "additional_peak_rss_mib": 151.08984375,
+      "failure_rate": 0.0,
+      "solution_sha256": "01f80f60272317fdf39939396f5c3d6b132127bc51da9fd53bc55a00597c8f27",
+      "max_abs_final_solution": 1.0820504952170313
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "reaction",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "diagonal",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.013810188509523869,
+      "total_seconds": 0.5023414976894855,
+      "median_rhs_calls": 25.0,
+      "rhs_calls": [
+        27,
+        25,
+        21,
+        27,
+        25,
+        21
+      ],
+      "krylov_iterations": [
+        17.0,
+        16.0,
+        13.0,
+        17.0,
+        16.0,
+        13.0
+      ],
+      "newton_map_evaluations": [
+        8.0,
+        7.0,
+        6.0,
+        8.0,
+        7.0,
+        6.0
+      ],
+      "residuals": [
+        1.5485286907761873e-07,
+        1.305622144028863e-07,
+        2.1285019104673058e-07,
+        1.5485286907761873e-07,
+        1.305622144028863e-07,
+        2.1285019104673058e-07
+      ],
+      "peak_rss_mib": 651.79296875,
+      "baseline_peak_rss_mib": 500.69140625,
+      "additional_peak_rss_mib": 151.1015625,
+      "failure_rate": 0.0,
+      "solution_sha256": "ad3a6a8fd3c20a3b746ea83c6ba66ab723257faaa4340af2d2f5484f128acec0",
+      "max_abs_final_solution": 1.0820504952170285
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.5755885150283575,
+      "total_seconds": 3.859219884965569,
+      "median_rhs_calls": 679.0,
+      "rhs_calls": [
+        705,
+        679,
+        671,
+        705,
+        679,
+        671
+      ],
+      "krylov_iterations": [
+        338.0,
+        326.0,
+        322.0,
+        338.0,
+        326.0,
+        322.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        1.4796785198382107e-07,
+        1.705083860026358e-07,
+        2.967800587838451e-07,
+        1.4796785198382107e-07,
+        1.705083860026358e-07,
+        2.967800587838451e-07
+      ],
+      "peak_rss_mib": 651.45703125,
+      "baseline_peak_rss_mib": 500.80078125,
+      "additional_peak_rss_mib": 150.65625,
+      "failure_rate": 0.0,
+      "solution_sha256": "59aec4b600f7e2eefd0315dede26419a447a1a3ec497d33fc15ec56aaab4f76b",
+      "max_abs_final_solution": 0.9356926359261062
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.15234617493115366,
+      "total_seconds": 1.3464813427999616,
+      "median_rhs_calls": 183.0,
+      "rhs_calls": [
+        195,
+        183,
+        179,
+        195,
+        183,
+        179
+      ],
+      "krylov_iterations": [
+        90.0,
+        84.0,
+        82.0,
+        90.0,
+        84.0,
+        82.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        1.6856879983250492e-07,
+        1.6558494053752362e-07,
+        2.4129850501929726e-07,
+        1.6856879983250492e-07,
+        1.6558494053752362e-07,
+        2.4129850501929726e-07
+      ],
+      "peak_rss_mib": 651.55078125,
+      "baseline_peak_rss_mib": 500.765625,
+      "additional_peak_rss_mib": 150.78515625,
+      "failure_rate": 0.0,
+      "solution_sha256": "d8105bb9fd6f72bf2e0b09c84f4217d0baa7a4a44d2255dbded9ca7a8c11db00",
+      "max_abs_final_solution": 0.9356926358414457
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.11061254027299583,
+      "total_seconds": 1.080291696358472,
+      "median_rhs_calls": 135.0,
+      "rhs_calls": [
+        141,
+        135,
+        133,
+        141,
+        135,
+        133
+      ],
+      "krylov_iterations": [
+        65.0,
+        62.0,
+        61.0,
+        65.0,
+        62.0,
+        61.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        1.3725611881066577e-07,
+        1.013635990131508e-07,
+        9.292693574366016e-08,
+        1.3725611881066577e-07,
+        1.013635990131508e-07,
+        9.292693574366016e-08
+      ],
+      "peak_rss_mib": 651.671875,
+      "baseline_peak_rss_mib": 500.74609375,
+      "additional_peak_rss_mib": 150.92578125,
+      "failure_rate": 0.0,
+      "solution_sha256": "5a165481554cf8d774a8cda09041a4d8220c43e8983532a2503af4c8f254132a",
+      "max_abs_final_solution": 0.935692635010543
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.106549619929865,
+      "total_seconds": 1.0263325730338693,
+      "median_rhs_calls": 131.0,
+      "rhs_calls": [
+        141,
+        131,
+        111,
+        141,
+        131,
+        111
+      ],
+      "krylov_iterations": [
+        65.0,
+        60.0,
+        50.0,
+        65.0,
+        60.0,
+        50.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        1.3725611881066577e-07,
+        3.7391953681268207e-07,
+        7.818270923372976e-08,
+        1.3725611881066577e-07,
+        3.7391953681268207e-07,
+        7.818270923372976e-08
+      ],
+      "peak_rss_mib": 651.90234375,
+      "baseline_peak_rss_mib": 500.984375,
+      "additional_peak_rss_mib": 150.91796875,
+      "failure_rate": 0.0,
+      "solution_sha256": "ed489cc5ae852001e6693b1374cbeaa8e40552732ac15fab712c6092505fcd9c",
+      "max_abs_final_solution": 0.9356926345507477
+    },
+    {
+      "scheme": "radau2",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 4,
+      "failures": 2,
+      "median_seconds": 0.6540679074823856,
+      "total_seconds": 3.0174864032305777,
+      "median_rhs_calls": 781.0,
+      "rhs_calls": [
+        857,
+        705,
+        857,
+        705
+      ],
+      "krylov_iterations": [
+        412.0,
+        336.0,
+        412.0,
+        336.0
+      ],
+      "newton_map_evaluations": [
+        5.0,
+        6.0,
+        5.0,
+        6.0
+      ],
+      "residuals": [
+        3.2583271697765856e-07,
+        1.7406170223217207e-06,
+        3.2583271697765856e-07,
+        1.7406170223217207e-06
+      ],
+      "peak_rss_mib": 651.66015625,
+      "baseline_peak_rss_mib": 501.00390625,
+      "additional_peak_rss_mib": 150.65625,
+      "failure_rate": 0.5,
+      "solution_sha256": "dc25508f7a12ae45b80956f88da430bc4573d8cd1c1200f9f2c5314a6d03e5b8",
+      "max_abs_final_solution": 0.8675322024105356
+    },
+    {
+      "scheme": "radau2",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 4,
+      "failures": 2,
+      "median_seconds": 0.19687089999206364,
+      "total_seconds": 1.1885213614441454,
+      "median_rhs_calls": 235.0,
+      "rhs_calls": [
+        261,
+        209,
+        261,
+        209
+      ],
+      "krylov_iterations": [
+        123.0,
+        96.0,
+        123.0,
+        96.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        5.0,
+        4.0,
+        5.0
+      ],
+      "residuals": [
+        2.9921796494434187e-07,
+        1.7015071836644605e-06,
+        2.9921796494434187e-07,
+        1.7015071836644605e-06
+      ],
+      "peak_rss_mib": 651.95703125,
+      "baseline_peak_rss_mib": 501.01953125,
+      "additional_peak_rss_mib": 150.9375,
+      "failure_rate": 0.5,
+      "solution_sha256": "84fe206b01d41d912544541976eba76300b36d9d8ea51fc13fa8dd5310244dbf",
+      "max_abs_final_solution": 0.867532202364016
+    },
+    {
+      "scheme": "radau2",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.11065773712471128,
+      "total_seconds": 1.097492350731045,
+      "median_rhs_calls": 137.0,
+      "rhs_calls": [
+        169,
+        137,
+        121,
+        169,
+        137,
+        121
+      ],
+      "krylov_iterations": [
+        78.0,
+        62.0,
+        55.0,
+        78.0,
+        62.0,
+        55.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        3.0,
+        4.0,
+        4.0,
+        3.0
+      ],
+      "residuals": [
+        1.484590464465075e-07,
+        5.439115642755133e-07,
+        5.441817999060975e-07,
+        1.484590464465075e-07,
+        5.439115642755133e-07,
+        5.441817999060975e-07
+      ],
+      "peak_rss_mib": 651.5625,
+      "baseline_peak_rss_mib": 500.6796875,
+      "additional_peak_rss_mib": 150.8828125,
+      "failure_rate": 0.0,
+      "solution_sha256": "cdc131d05a2e4e09b15847b59de064dc60979855f87deeec39abc889c0616439",
+      "max_abs_final_solution": 0.7306668364191318
+    },
+    {
+      "scheme": "radau2",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 2,
+      "median_seconds": 0.13116648071445525,
+      "total_seconds": 1.156308297533542,
+      "median_rhs_calls": 159.0,
+      "rhs_calls": [
+        169,
+        159,
+        133,
+        169,
+        159,
+        133
+      ],
+      "krylov_iterations": [
+        78.0,
+        74.0,
+        59.0,
+        78.0,
+        74.0,
+        59.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        5.0,
+        4.0,
+        4.0,
+        5.0
+      ],
+      "residuals": [
+        1.484590464465075e-07,
+        9.086247886863802e-07,
+        1.0920507429484306e-06,
+        1.484590464465075e-07,
+        9.086247886863802e-07,
+        1.0920507429484306e-06
+      ],
+      "peak_rss_mib": 651.59765625,
+      "baseline_peak_rss_mib": 500.7109375,
+      "additional_peak_rss_mib": 150.88671875,
+      "failure_rate": 0.3333333333333333,
+      "solution_sha256": "a857d2196482f59a297f2b98c8230c0cd5d45cf76719489803df59687c31dc2a",
+      "max_abs_final_solution": 0.730666836376906
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 192,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 1.0496801477856934,
+      "total_seconds": 6.8064611768350005,
+      "median_rhs_calls": 1212.0,
+      "rhs_calls": [
+        1266,
+        1212,
+        1206,
+        1266,
+        1212,
+        1206
+      ],
+      "krylov_iterations": [
+        406.0,
+        389.0,
+        387.0,
+        406.0,
+        389.0,
+        387.0
+      ],
+      "newton_map_evaluations": [
+        5.0,
+        5.0,
+        5.0,
+        5.0,
+        5.0,
+        5.0
+      ],
+      "residuals": [
+        1.4738029929243718e-07,
+        1.7205488361360794e-07,
+        2.5128757635679745e-07,
+        1.4738029929243718e-07,
+        1.7205488361360794e-07,
+        2.5128757635679745e-07
+      ],
+      "peak_rss_mib": 651.86328125,
+      "baseline_peak_rss_mib": 500.79296875,
+      "additional_peak_rss_mib": 151.0703125,
+      "failure_rate": 0.0,
+      "solution_sha256": "6b2a31c8bdd9b0fabeeed30ad9079a65716d9c1f8a343d28273b6e5690192e03",
+      "max_abs_final_solution": 0.8496528667334866
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 192,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.28565933206118643,
+      "total_seconds": 2.148443477693945,
+      "median_rhs_calls": 324.0,
+      "rhs_calls": [
+        363,
+        324,
+        318,
+        363,
+        324,
+        318
+      ],
+      "krylov_iterations": [
+        114.0,
+        101.0,
+        99.0,
+        114.0,
+        101.0,
+        99.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        1.4407078684321022e-07,
+        2.1454551430514008e-07,
+        1.624997129775681e-07,
+        1.4407078684321022e-07,
+        2.1454551430514008e-07,
+        1.624997129775681e-07
+      ],
+      "peak_rss_mib": 652.55859375,
+      "baseline_peak_rss_mib": 501.36328125,
+      "additional_peak_rss_mib": 151.1953125,
+      "failure_rate": 0.0,
+      "solution_sha256": "c434a76d4a7199b04700149d04ce53235a8d31e0edbc6b16568051fc84601408",
+      "max_abs_final_solution": 0.849652865041018
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 192,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.15974677400663495,
+      "total_seconds": 1.3810734772123396,
+      "median_rhs_calls": 192.0,
+      "rhs_calls": [
+        198,
+        192,
+        192,
+        198,
+        192,
+        192
+      ],
+      "krylov_iterations": [
+        61.0,
+        59.0,
+        59.0,
+        61.0,
+        59.0,
+        59.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        1.3189700742657848e-07,
+        3.970499761451842e-08,
+        3.04705031136806e-08,
+        1.3189700742657848e-07,
+        3.970499761451842e-08,
+        3.04705031136806e-08
+      ],
+      "peak_rss_mib": 652.51171875,
+      "baseline_peak_rss_mib": 501.171875,
+      "additional_peak_rss_mib": 151.33984375,
+      "failure_rate": 0.0,
+      "solution_sha256": "93a98f972252667677a02dff842ac96fa202d4aca5403f54ab93691b7bca7df6",
+      "max_abs_final_solution": 0.8496528660797051
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 192,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.176967260427773,
+      "total_seconds": 1.48902698000893,
+      "median_rhs_calls": 213.0,
+      "rhs_calls": [
+        198,
+        216,
+        213,
+        198,
+        216,
+        213
+      ],
+      "krylov_iterations": [
+        61.0,
+        67.0,
+        66.0,
+        61.0,
+        67.0,
+        66.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        1.3189700742657848e-07,
+        9.873919209624628e-07,
+        4.154578038221906e-07,
+        1.3189700742657848e-07,
+        9.873919209624628e-07,
+        4.154578038221906e-07
+      ],
+      "peak_rss_mib": 652.42578125,
+      "baseline_peak_rss_mib": 501.03125,
+      "additional_peak_rss_mib": 151.39453125,
+      "failure_rate": 0.0,
+      "solution_sha256": "8cc7602595f7243f65eab07834378b8df876e0aaf7ad6030a1efc66c6fb911a1",
+      "max_abs_final_solution": 0.849652823500336
+    },
+    {
+      "scheme": "radau3",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 192,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 4,
+      "failures": 2,
+      "median_seconds": 1.2545367470011115,
+      "total_seconds": 5.40172748779878,
+      "median_rhs_calls": 1449.0,
+      "rhs_calls": [
+        1494,
+        1404,
+        1494,
+        1404
+      ],
+      "krylov_iterations": [
+        480.0,
+        449.0,
+        480.0,
+        449.0
+      ],
+      "newton_map_evaluations": [
+        5.0,
+        7.0,
+        5.0,
+        7.0
+      ],
+      "residuals": [
+        8.395527584000071e-07,
+        1.6927928262528696e-06,
+        8.395527584000071e-07,
+        1.6927928262528696e-06
+      ],
+      "peak_rss_mib": 651.9765625,
+      "baseline_peak_rss_mib": 500.8984375,
+      "additional_peak_rss_mib": 151.078125,
+      "failure_rate": 0.5,
+      "solution_sha256": "c16abb85296f284d89a7a04a45657f4d1b13b2ebec023d193c2023e65596b8a5",
+      "max_abs_final_solution": 0.8670829991640037
+    },
+    {
+      "scheme": "radau3",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 192,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 4,
+      "failures": 2,
+      "median_seconds": 0.3758430127054453,
+      "total_seconds": 1.890740198083222,
+      "median_rhs_calls": 435.0,
+      "rhs_calls": [
+        495,
+        375,
+        495,
+        375
+      ],
+      "krylov_iterations": [
+        156.0,
+        116.0,
+        156.0,
+        116.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        5.0,
+        4.0,
+        5.0
+      ],
+      "residuals": [
+        2.77803836728971e-07,
+        2.3163483803180934e-06,
+        2.77803836728971e-07,
+        2.3163483803180934e-06
+      ],
+      "peak_rss_mib": 652.4921875,
+      "baseline_peak_rss_mib": 501.2890625,
+      "additional_peak_rss_mib": 151.203125,
+      "failure_rate": 0.5,
+      "solution_sha256": "3863cdb18c7eaa93fd7ecdce2d580691b0b230c4557de2dca0fc8077d50168dd",
+      "max_abs_final_solution": 0.8670829992019697
+    },
+    {
+      "scheme": "radau3",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 192,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.15870200097560883,
+      "total_seconds": 1.3897715993225574,
+      "median_rhs_calls": 186.0,
+      "rhs_calls": [
+        222,
+        186,
+        168,
+        222,
+        186,
+        168
+      ],
+      "krylov_iterations": [
+        69.0,
+        57.0,
+        51.0,
+        69.0,
+        57.0,
+        51.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        3.0,
+        3.0,
+        4.0,
+        3.0,
+        3.0
+      ],
+      "residuals": [
+        1.6970194569130062e-07,
+        6.602777416836454e-07,
+        8.813320628041687e-07,
+        1.6970194569130062e-07,
+        6.602777416836454e-07,
+        8.813320628041687e-07
+      ],
+      "peak_rss_mib": 652.3125,
+      "baseline_peak_rss_mib": 501.171875,
+      "additional_peak_rss_mib": 151.140625,
+      "failure_rate": 0.0,
+      "solution_sha256": "a59b9fc97657c3974540203387b5d7b1b5d14457c4115e006e11664c3d3dc393",
+      "max_abs_final_solution": 0.7301153874040004
+    },
+    {
+      "scheme": "radau3",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 192,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.17570180469192564,
+      "total_seconds": 1.394599559251219,
+      "median_rhs_calls": 216.0,
+      "rhs_calls": [
+        222,
+        216,
+        177,
+        222,
+        216,
+        177
+      ],
+      "krylov_iterations": [
+        69.0,
+        67.0,
+        54.0,
+        69.0,
+        67.0,
+        54.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        3.0,
+        4.0,
+        4.0,
+        3.0
+      ],
+      "residuals": [
+        1.6970194569130062e-07,
+        6.842899429449498e-07,
+        6.497023775471131e-07,
+        1.6970194569130062e-07,
+        6.842899429449498e-07,
+        6.497023775471131e-07
+      ],
+      "peak_rss_mib": 652.42578125,
+      "baseline_peak_rss_mib": 501.08984375,
+      "additional_peak_rss_mib": 151.3359375,
+      "failure_rate": 0.0,
+      "solution_sha256": "f7a3b0c5037e210e67c7497f775f182eb719235367915e0cf8ae3ad913540b0d",
+      "max_abs_final_solution": 0.7301153874284485
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 4,
+      "failures": 2,
+      "median_seconds": 0.2730935518629849,
+      "total_seconds": 1.478936105966568,
+      "median_rhs_calls": 297.5,
+      "rhs_calls": [
+        330,
+        265,
+        330,
+        265
+      ],
+      "krylov_iterations": [
+        311.0,
+        246.0,
+        311.0,
+        246.0
+      ],
+      "newton_map_evaluations": [
+        8.0,
+        11.0,
+        8.0,
+        11.0
+      ],
+      "residuals": [
+        4.465734586974768e-08,
+        2.829986757058519e-06,
+        4.465734586974768e-08,
+        2.829986757058519e-06
+      ],
+      "peak_rss_mib": 651.30078125,
+      "baseline_peak_rss_mib": 500.71875,
+      "additional_peak_rss_mib": 150.58203125,
+      "failure_rate": 0.5,
+      "solution_sha256": "7016f63e8257ca7c20615d56d7ee599378eb60a256bb8f4493a63d2f38d4ceb5",
+      "max_abs_final_solution": 0.8670911264222977
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 4,
+      "failures": 2,
+      "median_seconds": 0.08632991532795131,
+      "total_seconds": 0.7398710986599326,
+      "median_rhs_calls": 102.5,
+      "rhs_calls": [
+        118,
+        87,
+        118,
+        87
+      ],
+      "krylov_iterations": [
+        108.0,
+        77.0,
+        108.0,
+        77.0
+      ],
+      "newton_map_evaluations": [
+        8.0,
+        8.0,
+        8.0,
+        8.0
+      ],
+      "residuals": [
+        1.605859363607858e-07,
+        1.3069332995175879e-06,
+        1.605859363607858e-07,
+        1.3069332995175879e-06
+      ],
+      "peak_rss_mib": 651.44140625,
+      "baseline_peak_rss_mib": 500.875,
+      "additional_peak_rss_mib": 150.56640625,
+      "failure_rate": 0.5,
+      "solution_sha256": "17bb97d0b771ec7b7d91544773540c2d91dd03868f4fe984a9e310e255d70e4b",
+      "max_abs_final_solution": 0.867091126425649
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "diffusion",
+      "n": 64,
+      "unknowns": 128,
+      "mode": "diagonal",
+      "warm": true,
+      "steps_attempted": 4,
+      "failures": 2,
+      "median_seconds": 0.08947173203341663,
+      "total_seconds": 0.7537977481260896,
+      "median_rhs_calls": 110.0,
+      "rhs_calls": [
+        118,
+        102,
+        118,
+        102
+      ],
+      "krylov_iterations": [
+        108.0,
+        89.0,
+        108.0,
+        89.0
+      ],
+      "newton_map_evaluations": [
+        8.0,
+        11.0,
+        8.0,
+        11.0
+      ],
+      "residuals": [
+        1.605859363607858e-07,
+        1.5716017099446387e-06,
+        1.605859363607858e-07,
+        1.5716017099446387e-06
+      ],
+      "peak_rss_mib": 651.171875,
+      "baseline_peak_rss_mib": 500.609375,
+      "additional_peak_rss_mib": 150.5625,
+      "failure_rate": 0.5,
+      "solution_sha256": "5464e70d16c30b9d12aa31b54b88166b725351f31fc598b6dc5ed69a49272e66",
+      "max_abs_final_solution": 0.8670911264618595
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.833053600974381,
+      "total_seconds": 5.417786486912519,
+      "median_rhs_calls": 993.0,
+      "rhs_calls": [
+        997,
+        993,
+        987,
+        997,
+        993,
+        987
+      ],
+      "krylov_iterations": [
+        480.0,
+        478.0,
+        475.0,
+        480.0,
+        478.0,
+        475.0
+      ],
+      "newton_map_evaluations": [
+        5.0,
+        5.0,
+        5.0,
+        5.0,
+        5.0,
+        5.0
+      ],
+      "residuals": [
+        1.5810940046524936e-07,
+        2.5019240905948596e-07,
+        3.2052633463924625e-07,
+        1.5810940046524936e-07,
+        2.5019240905948596e-07,
+        3.2052633463924625e-07
+      ],
+      "peak_rss_mib": 651.35546875,
+      "baseline_peak_rss_mib": 500.6640625,
+      "additional_peak_rss_mib": 150.69140625,
+      "failure_rate": 0.0,
+      "solution_sha256": "fea580b798b13f1ba74ca9f59e9f007bf212edbeae51623586b522f6978d3763",
+      "max_abs_final_solution": 0.9526025989468285
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.6145442014094442,
+      "total_seconds": 4.126551781781018,
+      "median_rhs_calls": 701.0,
+      "rhs_calls": [
+        719,
+        701,
+        693,
+        719,
+        701,
+        693
+      ],
+      "krylov_iterations": [
+        345.0,
+        336.0,
+        332.0,
+        345.0,
+        336.0,
+        332.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        9.214582789695365e-08,
+        8.75456868301888e-08,
+        6.140089797489316e-08,
+        9.214582789695365e-08,
+        8.75456868301888e-08,
+        6.140089797489316e-08
+      ],
+      "peak_rss_mib": 651.875,
+      "baseline_peak_rss_mib": 500.6875,
+      "additional_peak_rss_mib": 151.1875,
+      "failure_rate": 0.0,
+      "solution_sha256": "5a7fc6fea31229e83508c08685661f7d51081433c95b1d746716c6c5fb1fe499",
+      "max_abs_final_solution": 0.9526025987510998
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.5305977866519243,
+      "total_seconds": 3.579083934891969,
+      "median_rhs_calls": 589.0,
+      "rhs_calls": [
+        613,
+        589,
+        573,
+        613,
+        589,
+        573
+      ],
+      "krylov_iterations": [
+        293.0,
+        282.0,
+        274.0,
+        293.0,
+        282.0,
+        274.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        8.836168310304789e-08,
+        9.390861585109728e-08,
+        9.176674645136274e-08,
+        8.836168310304789e-08,
+        9.390861585109728e-08,
+        9.176674645136274e-08
+      ],
+      "peak_rss_mib": 651.7890625,
+      "baseline_peak_rss_mib": 500.8359375,
+      "additional_peak_rss_mib": 150.953125,
+      "failure_rate": 0.0,
+      "solution_sha256": "d2b41088597e8bf48a50c666645812a66137faadb8a04e9483652569470decfd",
+      "max_abs_final_solution": 0.9526026014694478
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.47504047956317663,
+      "total_seconds": 3.2224954743869603,
+      "median_rhs_calls": 541.0,
+      "rhs_calls": [
+        613,
+        541,
+        443,
+        613,
+        541,
+        443
+      ],
+      "krylov_iterations": [
+        293.0,
+        258.0,
+        211.0,
+        293.0,
+        258.0,
+        211.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        8.836168310304789e-08,
+        3.102525063700234e-07,
+        1.9706661830972656e-07,
+        8.836168310304789e-08,
+        3.102525063700234e-07,
+        1.9706661830972656e-07
+      ],
+      "peak_rss_mib": 651.69921875,
+      "baseline_peak_rss_mib": 500.75390625,
+      "additional_peak_rss_mib": 150.9453125,
+      "failure_rate": 0.0,
+      "solution_sha256": "ad5f250d90f099798ad26a51caa4db3899759128c74c2b85b545e99de68f1799",
+      "max_abs_final_solution": 0.9526026030675032
+    },
+    {
+      "scheme": "radau2",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 1.1688185832463205,
+      "total_seconds": 7.521306238602847,
+      "median_rhs_calls": 1315.0,
+      "rhs_calls": [
+        1445,
+        1315,
+        1217,
+        1445,
+        1315,
+        1217
+      ],
+      "krylov_iterations": [
+        696.0,
+        633.0,
+        586.0,
+        696.0,
+        633.0,
+        586.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0,
+        6.0,
+        7.0,
+        7.0,
+        6.0
+      ],
+      "residuals": [
+        8.755257183294087e-08,
+        4.222451302878369e-07,
+        4.389748916567854e-07,
+        8.755257183294087e-08,
+        4.222451302878369e-07,
+        4.389748916567854e-07
+      ],
+      "peak_rss_mib": 651.1875,
+      "baseline_peak_rss_mib": 500.4375,
+      "additional_peak_rss_mib": 150.75,
+      "failure_rate": 0.0,
+      "solution_sha256": "63393c9548514dddf5b1242d6d2018dfda8c6813be7ae22664e8d086583ec308",
+      "max_abs_final_solution": 0.7074931945930438
+    },
+    {
+      "scheme": "radau2",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.6622164724394679,
+      "total_seconds": 4.639185820240527,
+      "median_rhs_calls": 749.0,
+      "rhs_calls": [
+        949,
+        749,
+        715,
+        949,
+        749,
+        715
+      ],
+      "krylov_iterations": [
+        456.0,
+        360.0,
+        343.0,
+        456.0,
+        360.0,
+        343.0
+      ],
+      "newton_map_evaluations": [
+        5.0,
+        4.0,
+        4.0,
+        5.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        1.5574496922064021e-07,
+        9.239119078732904e-07,
+        3.294972954830603e-07,
+        1.5574496922064021e-07,
+        9.239119078732904e-07,
+        3.294972954830603e-07
+      ],
+      "peak_rss_mib": 651.8046875,
+      "baseline_peak_rss_mib": 500.7890625,
+      "additional_peak_rss_mib": 151.015625,
+      "failure_rate": 0.0,
+      "solution_sha256": "b5d5783bd9310a24c640040fcc42e87697bed5b3b5e8d149faf66863cea5bd3e",
+      "max_abs_final_solution": 0.7074931946427365
+    },
+    {
+      "scheme": "radau2",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.4354297695681453,
+      "total_seconds": 3.259981783106923,
+      "median_rhs_calls": 497.0,
+      "rhs_calls": [
+        675,
+        497,
+        463,
+        675,
+        497,
+        463
+      ],
+      "krylov_iterations": [
+        324.0,
+        238.0,
+        221.0,
+        324.0,
+        238.0,
+        221.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        3.0,
+        3.0,
+        4.0,
+        3.0,
+        3.0
+      ],
+      "residuals": [
+        1.1392677144970541e-07,
+        6.430816995203936e-07,
+        4.554173334763182e-07,
+        1.1392677144970541e-07,
+        6.430816995203936e-07,
+        4.554173334763182e-07
+      ],
+      "peak_rss_mib": 651.5703125,
+      "baseline_peak_rss_mib": 500.609375,
+      "additional_peak_rss_mib": 150.9609375,
+      "failure_rate": 0.0,
+      "solution_sha256": "cd1c59493340377054b5141dffdb06483180fe7d5ea9bbdd0a63486a26c04a3e",
+      "max_abs_final_solution": 0.7074931947242461
+    },
+    {
+      "scheme": "radau2",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.5597011039499193,
+      "total_seconds": 3.5578145841136575,
+      "median_rhs_calls": 641.0,
+      "rhs_calls": [
+        675,
+        641,
+        479,
+        675,
+        641,
+        479
+      ],
+      "krylov_iterations": [
+        324.0,
+        307.0,
+        229.0,
+        324.0,
+        307.0,
+        229.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        3.0,
+        4.0,
+        4.0,
+        3.0
+      ],
+      "residuals": [
+        1.1392677144970541e-07,
+        6.464708149502883e-07,
+        7.904654608739994e-07,
+        1.1392677144970541e-07,
+        6.464708149502883e-07,
+        7.904654608739994e-07
+      ],
+      "peak_rss_mib": 651.82421875,
+      "baseline_peak_rss_mib": 500.80859375,
+      "additional_peak_rss_mib": 151.015625,
+      "failure_rate": 0.0,
+      "solution_sha256": "f1048fa1885387dd68caa8603ced3a98e5aef24141865ada65de6c1263ea4a9e",
+      "max_abs_final_solution": 0.7074931945024542
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 768,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 1.6045929465908557,
+      "total_seconds": 10.57234755391255,
+      "median_rhs_calls": 1815.0,
+      "rhs_calls": [
+        1866,
+        1815,
+        1803,
+        1866,
+        1815,
+        1803
+      ],
+      "krylov_iterations": [
+        600.0,
+        583.0,
+        579.0,
+        600.0,
+        583.0,
+        579.0
+      ],
+      "newton_map_evaluations": [
+        6.0,
+        6.0,
+        6.0,
+        6.0,
+        6.0,
+        6.0
+      ],
+      "residuals": [
+        5.884981903506372e-08,
+        1.6941240393241793e-07,
+        1.616314563028385e-07,
+        5.884981903506372e-08,
+        1.6941240393241793e-07,
+        1.616314563028385e-07
+      ],
+      "peak_rss_mib": 652.4609375,
+      "baseline_peak_rss_mib": 501.34375,
+      "additional_peak_rss_mib": 151.1171875,
+      "failure_rate": 0.0,
+      "solution_sha256": "035dfac7b86ee7594f55dd2a5cdf3c5949cde0c2992d9d41aadb43bfa4882e77",
+      "max_abs_final_solution": 0.8821434327408231
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 768,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 1.1664391048252583,
+      "total_seconds": 7.495715433731675,
+      "median_rhs_calls": 1302.0,
+      "rhs_calls": [
+        1362,
+        1302,
+        1302,
+        1362,
+        1302,
+        1302
+      ],
+      "krylov_iterations": [
+        437.0,
+        418.0,
+        418.0,
+        437.0,
+        418.0,
+        418.0
+      ],
+      "newton_map_evaluations": [
+        5.0,
+        5.0,
+        5.0,
+        5.0,
+        5.0,
+        5.0
+      ],
+      "residuals": [
+        4.470380795977319e-08,
+        1.8810777164349791e-07,
+        1.8870890740754284e-07,
+        4.470380795977319e-08,
+        1.8810777164349791e-07,
+        1.8870890740754284e-07
+      ],
+      "peak_rss_mib": 652.609375,
+      "baseline_peak_rss_mib": 500.97265625,
+      "additional_peak_rss_mib": 151.63671875,
+      "failure_rate": 0.0,
+      "solution_sha256": "47944318be8fe5cfc3842b20bfc61f1e4c803af63b2b424cca2ffc355af2ec4f",
+      "max_abs_final_solution": 0.8821434336891656
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 768,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.7941125323995948,
+      "total_seconds": 5.234134745784104,
+      "median_rhs_calls": 888.0,
+      "rhs_calls": [
+        951,
+        888,
+        873,
+        951,
+        888,
+        873
+      ],
+      "krylov_iterations": [
+        304.0,
+        284.0,
+        279.0,
+        304.0,
+        284.0,
+        279.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "residuals": [
+        6.807373822096351e-08,
+        6.535052463041279e-08,
+        6.37596726418318e-08,
+        6.807373822096351e-08,
+        6.535052463041279e-08,
+        6.37596726418318e-08
+      ],
+      "peak_rss_mib": 652.39453125,
+      "baseline_peak_rss_mib": 500.97265625,
+      "additional_peak_rss_mib": 151.421875,
+      "failure_rate": 0.0,
+      "solution_sha256": "f66e618eda5d32854a6b804f071bb9b0c60ff46d32b289ca369ea86ce3975eb9",
+      "max_abs_final_solution": 0.8821434327227744
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 768,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.8710376170929521,
+      "total_seconds": 5.574488782789558,
+      "median_rhs_calls": 978.0,
+      "rhs_calls": [
+        951,
+        1011,
+        978,
+        951,
+        1011,
+        978
+      ],
+      "krylov_iterations": [
+        304.0,
+        322.0,
+        312.0,
+        304.0,
+        322.0,
+        312.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        5.0,
+        5.0,
+        4.0,
+        5.0,
+        5.0
+      ],
+      "residuals": [
+        6.807373822096351e-08,
+        3.282576453786785e-08,
+        1.5756299886668558e-07,
+        6.807373822096351e-08,
+        3.282576453786785e-08,
+        1.5756299886668558e-07
+      ],
+      "peak_rss_mib": 652.14453125,
+      "baseline_peak_rss_mib": 500.65625,
+      "additional_peak_rss_mib": 151.48828125,
+      "failure_rate": 0.0,
+      "solution_sha256": "89b5331174ba907290bb88899784768da15ac7da2bdf38cc7f4382749fb958fb",
+      "max_abs_final_solution": 0.8821434292004251
+    },
+    {
+      "scheme": "radau3",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 768,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 2,
+      "failures": 2,
+      "median_seconds": 2.1883813857566565,
+      "total_seconds": 4.376762771513313,
+      "median_rhs_calls": 2238.0,
+      "rhs_calls": [
+        2238,
+        2238
+      ],
+      "krylov_iterations": [
+        720.0,
+        720.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0
+      ],
+      "residuals": [
+        2.3710797622832407e-06,
+        2.3710797622832407e-06
+      ],
+      "peak_rss_mib": 652.38671875,
+      "baseline_peak_rss_mib": 501.24609375,
+      "additional_peak_rss_mib": 151.140625,
+      "failure_rate": 1.0,
+      "solution_sha256": "8a9a47f31be4c7f2f105437201dd713a6414f192e97dbaad810ca9ba17733506",
+      "max_abs_final_solution": 1.007055707494935
+    },
+    {
+      "scheme": "radau3",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 768,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 1.909047988243401,
+      "total_seconds": 11.904899828135967,
+      "median_rhs_calls": 1995.0,
+      "rhs_calls": [
+        2190,
+        1995,
+        1839,
+        2190,
+        1995,
+        1839
+      ],
+      "krylov_iterations": [
+        704.0,
+        641.0,
+        591.0,
+        704.0,
+        641.0,
+        591.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0,
+        6.0,
+        7.0,
+        7.0,
+        6.0
+      ],
+      "residuals": [
+        4.641641544908501e-08,
+        3.82609357880252e-07,
+        3.15496825309187e-07,
+        4.641641544908501e-08,
+        3.82609357880252e-07,
+        3.15496825309187e-07
+      ],
+      "peak_rss_mib": 652.2734375,
+      "baseline_peak_rss_mib": 500.6484375,
+      "additional_peak_rss_mib": 151.625,
+      "failure_rate": 0.0,
+      "solution_sha256": "0af77b66272144cae0e36c0b7432199e24e203274f69bf4bb31a0a6ef049642d",
+      "max_abs_final_solution": 0.7070277455086151
+    },
+    {
+      "scheme": "radau3",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 768,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.6497605368494987,
+      "total_seconds": 4.678774187806994,
+      "median_rhs_calls": 732.0,
+      "rhs_calls": [
+        996,
+        732,
+        684,
+        996,
+        732,
+        684
+      ],
+      "krylov_iterations": [
+        319.0,
+        234.0,
+        218.0,
+        319.0,
+        234.0,
+        218.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        3.0,
+        3.0,
+        4.0,
+        3.0,
+        3.0
+      ],
+      "residuals": [
+        1.0860923155552118e-07,
+        6.486527010275493e-07,
+        2.736425303980969e-07,
+        1.0860923155552118e-07,
+        6.486527010275493e-07,
+        2.736425303980969e-07
+      ],
+      "peak_rss_mib": 652.4765625,
+      "baseline_peak_rss_mib": 501.06640625,
+      "additional_peak_rss_mib": 151.41015625,
+      "failure_rate": 0.0,
+      "solution_sha256": "b6b5cc10d64c745ef1f3df9bb3bceea4db2b795e500d8d63505c8d1e037489fe",
+      "max_abs_final_solution": 0.7070277454625781
+    },
+    {
+      "scheme": "radau3",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 768,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 0.8282989622093737,
+      "total_seconds": 5.0711826188489795,
+      "median_rhs_calls": 933.0,
+      "rhs_calls": [
+        996,
+        933,
+        687,
+        996,
+        933,
+        687
+      ],
+      "krylov_iterations": [
+        319.0,
+        299.0,
+        219.0,
+        319.0,
+        299.0,
+        219.0
+      ],
+      "newton_map_evaluations": [
+        4.0,
+        4.0,
+        3.0,
+        4.0,
+        4.0,
+        3.0
+      ],
+      "residuals": [
+        1.0860923155552118e-07,
+        5.350624304691083e-07,
+        6.048915843417397e-07,
+        1.0860923155552118e-07,
+        5.350624304691083e-07,
+        6.048915843417397e-07
+      ],
+      "peak_rss_mib": 652.28125,
+      "baseline_peak_rss_mib": 500.87109375,
+      "additional_peak_rss_mib": 151.41015625,
+      "failure_rate": 0.0,
+      "solution_sha256": "6de219c1ea4089a6437eb387070092f7336b0def96f0d8eabf06a7579d41d0af",
+      "max_abs_final_solution": 0.7070277454976212
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 4,
+      "failures": 2,
+      "median_seconds": 0.5236796264071018,
+      "total_seconds": 2.498488325625658,
+      "median_rhs_calls": 574.5,
+      "rhs_calls": [
+        672,
+        477,
+        672,
+        477
+      ],
+      "krylov_iterations": [
+        646.0,
+        453.0,
+        646.0,
+        453.0
+      ],
+      "newton_map_evaluations": [
+        8.0,
+        10.0,
+        8.0,
+        10.0
+      ],
+      "residuals": [
+        1.3433852566532262e-07,
+        1.3183781254189375e-06,
+        1.3433852566532262e-07,
+        1.3183781254189375e-06
+      ],
+      "peak_rss_mib": 651.22265625,
+      "baseline_peak_rss_mib": 500.5625,
+      "additional_peak_rss_mib": 150.66015625,
+      "failure_rate": 0.5,
+      "solution_sha256": "6231580f30ace41670cf20b64d39d3a9659dde5ef92b07d21710a5a40cb20f7c",
+      "max_abs_final_solution": 0.8552896748866763
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 4,
+      "failures": 2,
+      "median_seconds": 0.36411906010471284,
+      "total_seconds": 1.8565892442129552,
+      "median_rhs_calls": 402.5,
+      "rhs_calls": [
+        462,
+        343,
+        462,
+        343
+      ],
+      "krylov_iterations": [
+        442.0,
+        323.0,
+        442.0,
+        323.0
+      ],
+      "newton_map_evaluations": [
+        8.0,
+        8.0,
+        8.0,
+        8.0
+      ],
+      "residuals": [
+        1.28362151725891e-07,
+        1.18974962202433e-06,
+        1.28362151725891e-07,
+        1.18974962202433e-06
+      ],
+      "peak_rss_mib": 651.60546875,
+      "baseline_peak_rss_mib": 500.8046875,
+      "additional_peak_rss_mib": 150.80078125,
+      "failure_rate": 0.5,
+      "solution_sha256": "4c09b8443da816181c6528f9d7abdfbe3b5bb76a9d44840e22bd5d18cf460301",
+      "max_abs_final_solution": 0.8552896748637348
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "diffusion",
+      "n": 256,
+      "unknowns": 512,
+      "mode": "diagonal",
+      "warm": true,
+      "steps_attempted": 4,
+      "failures": 2,
+      "median_seconds": 0.39670500555075705,
+      "total_seconds": 1.989717913325876,
+      "median_rhs_calls": 427.5,
+      "rhs_calls": [
+        462,
+        393,
+        462,
+        393
+      ],
+      "krylov_iterations": [
+        442.0,
+        372.0,
+        442.0,
+        372.0
+      ],
+      "newton_map_evaluations": [
+        8.0,
+        9.0,
+        8.0,
+        9.0
+      ],
+      "residuals": [
+        1.28362151725891e-07,
+        1.3978268338057174e-06,
+        1.28362151725891e-07,
+        1.3978268338057174e-06
+      ],
+      "peak_rss_mib": 651.55078125,
+      "baseline_peak_rss_mib": 500.73828125,
+      "additional_peak_rss_mib": 150.8125,
+      "failure_rate": 0.5,
+      "solution_sha256": "c16b613d949231ab4fcb132364f5db12a9a5c338ade79ef8828ba80e7b364e97",
+      "max_abs_final_solution": 0.8552896748588399
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 2,
+      "failures": 2,
+      "median_seconds": 1.5724522259552032,
+      "total_seconds": 3.1449044519104064,
+      "median_rhs_calls": 1493.0,
+      "rhs_calls": [
+        1493,
+        1493
+      ],
+      "krylov_iterations": [
+        720.0,
+        720.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0
+      ],
+      "residuals": [
+        0.27829739181210356,
+        0.27829739181210356
+      ],
+      "peak_rss_mib": 651.97265625,
+      "baseline_peak_rss_mib": 503.14453125,
+      "additional_peak_rss_mib": 148.828125,
+      "failure_rate": 1.0,
+      "solution_sha256": "ad666fa9c257861e10c6a6df45a26ea8493367539d8e1fa9532d5ce439717408",
+      "max_abs_final_solution": 1.0603161416523832
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 2,
+      "failures": 2,
+      "median_seconds": 1.537778782658279,
+      "total_seconds": 3.075557565316558,
+      "median_rhs_calls": 1493.0,
+      "rhs_calls": [
+        1493,
+        1493
+      ],
+      "krylov_iterations": [
+        720.0,
+        720.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0
+      ],
+      "residuals": [
+        0.10275566517097455,
+        0.10275566517097455
+      ],
+      "peak_rss_mib": 652.203125,
+      "baseline_peak_rss_mib": 500.82421875,
+      "additional_peak_rss_mib": 151.37890625,
+      "failure_rate": 1.0,
+      "solution_sha256": "38b0bd3b9c0564d17eb0ada74f348a43252fdd89eb18ad42cb1b627df7d02aad",
+      "max_abs_final_solution": 1.058500711426179
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 2,
+      "failures": 2,
+      "median_seconds": 1.556471822084859,
+      "total_seconds": 3.112943644169718,
+      "median_rhs_calls": 1493.0,
+      "rhs_calls": [
+        1493,
+        1493
+      ],
+      "krylov_iterations": [
+        720.0,
+        720.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0
+      ],
+      "residuals": [
+        2.3121469746538035e-05,
+        2.3121469746538035e-05
+      ],
+      "peak_rss_mib": 652.19140625,
+      "baseline_peak_rss_mib": 500.83984375,
+      "additional_peak_rss_mib": 151.3515625,
+      "failure_rate": 1.0,
+      "solution_sha256": "b1d07cf64a968b2e3be4211490331268e92acab088f2daf0db59f20494825cd6",
+      "max_abs_final_solution": 1.056076685872488
+    },
+    {
+      "scheme": "gauss2",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 2,
+      "failures": 2,
+      "median_seconds": 1.5571475352626294,
+      "total_seconds": 3.114295070525259,
+      "median_rhs_calls": 1493.0,
+      "rhs_calls": [
+        1493,
+        1493
+      ],
+      "krylov_iterations": [
+        720.0,
+        720.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0
+      ],
+      "residuals": [
+        2.3121469746538035e-05,
+        2.3121469746538035e-05
+      ],
+      "peak_rss_mib": 651.9453125,
+      "baseline_peak_rss_mib": 500.53125,
+      "additional_peak_rss_mib": 151.4140625,
+      "failure_rate": 1.0,
+      "solution_sha256": "b1d07cf64a968b2e3be4211490331268e92acab088f2daf0db59f20494825cd6",
+      "max_abs_final_solution": 1.056076685872488
+    },
+    {
+      "scheme": "radau2",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 2,
+      "failures": 2,
+      "median_seconds": 1.4776778414379805,
+      "total_seconds": 2.955355682875961,
+      "median_rhs_calls": 1493.0,
+      "rhs_calls": [
+        1493,
+        1493
+      ],
+      "krylov_iterations": [
+        720.0,
+        720.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0
+      ],
+      "residuals": [
+        15.36212227839861,
+        15.36212227839861
+      ],
+      "peak_rss_mib": 651.79296875,
+      "baseline_peak_rss_mib": 500.7734375,
+      "additional_peak_rss_mib": 151.01953125,
+      "failure_rate": 1.0,
+      "solution_sha256": "68acfab5db4c5e5cdee58ce680d71a5c826f5682b01954ef9e15bac9b72a550e",
+      "max_abs_final_solution": 2.159881941121358
+    },
+    {
+      "scheme": "radau2",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 2,
+      "failures": 2,
+      "median_seconds": 1.519341143546626,
+      "total_seconds": 3.038682287093252,
+      "median_rhs_calls": 1493.0,
+      "rhs_calls": [
+        1493,
+        1493
+      ],
+      "krylov_iterations": [
+        720.0,
+        720.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0
+      ],
+      "residuals": [
+        19.335497128285336,
+        19.335497128285336
+      ],
+      "peak_rss_mib": 652.2734375,
+      "baseline_peak_rss_mib": 500.921875,
+      "additional_peak_rss_mib": 151.3515625,
+      "failure_rate": 1.0,
+      "solution_sha256": "6660f3dc85a8f8d263b9d670605bf0d883ecb08631596e985a6f61292787f52a",
+      "max_abs_final_solution": 1.862103673667908
+    },
+    {
+      "scheme": "radau2",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 2,
+      "failures": 2,
+      "median_seconds": 1.5766357129905373,
+      "total_seconds": 3.1532714259810746,
+      "median_rhs_calls": 1493.0,
+      "rhs_calls": [
+        1493,
+        1493
+      ],
+      "krylov_iterations": [
+        720.0,
+        720.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0
+      ],
+      "residuals": [
+        0.0035345355989994144,
+        0.0035345355989994144
+      ],
+      "peak_rss_mib": 652.11328125,
+      "baseline_peak_rss_mib": 500.76171875,
+      "additional_peak_rss_mib": 151.3515625,
+      "failure_rate": 1.0,
+      "solution_sha256": "f8841fe92ee69a97fbefceafdd2beabf28dde905f736d8500663fa5ffd09a227",
+      "max_abs_final_solution": 1.0106416053139216
+    },
+    {
+      "scheme": "radau2",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 2,
+      "failures": 2,
+      "median_seconds": 1.5789258491713554,
+      "total_seconds": 3.1578516983427107,
+      "median_rhs_calls": 1493.0,
+      "rhs_calls": [
+        1493,
+        1493
+      ],
+      "krylov_iterations": [
+        720.0,
+        720.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0
+      ],
+      "residuals": [
+        0.0035345355989994144,
+        0.0035345355989994144
+      ],
+      "peak_rss_mib": 652.15625,
+      "baseline_peak_rss_mib": 500.8046875,
+      "additional_peak_rss_mib": 151.3515625,
+      "failure_rate": 1.0,
+      "solution_sha256": "f8841fe92ee69a97fbefceafdd2beabf28dde905f736d8500663fa5ffd09a227",
+      "max_abs_final_solution": 1.0106416053139216
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 3072,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 2,
+      "failures": 2,
+      "median_seconds": 2.2485815722029656,
+      "total_seconds": 4.497163144405931,
+      "median_rhs_calls": 2238.0,
+      "rhs_calls": [
+        2238,
+        2238
+      ],
+      "krylov_iterations": [
+        720.0,
+        720.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0
+      ],
+      "residuals": [
+        4.411430534236048,
+        4.411430534236048
+      ],
+      "peak_rss_mib": 652.76953125,
+      "baseline_peak_rss_mib": 501.234375,
+      "additional_peak_rss_mib": 151.53515625,
+      "failure_rate": 1.0,
+      "solution_sha256": "4871b473c93cdc5299e910b5d6c990eda4ff1ac95bbec37ff852f56006880e72",
+      "max_abs_final_solution": 1.2483357645261828
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 3072,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 2,
+      "failures": 2,
+      "median_seconds": 2.289534392533824,
+      "total_seconds": 4.579068785067648,
+      "median_rhs_calls": 2238.0,
+      "rhs_calls": [
+        2238,
+        2238
+      ],
+      "krylov_iterations": [
+        720.0,
+        720.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0
+      ],
+      "residuals": [
+        17.623075568424152,
+        17.623075568424152
+      ],
+      "peak_rss_mib": 652.9453125,
+      "baseline_peak_rss_mib": 501.0703125,
+      "additional_peak_rss_mib": 151.875,
+      "failure_rate": 1.0,
+      "solution_sha256": "03c2a47107d31aef2239e168a9d3e824de7dcf662402f8e5be1d81b19a976eaf",
+      "max_abs_final_solution": 2.3349936338132813
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 3072,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 2,
+      "failures": 2,
+      "median_seconds": 2.2549264295957983,
+      "total_seconds": 4.5098528591915965,
+      "median_rhs_calls": 2238.0,
+      "rhs_calls": [
+        2238,
+        2238
+      ],
+      "krylov_iterations": [
+        720.0,
+        720.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0
+      ],
+      "residuals": [
+        5.431558208173864e-05,
+        5.431558208173864e-05
+      ],
+      "peak_rss_mib": 653.07421875,
+      "baseline_peak_rss_mib": 501.17578125,
+      "additional_peak_rss_mib": 151.8984375,
+      "failure_rate": 1.0,
+      "solution_sha256": "29f53adc7715bd828eaf0f54941877eb2b885cb21896c71dbb0b282d28ceb110",
+      "max_abs_final_solution": 1.0372331682915177
+    },
+    {
+      "scheme": "gauss3",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 3072,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 2,
+      "failures": 2,
+      "median_seconds": 2.269701849669218,
+      "total_seconds": 4.539403699338436,
+      "median_rhs_calls": 2238.0,
+      "rhs_calls": [
+        2238,
+        2238
+      ],
+      "krylov_iterations": [
+        720.0,
+        720.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0
+      ],
+      "residuals": [
+        5.431558208173864e-05,
+        5.431558208173864e-05
+      ],
+      "peak_rss_mib": 652.73828125,
+      "baseline_peak_rss_mib": 500.828125,
+      "additional_peak_rss_mib": 151.91015625,
+      "failure_rate": 1.0,
+      "solution_sha256": "29f53adc7715bd828eaf0f54941877eb2b885cb21896c71dbb0b282d28ceb110",
+      "max_abs_final_solution": 1.0372331682915177
+    },
+    {
+      "scheme": "radau3",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 3072,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 2,
+      "failures": 2,
+      "median_seconds": 2.2948785156477243,
+      "total_seconds": 4.5897570312954485,
+      "median_rhs_calls": 2238.0,
+      "rhs_calls": [
+        2238,
+        2238
+      ],
+      "krylov_iterations": [
+        720.0,
+        720.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0
+      ],
+      "residuals": [
+        74.44159469956958,
+        74.44159469956958
+      ],
+      "peak_rss_mib": 652.6171875,
+      "baseline_peak_rss_mib": 501.0859375,
+      "additional_peak_rss_mib": 151.53125,
+      "failure_rate": 1.0,
+      "solution_sha256": "5c3c37d01f9a97ea41ccdac4fbc42a84d3865a0a282a190625bd3f5f0a858b93",
+      "max_abs_final_solution": 6.555628628467309
+    },
+    {
+      "scheme": "radau3",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 3072,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 2,
+      "failures": 2,
+      "median_seconds": 2.2158917367924005,
+      "total_seconds": 4.431783473584801,
+      "median_rhs_calls": 2238.0,
+      "rhs_calls": [
+        2238,
+        2238
+      ],
+      "krylov_iterations": [
+        720.0,
+        720.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0
+      ],
+      "residuals": [
+        880.8098150390864,
+        880.8098150390864
+      ],
+      "peak_rss_mib": 653.09765625,
+      "baseline_peak_rss_mib": 501.21484375,
+      "additional_peak_rss_mib": 151.8828125,
+      "failure_rate": 1.0,
+      "solution_sha256": "0328c3c6983a0546b308e1cf2b75e287b1247d12addbc66ccbb3ee0b80aff268",
+      "max_abs_final_solution": 14.73640455195239
+    },
+    {
+      "scheme": "radau3",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 3072,
+      "mode": "block",
+      "warm": false,
+      "steps_attempted": 2,
+      "failures": 2,
+      "median_seconds": 2.226331112906337,
+      "total_seconds": 4.452662225812674,
+      "median_rhs_calls": 2238.0,
+      "rhs_calls": [
+        2238,
+        2238
+      ],
+      "krylov_iterations": [
+        720.0,
+        720.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0
+      ],
+      "residuals": [
+        0.012125714711729808,
+        0.012125714711729808
+      ],
+      "peak_rss_mib": 652.86328125,
+      "baseline_peak_rss_mib": 501.12109375,
+      "additional_peak_rss_mib": 151.7421875,
+      "failure_rate": 1.0,
+      "solution_sha256": "d5386d0ca5998527bae07b368e251e4a5f995b8e5e502ff9569a833588f5208c",
+      "max_abs_final_solution": 1.0071134186594406
+    },
+    {
+      "scheme": "radau3",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 3072,
+      "mode": "block",
+      "warm": true,
+      "steps_attempted": 2,
+      "failures": 2,
+      "median_seconds": 2.2036091389600188,
+      "total_seconds": 4.4072182779200375,
+      "median_rhs_calls": 2238.0,
+      "rhs_calls": [
+        2238,
+        2238
+      ],
+      "krylov_iterations": [
+        720.0,
+        720.0
+      ],
+      "newton_map_evaluations": [
+        7.0,
+        7.0
+      ],
+      "residuals": [
+        0.012125714711729808,
+        0.012125714711729808
+      ],
+      "peak_rss_mib": 652.84765625,
+      "baseline_peak_rss_mib": 500.953125,
+      "additional_peak_rss_mib": 151.89453125,
+      "failure_rate": 1.0,
+      "solution_sha256": "d5386d0ca5998527bae07b368e251e4a5f995b8e5e502ff9569a833588f5208c",
+      "max_abs_final_solution": 1.0071134186594406
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "none",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 0,
+      "median_seconds": 1.2839206084609032,
+      "total_seconds": 8.133151227608323,
+      "median_rhs_calls": 1373.0,
+      "rhs_calls": [
+        1489,
+        1373,
+        1252,
+        1489,
+        1373,
+        1252
+      ],
+      "krylov_iterations": [
+        1437.0,
+        1324.0,
+        1207.0,
+        1437.0,
+        1324.0,
+        1207.0
+      ],
+      "newton_map_evaluations": [
+        14.0,
+        14.0,
+        13.0,
+        14.0,
+        14.0,
+        13.0
+      ],
+      "residuals": [
+        1.0404326389286012e-07,
+        6.656499207678547e-07,
+        9.100135354945034e-07,
+        1.0404326389286012e-07,
+        6.656499207678547e-07,
+        9.100135354945034e-07
+      ],
+      "peak_rss_mib": 651.5390625,
+      "baseline_peak_rss_mib": 500.6484375,
+      "additional_peak_rss_mib": 150.890625,
+      "failure_rate": 0.0,
+      "solution_sha256": "646fa04ba8c8da5a55599ee05492f80341181ea94be81f5dfbf7ba461aaeb05b",
+      "max_abs_final_solution": 0.7028327254492349
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "diagonal",
+      "warm": false,
+      "steps_attempted": 6,
+      "failures": 2,
+      "median_seconds": 1.2363619224634022,
+      "total_seconds": 7.657737711444497,
+      "median_rhs_calls": 1289.0,
+      "rhs_calls": [
+        1331,
+        1289,
+        1168,
+        1331,
+        1289,
+        1168
+      ],
+      "krylov_iterations": [
+        1284.0,
+        1243.0,
+        1125.0,
+        1284.0,
+        1243.0,
+        1125.0
+      ],
+      "newton_map_evaluations": [
+        13.0,
+        14.0,
+        13.0,
+        13.0,
+        14.0,
+        13.0
+      ],
+      "residuals": [
+        9.254573589110346e-07,
+        7.139728331442165e-07,
+        1.3788791989046396e-06,
+        9.254573589110346e-07,
+        7.139728331442165e-07,
+        1.3788791989046396e-06
+      ],
+      "peak_rss_mib": 651.8984375,
+      "baseline_peak_rss_mib": 500.7890625,
+      "additional_peak_rss_mib": 151.109375,
+      "failure_rate": 0.3333333333333333,
+      "solution_sha256": "0e9d1dfb9127b91ed75d9a2bfe1e0f3b2a2ad75487634aff51c6e3ea9deb9625",
+      "max_abs_final_solution": 0.7028327262736989
+    },
+    {
+      "scheme": "sdirk2",
+      "problem": "diffusion",
+      "n": 1024,
+      "unknowns": 2048,
+      "mode": "diagonal",
+      "warm": true,
+      "steps_attempted": 6,
+      "failures": 2,
+      "median_seconds": 1.2683492342475802,
+      "total_seconds": 7.739446906372905,
+      "median_rhs_calls": 1331.0,
+      "rhs_calls": [
+        1331,
+        1336,
+        1183,
+        1331,
+        1336,
+        1183
+      ],
+      "krylov_iterations": [
+        1284.0,
+        1288.0,
+        1140.0,
+        1284.0,
+        1288.0,
+        1140.0
+      ],
+      "newton_map_evaluations": [
+        13.0,
+        14.0,
+        13.0,
+        13.0,
+        14.0,
+        13.0
+      ],
+      "residuals": [
+        9.254573589110346e-07,
+        6.485457581656793e-07,
+        1.3786635247426743e-06,
+        9.254573589110346e-07,
+        6.485457581656793e-07,
+        1.3786635247426743e-06
+      ],
+      "peak_rss_mib": 651.796875,
+      "baseline_peak_rss_mib": 500.69140625,
+      "additional_peak_rss_mib": 151.10546875,
+      "failure_rate": 0.3333333333333333,
+      "solution_sha256": "d4b228cb0434730d4c82642ca336d257414d880d245b9efb762746b17524a741",
+      "max_abs_final_solution": 0.7028327263736648
+    }
+  ],
+  "platform": "Linux-7.0.0-30-generic-x86_64-with-glibc2.39",
+  "cpu_model": "Intel(R) Core(TM) Ultra 9 285K",
+  "measurement_git_head": "b7e6d8a3ba5ac8cfee82319350d86ae6d6fd43f3",
+  "source_state": "Phase 6 working tree, before implementation commits",
+  "memory_definition": "fresh-process ru_maxrss, baseline after native thread-pool initialization; additional peak includes first-use AD/library allocation"
+}

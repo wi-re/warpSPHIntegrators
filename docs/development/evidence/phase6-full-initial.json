@@ -1,0 +1,51 @@
+{
+  "started_utc": "2026-10-14T11:35:10.188191+00:00",
+  "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:36:31) [GCC 14.3.0]",
+  "torch": "2.13.0+cu130",
+  "numpy": "2.5.2",
+  "pytest": "9.1.1",
+  "device": "cpu",
+  "platform": "Linux-7.0.0-30-generic-x86_64-with-glibc2.39",
+  "package": "0.5.0",
+  "git_head": "b7e6d8a3ba5ac8cfee82319350d86ae6d6fd43f3",
+  "gate_sha256": "043b51739685f219002398fba7e6197ccd32dfa1478dc97b73d098f9f3dc45d0",
+  "workers_per_run": 8,
+  "parallel_shards": 1,
+  "numerical_threads_per_worker": 1,
+  "runs": [
+    {
+      "label": "full",
+      "expression": null,
+      "command": [
+        "/home/lu26029/miniconda3/envs/warp/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "-n",
+        "8",
+        "--dist=worksteal",
+        "--durations=20",
+        "--junitxml=/home/lu26029/dev/warpSPHIntegrators/.tmp/phase6/final-full/full.xml"
+      ],
+      "seconds": 285.941,
+      "exit_code": 1,
+      "log": "/home/lu26029/dev/warpSPHIntegrators/.tmp/phase6/final-full/full.txt",
+      "failures": [
+        "tests.test_rhs::test_bitidentical_bare_callable_trajectories",
+        "tests.test_state::test_stage_times_stay_within_the_step[BDF4]",
+        "tests.test_state::test_stage_times_stay_within_the_step[BDF5]",
+        "tests.test_groundwork::test_history_kwarg_is_inert_for_schemes_that_do_not_use_it[BDF4]",
+        "tests.test_groundwork::test_history_kwarg_is_inert_for_schemes_that_do_not_use_it[BDF5]",
+        "tests.test_tvd::test_classifier_verdicts_match_the_recorded_landscape[BDF4]",
+        "tests.test_tvd::test_classifier_verdicts_match_the_recorded_landscape[BDF5]",
+        "tests.test_tvd::test_classifier_verdicts_match_the_recorded_landscape[BDF3]",
+        "tests.test_tvd::test_classifier_verdicts_match_the_recorded_landscape[SBDF3]"
+      ],
+      "tests_count": 7569,
+      "failures_count": 9,
+      "errors_count": 0,
+      "skipped_count": 609
+    }
+  ],
+  "seconds": 285.95
+}

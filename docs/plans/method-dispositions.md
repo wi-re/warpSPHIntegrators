@@ -250,3 +250,6 @@ PFRK87 is deferred because the inspected `perform_step!` evaluates `nu=omega*dt`
 and constructs phase-fitted coefficients at runtime. It needs a parameter/step
 contract and small-phase limit tests, like Anas5/FRK65, before registration.
 The [current execution plan](../../REPOSITORY_PLAN.md) owns scheduling.
+
+Gauss/Radau three-stage prototypes remain unregistered after the failed Phase 6
+diffusion scale gate; see [the decision and evidence](../development/phase6-validation.md).

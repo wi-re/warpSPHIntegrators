@@ -658,8 +658,8 @@ Like IMEX Euler and the ARK pairs, they take the `IMEXRHS` split — an ordinary
 RHS runs the pure-implicit limit, **bit-exact against the registered BDF2/BDF3**
 (SBDF2/3) and to solver tolerance against the registered trapezoidal scheme
 (CNAB2). They need `history=` like the BDF family (state snapshots of the
-previous `order − 1` steps, Dormand–Prince cold start, re-bootstrap on a `dt`
-change); `priorStep` is refused.
+previous `order − 1` steps, DP5 startup for splits and the BDF starter in the
+pure-implicit limit, re-bootstrap on a `dt` change); `priorStep` is refused.
 
 | Scheme | Order | Implicit backbone | Explicit extrapolation | Use Case |
 |--------|-------|-------------------|------------------------|----------|

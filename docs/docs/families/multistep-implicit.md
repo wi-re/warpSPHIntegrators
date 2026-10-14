@@ -36,10 +36,13 @@ backward Euler.
 **Stability.** BDF1/2 are A-stable (BDF1 L-stable); **BDF3-5 are
 A($\alpha$)-stable** with cone half-angles 86.03°, 73.35°, 51.84° — stiff
 oscillatory modes outside the cone are not damped (measured and pinned in
-`tests/test_bdf.py`). Practical consequence: on the stiff oscillatory test
-(rate 100, $z = \mathrm{dt}\,\lambda$ well outside the cone), BDF3-5 cannot
-reach it from a cold start — the DP5 bootstrap caps the effective $|z|$ at
-$\approx 3.3$ (NOTES.md §3.7).
+`tests/test_bdf.py`). BDF3–5 now bootstrap with order-matched L-stable
+implicit RK methods: ESDIRK3(2)4L[2]SA, KenCarp4 and KenCarp5.
+At rate 100, the forcing/transient checks retain orders 3–5 and remain bounded
+at dt=0.1, where the historical explicit bootstrap amplifies the transient.
+These starters remove the explicit startup ceiling; they do not widen BDF's
+steady-state stability cone or guarantee accuracy at arbitrary stiffness.
+
 
 ## Adams-Moulton (implicit, JFNK-corrected)
 
@@ -64,13 +67,20 @@ trapezoidal limit); the stiffly-damped alternative is the BDF/ESDIRK family.
 
 ## History, cold start, diagnostics
 
-Same machinery as the BDF family and the IMEX multistep family: cold calls
-(fewer than $p-1$ history entries) run **Dormand-Prince 5(4)** and record a
-state snapshot — never silently wrong, just at the starter's cost until the
-history fills (NOTES.md §3.7). The measured cold-start TV jump is shared by
-every self-starting multistep scheme. The step's one solve produces the
-`SolveDiagnostics` entry; per-step TVD is measured to CFL 1.5 for the whole
-family (NOTES.md §3.11).
+BDF3–5 default to `startup='implicit'`; `startup='explicit'` preserves DP5 for
+comparisons. Their implicit starter has the same order as the BDF formula, so
+startup errors cannot cap the formal global order. A BE warm-up by itself can
+cap higher-order trajectories; it is not offered as an order-preserving mode.
+BDF2 retains DP5 by default, with `startup='implicit'` selecting TR-BDF2.
+BDF1 needs no bootstrap. Starter diagnostics reach the result and run API.
+
+AM and split IMEX multistep methods retain their existing DP5 cold starts.
+SBDF without an explicit part delegates to BDF, including its startup. Thread
+sufficient history; BDF rejects insufficient capacity. BDF and the run API clear
+history before consuming a changed timestep. A cold BDF step can involve several
+implicit RK stage solves; after startup it uses one nonlinear solve per step.
+Historical TVD/CFL measurements used the old startup and remain dated evidence;
+current numerical tests cover the new behavior.
 
 `priorStep` is refused across the family — the state-snapshot history *is*
 the multistep's reuse mechanism.

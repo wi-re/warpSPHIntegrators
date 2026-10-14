@@ -55,8 +55,8 @@ The unused `fluid_only` option was removed after checking this package and the
 local warpSPH / warpSPHCore checkouts. Particle masking remains the user's
 system/RHS responsibility; integrated fields do not imply particle selection.
 Velocity-dependent forces violate the assumptions of several geometric methods;
-the measured order loss is retained as a regression control. Explicit DP5 startup
-can limit stiff BDF3–5 trajectories even where the steady-state formula is stable.
+the measured order loss is retained as a regression control. BDF3–5 now use order-matched implicit starters; the explicit comparison mode and
+AM/IMEX multistep startups retain their old stiffness qualifications.
 
 ## Repository layout
 

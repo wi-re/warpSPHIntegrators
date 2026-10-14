@@ -4622,6 +4622,16 @@
       "tests": null,
       "evidence": "docs/plans/scheme-expansion.md",
       "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "Gauss s=3 / Radau IIA s=3",
+      "status": "deferred",
+      "reason": "Numerical prototypes pass orders 6/5, collocation, stability, symmetry and gradients; Phase 6 diffusion scale gate fails, so wave 9 remains unregistered",
+      "source": "Collocation derivation at shifted Gauss/Radau nodes; Hairer & Wanner, coimbra.pdf",
+      "implementation": "benchmarks/collocation_prototypes.py",
+      "tests": "tests/test_implicit_prototypes.py",
+      "evidence": "docs/development/phase6-validation.md",
+      "intended_consumer": "higher-order stiff or conservative systems after spatial/field-aware preconditioning clears the recorded gate"
     }
   ]
 }

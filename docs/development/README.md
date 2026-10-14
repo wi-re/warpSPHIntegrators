@@ -14,6 +14,7 @@
 - [Unused fluid-only option audit/removal](fluid-only-removal.md)
 - [Phase 4 usability and installed-wheel validation](phase4-validation.md)
 - [Phase 5 run orchestration and restart validation](phase5-validation.md)
+- [Phase 6 stiff startup and failed coupled scale gate](phase6-validation.md)
 - [Examples](../../examples/README.md) and [benchmarks](../../benchmarks/README.md)
 - [Coefficient extraction/oracle tools](../../scripts/coefficients/README.md)
 

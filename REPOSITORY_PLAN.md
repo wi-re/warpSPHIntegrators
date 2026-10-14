@@ -15,11 +15,12 @@ retains the baseline findings and migration rationale.
 | 3 — consolidation and organization | Current architecture, method dispositions, indexed research, contributor workflow, relocated examples/assets/benchmarks and preserved oracles | [migration and validation](docs/development/phase3-validation.md) |
 | 4 — ordinary ODE usability and packaging | Tensor adapter, catalog filters, structural metadata, compatible selection, option guards and installed-wheel gate | [validation](docs/development/phase4-validation.md) |
 | 5 — reliable run orchestration | Transactional fixed/adaptive runs, step status, sampling, events and restart checkpoints | [validation](docs/development/phase5-validation.md) |
+| 6 — stiff startup and coupled scaling | Order-preserving implicit BDF bootstrap, warm/preconditioner measurements, s=3 prototypes; diffusion scale gate failed, wave 9 deferred | [validation](docs/development/phase6-validation.md) |
 
 The 137-scheme catalog is committed locally and remains unreleased beyond package
 0.6.1. Expansion waves 1–8 are complete with recorded exceptions; waves 9–16
 remain subject to the gates below. Commit creation and package publication are
-separate actions. **Phase 6 is next.**
+separate actions. **Phase 7 is next; wave 9 remains gated by the failed Phase 6 diffusion sweep.**
 
 ## Phase 3 completion record
 
@@ -78,23 +79,26 @@ effect committed by rejected attempts. Existing single-step users remain support
 Validated: 6,938 tests passed, 609 skipped; installed-wheel and documentation
 gates pass. See [the Phase 5 record](docs/development/phase5-validation.md).
 
-### Phase 6 Address stiff startup and prove coupled scaling
+### Phase 6 Address stiff startup and evaluate coupled scaling — complete
 
 Priority: high for stiff consumers; prerequisite for wave 9. Size: medium to large.
 
-- [ ] Design an order-preserving implicit bootstrap for BDF3–5 and compare it with
+- [x] Design an order-preserving implicit bootstrap for BDF3–5 and compare it with
   the explicit starter on a stiff transient. A low-order warm-up alone must not
   cap the trajectory's advertised order.
-- [ ] Measure implicit first-stage warm guesses and block/stage-aware preconditioners
+- [x] Measure implicit first-stage warm guesses and block/stage-aware preconditioners
   against cold starts on representative vector systems.
-- [ ] Prototype three-stage Gauss/Radau solves with configurable, recorded DOF
+- [x] Prototype three-stage Gauss/Radau solves with configurable, recorded DOF
   sweeps, iteration counts, work units, peak memory, failure rates and wall time.
-- [ ] Land wave 9 only after the scale gate; resolve exact stage/order nomenclature,
-  companion estimates, symmetry/stability and gradient gates before registration.
+- [x] Enforce the wave 9 registration gate. Stage/order names, prototype orders 6/5,
+  stability/symmetry and gradients are verified; companions remain absent. The
+  diffusion scale bar fails, so no higher-stage registrations are added.
 
-Completion: stiff startup retains measured order at the target stiffness; the
-three-stage block solve clears a documented cost/memory bar and has reproducible
-benchmark evidence. If it fails the bar, keep wave 9 gated and record the result.
+Completion: stiff startup retains measured orders 3–5 at rate 100. The
+114-configuration benchmark records time/work/memory and failures; reaction
+passes, while diffusion exceeds the work bar at N=256 and fails solves at N=1024.
+Wave 9 remains gated. Validated: 6,963 passed, 609 skipped; wheel and docs
+gates pass. See [the Phase 6 record](docs/development/phase6-validation.md).
 
 ### Phase 7 Implement useful splitting and second-order methods
 
@@ -119,6 +123,8 @@ delivers measured order/stability/cost improvements on an actual consumer.
 
 Priority: after reliable gates and a concrete benefit. Size: varies by driver.
 
+- [ ] Reopen wave 9 only after spatial/field-aware preconditioning clears the
+  recorded Phase 6 bar and companion/source gates are verified.
 - [ ] Re-enumerate waves 10–11 against pinned sources and split simple tableaus
   from history, recurrence, or driver changes. Variable coefficients are primarily
   a timestep/history issue; do not assume fixed-step methods exclude non-autonomous

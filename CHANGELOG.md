@@ -6,6 +6,20 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ## [Unreleased]
 
+### Changed — stiff startup and coupled scaling (Phase 6)
+
+- BDF3–5 default to order-matched L-stable implicit starters; the explicit DP5
+  comparison remains available. BDF2 can opt into TR-BDF2. Starter solve failures
+  propagate, undersized BDF histories fail early, and timestep changes clear
+  history before use. SBDF's pure-implicit limit delegates to the same BDF path.
+- Added opt-in implicit-first DIRK warm guesses, driver-owned preconditioner
+  context and a coupled stage-block preconditioner. Measurements show warm guesses
+  are not consistently cheaper; automatic warm starting remains disabled.
+- Added unregistered three-stage Gauss/Radau collocation prototypes and a recorded
+  114-configuration CPU scale gate. Reaction passes; mesh-refined diffusion fails
+  the declared work/tolerance bar, so wave 9 remains gated and the registry is 137.
+  Corrected stage/order naming and Gauss symmetry explanations.
+
 ### Added — reliable runs and failure handling (Phase 5)
 
 - Fixed/adaptive `solve` threads history and safe FSAL reuse, clips final time,

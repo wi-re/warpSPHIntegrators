@@ -15,20 +15,19 @@ and the git history; the pre-2026-09-15 text of this file remains in git.
 - [?] **BDF6.** The A(α) cone shrinks below BDF5's 51.84°, so order 6 buys accuracy
   only while losing the stiff sector. **Trigger:** a downstream stiff problem that
   needs order ≥ 6 *and* whose stiff modes stay inside the narrower cone.
-- [?] **BDF3-5 cold-start ceiling.** The Dormand-Prince bootstrap is explicit with a
-  negative-real-axis boundary at |z| ≈ 3.3, so BDF3-5 cannot *start* at
-  `dt·rate ≳ 3.3` on the stiff relaxation (the rate=100 case is out of reach for
-  them — see the `tests/test_stiff.py` docstring). Options: document the per-order
-  usable-rate ceiling, or add a JFNK-based startup (e.g. a BE or AM2 warm-up).
-  **Trigger:** a downstream stiff problem where the ceiling binds.
+- [x] **BDF3-5 cold-start ceiling.** Repository Phase 6 replaces default DP5
+  startup with order-matched L-stable ESDIRK3/KenCarp4/KenCarp5. The explicit path
+  remains an opt-in comparison. Rate-100 transient/forcing order and bounds,
+  lifecycle, gradients and failure propagation are verified. BDF2 can opt into
+  TR-BDF2; actual IMEX splits retain DP5. See [the record](../development/phase6-validation.md).
 
 ### Coupled fully implicit RK (Phase 6)
 
-- [?] **Gauss-Legendre s=3 and Radau IIA s=3.** Consider only after the block solver
-  and preconditioner are proven at scale. **Trigger:** a downstream that needs the
-  s=3 order/stability points *and* the `s·N`-unknown block solve clears the GMRES
-  cost bar at that size (the s=2 scale gate at 256 DOF = 1536 unknowns is the
-  current reference; NOTES §3.18 has the spectrum finding).
+- [x] **Gauss-Legendre s=3 and Radau IIA s=3 scale evaluation.** Repository
+  Phase 6 prototypes and the local stage-block preconditioner pass the reaction
+  sweep; mesh-refined diffusion fails the declared work/tolerance gate.
+  Registration remains deferred. A spatial/field-aware preconditioner must clear
+  the same bar before wave 9 reopens. [Evidence](../development/phase6-validation.md).
 - [?] **Lobatto IIIA-IIIB.** Only for a concrete partitioned/separable Hamiltonian
   downstream — it needs the component partition (`f_q` / `f_p` accessors, which
   Phase 14 explicitly left out of scope), not this additive block solve.
@@ -46,10 +45,11 @@ and the git history; the pre-2026-09-15 text of this file remains in git.
 
 ### First-stage reuse (Phase 10)
 
-- [?] **Warm-starting implicit first stages.** For SDIRK2 and any other
-  non-explicit-first-stage tableau, a reused `k` is still a better Newton *initial
-  guess* than the current cold start. That is a softer, iteration-count win rather
-  than an evaluation-count one; measure before building.
+- [x] **Warm-starting implicit first stages.** Repository Phase 6 measures
+  an opt-in DIRK StageResult predictor against cold guesses. It does not provide
+  a consistent gain on the tested nonlinear reaction/diffusion transients and
+  is not enabled automatically. Coupled warm guesses have the same qualification.
+  The explicit benchmark consumer retains this experiment for other regimes.
 
 ### Families not yet represented (Phase 12)
 

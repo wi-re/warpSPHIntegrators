@@ -1,7 +1,7 @@
 # Step and solver options
 
 Registered schemes use `scheme(state, dt, f, *args, **kwargs)` and return an
-`IntegrationResult`. The caller owns the stepping loop. Options are read by
+`IntegrationResult`. Use the run API or a caller-owned stepping loop. Options are read by
 the relevant driver; arbitrary kwargs continue to reach the full state/RHS
 protocol. A custom RHS should accept the kwargs its consumer forwards.
 
@@ -43,6 +43,8 @@ for termination semantics and precision-floor qualifications.
 | ROS3P | `w='jvp'/'fd'/'linear'`, time derivative options and GMRES controls; `linear` mode carries its documented order qualification |
 | ETD2RK | Mandatory linear RHS action, optional nonlinear remainder; `phi_dim`, `phi_tol` |
 | EXPRB32 | `w='jvp'/'fd'`, `f_t='fd'/'none'`, Krylov and derivative controls |
+| DIRK / coupled RK | `warmStart` is a first-stage StageResult for implicit-first DIRK, or a previous-stage list for coupled RK; an initial guess only |
+| BDF | `startup='implicit'/'explicit'`; defaults to implicit on BDF3–5 and explicit on BDF2. Implicit mode uses order-matched L-stable starters |
 | Multistep | Fixed `dt`, sufficient history and startup; timestep changes restart history |
 | Geometric | Position/velocity fields and force/separability assumptions; optional declared drift fields |
 
