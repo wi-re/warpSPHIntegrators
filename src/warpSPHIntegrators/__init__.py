@@ -56,14 +56,14 @@ from .preconditioners import stage_block_preconditioner, stage_shifted_precondit
 from .bdf import BDF1, BDF2, BDF3, BDF4, BDF5
 from .multistep import AM2, AM3, AM4, ABM5
 from .imex import IMEXEuler
-from .imexmultistep import SBDF2, SBDF3, CNAB2
+from .imexmultistep import SBDF2, SBDF3, CNAB2, CNLF2
 from .rhs import (RHS, IMEXRHS, SemilinearRHS, resolve, ResolvedRHS,
                  check_contracts, add_updates, sub_updates, CAPABILITIES)
 from .newmark import newmark, newmark_average_acceleration, newmark_linear_acceleration
 from .generalized_alpha import GeneralizedAlpha, GeneralizedAlphaMemory
 from .collocation import Collocation, collocation_tableau
 from .variable_adams import VariableAdams, adams_weights
-from .dirk import (TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA,
+from .dirk import (TRBDF2, MEBDF2, ESDIRK324L2SA, ESDIRK436L2SA,
                    Kvaerno3, Kvaerno4, Kvaerno5, KenCarp3, KenCarp4, KenCarp47, KenCarp5,
                    KenCarp58, ESDIRK325L2SA, ESDIRK436L2SA2, ESDIRK437L2SA, ESDIRK547L2SA2,
                    ESDIRK54I8L2SA, ESDIRK659L2SA, SSPSDIRK2, ARS222, ARS232, ARS343, ARS443,
@@ -113,6 +113,7 @@ from .drift import DriftField, drift_fields, drift_fields_active
 __version__ = "0.6.1"
 
 __all__ = [
+    "MEBDF2", "CNLF2",
     "ABM5",
     "VariableAdams", "adams_weights",
     "Collocation", "collocation_tableau",

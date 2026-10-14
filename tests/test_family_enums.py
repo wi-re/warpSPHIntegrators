@@ -37,7 +37,7 @@ from warpSPHIntegrators.integration import IntegrationSchemes
 #: 52 -> 63; the registry grows 97 -> 108.
 #: Wave 8 (SCHEME_EXPANSION_PLAN, 2026-10-13; NOTES.md 3.28): the 29 remaining
 #: ODE v7.8.1 DIRK tableaus join DIRK, 7 -> 36; the registry grows 108 -> 137.
-EXPECTED_FAMILY_SIZES = (63, 6, 3, 10, 36, 4, 8, 6, 1, 2, 1)
+EXPECTED_FAMILY_SIZES = (63, 6, 3, 10, 37, 4, 8, 7, 1, 2, 1)
 EXPECTED_TOTAL = sum(EXPECTED_FAMILY_SIZES)
 
 IMPLICIT_FAMILIES = (DIRK, CoupledRK, MultistepImplicit, IMEX, LinearlyImplicit, Newmark)

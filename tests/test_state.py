@@ -150,7 +150,7 @@ DRIFT_BEFORE_FIRST_EVALUATION = {
     # (c[0] != 0), so their first f evaluation sits at t^n + c[0]*dt.
     'SSPSDIRK2', 'Cash4', 'Hairer4', 'Hairer42', 'SFSDIRK4', 'SFSDIRK5',
     'SFSDIRK6', 'SFSDIRK7', 'SFSDIRK8',
-    'Gauss-Legendre 3', 'Radau IIA s=3',
+    'Gauss-Legendre 3', 'Radau IIA s=3', 'MEBDF2',
 }
 
 
@@ -202,6 +202,8 @@ def test_stage_times_stay_within_the_step(scheme):
         slack = 1.5
     elif scheme.name in ('SSPRK53_2N1', 'TsitPap8 8(7)'):
         slack = 0.01
+    elif scheme.name=='MEBDF2':
+        slack = 1.0  # source's second BE stage is deliberately at t+2h
     elif scheme.name in ('ESDIRK4(3)6L[2]SA2', 'Kvaerno5', 'BHR553', 'Cash4'):
         # Wave 8 (NOTES.md 3.28): tableau nodes outside [0, 1] --
         # ESDIRK4(3)6L[2]SA2 c4 = 1.046923, Kvaerno5 c2 = 1.230333,

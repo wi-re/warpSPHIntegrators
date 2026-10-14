@@ -44,7 +44,7 @@ CATEGORIES = {
     'am': ['test_am.py'],
     'multistep': ['test_multistep.py','test_variable_adams.py'],
     'ark': ['test_ark.py'],
-    'imex': ['test_imex.py', 'test_imexmultistep.py'],
+    'imex': ['test_imex.py', 'test_imexmultistep.py', 'test_implicit_extensions.py'],
     'fullyimplicit': ['test_fullyimplicit.py','test_implicit_prototypes.py','test_firk_wave9.py','test_collocation_factory.py'],
     'exponential': ['test_exponential.py'],
     'rosenbrock': ['test_rosenbrock.py'],
@@ -325,7 +325,13 @@ def dts_for(scheme_name, problem_name, default):
     """The convergence grid for (scheme, problem): the coarser per-problem grid
     when the scheme's standard-grid errors would sit at the roundoff floor; the
     caller's default otherwise."""
-    return PROBLEM_COARSE_GRIDS.get(problem_name, {}).get(scheme_name, default)
+    grid=PROBLEM_COARSE_GRIDS.get(problem_name, {}).get(scheme_name, default)
+    # Warm Adams correctors reach their asymptotic regime later than the DP5
+    # starter previously measured by repeated cold calls. Refine, never relax
+    # the order threshold, for those actual history-dependent trajectories.
+    if scheme_name.startswith('Adams-Bashforth-Moulton'):
+        return [*grid,grid[-1]/2,grid[-1]/4]
+    return grid
 
 
 @pytest.fixture(params=ALL_SCHEMES)
@@ -348,6 +354,15 @@ def order_of(scheme, problem_name, dts, T=2.0, reuse=False, **step_options):
     The warnings are the feature under test in test_step_reuse.py; everywhere else
     they are noise.
     """
+    # Measure multistep formulas, including their finite startup, rather than
+    # repeatedly measuring the cold starter on every step.
+    if scheme.metadata.history_length:
+        step_options.setdefault('history',True)
+        step_options.setdefault('history_length',scheme.metadata.history_length)
+        if scheme.implicit:
+            # Solver noise otherwise hides order 4/5 on the finest warm BDF
+            # steps. This changes measurement options, not production defaults.
+            step_options.setdefault('solver_opts',dict(matvec='jvp',tol=1e-15,newton_tol=1e-11))
     if scheme.name in {'Gauss-Legendre 3','Radau IIA s=3'}:
         # Default FD/Newton floors (~1e-10 globally) obscure orders 5/6.
         # Measure discretization with JVP and a stricter linear solve; leave

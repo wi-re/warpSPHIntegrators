@@ -197,8 +197,9 @@ class IntegrationScheme(NamedTuple):
     #: Convergence order actually reached from a cold start (history length < steps),
     #: or None for a one-step method, where the question does not apply. A k-step
     #: multistep method needs k-1 prior derivatives it does not have yet at t=0;
-    #: self-starting with a lower-order method caps the *whole run* at this order
-    #: unless a separate high-order starter is used (NOTES.md S3.7 pain point 1).
+    #: Repeated cold starts follow this method's global order. A finite startup
+    #: contributes its local defect: e.g. one Euler step is O(h^2), sufficient
+    #: to start a globally second-order formula (but not order three or higher).
     startup_order: Optional[int] = None
 
     @property

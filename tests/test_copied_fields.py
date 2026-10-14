@@ -113,7 +113,10 @@ def test_copied_field_holds_the_last_stage_value(scheme):
     """Not just non-None: it must be the value from the *final* evaluation."""
     system = _system()
     result = scheme(system, dt=0.05, f=_rhs)
-    stages_run = system.stage_counter[0]
+    # Owned trial drivers clone lifecycle counters as well as tensors. Read the
+    # accepted system's count rather than requiring mutation of the caller.
+    # RHS-only JVP probes need not run preprocess or write a new copied value.
+    stages_run = result.state.stage_counter[0]
     final = get_reference_state(result.state)
     assert float(final.density[0]) == pytest.approx(float(stages_run)), (
         f'{scheme.name}: density is from stage {float(final.density[0])} of {stages_run}'

@@ -242,6 +242,8 @@ class IntegrationSchemeType(Enum):
     radauIia3 = 138
     # Wave 10: classical fixed-step AB5/AM5 PECE, no adaptive-pair claim.
     abm5 = 139
+    mebdf2 = 140
+    cnlf2 = 141
 
 
 # --------------------------------------------------------------------------- #
@@ -403,6 +405,7 @@ class DIRK(Enum):
     implicitMidpoint = IntegrationSchemeType.implicitMidpoint.value
     trapezoidal = IntegrationSchemeType.trapezoidal.value
     sdirk2 = IntegrationSchemeType.sdirk2.value
+    mebdf2 = IntegrationSchemeType.mebdf2.value
     trbdf2 = IntegrationSchemeType.trbdf2.value
     esdirk324l2sa = IntegrationSchemeType.esdirk324l2sa.value
     esdirk436l2sa = IntegrationSchemeType.esdirk436l2sa.value
@@ -484,6 +487,7 @@ class IMEX(Enum):
     sbdf2 = IntegrationSchemeType.sbdf2.value
     sbdf3 = IntegrationSchemeType.sbdf3.value
     cnab2 = IntegrationSchemeType.cnab2.value
+    cnlf2 = IntegrationSchemeType.cnlf2.value
 
 
 class LinearlyImplicit(Enum):

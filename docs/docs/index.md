@@ -9,7 +9,7 @@ a typed state/update system and matrix-free implicit machinery (JFNK + GMRES).
 
 [catalog:summary:start]: #
 
-**140 registered schemes across 11 families**, with orders through 14 and 47 estimate emitters.
+**142 registered schemes across 11 families**, with orders through 14 and 47 estimate emitters.
 
 [catalog:summary:end]: #
 
@@ -131,10 +131,10 @@ Every scheme in the registry belongs to exactly one family enum (see the
 | Symplectic | `Symplectic` | 6 | [symplectic](/docs/families/symplectic) |
 | Relaxed Chebyshev | `RelaxedChebyshev` | 3 | [relaxed-chebyshev](/docs/families/relaxed-chebyshev) |
 | Multistep explicit | `MultistepExplicit` | 10 | [multistep-explicit](/docs/families/multistep-explicit) |
-| DIRK | `DIRK` | 36 | [dirk](/docs/families/dirk) |
+| DIRK | `DIRK` | 37 | [dirk](/docs/families/dirk) |
 | Coupled RK | `CoupledRK` | 4 | [coupled-rk](/docs/families/coupled-rk) |
 | Multistep implicit | `MultistepImplicit` | 8 | [multistep-implicit](/docs/families/multistep-implicit) |
-| IMEX | `IMEX` | 6 | [imex](/docs/families/imex) |
+| IMEX | `IMEX` | 7 | [imex](/docs/families/imex) |
 | Linearly implicit | `LinearlyImplicit` | 1 | [rosenbrock](/docs/families/rosenbrock) |
 | Exponential | `Exponential` | 2 | [exponential](/docs/families/exponential) |
 | Newmark | `Newmark` | 1 | [newmark](/docs/families/newmark) |

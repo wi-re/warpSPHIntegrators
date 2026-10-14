@@ -684,6 +684,10 @@ EXPECTED_VERDICTS = {
     # Bare-RHS SBDF3 delegates to BDF3's new implicit startup. Splits retain DP5.
     'SBDF3': (None, 5.0, True),
     'CNAB2': (None, 1.5, False),
+    'MEBDF2': (0.0, 0.0, False),
+    # Existing classifier calls are cold one-step trajectories: CNLF2 repeats
+    # backward Euler here. This is not a TVD claim for its warm two-step map.
+    'CNLF2': (None, 5.0, True),
 }
 
 CFLS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 5.0]

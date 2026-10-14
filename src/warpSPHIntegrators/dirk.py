@@ -62,6 +62,12 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
             b=np.array([1.0 - gamma, gamma]),
             c=np.array([gamma, 1.0]),
         )
+    elif scheme == 'MEBDF2':
+        # OrdinaryDiffEqBDF 2.4.5 MEBDF2ConstantCache: two BE solves at
+        # t+h,t+2h, then BE at t+h from .5*y0+y1-.5*y2. This is exactly
+        # a three-stage SDIRK map, not a history-dependent BDF2 formula.
+        return butcherTableau(a=np.array([[1.,0.,0.],[1.,1.,0.],[.5,-.5,1.]]),
+                              b=np.array([.5,-.5,1.]),c=np.array([1.,2.,1.]))
     elif scheme == 'TRBDF2':
         # TR-BDF2: a trapezoidal substep at gamma = 2-sqrt(2), followed by a
         # variable-step BDF2 endpoint solve. Written as an SDIRK tableau, both
@@ -929,7 +935,7 @@ def DIRK(initialState, dt, f, tableau: butcherTableau, *args,
                 solver_diagnostics=solver_diagnostics)
 
 
-def dirkScheme(tableau_name: str, **tableau_kwargs):
+def dirkScheme(tableau_name: str, *, default_solver=None, **tableau_kwargs):
     """Build a DIRK scheme callable that carries its tableau, mirroring `butcherScheme`.
 
     Exposes the tableau as `.dirkTableau`, not `.butcherTableau`. The distinction is
@@ -945,6 +951,8 @@ def dirkScheme(tableau_name: str, **tableau_kwargs):
     tableau = getDIRKTableau(tableau_name)
 
     def scheme(state, dt, f, *args, **kwargs):
+        if default_solver is not None and kwargs.get('solver') is None:
+            kwargs['solver']=default_solver
         return DIRK(state, dt, f, tableau, *args, name=tableau_name, **kwargs)
 
     scheme.__name__ = tableau_name
@@ -956,6 +964,7 @@ backwardEuler = dirkScheme('backwardEuler')
 implicitMidpoint = dirkScheme('implicitMidpoint')
 trapezoidal = dirkScheme('trapezoidal')
 SDIRK2 = dirkScheme('SDIRK2')
+MEBDF2 = dirkScheme('MEBDF2',default_solver=JFNKSolver(tol=1e-12,newton_tol=1e-7))
 TRBDF2 = dirkScheme('TRBDF2')
 ESDIRK324L2SA = dirkScheme('ESDIRK324L2SA')
 ESDIRK436L2SA = dirkScheme('ESDIRK436L2SA')

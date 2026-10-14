@@ -18,7 +18,7 @@ retains the baseline findings and migration rationale.
 | 6 — stiff startup and coupled scaling | Order-preserving implicit BDF bootstrap, warm/preconditioner measurements, s=3 prototypes; diffusion scale gate failed, wave 9 deferred | [validation](docs/development/phase6-validation.md) |
 | 7 — physical splitting on known toy consumers | Physical capabilities, Lie–Trotter/Strang, implicit/dense exact D, bounded Yoshida4, lifecycle/gradient and geometric diagnostics | `78d6a25`; [validation](docs/development/phase7-foundation-validation.md) |
 
-The 139-scheme catalog remains unreleased beyond package 0.6.1. Expansion
+The 142-scheme catalog remains unreleased beyond package 0.6.1. Expansion
 waves 1–8 and the first s=3 wave-9 batch are complete with recorded exceptions;
 the remaining batches are subject to the gates below. Commit creation and package publication are
 separate actions. **Phase 8 is underway: its first reviewed batch registers
@@ -165,6 +165,9 @@ must be recorded rather than counted as an implemented method.
   adaptive acceptance/rollback and portable tensor history. Register classical
   fixed-step AB5/AM5 PECE and fix before-consumption timestep invalidation in
   constant Adams. [Backend evidence](docs/development/variable-adams-validation.md).
+- [x] Add source-checked MEBDF2 and CNLF2 backends, with stiff-decay and split
+  oscillation qualifications, safe history/reset and portable restart.
+  [Backend evidence](docs/development/implicit-extensions-validation.md).
 - [x] Prioritize a benchmarked niche: s=3 collocation improves known-consumer
   accuracy/work while passing the spatial bar. Generalized-alpha is source-confirmed
   and now has a [known two-mass consumer and linear prototype](docs/development/structural-demo-validation.md).

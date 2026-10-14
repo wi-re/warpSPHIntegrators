@@ -297,7 +297,11 @@ startup estimates, transactional adaptive runs and portable history. Classical
 fixed AB5/AM5 PECE is registered as `abm5`, with an explicit repository startup/
 cache policy rather than a full upstream ABM54 equivalence claim. The fixed
 catalog is now 140. [Evidence](../development/variable-adams-validation.md).
-Adaptive order selection, Nordsieck/NDF/BDF variants, CNLF and AMF remain separate
+MEBDF2 now uses its equivalent one-step SDIRK form; CNLF2 supplies the source
+IMEX-Euler start and Crank–Nicolson–Leapfrog history formula. Both have nonlinear
+step-body oracles, ownership/gradient/restart tests and known-consumer measurements;
+the fixed catalog is 142. [Evidence](../development/implicit-extensions-validation.md).
+Adaptive order selection, Nordsieck/NDF/BDF variants and AMF remain separate
 backend work; frontend availability is not an implementation gate.
 
 - `bdf.py`: NordsieckBDF (Nordsieck-form BDF), QNDF / QNDF1 / QNDF2

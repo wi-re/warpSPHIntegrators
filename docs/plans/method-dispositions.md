@@ -2,7 +2,7 @@
 
 Original audit at `5eb45e0`, supplemented by the Phase 8 first wave-9 batch on
 14 October 2026. The [JSON ledger](method-dispositions.json)
-records all 140 registered identifiers plus standalone, equivalent, deferred and
+records all 142 registered identifiers plus standalone, equivalent, deferred and
 screening candidates. It includes implementation/source constructors, modifications,
 test files, numerical evidence and intended consumers. Method implementation and
 primary-source verification are separate fields: legacy methods remain implemented
@@ -18,6 +18,9 @@ numerical/work gates are recorded in [the driver validation](../development/gene
 The `Collocation(family, stages)` factory extends Gauss/Radau stages 2–9 outside
 the fixed ledger. Its pinned coefficient/step oracle and Schur spatial backend
 are recorded in [the higher-stage validation](../development/higher-collocation-validation.md).
+`VariableAdams` supplies order-3/4/5 AB/ABM outside the fixed catalog, with
+[variable-history evidence](../development/variable-adams-validation.md).
+Fixed classical AB5/AM5 PECE, MEBDF2 and CNLF2 are registered wave-10 additions.
 
 ## Source pin and transformations
 
@@ -168,6 +171,8 @@ explicitly marked awaiting verification, not assigned the expansion source pin.
 | SBDF2 | baseline | [`SBDF2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
 | SBDF3 | baseline | [`SBDF3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
 | CNAB2 | baseline | [`CNAB2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
+| CNLF2 | 10 | [`CNLF2`](../../src/warpSPHIntegrators/imexmultistep.py) | [validation](../development/implicit-extensions-validation.md) |
+| MEBDF2 | 10 | [`MEBDF2`](../../src/warpSPHIntegrators/dirk.py) | [validation](../development/implicit-extensions-validation.md) |
 | Adams-Bashforth 2 | baseline | [`AB2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
 | Adams-Bashforth 3 | baseline | [`AB3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
 | Adams-Bashforth 4 | baseline | [`AB4`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
@@ -175,6 +180,7 @@ explicitly marked awaiting verification, not assigned the expansion source pin.
 | Adams-Bashforth-Moulton 2 (PECE) | baseline | [`ABM2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
 | Adams-Bashforth-Moulton 3 (PECE) | baseline | [`ABM3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
 | Adams-Bashforth-Moulton 4 (PECE) | baseline | [`ABM4`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
+| Adams-Bashforth-Moulton 5 (PECE) | 10 | [`ABM5`](../../src/warpSPHIntegrators/multistep.py) | [validation](../development/variable-adams-validation.md) |
 | SSPRKMSVS32 | 3 | [`SSPRKMSVS32`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-23.md) |
 | SSPRKMSVS43 | 3 | [`SSPRKMSVS43`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-23.md) |
 | Adams-Moulton 2 (implicit) | baseline | [`AM2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
@@ -265,5 +271,7 @@ and constructs phase-fitted coefficients at runtime. It needs a parameter/step
 contract and small-phase limit tests, like Anas5/FRK65, before registration.
 The [current execution plan](../../REPOSITORY_PLAN.md) owns scheduling.
 
-Gauss/Radau three-stage prototypes remain unregistered after the failed Phase 6
-diffusion scale gate; see [the decision and evidence](../development/phase6-validation.md).
+The Phase 6 three-stage scale limitation was resolved by the spatial backend;
+the s=3 methods are registered and higher stages 2–9 are supplied by a factory.
+See [the first registration](../development/phase8-wave9-validation.md) and
+[higher-stage validation](../development/higher-collocation-validation.md).

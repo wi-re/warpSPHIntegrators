@@ -52,7 +52,7 @@ from .verlet import leapFrog, symplecticEuler, velocityVerlet
 from .tvd import TVDRK3, TVDRK2
 from .ruth import PEFRL, VEFRL
 from .dirk import (backwardEuler as implicitBackwardEuler, implicitMidpoint, trapezoidal,
-                   SDIRK2, TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA,
+                   SDIRK2, MEBDF2, TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA,
                    Kvaerno3, Kvaerno4, Kvaerno5, KenCarp3, KenCarp4, KenCarp47, KenCarp5,
                    KenCarp58, ESDIRK325L2SA, ESDIRK436L2SA2, ESDIRK437L2SA, ESDIRK547L2SA2,
                    ESDIRK54I8L2SA, ESDIRK659L2SA, SSPSDIRK2, ARS222, ARS232, ARS343, ARS443,
@@ -65,7 +65,7 @@ from .multistep import AB2, AB3, AB4, AB5, ABM2, ABM3, ABM4, ABM5, AM2, AM3, AM4
 from .ssprkmsvs import SSPRKMSVS32, SSPRKMSVS43
 from .bdf import BDF1, BDF2, BDF3, BDF4, BDF5
 from .imex import IMEXEuler
-from .imexmultistep import SBDF2, SBDF3, CNAB2
+from .imexmultistep import SBDF2, SBDF3, CNAB2, CNLF2
 from .rkc import RKC1, RKC2, RKL2
 from .rosenbrock import integrateROS3P
 from .exponential import integrateETD2RK, integrateEXPRB32
@@ -389,6 +389,12 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     CNAB2, 'CNAB2', IntegrationSchemeType.cnab2, 2, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='A', startup_order=2))
+IntegrationSchemes.append(IntegrationScheme(
+    CNLF2, 'CNLF2', IntegrationSchemeType.cnlf2, 2, True,
+    implicit=True, steps=1, stiffly_accurate=False, stability='A', startup_order=1))
+IntegrationSchemes.append(IntegrationScheme(
+    MEBDF2, 'MEBDF2', IntegrationSchemeType.mebdf2, 2, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
 
 # ---- Explicit linear multistep (NOTES.md S3.6 Phase 1) -------------------- #
 # `dissipation=True` for all seven, measured directly (max relative energy error on

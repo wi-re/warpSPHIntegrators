@@ -2,7 +2,7 @@
 sidebar_label: DIRK
 ---
 
-# Diagonally implicit RK (`DIRK`) — 36 schemes
+# Diagonally implicit RK (`DIRK`) — 37 schemes
 
 One-step methods on a **triangular** Butcher tableau driven by `dirk.DIRK`:
 each stage with a nonzero diagonal $a_{ii}$ is closed as one nonlinear solve
@@ -20,8 +20,18 @@ estimation; the only new piece is the stage solve.
 
 ## The tableaus
 
-All 36 are in `dirk.getDIRKTableau`, covered by convergence, tableau consistency, reuse,
+All 37 are in `dirk.getDIRKTableau`, covered by convergence, tableau consistency, reuse,
 stability, adaptive and gradient tests (NOTES.md §§3.6 and 3.28).
+
+### MEBDF2 (`mebdf2`)
+
+The modified extended BDF2 step is a three-stage SDIRK with
+`A=[[1,0,0],[1,1,0],[1/2,-1/2,1]]`, `b=A[-1]`, `c=[1,2,1]`.
+It needs three nonlinear solves and no step history. Its second stage evaluates
+at t+2h, beyond the accepted endpoint. Order two, stiffly accurate and L-stable:
+`R(z)=(1-2*z+z*z/2)/(1-z)**3`. There is no embedded estimate and no SSP guarantee.
+The pinned-source nonlinear step and known-consumer evidence are in
+[the backend record](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/implicit-extensions-validation.md).
 
 ### Backward Euler (`backwardEuler`)
 

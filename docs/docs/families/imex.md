@@ -2,7 +2,7 @@
 sidebar_label: IMEX
 ---
 
-# Additive (IMEX) methods (`IMEX`) — 6 schemes
+# Additive (IMEX) methods (`IMEX`) — 7 schemes
 
 For the **split right-hand side** $y' = f_E(t, y) + f_I(t, y)$: the smooth
 (non-stiff) part explicit, the stiff part implicit. The split is read by
@@ -98,6 +98,24 @@ CNAB2 implicit start-point evaluation, the endpoint history evaluation) are
 counted into `rhs_evaluations`, so the work-unit invariant covers the full
 step cost. Per-step TVD: measured to CFL 1.5 with the rest of the multistep
 family (NOTES.md §3.11).
+
+## Crank–Nicolson–Leapfrog (`cnlf2`)
+
+One implicit solve per step closes
+`y[n+1] = y[n-1] + h*(I[n-1] + I[n+1]) + 2*h*E[n]`.
+Thread `result.history` through `history=` or use the ordinary `solve` runner.
+The first step is IMEX Euler; a finite startup defect preserves second-order
+global convergence. Repeated cold calls remain first order. Changed step size,
+time discontinuity, layout or particle IDs reset history before consumption;
+use `restart_history=True` after changing RHS parameters.
+
+The pure implicit two-step limit is A-stable, with a parasitic mode and no stiff
+damping. At hλ=−100, y0=1, y2=−99/101. The explicit leapfrog part supports
+oscillatory spectra within its CFL interval and is unstable for negative-real
+decay. Neither A-stability nor the historical cold-start TVD classifier implies
+monotonicity of the warm split. This is a fixed-step method without an estimator.
+Input/history ownership, failed-solve rollback, parameter gradients and portable
+tensor restart are covered by [the backend record](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/implicit-extensions-validation.md).
 
 ## When to use
 

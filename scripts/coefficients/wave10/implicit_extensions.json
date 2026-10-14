@@ -1,0 +1,128 @@
+{
+  "monorepo_tree": "bae9b8e5f1d00e51c554648e5094e215164a19f8",
+  "qualification": "Unchanged constant-cache step bodies with independent dense Newton increment solves and minimal cache/integrator mocks; no upstream nonlinear solver/controller equivalence claim",
+  "records": {
+    "cnlf2_startup_autonomous": {
+      "h": 0.1,
+      "initial": [
+        0.7,
+        -0.4
+      ],
+      "previous": [
+        0.73,
+        -0.38
+      ],
+      "solve_times": [
+        0.4
+      ],
+      "state": [
+        0.5745621185063429,
+        -0.38399768327576195
+      ],
+      "t": 0.3
+    },
+    "cnlf2_startup_forced": {
+      "h": 0.1,
+      "initial": [
+        0.7,
+        -0.4
+      ],
+      "previous": [
+        0.73,
+        -0.38
+      ],
+      "solve_times": [
+        0.4
+      ],
+      "state": [
+        0.582210205401658,
+        -0.37232762488296905
+      ],
+      "t": 0.3
+    },
+    "cnlf2_warm_autonomous": {
+      "h": 0.1,
+      "initial": [
+        0.7,
+        -0.4
+      ],
+      "previous": [
+        0.73,
+        -0.38
+      ],
+      "solve_times": [
+        0.4
+      ],
+      "state": [
+        0.4688800012819869,
+        -0.3481381246551963
+      ],
+      "t": 0.3
+    },
+    "cnlf2_warm_forced": {
+      "h": 0.1,
+      "initial": [
+        0.7,
+        -0.4
+      ],
+      "previous": [
+        0.73,
+        -0.38
+      ],
+      "solve_times": [
+        0.4
+      ],
+      "state": [
+        0.48101084007261047,
+        -0.3243535969347218
+      ],
+      "t": 0.3
+    },
+    "mebdf2_autonomous": {
+      "h": 0.1,
+      "initial": [
+        0.7,
+        -0.4
+      ],
+      "previous": [
+        0.73,
+        -0.38
+      ],
+      "solve_times": [
+        0.4,
+        0.5,
+        0.4
+      ],
+      "state": [
+        0.5765291049677612,
+        -0.37310402483992394
+      ],
+      "t": 0.3
+    },
+    "mebdf2_forced": {
+      "h": 0.1,
+      "initial": [
+        0.7,
+        -0.4
+      ],
+      "previous": [
+        0.73,
+        -0.38
+      ],
+      "solve_times": [
+        0.4,
+        0.5,
+        0.4
+      ],
+      "state": [
+        0.582802276655038,
+        -0.3638444832061137
+      ],
+      "t": 0.3
+    }
+  },
+  "source_sha256": {
+    "lib/OrdinaryDiffEqBDF/src/bdf_perform_step.jl": "995f621aa580e3775b5a375df8fc3bdb0aa004c998edc2e9fdf2705a7206e00f",
+    "lib/OrdinaryDiffEqIMEXMultistep/src/imex_multistep_perform_step.jl": "e4bc8da64800024c314cd2bb5fb174a802b4226a12be4540351aff0646a8877d"
+  }
+}

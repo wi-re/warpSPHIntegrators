@@ -35,7 +35,8 @@ UNSTABLE = {'Forward Euler', 'Explicit Euler'}
 #: flat 1.0 on `kepler`. The dissipative *direction* is not in question -- L-stability
 #: is what backward Euler is for -- only this particular growth-ratio test doesn't fit
 #: a scheme fast enough to hit its own floor.
-SATURATES_EARLY = {'Backward Euler (implicit)', 'BDF1', 'BDF2', 'IMEX Euler', 'TR-BDF2'}
+SATURATES_EARLY = {'Backward Euler (implicit)', 'BDF1', 'BDF2', 'IMEX Euler', 'TR-BDF2',
+                  'CNLF2'}  # this cold-call helper repeats its BE start; warm mode has a dedicated test
 
 #: Gauss-Legendre 2 on `kepler` only: the default JFNK solve stagnates in a
 #: ~5e-8 energy-drift band (T_SHORT 6.9e-9, T_LONG 5.5e-8), just above the 1e-8

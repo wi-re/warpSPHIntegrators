@@ -1,6 +1,6 @@
 {
   "summary": {
-    "scheme_count": 140,
+    "scheme_count": 142,
     "family_count": 11,
     "estimate_count": 47,
     "max_order": 14
@@ -34,7 +34,7 @@
       "name": "DIRK",
       "label": "DIRK",
       "page": "dirk",
-      "count": 36
+      "count": 37
     },
     {
       "name": "CoupledRK",
@@ -52,7 +52,7 @@
       "name": "IMEX",
       "label": "IMEX",
       "page": "imex",
-      "count": 6
+      "count": 7
     },
     {
       "name": "LinearlyImplicit",
@@ -3115,6 +3115,59 @@
       "requires_separable": false,
       "supports_drift_fields": false,
       "history_length": 1,
+      "history_requires_constant_dt": true
+    },
+    {
+      "name": "CNLF2",
+      "identifier": "cnlf2",
+      "family": "IMEX",
+      "order": 2,
+      "implicit": true,
+      "stability": "A",
+      "fsal": false,
+      "reuse_order": null,
+      "steps": 1,
+      "startup_order": 1,
+      "stage_count": null,
+      "embedded_order": null,
+      "estimate_order": null,
+      "required_capabilities": [],
+      "optional_capabilities": [
+        "explicit",
+        "implicit"
+      ],
+      "required_options": [],
+      "dense_output": false,
+      "estimate_extra_stages": 0,
+      "state_kind": "tensor",
+      "requires_separable": false,
+      "supports_drift_fields": false,
+      "history_length": 1,
+      "history_requires_constant_dt": true
+    },
+    {
+      "name": "MEBDF2",
+      "identifier": "mebdf2",
+      "family": "DIRK",
+      "order": 2,
+      "implicit": true,
+      "stability": "L",
+      "fsal": false,
+      "reuse_order": null,
+      "steps": 1,
+      "startup_order": null,
+      "stage_count": 3,
+      "embedded_order": null,
+      "estimate_order": null,
+      "required_capabilities": [],
+      "optional_capabilities": [],
+      "required_options": [],
+      "dense_output": false,
+      "estimate_extra_stages": 0,
+      "state_kind": "tensor",
+      "requires_separable": false,
+      "supports_drift_fields": false,
+      "history_length": 0,
       "history_requires_constant_dt": true
     },
     {

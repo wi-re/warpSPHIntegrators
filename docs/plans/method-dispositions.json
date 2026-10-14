@@ -4063,6 +4063,62 @@
         "tests/test_tvd.py"
       ],
       "intended_consumer": "nonstiff problems with expensive RHS evaluations"
+    },
+    {
+      "name": "MEBDF2",
+      "identifier": "mebdf2",
+      "status": "implemented",
+      "wave": 10,
+      "source": {
+        "version": "2.4.5",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8",
+        "file": "lib/OrdinaryDiffEqBDF/src/bdf_perform_step.jl",
+        "constructor": "MEBDF2",
+        "verification": "Pinned unchanged constant-cache step-body oracle with independent dense nonlinear solves; not full upstream solver/controller equivalence"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/dirk.py",
+        "constructor": "MEBDF2"
+      },
+      "coefficient_modifications": [
+        "Source three backward-Euler solves represented as a three-stage SDIRK tableau; no multistep memory; stage times h,2h,h",
+        "Default JFNK linear/Newton thresholds 1e-12/1e-7 match absolute inner and scaled outer norms; caller overrides preserved"
+      ],
+      "evidence": "docs/development/implicit-extensions-validation.md",
+      "tests": [
+        "tests/test_implicit_extensions.py",
+        "tests/test_convergence.py",
+        "tests/test_tvd.py"
+      ],
+      "intended_consumer": "Stiff ordinary ODEs requiring L-stable second-order damping"
+    },
+    {
+      "name": "CNLF2",
+      "identifier": "cnlf2",
+      "status": "implemented",
+      "wave": 10,
+      "source": {
+        "version": "2.2.0",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8",
+        "file": "lib/OrdinaryDiffEqIMEXMultistep/src/imex_multistep_perform_step.jl",
+        "constructor": "CNLF2",
+        "verification": "Pinned unchanged constant-cache step-body oracle with independent dense nonlinear solves; not full upstream solver/controller equivalence"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/imexmultistep.py",
+        "constructor": "CNLF2"
+      },
+      "coefficient_modifications": [
+        "Source IMEX-Euler start and CN/leapfrog warm formula; owned context-validated state/implicit-derivative history; explicit resets on incompatible timestep/layout/UID/time",
+        "Default JFNK linear/Newton thresholds 1e-12/1e-7 match absolute inner and scaled outer norms; caller overrides preserved"
+      ],
+      "evidence": "docs/development/implicit-extensions-validation.md",
+      "tests": [
+        "tests/test_implicit_extensions.py",
+        "tests/test_convergence.py",
+        "tests/test_tvd.py"
+      ],
+      "intended_consumer": "Split damped oscillations with leapfrog-compatible explicit spectrum"
     }
   ],
   "other_dispositions": [
@@ -4718,13 +4774,15 @@
     },
     {
       "name": "Gauss s>=4 / Radau IIA s>=4",
-      "status": "deferred",
-      "reason": "First s=3 batch registered in Phase 8; higher stages still require their own spatial scaling, coefficients/companions and catalog gates",
+      "status": "implemented",
+      "reason": "Parameterized Collocation backend supplies stages 2\u20139 outside the fixed catalog, with source/companion and Schur spatial scale gates",
       "source": "OrdinaryDiffEq 7.8.1 pinned monorepo, lib/OrdinaryDiffEqFIRK; arbitrary-stage Gauss / Radau generators",
-      "implementation": null,
-      "tests": null,
-      "evidence": "docs/development/phase8-wave9-validation.md",
-      "intended_consumer": "only after each higher-stage batch has a measured benefit and passes the unchanged scale bar"
+      "implementation": "src/warpSPHIntegrators/collocation.py",
+      "tests": [
+        "tests/test_collocation_factory.py"
+      ],
+      "evidence": "docs/development/higher-collocation-validation.md",
+      "intended_consumer": "Known stiff reaction/diffusion and smooth higher-order ODE consumers; stages beyond 9 and source variable-order/filtering controllers remain separate work"
     }
   ]
 }

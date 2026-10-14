@@ -18,6 +18,9 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
   after a timestep change.
 - Classical generalized-alpha factory with accepted acceleration, restart,
   lifecycle, quantity-coupling and gradient validation on known structural modes.
+- Registered MEBDF2 (one-step L-stable SDIRK representation) and CNLF2
+  (Crank–Nicolson–Leapfrog with owned split history), bringing the fixed catalog
+  to 142. Source step-body oracles and stiff-mode qualifications accompany both.
 
 ### Added — understood structural consumer
 

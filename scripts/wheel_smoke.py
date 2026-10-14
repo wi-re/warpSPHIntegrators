@@ -98,6 +98,11 @@ with tempfile.TemporaryDirectory() as directory:
     path=Path(directory)/'adams.pt';save_checkpoint(adams.checkpoint,path)
     restored=solve(VariableAdams(4,'abm'),None,.6,tensor_rhs(lambda t,y:-y),restart=load_checkpoint(path))
 assert restored.successful and abs(restored.state.y.item()-math.exp(-.6))<1e-6
+cnlf=solve('cnlf2',TensorState(torch.ones(1,dtype=torch.float64)),.2,rhs,dt=.025)
+with tempfile.TemporaryDirectory() as directory:
+    path=Path(directory)/'cnlf.pt';save_checkpoint(cnlf.checkpoint,path)
+    restored=solve('cnlf2',None,.4,rhs,restart=load_checkpoint(path))
+assert restored.successful and abs(restored.state.y.item()-math.exp(-.4))<1e-4
 print(f'Installed wheel {package.__version__}: all modules/exports, py.typed, '
       f'{len(filter_schemes(state_kind="tensor"))} tensor drivers, advanced state protocol, '
       'adaptive sampling/events, portable restart, stiff bootstrap, stage preconditioning, physical splitting and generalized-alpha continuation pass')

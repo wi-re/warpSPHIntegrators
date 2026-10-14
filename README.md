@@ -5,7 +5,7 @@ systems with several physical fields and auxiliary buffers, including SPH.
 
 [catalog:summary:start]: #
 
-**140 registered schemes across 11 families**, with orders through 14 and 47 estimate emitters.
+**142 registered schemes across 11 families**, with orders through 14 and 47 estimate emitters.
 
 [catalog:summary:end]: #
 

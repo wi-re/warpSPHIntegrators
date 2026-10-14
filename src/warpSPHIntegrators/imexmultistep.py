@@ -1,4 +1,4 @@
-"""Semi-implicit BDF (SBDF2/3) and Crank-Nicolson/Adams-Bashforth (CNAB2).
+"""Semi-implicit BDF, CN/Adams-Bashforth and CN/leapfrog methods.
 
 IMEX linear multistep methods (NOTES.md S3.19, Phase 12): a BDF or
 trapezoidal implicit backbone for the stiff part, explicit endpoint
@@ -41,7 +41,7 @@ increment on the explicit part:
 so its pure-implicit limit is the registered trapezoidal (A-stable, not L)
 scheme and its pure-explicit limit is the registered Adams-Bashforth 2.
 
-History and cold start follow the BDF family exactly: ``history=`` is threaded
+SBDF/CNAB history and cold start follow the BDF family: ``history=`` is threaded
 across calls (``testing.run(..., history=True)``); a cold call (fewer entries
 than ``order - 1``) runs Dormand-Prince 5(4) and records a state snapshot, so
 the run is never silently wrong -- just at the starter's cost until the
@@ -59,14 +59,16 @@ only; SBDF/CNAB pay for the split, and this makes that visible.)
 """
 
 import dataclasses
+import math
 from typing import Optional
 
 import numpy as np
+import torch
 from torch.profiler import record_function
 
 from .bdf import BDF, _copy_integrated, _linear_combination, getBDFCoefficients
 from .butcher import DormandPrince
-from .fields import get_reference_state, state_difference, state_norm
+from .fields import get_reference_state, integrated_field_names, state_difference, state_norm, flatten_integrated
 from .history import HistoryEntry, StepHistory
 from .jfnk import JFNKSolver
 from .rhs import resolve
@@ -283,3 +285,96 @@ SBDF2 = sbdfScheme(2)
 SBDF3 = sbdfScheme(3)
 
 CNAB2.__name__ = 'CNAB2'
+
+
+def CNLF2(initial_state,dt,f,*args,history=None,solver=None,restart_history=False,**kwargs):
+    """Crank-Nicolson/leapfrog with a first IMEX-Euler step and owned history.
+
+    y1 = y[-1] + h*(I(t[-1],y[-1])+I(t1,y1)) + 2*h*E(t0,y0).
+    A plain callable is the pure-implicit two-step CN limit. There is a
+    computational/parasitic mode and no stiff-limit damping or adaptive estimate.
+    Start is IMEX Euler, matching the source; one finite O(h²) startup error
+    preserves global order two. Constant steps only; reset before changes.
+    """
+    from .run import snapshot_state, assess_step
+    if isinstance(dt,bool) or not math.isfinite(dt) or dt==0:raise ValueError('finite nonzero dt required')
+    if type(restart_history) is not bool:raise ValueError('restart_history must be a bool')
+    reject_prior_step('CNLF2',kwargs.pop('priorStep',None))
+    base=snapshot_state(initial_state);history=StepHistory(1) if history is None else snapshot_state(history)
+    if not isinstance(history,StepHistory):raise TypeError('history must be StepHistory')
+    accepted_history=history
+    ref=get_reference_state(base);uid=getattr(ref,'uid',None)
+    layout=tuple((name,tuple(getattr(ref,name).shape),str(getattr(ref,name).dtype)) for name in integrated_field_names(base))
+    context=dict(method='cnlf2.v1',layout=layout,uid=snapshot_state(uid))
+    old=history.context;latest=history.latest
+    warm=not restart_history and latest is not None and isinstance(old,dict)
+    if warm:
+        warm=(old.get('method')==context['method'] and old.get('layout')==layout
+              and (old.get('uid') is None)==(uid is None) and (uid is None or torch.equal(old['uid'],uid))
+              and latest.state is not None and latest.update is not None
+              and math.isclose(latest.dt,dt,rel_tol=1e-12,abs_tol=0)
+              and math.isclose(latest.t+latest.dt,float(base.t),rel_tol=0,
+                  abs_tol=8*max(math.ulp(float(base.t)),math.ulp(latest.t+latest.dt))))
+    if not warm:history=StepHistory(history.maxlen)
+    before=flatten_integrated(base).clone()
+    initializeSystem(base,dt,*args,**kwargs)
+    if warm and not torch.equal(before,flatten_integrated(base)):
+        raise ValueError('Warm CNLF2 initialize must preserve integrated fields; restart history')
+    ref=get_reference_state(base);new_uid=getattr(ref,'uid',None)
+    if warm and ((uid is None)!=(new_uid is None) or uid is not None and not torch.equal(context['uid'],new_uid)):
+        raise ValueError('Warm CNLF2 initialize changed particle IDs; restart history')
+    context['uid']=snapshot_state(new_uid)
+    context['layout']=tuple((name,tuple(getattr(ref,name).shape),str(getattr(ref,name).dtype)) for name in integrated_field_names(base))
+    resolved=resolve(f,scheme_name='CNLF2')
+    implicit_stage=base.initializeNewState(*args,**kwargs);implicit_stage.t=float(base.t)
+    current_i,current_aux=updateStep(base,implicit_stage,dt,resolved.implicit,*args,**kwargs)
+    extra_evaluations=1
+    known=base.initializeNewState(*args,**kwargs)
+    updates=[];auxes=[];weights=[]
+    if warm:
+        _copy_integrated(known,latest.state)
+        known=updateStateEuler(known,latest.update,dt,copyState=False,**kwargs)
+        updates.append(latest.update);auxes.append(latest.aux);weights.append(1.)
+    if resolved.explicit is not None:
+        explicit_stage=base.initializeNewState(*args,**kwargs);explicit_stage.t=float(base.t)
+        current_e,explicit_aux=updateStep(base,explicit_stage,dt,resolved.explicit,*args,**kwargs)
+        extra_evaluations+=1
+        factor=2. if warm else 1.
+        known=updateStateEuler(known,current_e,factor*dt,copyState=False,**kwargs)
+        updates.append(current_e);auxes.append(explicit_aux);weights.append(factor)
+    known.t=float(base.t+dt)
+    def step(guess):
+        guess.t=float(base.t+dt)
+        update,_=updateStep(base,guess,dt,resolved.implicit,*args,**kwargs)
+        output=updateStateEuler(known,update,dt,copyState=True,**kwargs)
+        output.t=float(base.t+dt)
+        return output
+    def norm(new,old):return state_norm(state_difference(new,old),1e-3,1e-6,reference=old)
+    solved=(solver or JFNKSolver(tol=1e-12,newton_tol=1e-7)).solve(
+        step,known,norm,**kwargs.get('solver_opts',{}))
+    output=solved.y;output.t=float(base.t+dt)
+    diag=record_solve_diagnostics(solved)
+    diag=dataclasses.replace(diag,rhs_evaluations=diag.rhs_evaluations+extra_evaluations)
+    candidate=IntegrationResult(output,history=accepted_history,solver_diagnostics=diag)
+    if not assess_step(candidate).successful:return candidate
+    endpoint=output.initializeNewState(*args,**kwargs);endpoint.t=output.t
+    end_i,end_aux=updateStep(base,endpoint,dt,resolved.implicit,*args,**kwargs)
+    diag=dataclasses.replace(diag,rhs_evaluations=diag.rhs_evaluations+1)
+    stages=[StageResult(current_aux,current_i),StageResult(end_aux,end_i)]
+    candidate=IntegrationResult(output,stages=stages,history=accepted_history,solver_diagnostics=diag)
+    if not assess_step(candidate).successful:return candidate
+    updates.append(end_i);auxes.append(end_aux);weights.append(1.)
+    # Refresh copied fields using the complete physical RHS when split: neither
+    # half alone is assumed to populate the caller's complete derived buffers.
+    if resolved.explicit is not None:
+        combined_stage=output.initializeNewState(*args,**kwargs);combined_stage.t=output.t
+        combined,combined_aux=updateStep(base,combined_stage,dt,f,*args,**kwargs)
+        extra_evaluations=1  # one combined RHS entrypoint, matching IMEX diagnostics
+        diag=dataclasses.replace(diag,rhs_evaluations=diag.rhs_evaluations+extra_evaluations)
+        stages.append(StageResult(combined_aux,combined));endpoint=combined_stage
+        candidate=IntegrationResult(output,stages=stages,history=accepted_history,solver_diagnostics=diag)
+        if not assess_step(candidate).successful:return candidate
+    finalizeSystem(output,base,dt,auxes,updates,weights,*args,lastStageSystem=endpoint,**kwargs)
+    snapshot=base.initializeNewState(*args,**kwargs);snapshot.t=float(base.t)
+    next_history=history.pushed(HistoryEntry(float(base.t),dt,current_i,current_aux,snapshot),context=context)
+    return IntegrationResult(output,stages=stages,history=next_history,solver_diagnostics=diag)
