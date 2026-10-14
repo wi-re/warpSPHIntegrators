@@ -23,7 +23,7 @@ and closed by a `NonlinearSolver.solve(step_fn, y0, norm, **opts) -> SolveResult
 |---|---|---|
 | `FixedPointSolver(iterations=2)` | Exactly `iterations` Picard iterates, no convergence check. | Non-stiff problems where a fixed depth is known to be accurate; the only choice that stays CUDA-graph-capturable. |
 | `RelaxedFixedPointSolver(relaxation=0.5, iterations=2)` | Picard with under-relaxation and optional early exit. | Mildly stiff problems, cheaper than Newton. |
-| `JFNKSolver(...)` | Inexact Newton (outer loop) + GMRES (inner linear solve), matrix-free. | The default for every registered implicit scheme; required once the Picard map is not contractive. |
+| `JFNKSolver(...)` | Inexact Newton (outer loop) + GMRES (inner linear solve), matrix-free. | Default for DIRK, coupled RK, Newmark and implicit multistep/IMEX stages. ROS3P instead uses a frozen-operator linear solve. |
 
 `SolveResult` carries the converged iterate and a `SolveDiagnostics` entry
 (residual, `gmres_iterations`, `rhs_evaluations`, `termination`
@@ -52,7 +52,8 @@ Convergence has two independent exits:
 - `norm(Y, G(Y)) < newton_tol` (defaults to `tol`, the GMRES tolerance, when not
   given). Callers with a differently-scaled `norm` — e.g. `dirk.py`'s
   Hairer-Wanner weighted-RMS, whose own convention is "< 1 means converged" —
-  must pass a matching `newton_tol` (`dirk.py` passes `1e-3`).
+  can pass `newton_tol` explicitly. DIRK currently leaves the solver's
+  threshold unchanged unless `solver_opts` overrides it.
 - **stagnation floor**: if the norm fails to improve by a factor of
   `newton_stagnation_ratio` (0.9) against both its best-so-far and
   the immediately preceding value for `newton_stagnation_patience` (2)
@@ -72,13 +73,16 @@ breakdown).
 
 ## GMRES and preconditioning
 
-`jfnk.gmres(matvec, b, tol, maxiter, restart, ...)` is a Givens-free
-GMRES: the Arnoldi basis is built with Householder-free Hessenbergization, so
-the whole solve is a chain of matvec applications (cheap to record, and the
-`gmres_iterations` count is exact). It supports **left and right
+`jfnk.gmres(matvec, b, tol, maxiter, restart, ...)` builds an Arnoldi basis
+and a small Hessenberg system, with Givens rotations for the least-squares
+solve. It applies the system operator through matvecs and reports the
+`gmres_iterations` count. It supports **left and right
 preconditioning** (Phase 2, NOTES.md §3.4):
 
+[example:skip Provide my_preconditioner and the step dt]: #
 ```python
+from warpSPHIntegrators import JFNKSolver
+
 solver = JFNKSolver(
     preconditioner=my_preconditioner,   # callable: (v, state, context) -> vector
     preconditioning='right',            # 'right' solves A M z = b, returns M z
@@ -100,24 +104,41 @@ cluster (NOTES.md §3.18).
 Phase 11 deliberately landed **helpers, not a driver**: the library proposes,
 the caller disposes. `adaptive.py` exposes:
 
-- `estimate_error_norm(error, rtol, atol, reference)` — the embedded pair's
-  state-shaped difference, scaled by the SUNDIALS-style control
-  $\mathrm{rtol}\,|\mathrm{ref}| + \mathrm{atol}$ per component (RMS).
-- `propose_dt(dt, error_norm, order, safety=0.9, max_factor=5.0,
-  min_factor=0.2, dt_min, dt_max)` — the standard
-  $\mathrm{dt}_{\text{new}} = \mathrm{dt}\,\mathrm{safety}\,
-  \mathrm{err}^{-1/p}$ with clamps; rejects a zero/negative `dt` and an
-  error of zero (keeps `dt`).
-- `dormand_prince_dense_output(stages, dt)` — the 4th-degree interpolating
-  polynomial through the DP5(4) stages, for output at times between steps.
+- `estimate_error_norm(result, rtol=1e-3, atol=1e-6)` measures the
+  weighted RMS of `result.error`, scaled against `result.state`. A value of
+  1 is at the requested tolerance; a result without an estimate raises.
+- `propose_dt(error_norm, dt, order, target=1.0, safety=0.9,
+  growth_min=0.2, growth_max=5.0)` scales the step by
+  $\mathrm{safety}\,(\mathrm{target}/\mathrm{error\_norm})^{1/q}$,
+  clamped to the supplied growth bounds. Zero error grows to `growth_max`.
+  The positional `order` argument is the **estimate exponent q**:
+  pass `scheme.estimate_order`. TR-BDF2 and Gauss-Legendre 2 both use q=3,
+  despite propagated orders 2 and 4.
+- `dormand_prince_dense_output(state, stages, dt, theta)` evaluates DP5's
+  quartic at the fraction `theta` of a step, with exact endpoint reproduction.
 
-The embedded pairs that feed these are listed on the
-[explicit-rk](families/explicit-rk) and [dirk](families/dirk) pages
-(twelve registered schemes in total, including the two coupled-block
-companion pairs). Multistep schemes **refuse** adaptive control: varying
-`dt` would desynchronize their history (NOTES.md §3.17). A full
-adaptive driver (output at fixed times, event location) is on the
-roadmap as an open item.
+[The generated catalog](catalog) lists every estimate emitter and exponent.
+Multistep schemes emit no estimates, and changing dt restarts their history.
+The caller owns acceptance/rejection, final-time clipping and state/history
+commit; a general trajectory driver remains on the roadmap.
+
+[example:run adaptive]: #
+```python
+from warpSPHIntegrators import estimate_error_norm, getIntegrator, propose_dt, testing
+
+problem = testing.oscillator_problem()
+scheme = getIntegrator('Gauss-Legendre 2')
+initial = problem.initial()
+dt = 0.1
+result = scheme(initial, dt=dt, f=problem.rhs)
+norm = estimate_error_norm(result, rtol=1e-6, atol=1e-9)
+next_dt = propose_dt(norm, dt, scheme.estimate_order)
+if norm <= 1.0:
+    system = result.state  # accept the candidate
+else:
+    system = initial      # retry from the unchanged accepted state
+    next_dt = min(next_dt, dt)
+```
 
 ## Cost model
 

@@ -1,11 +1,12 @@
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import FeatureCard from '@site/src/components/FeatureCard';
+import catalog from '@site/src/data/catalog.json';
 
 export default () => (
   <Layout
     title="warpSPHIntegrators — scheme wiki"
-    description="Differentiable ODE integrators for PyTorch: 137 schemes across 11 families, matrix-free implicit machinery, end-to-end autograd."
+    description={`Differentiable ODE integrators for PyTorch: ${catalog.summary.scheme_count} schemes across ${catalog.summary.family_count} families, matrix-free implicit machinery, end-to-end autograd.`}
   >
     <header className="hero hero--primary">
       <div className="container text--center">
@@ -14,8 +15,8 @@ export default () => (
           <span className="heroSubtitle">scheme wiki</span>
         </h1>
         <p className="heroTagline">
-          Differentiable ODE integrators for PyTorch — 137 schemes across 11
-          families, from explicit RK through coupled fully-implicit
+          Differentiable ODE integrators for PyTorch — {catalog.summary.scheme_count} schemes across {catalog.summary.family_count} families,
+          from explicit RK through coupled fully-implicit
           collocation to exponential integrators.
         </p>
         <div className="row">
@@ -42,7 +43,7 @@ export default () => (
     <main>
       <div className="container pad-top--lg pad-bottom--lg">
         <div className="row">
-          <FeatureCard title="137 schemes, 11 families">
+          <FeatureCard title={`${catalog.summary.scheme_count} schemes, ${catalog.summary.family_count} families`}>
             Equations and Butcher tableaus with source citations and documented
             corrections, stability, and per-step cost — with the
             test files that pin every measured claim.
@@ -53,9 +54,9 @@ export default () => (
             overhead benchmarkable.
           </FeatureCard>
           <FeatureCard title="Differentiable end-to-end">
-            Every implicit scheme is differentiable through the solve via
-            implicit-function-theorem re-attachment — exact on linear
-            problems.
+            Nonlinear implicit stages use implicit-function-theorem
+            re-attachment, with dedicated gradient checks for the frozen
+            linear and exponential operators.
           </FeatureCard>
         </div>
       </div>

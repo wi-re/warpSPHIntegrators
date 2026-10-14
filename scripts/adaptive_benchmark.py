@@ -55,9 +55,8 @@ DT0 = 0.1  # deliberately far outside the explicit wall (fast eigenvalue ~ O(10-
 
 
 def estimate_order(scheme) -> int:
-    """The power q the estimate scales as h^q: the scheme's order, except
-    TR-BDF2, whose published SUNDIALS pair makes the estimate O(h**(order+1))."""
-    return scheme.order + 1 if scheme.name == 'TR-BDF2' else scheme.order
+    """Public estimate exponent q, including the TR-BDF2/GL2 exceptions."""
+    return scheme.estimate_order
 
 
 def run_adaptive(scheme, problem, T, dt0, *, rtol=1e-5, atol=1e-8,

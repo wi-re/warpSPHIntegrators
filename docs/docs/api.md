@@ -74,11 +74,15 @@ The per-stage update descriptor passed to the system's apply methods.
 |---|---|
 | `IntegrationSchemes` | The registry: every registered scheme (137), each a `IntegrationScheme` |
 | `IntegrationScheme` | The registry record: `function`, `name`, `identifier`, `order`, `dissipation`, `reuse_order`, `fsal`, `implicit`, `steps`, `stiffly_accurate`, `stability`, `startup_order` |
+| `SchemeMetadata` / `scheme.metadata` | Frozen metadata derived from the driver's tableau: stages, companion order, estimate exponent, required/optional RHS accessors, per-step options and dense output |
+| `scheme.has_error_estimate` / `scheme.estimate_order` | Whether a step emits an estimate, and its exponent q for `propose_dt`; q is 3 for both TR-BDF2 and Gauss-Legendre 2 |
+| `scheme.stage_count` / `scheme.embedded_order` | Stored/known driver stages and companion order; `None` means a variable or unmodeled driver stage count |
+| `scheme.required_capabilities` | Mandatory structured RHS accessors. Only ETD2RK requires `linear`; a combined plain callable is accepted elsewhere |
 | `IntegrationSchemeType` | Per-scheme identifier enum (the `getIntegrator` key) |
 | `FAMILY_ENUMS` / `SCHEME_FAMILY` | The eleven per-family enums, and the scheme → family map |
 | `getIntegrator` | `getIntegrator(integrator)` — look up a scheme by `IntegrationSchemeType` or family-enum member |
 | `getIntegrationEnum` | `getIntegrationEnum(integrator)` — the reverse lookup |
-| `getPreferredScheme` | `getPreferredScheme(order)` — a reasonable default for an order |
+| `getPreferredScheme` | Legacy order-1–5 selector returning a raw function; use `getIntegrator` for a scheme record and its metadata |
 | `step_reuse_analysis` / `step_reuse_order` | `step_reuse_order(scheme) -> int | None` — order retained under first-stage reuse |
 | `supports_step_reuse` / `is_fsal` | `is_fsal(scheme) -> bool` — whether reuse is exact (FSAL) |
 | `unpack_prior_step` | `unpack_prior_step(priorStep, verbose=False)` — prepare a previous `IntegrationResult` for `priorStep=` |
@@ -88,6 +92,25 @@ Every scheme is also callable directly with the uniform signature
 `BDF3(state, dt, f)`); implicit schemes additionally accept `solver=` (a
 `NonlinearSolver`, default `JFNKSolver()`), and the multistep schemes thread
 their history through the `StepHistory` on the result.
+
+Scheme metadata is derived without adding fields to the existing scheme tuple.
+`metadata.required_options` lists alternatives: RKC/RKL need `s=` **or**
+`lambda_max=` on each step. `metadata.estimate_extra_stages` records the
+coupled pair's null companion stage. Optional split accessors are recorded
+separately from mandatory accessors; plain-callable IMEX stepping uses the
+pure implicit limit. Dense-output support currently means the DP5 helper.
+
+[example:run metadata]: #
+```python
+from warpSPHIntegrators import getIntegrator
+
+scheme = getIntegrator('Gauss-Legendre 2')
+assert scheme.order == 4
+assert scheme.embedded_order == 2
+assert scheme.estimate_order == 3
+assert scheme.has_error_estimate
+assert scheme.metadata.estimate_extra_stages == 1
+```
 
 ## Results and history
 

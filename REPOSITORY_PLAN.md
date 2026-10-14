@@ -382,17 +382,22 @@ landed code from a future package release.
 
 Priority: immediate after Phase 1. Size: small to medium.
 
-- [ ] Repair the overview and quick-start blocks, including imports and actual
+- [x] Repair the overview and quick-start blocks, including imports and actual
   `IntegrationResult` fields; provide one complete script a new user can copy.
-- [ ] Reconcile package description, root README, site landing/config, overview,
+- [x] Reconcile package description, root README, site landing/config, overview,
   family/API/selection pages and adaptive helper docstrings.
-- [ ] Add scheme metadata for estimates and required capabilities, including
+- [x] Add scheme metadata for estimates and required capabilities, including
   Gauss-Legendre's exponent 3 and TR-BDF2's exponent 3; generate catalog counts and
   compact method tables from the registry.
-- [ ] Validate source examples directly or embed/include tested example files,
+- [x] Validate source examples directly or embed/include tested example files,
   rather than maintaining a separate hand-reconstructed version.
-- [ ] Build docs on pull requests with link and example checks; retain publication
+- [x] Build docs on pull requests with link and example checks; retain publication
   on main. Add focused metadata consistency checks to the Python gate.
+
+Phase 2 is complete in its separate commit: 6,740 tests passed, 609 skipped,
+zero failures; 29 published blocks execute directly, the generated catalog is
+current, and the strict documentation build passes. See the
+[Phase 2 validation record](docs/development/phase2-validation.md). Phase 3 is next.
 
 Completion: documented examples run from a clean documented environment; generated
 catalog data matches the registry; the site build and examples gate every PR.

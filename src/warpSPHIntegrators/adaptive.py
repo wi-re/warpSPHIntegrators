@@ -18,8 +18,8 @@ without a downstream" caution), and the two primitives it needs are:
   with the zero-error limit ``dt_new = dt * growth_max``. ``order`` is the power
   ``q`` that the error estimate scales as ``h^q``. For the (p, p-1) embedded
   pairs and the built-in estimates (ROS3P, EXPRB32) that is the scheme's
-  ``order``; TR-BDF2 is the one exception -- its published SUNDIALS pair makes
-  the estimate ``O(h**(order+1))``, so it gets ``order + 1`` (see
+  ``order``. TR-BDF2 and Gauss-Legendre 2 both use ``q=3`` despite propagated
+  orders 2 and 4 respectively. Pass ``scheme.estimate_order`` (see
   ``tests/test_embedded.py::test_error_estimate_has_the_embedded_order``).
 
 Dense output: :func:`dormand_prince_dense_output`, Shampine's quartic
@@ -68,10 +68,8 @@ def estimate_error_norm(result: IntegrationResult, rtol: float = 1e-3,
         raise ValueError(
             'estimate_error_norm needs an estimate-emitting scheme '
             '(result.error is not None); this result carries none. The estimate '
-            'emitters are the embedded pairs (Bogacki-Shampine 3(2), '
-            'Dormand-Prince 5(4), Cash-Karp 5(4), TR-BDF2, ESDIRK3(2)4L[2]SA, '
-            'ESDIRK4(3)6L[2]SA, ARK3(2)4L[2]SA, ARK4(3)6L[2]SA) and the '
-            'built-in estimates (ROS3P, EXPRB32); see tests/test_embedded.py.')
+            'emitters can be found through IntegrationScheme.has_error_estimate; '
+            'use scheme.estimate_order with propose_dt.')
     return state_norm(result.error, rtol=rtol, atol=atol, reference=result.state)
 
 
@@ -84,8 +82,8 @@ def propose_dt(error_norm: float, dt: float, order: float, *, target: float = 1.
     ``error_norm`` is :func:`estimate_error_norm` (``1.0`` = at the tolerance),
     ``dt`` the step that just produced it, and ``order`` the power ``q`` that
     the estimate scales as ``h^q`` -- the scheme's ``order`` for every
-    estimate emitter except TR-BDF2 (whose published pair makes the estimate
-    ``O(h**(order+1))``; pass ``order + 1`` there).
+    ordinary (p, p-1) pair. Use ``scheme.estimate_order``: TR-BDF2 and
+    Gauss-Legendre 2 both have exponent 3, despite propagated orders 2 and 4.
 
     ``error_norm == 0`` (the pair sees no error, e.g. a zero right-hand side)
     grows to ``dt * growth_max`` rather than dividing by zero. The clamp keeps

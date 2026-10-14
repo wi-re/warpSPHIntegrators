@@ -5,8 +5,13 @@ title: Choosing a Scheme
 
 # Choosing a Scheme
 
-One hundred and thirty-seven schemes in eleven families. This page is the
-decision path; the
+[catalog:summary:start]: #
+
+**137 registered schemes across 11 families**, with orders through 14 and 45 estimate emitters.
+
+[catalog:summary:end]: #
+
+This page is the decision path; the
 [families](families/explicit-rk) pages have the details, the
 [solver](solver) page the JFNK mechanics, and the README's
 [Supported Integrators table](https://github.com/wi-re/warpSPHIntegrators#supported-integrators)
@@ -68,10 +73,11 @@ regions. The KenCarp/ARS names here provide the implicit half only.
   it does **not** corrupt the trajectory — they bootstrap with Dormand–Prince
   5(4) instead, which is *more* accurate, so you silently pay DP5's cost every
   step.
-- **Gradients.** Every scheme differentiates through `torch.autograd`; implicit
-  schemes flow through their JFNK solves via implicit-function-theorem
-  re-attachment (Phase 9), so the adjoint cost is one backward solve per
-  Newton iteration, not an unroll.
+- **Gradients.** Ordinary explicit drivers use `torch.autograd`; nonlinear
+  implicit drivers reattach the converged solution using the implicit function
+  theorem, with an adjoint solve for each forward stage/block solve. The Newton
+  iterations run without a tape. Rosenbrock and exponential drivers have their
+  own frozen-operator adjoint paths. See the dedicated gradient tests.
 
 ## When in doubt
 

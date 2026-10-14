@@ -2,6 +2,12 @@
 
 A flexible, fully differentiable numerical ODE integration library for PyTorch. Implements multiple integration schemes with support for complex state management, custom field behavior, and both typed and legacy APIs.
 
+[catalog:summary:start]: #
+
+**137 registered schemes across 11 families**, with orders through 14 and 45 estimate emitters.
+
+[catalog:summary:end]: #
+
 > **Status.** Today this is a pure-PyTorch library; there is no NVIDIA Warp code in it
 > yet. The name describes where it is going, not what it does. State cloning is now
 > backend-dispatched, so `wp.array` fields are copied correctly and a Warp state is safe
@@ -13,7 +19,9 @@ A flexible, fully differentiable numerical ODE integration library for PyTorch. 
 
 This library provides a set of time integration schemes for solving systems of ordinary differential equations (ODEs) where states may be complex objects with multiple field types and integration behaviors. All computations are differentiable through PyTorch, making the library suitable for physics-informed machine learning, neural ODEs, and scientific computing.
 
-The integrators never refer to `position` / `velocity` / `density` by name. They only say
+The tagged update helpers operate through field metadata. Newmark currently
+requires state fields named `x` and `u`; the general RK drivers use your system
+protocol. They only say
 "advance the component tagged X by `c·dt` times the derivative tagged Y, optionally
 blended with a reference state", and your system object decides what that means.
 
@@ -44,10 +52,14 @@ pytest
 
 ## Quick Start
 
+For a complete script, run [examples/harmonic_oscillator.py](examples/harmonic_oscillator.py).
+The five tutorial steps below execute in order, with their published imports.
+
 ### 1. Define Your State
 
 Create a state class that inherits from `BaseState` and annotate fields with their integration behavior:
 
+[example:run quickstart]: #
 ```python
 from dataclasses import dataclass
 import torch
@@ -84,6 +96,7 @@ warp), and lists / tuples / dicts recursed into. Immutable scalars are shared, w
 safe. Anything else is shared **by reference** and warns once — that would mean every
 stage writing into the same object — so register a handler for it:
 
+[example:skip Provide your own mylib.Buffer implementation]: #
 ```python
 from warpSPHIntegrators import register_clone_handler
 
@@ -99,6 +112,7 @@ register_clone_handler(
 
 Create a dataclass that holds all derivatives and auxiliary values:
 
+[example:run quickstart]: #
 ```python
 from dataclasses import dataclass
 from warpSPHIntegrators import tagged
@@ -113,8 +127,12 @@ class MyUpdate:
 
 Create an `IntegrationSystem` that knows how to apply updates to your state:
 
+[example:run quickstart]: #
 ```python
-from warpSPHIntegrators import BaseIntegrationSystem, IntegrationSystem, PositionUpdateSpec, ComponentUpdateSpec
+from warpSPHIntegrators import (
+    BaseIntegrationSystem, PositionUpdateSpec, ComponentUpdateSpec,
+    reference_state, get_reference_state, update_position, update_component,
+)
 from dataclasses import dataclass
 
 @dataclass
@@ -161,6 +179,7 @@ class MySystem(BaseIntegrationSystem):
 
 The RHS function receives the current system and returns an update structure plus optional auxiliary values:
 
+[example:run quickstart]: #
 ```python
 def my_rhs(system: MySystem, dt: float, verbose: bool = False) -> tuple:
     """
@@ -196,6 +215,7 @@ See [NOTES.md §3.12](NOTES.md#312-phase-14-the-structured-rhs-interface--done-2
 
 ### 5. Choose an Integration Scheme and Integrate
 
+[example:run quickstart]: #
 ```python
 from warpSPHIntegrators import getIntegrator, IntegrationSchemeType
 
@@ -224,16 +244,19 @@ result = integrator.function(
 next_system = result.state  # IntegrationResult.state
 last_stage = result.stages[-1]  # Last StageResult
 aux_values = last_stage.aux  # Auxiliary output from RHS
+rhs = my_rhs  # Used by the examples below
+n_steps = 6
 ```
 
 ## Return Type: `IntegrationResult`
 
-All integrator functions return an `IntegrationResult` named tuple:
+All integrator functions return an `IntegrationResult` frozen dataclass:
 
+[example:run quickstart]: #
 ```python
 from warpSPHIntegrators import IntegrationResult, StageResult
 
-result: IntegrationResult = integrator.function(...)
+result: IntegrationResult = integrator(system, dt=0.01, f=my_rhs)
 
 # Fields:
 result.state        # The new system state after integration
@@ -244,6 +267,10 @@ stage: StageResult = result.stages[-1]
 stage.aux           # Auxiliary values returned from RHS
 stage.update        # The k-value (derivative) used at this stage
 ```
+
+`result.error`, `result.history` and `result.solver_diagnostics` hold optional
+estimate, history and solve information. There is no `result.rhs_evaluations`;
+solver work is recorded in each diagnostic.
 
 This replaces the older tuple return format and provides a clear, self-documenting API.
 
@@ -349,11 +376,12 @@ than method-limited ([`scripts/rkc_benchmark.py`](scripts/rkc_benchmark.py),
 | **RKC2** | 2 | K = 2(s²−1)/3 | refused | Order 2; the wider of the two order-2 ranges |
 | **RKL2** | 2 | K = (s²+s−2)/2 | refused | Legendre (relaxed Lobatto) variant; Meyer, Balsara & Aslam 2014 |
 
+[example:skip Provide a diffusion RHS and its system, s and L bounds]: #
 ```python
 from warpSPHIntegrators import RKC2
 
-system = RKC2(system, dt=dt, f=rhs, s=s)            # explicit stage count
-system = RKC2(system, dt=dt, f=rhs, lambda_max=L)   # or let stage_count pick s
+system = RKC2(system, dt=dt, f=rhs, s=s).state            # explicit stage count
+system = RKC2(system, dt=dt, f=rhs, lambda_max=L).state   # or let stage_count pick s
 ```
 
 ### Diagonally Implicit (DIRK) Methods
@@ -379,17 +407,23 @@ the derivation and [the DIRK family catalog](docs/docs/families/dirk.md) for all
 | **ESDIRK4(3)6L[2]SA** | 4 | L, stiffly accurate | Kennedy–Carpenter 6-stage ESDIRK with explicit first stage; embedded (4, 3) pair |
 | **Newmark** | 2 | A | Second-order structural dynamics update; JFNK closure through the repo's implicit solver API |
 
+[example:run newmark]: #
 ```python
 from warpSPHIntegrators import getIntegrator
 
+from warpSPHIntegrators import testing
+
+# Newmark currently requires x/u state fields.
+problem = testing.oscillator_problem()
 scheme = getIntegrator('Newmark')
-result = scheme(system, dt=dt, f=rhs, beta=0.25, gamma=0.5)
+result = scheme(problem.initial(), dt=0.01, f=problem.rhs, beta=0.25, gamma=0.5)
 ```
 
 **Implicit Midpoint is registered as non-dissipative because JFNK converges its stage equation by
 default.** Its textbook symplectic energy bound (drift near machine precision and flat with `T`)
 depends on that nonlinear convergence. An explicit low-cost Picard override is still available:
 
+[example:run quickstart]: #
 ```python
 from warpSPHIntegrators import FixedPointSolver, getIntegrator
 
@@ -453,6 +487,7 @@ function, symplecticity):
 | **Gauss-Legendre 2** | 4 | A, not L, symplectic (measured) | The library's only symplectic method above order 2. Its tableau is *not* A-symmetric (`a_12 != a_21`), so the symplecticity is pinned by measurement — phase-area defect 3.05e-13 under the strict solve — not by a coefficient symmetry; not L-stable (`R(-100) = 0.887`, `R(z) -> 1` as `z -> -inf`) |
 | **Radau IIA s=2** | 3 | L, stiffly accurate | The no-compromise stiff workhorse: damps the whole negative real axis (`|R(-100)| ≈ 0.019`) with no A(α)-cone restriction, stiffly accurate so the endpoint stage is `f(t^{n+1}, y^{n+1})` |
 
+[example:run quickstart]: #
 ```python
 from warpSPHIntegrators import getIntegrator
 
@@ -476,6 +511,7 @@ reaches 0.655 (its A(α) cone is 51.84°).
 other scheme here, where `history=`/`priorStep=` are opt-in bookkeeping, a multistep scheme's past
 derivatives only exist if you carry `IntegrationResult.history` forward yourself:
 
+[example:run quickstart]: #
 ```python
 from warpSPHIntegrators import getIntegrator, StepHistory
 
@@ -507,6 +543,7 @@ standard BDF formula evaluates the right-hand side only at the new grid time (th
 history carries state values), so it keeps its full order on non-autonomous
 problems.
 
+[example:run quickstart]: #
 ```python
 from warpSPHIntegrators import StepHistory, getIntegrator
 
@@ -539,6 +576,7 @@ order of magnitude (`tests/test_am.py`). AM2 is the trapezoidal rule and inherit
 its A-stability; AM3/AM4 have only a bounded stability region, so a stiff problem
 should be checked against it (or use a BDF scheme).
 
+[example:run quickstart]: #
 ```python
 from warpSPHIntegrators import StepHistory, getIntegrator
 
@@ -564,6 +602,7 @@ structured `RHS` interface (NOTES §3.12) whose `__call__` is the combined
 `f = f_E + f_I`; this avoids overloading the existing `(update, aux)` RHS
 return convention.
 
+[example:skip Provide transport_rhs and diffusion_rhs split callbacks]: #
 ```python
 from warpSPHIntegrators import IMEXRHS, getIntegrator
 
@@ -585,6 +624,7 @@ reduces to the implicit ESDIRK half, a standalone method of the same order). The
 combined method is **not** FSAL (the explicit half is not stiffly accurate), so a
 reused `priorStep` is rejected and the schemes register `stiffly_accurate=False`.
 
+[example:skip Provide transport_rhs and diffusion_rhs split callbacks]: #
 ```python
 from warpSPHIntegrators import IMEXRHS, getIntegrator
 
@@ -627,6 +667,7 @@ change); `priorStep` is refused.
 | **SBDF3** | 3 | BDF3 (A(α) 86.03°) | `3Nⁿ − 3Nⁿ⁻¹ + Nⁿ⁻²` | Order-3 split at one nonlinear solve per step |
 | **CNAB2** | 2 | trapezoidal (A, not L) | AB2 increment | Order-2 split with the trapezoidal `dt/2` weights |
 
+[example:skip Provide transport_rhs and diffusion_rhs split callbacks]: #
 ```python
 from warpSPHIntegrators import IMEXRHS, getIntegrator, StepHistory
 
@@ -740,6 +781,7 @@ Each family member keeps the same name and value as its
 `IntegrationSchemeType` counterpart, so every lookup form resolves to the same
 registered scheme:
 
+[example:run quickstart]: #
 ```python
 from warpSPHIntegrators import getIntegrator, ExplicitRK, DIRK
 
@@ -750,6 +792,7 @@ getIntegrator('RK4')                    # same scheme, by display name
 
 Every scheme knows its family, so family-wide queries are one line:
 
+[example:run quickstart]: #
 ```python
 from warpSPHIntegrators import IntegrationSchemes, DIRK
 
@@ -778,6 +821,7 @@ stage of step *n+1*, saving one right-hand-side evaluation. It is standard pract
 the SPH literature, but **whether it is valid is a property of the tableau, not of the
 caller** — so ask before opting in:
 
+[example:run quickstart]: #
 ```python
 from warpSPHIntegrators import getIntegrator, step_reuse_order, supports_step_reuse
 
@@ -803,7 +847,9 @@ at all; they warn and ignore it. Single-stage schemes refuse outright, because r
 turns them into `y^{n+1} = y^n + dt·f(y^{n-1})`, which has no stability region on the
 imaginary axis.
 
+[example:run quickstart]: #
 ```python
+scheme = getIntegrator('Dormand-Prince 5(4)')
 result = scheme(system, dt=dt, f=rhs)
 result.error        # embedded pairs only: y_high - y_low, as a state
 ```
@@ -992,7 +1038,11 @@ geometric invariants.
 
 ### State Definition
 
+[example:run field-types]: #
 ```python
+from dataclasses import dataclass
+from typing import Any
+import torch
 from warpSPHIntegrators import BaseState, integrated, constant, copied, ephemeral, custom
 
 @dataclass
@@ -1009,12 +1059,13 @@ class MyState(BaseState):
     # Ephemeral: stage-local scratch, never carried out of the step
     neighbours: Any = ephemeral(default=None)
     
-    # Custom: the library will not touch it; your system owns it entirely
+    # Custom: not integrated; your system restores it after stage initialization
     custom_field: Any = custom(default=None)
 ```
 
 ### Update Specifications
 
+[example:run quickstart]: #
 ```python
 from warpSPHIntegrators import (
     PositionUpdateSpec, ComponentUpdateSpec, StateBlend,
@@ -1024,6 +1075,7 @@ from warpSPHIntegrators import (
 # `StateBlend` is a three-field dataclass describing how the existing value is folded
 # in:  value <- self_scale * value + reference_weight * reference_state_value + ...
 # `reference_state` and `reference_weight` must be given together.
+y_1 = system.state.initializeNewState()
 blend = blend_state(self_scale=3/4, reference_state=y_1, reference_weight=1/4)
 
 # Component (velocity, quantity, ...) update: value += derivative_dt * k
@@ -1042,6 +1094,7 @@ verlet_position_step(dt, update_velocity_dt=dt**2/2) # x += dt*k.x + (dt^2/2)*k.
 
 ### Integration Functions
 
+[example:skip Supply the system state, rhs_function and kwargs]: #
 ```python
 from warpSPHIntegrators import (
     IntegrationSchemeType,
@@ -1069,6 +1122,7 @@ stages = result.stages  # List of StageResult namedtuples
 
 ### Helper Functions
 
+[example:skip Supply an update and PositionUpdateSpec]: #
 ```python
 from warpSPHIntegrators import (
     get_reference_state,        # Extract state from system
@@ -1095,7 +1149,10 @@ system = update_position(system, update, spec,
 
 For systems with multiple coupled components, use multiple field types:
 
+[example:run quickstart]: #
 ```python
+from warpSPHIntegrators import copied
+
 @dataclass
 class ComplexState(BaseState):
     # Position-velocity pair
@@ -1112,11 +1169,13 @@ class ComplexState(BaseState):
 
 ### Custom Update Logic
 
-`custom()` marks a field as one the library will not touch: it is neither integrated,
-cloned, nor nulled by the generic paths, and your system is responsible for it entirely.
+`custom()` marks a field outside generic integration updates. `clone()` preserves
+it through clone dispatch, while `initializeNewState()` clears it. Your system's
+initialization/finalization hooks restore or recompute its value.
 There is no `apply_fn` hook — the field is handled by your own `apply_*_update` methods
 and lifecycle hooks.
 
+[example:skip Supply your custom field lifecycle rule]: #
 ```python
 @dataclass
 class MyState(BaseState):
@@ -1139,12 +1198,14 @@ instead. The integrator carries those over for you when the step is finalized.
 
 ### Passing Extra Arguments to RHS
 
+[example:run quickstart]: #
 ```python
 def advanced_rhs(system, dt, config: dict, verbose: bool = False):
     """RHS with extra parameters."""
     state = get_reference_state(system)
-    # Use config['param'] as needed
-    return update, aux
+    update = MyUpdate(dx_dt=state.velocity,
+                      dv_dt=-config['param'] * state.position)
+    return update, None
 
 # Call with extra kwargs
 result = integrator.function(
@@ -1164,6 +1225,7 @@ If the scheme has a Butcher tableau, that is the whole job — add it to
 `getButcherTableau` and register `butcherScheme('yourTableau')`. The stage loop, the
 embedded-pair handling, and the reuse analysis all fall out of the tableau:
 
+[example:skip Tableau registration sketch belongs inside getButcherTableau]: #
 ```python
 # in butcher.py
 elif scheme == 'myTableau':
@@ -1196,6 +1258,7 @@ For a hand-rolled scheme with no tableau:
 
 Example template:
 
+[example:skip Custom integrator sketch requires a concrete update rule]: #
 ```python
 def myCustomScheme(state, dt, f, *args, **kwargs):
     """Custom O(h^p) integrator."""
@@ -1223,6 +1286,7 @@ There are exactly four dispatch points — `apply_position_update`, `apply_veloc
 names, so an extra field is routed through one of those four (`apply_quantity_update`
 is the usual home) rather than through a method named after its tag:
 
+[example:skip Custom quantity sketch requires its corresponding update type]: #
 ```python
 @dataclass
 class MyState(BaseState):

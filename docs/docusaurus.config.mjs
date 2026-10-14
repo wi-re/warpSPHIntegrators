@@ -1,13 +1,15 @@
 import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 import { themes as prismThemes } from 'prism-react-renderer';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+const {summary} = JSON.parse(readFileSync(new URL('./src/data/catalog.json', import.meta.url), 'utf8'));
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'warpSPHIntegrators',
   tagline:
-    'Differentiable ODE integrators for PyTorch — 137 schemes across 11 families',
+    `Differentiable ODE integrators for PyTorch — ${summary.scheme_count} schemes across ${summary.family_count} families`,
   favicon: 'img/favicon.svg',
   organizationName: 'wi-re',
   projectName: 'warpSPHIntegrators',
@@ -19,7 +21,7 @@ const config = {
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',
-  onBrokenAnchors: 'warn',
+  onBrokenAnchors: 'throw',
 
   i18n: {
     defaultLocale: 'en',

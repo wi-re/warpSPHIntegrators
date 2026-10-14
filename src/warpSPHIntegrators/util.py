@@ -202,6 +202,39 @@ class IntegrationScheme(NamedTuple):
     startup_order: Optional[int] = None
 
     @property
+    def metadata(self):
+        """Stage, companion, RHS and per-step requirements as SchemeMetadata.
+
+        Derived properties preserve the existing NamedTuple fields, positional
+        construction and unpacking contract.
+        """
+        from .catalog import scheme_metadata
+        return scheme_metadata(self)
+
+    @property
+    def has_error_estimate(self) -> bool:
+        return self.metadata.has_error_estimate
+
+    @property
+    def estimate_order(self) -> Optional[int]:
+        """Power q in the step's O(h^q) estimate; pass this to propose_dt."""
+        return self.metadata.estimate_order
+
+    @property
+    def embedded_order(self) -> Optional[int]:
+        return self.metadata.embedded_order
+
+    @property
+    def stage_count(self) -> Optional[int]:
+        """Stored tableau stages, or None for parameterized/non-tableau drivers."""
+        return self.metadata.stage_count
+
+    @property
+    def required_capabilities(self):
+        """Mandatory structured RHS accessors; empty means a plain callable works."""
+        return self.metadata.required_capabilities
+
+    @property
     def supports_reuse(self) -> bool:
         """True iff `priorStep` reuse costs this scheme no convergence order."""
         return self.reuse_order is not None and self.reuse_order >= self.order

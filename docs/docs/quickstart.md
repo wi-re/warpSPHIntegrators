@@ -9,11 +9,16 @@ right-hand side, and pick a scheme. This page mirrors the
 [Quick Start in the README](https://github.com/wi-re/warpSPHIntegrators#quick-start)
 (keep the two in sync when either changes).
 
+For one complete copyable script, use the [overview](/docs) or
+[harmonic_oscillator.py](https://github.com/wi-re/warpSPHIntegrators/blob/main/examples/harmonic_oscillator.py).
+It requires only the installed package and its Torch/NumPy dependencies.
+
 
 ## 1. Define Your State
 
 Create a state class that inherits from `BaseState` and annotate fields with their integration behavior:
 
+[example:run quickstart]: #
 ```python
 from dataclasses import dataclass
 import torch
@@ -50,6 +55,7 @@ warp), and lists / tuples / dicts recursed into. Immutable scalars are shared, w
 safe. Anything else is shared **by reference** and warns once — that would mean every
 stage writing into the same object — so register a handler for it:
 
+[example:skip Provide your own mylib.Buffer implementation]: #
 ```python
 from warpSPHIntegrators import register_clone_handler
 
@@ -65,6 +71,7 @@ register_clone_handler(
 
 Create a dataclass that holds all derivatives and auxiliary values:
 
+[example:run quickstart]: #
 ```python
 from dataclasses import dataclass
 from warpSPHIntegrators import tagged
@@ -79,8 +86,12 @@ class MyUpdate:
 
 Create an `IntegrationSystem` that knows how to apply updates to your state:
 
+[example:run quickstart]: #
 ```python
-from warpSPHIntegrators import BaseIntegrationSystem, IntegrationSystem, PositionUpdateSpec, ComponentUpdateSpec
+from warpSPHIntegrators import (
+    BaseIntegrationSystem, PositionUpdateSpec, ComponentUpdateSpec,
+    reference_state, get_reference_state, update_position, update_component,
+)
 from dataclasses import dataclass
 
 @dataclass
@@ -127,6 +138,7 @@ class MySystem(BaseIntegrationSystem):
 
 The RHS function receives the current system and returns an update structure plus optional auxiliary values:
 
+[example:run quickstart]: #
 ```python
 def my_rhs(system: MySystem, dt: float, verbose: bool = False) -> tuple:
     """
@@ -162,6 +174,7 @@ See [NOTES.md §3.12](https://github.com/wi-re/warpSPHIntegrators/blob/main/NOTE
 
 ## 5. Choose an Integration Scheme and Integrate
 
+[example:run quickstart]: #
 ```python
 from warpSPHIntegrators import getIntegrator, IntegrationSchemeType
 
@@ -190,16 +203,19 @@ result = integrator.function(
 next_system = result.state  # IntegrationResult.state
 last_stage = result.stages[-1]  # Last StageResult
 aux_values = last_stage.aux  # Auxiliary output from RHS
+rhs = my_rhs  # Used by the examples below
+n_steps = 6
 ```
 
 ## Return Type: `IntegrationResult`
 
-All integrator functions return an `IntegrationResult` named tuple:
+All integrator functions return an `IntegrationResult` frozen dataclass:
 
+[example:run quickstart]: #
 ```python
 from warpSPHIntegrators import IntegrationResult, StageResult
 
-result: IntegrationResult = integrator.function(...)
+result: IntegrationResult = integrator(system, dt=0.01, f=my_rhs)
 
 # Fields:
 result.state        # The new system state after integration
@@ -210,5 +226,9 @@ stage: StageResult = result.stages[-1]
 stage.aux           # Auxiliary values returned from RHS
 stage.update        # The k-value (derivative) used at this stage
 ```
+
+`result.error`, `result.history` and `result.solver_diagnostics` hold optional
+estimate, history and solve information. There is no `result.rhs_evaluations`;
+solver work is recorded in each diagnostic.
 
 This replaces the older tuple return format and provides a clear, self-documenting API.

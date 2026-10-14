@@ -5,9 +5,13 @@ sidebar_label: Overview
 # warpSPHIntegrators — scheme wiki
 
 Differentiable ODE integration for PyTorch (and, eventually, NVIDIA Warp):
-a typed state/update system, **137 registered time-stepping schemes across 11
-families**, and a matrix-free implicit machinery (JFNK + GMRES) that keeps the
-implicit schemes differentiable through the solves.
+a typed state/update system and matrix-free implicit machinery (JFNK + GMRES).
+
+[catalog:summary:start]: #
+
+**137 registered schemes across 11 families**, with orders through 14 and 45 estimate emitters.
+
+[catalog:summary:end]: #
 
 The three documents, in order of depth:
 
@@ -25,24 +29,88 @@ roadmap is `IMPLICIT_ROADMAP.md` (repo root).
 
 ## Quick start
 
+Copy this complete CPU script or run `python examples/harmonic_oscillator.py`
+in a checkout. The RHS returns `(update, aux)` and the step returns a frozen
+`IntegrationResult` dataclass.
+
+[example:include examples/harmonic_oscillator.py]: #
 ```python
-from warpSPHIntegrators import BaseState, integrated, constant, explicit_step, getIntegrator
+"""Complete CPU example: python examples/harmonic_oscillator.py."""
 
-class SimpleSystem(BaseState):
-    position: float = integrated('velocity', tags=('position',))
-    velocity: float = integrated('dudt', tags=('velocity',))
+from dataclasses import dataclass
 
-system = SimpleSystem(position=0.0, velocity=1.0)
+import torch
 
-def rhs(t, x):
-    return x.velocity, -x.position
+from warpSPHIntegrators import (
+    BaseIntegrationSystem, BaseState, ComponentUpdateSpec, PositionUpdateSpec,
+    constant, getIntegrator, get_reference_state, integrated, reference_state,
+    tagged, update_component, update_position,
+)
 
-integrator = getIntegrator('RK4')
 
-for _ in range(10):
-    result = integrator(system, 0.1, rhs)
-    system = result.state
-    print(system.position, system.velocity, result.rhs_evaluations)
+@dataclass
+class OscillatorState(BaseState):
+    position: torch.Tensor = integrated('dx_dt', tags=('position',))
+    velocity: torch.Tensor = integrated('dv_dt', tags=('velocity',))
+    mass: torch.Tensor = constant()
+    spring_constant: torch.Tensor = constant()
+
+
+@dataclass
+class OscillatorUpdate:
+    dx_dt: torch.Tensor = tagged(tags=('position_derivative',))
+    dv_dt: torch.Tensor = tagged(tags=('velocity_derivative',))
+
+
+@dataclass
+class OscillatorSystem(BaseIntegrationSystem):
+    state: OscillatorState = reference_state()
+    t: float = 0.0
+
+    def initializeNewState(self, *args, **kwargs):
+        return OscillatorSystem(get_reference_state(self).initializeNewState(), self.t)
+
+    def apply_position_update(self, update, spec, **kwargs):
+        return update_position(self, update, spec, 'position', 'position_derivative',
+                               'velocity', 'velocity_derivative')
+
+    def apply_velocity_update(self, update, spec, **kwargs):
+        return update_component(self, update, spec, 'velocity', 'velocity_derivative')
+
+    def apply_state_update(self, update, spec, **kwargs):
+        position_spec = PositionUpdateSpec(derivative_dt=spec.derivative_dt, blend=spec.blend)
+        self.apply_position_update(update, position_spec, **kwargs)
+        self.apply_velocity_update(update, spec, **kwargs)
+        return self
+
+
+def rhs(system, dt, **kwargs):
+    state = get_reference_state(system)
+    return OscillatorUpdate(
+        dx_dt=state.velocity,
+        dv_dt=-(state.spring_constant / state.mass) * state.position,
+    ), None
+
+
+def run_example():
+    system = OscillatorSystem(OscillatorState(
+        position=torch.tensor([1.0], dtype=torch.float64),
+        velocity=torch.tensor([0.0], dtype=torch.float64),
+        mass=torch.tensor([1.0], dtype=torch.float64),
+        spring_constant=torch.tensor([4.0], dtype=torch.float64),
+    ))
+    scheme = getIntegrator('RK4')
+    for _ in range(100):
+        result = scheme(system, dt=0.01, f=rhs)
+        system = result.state
+    return result
+
+
+if __name__ == '__main__':
+    result = run_example()
+    state = get_reference_state(result.state)
+    print(f't={result.state.t:.2f}, x={state.position.item():.6f}, '
+          f'v={state.velocity.item():.6f}, stages={len(result.stages)}')
 ```
 
 The state/update protocol (field behaviors `integrated` / `constant` /
@@ -54,19 +122,23 @@ The state/update protocol (field behaviors `integrated` / `constant` /
 Every scheme in the registry belongs to exactly one family enum (see the
 `Family enums` section of `README.md` for the lookup API):
 
-| Family | Enum | Schemes | One line | Page |
-|---|---|---|---|---|
-| Explicit RK | `ExplicitRK` | 63 | Butcher-tableau one-step explicit RK, classical/SSP/TVD/embedded, Verner/Feagin high-order | [explicit-rk](/docs/families/explicit-rk) |
-| Symplectic | `Symplectic` | 6 | Geometric position/velocity splitting for second-order ODEs | [symplectic](/docs/families/symplectic) |
-| Relaxed Chebyshev | `RelaxedChebyshev` | 3 | Matrix-free super-timestepping, real-axis stability $O(s^2)$ in stages | [relaxed-chebyshev](/docs/families/relaxed-chebyshev) |
-| Multistep explicit | `MultistepExplicit` | 9 | Adams-Bashforth, PECE Adams-Bashforth-Moulton, and SSPRKMSVS32/43 | [multistep-explicit](/docs/families/multistep-explicit) |
-| DIRK | `DIRK` | 36 | Diagonally implicit RK, one JFNK solve per implicit stage | [dirk](/docs/families/dirk) |
-| Coupled RK | `CoupledRK` | 2 | Gauss-Legendre 2, Radau IIA s=2 — one $s\times s$ JFNK block solve | [coupled-rk](/docs/families/coupled-rk) |
-| Multistep implicit | `MultistepImplicit` | 8 | BDF1-5 and JFNK-corrected Adams-Moulton | [multistep-implicit](/docs/families/multistep-implicit) |
-| IMEX | `IMEX` | 6 | Additive explicit/implicit splits (IMEX Euler, ARK, SBDF/CNAB) | [imex](/docs/families/imex) |
-| Linearly implicit | `LinearlyImplicit` | 1 | Rosenbrock-W (ROS3P): frozen-operator GMRES per stage | [rosenbrock](/docs/families/rosenbrock) |
-| Exponential | `Exponential` | 2 | ETD2RK, EXPRB32 — matrix-free `phi_k` Krylov | [exponential](/docs/families/exponential) |
-| Newmark | `Newmark` | 1 | Newmark beta/gamma for second-order dynamics | [newmark](/docs/families/newmark) |
+[catalog:families:start]: #
+
+| Family | Enum | Schemes | Page |
+|---|---|---:|---|
+| Explicit RK | `ExplicitRK` | 63 | [explicit-rk](/docs/families/explicit-rk) |
+| Symplectic | `Symplectic` | 6 | [symplectic](/docs/families/symplectic) |
+| Relaxed Chebyshev | `RelaxedChebyshev` | 3 | [relaxed-chebyshev](/docs/families/relaxed-chebyshev) |
+| Multistep explicit | `MultistepExplicit` | 9 | [multistep-explicit](/docs/families/multistep-explicit) |
+| DIRK | `DIRK` | 36 | [dirk](/docs/families/dirk) |
+| Coupled RK | `CoupledRK` | 2 | [coupled-rk](/docs/families/coupled-rk) |
+| Multistep implicit | `MultistepImplicit` | 8 | [multistep-implicit](/docs/families/multistep-implicit) |
+| IMEX | `IMEX` | 6 | [imex](/docs/families/imex) |
+| Linearly implicit | `LinearlyImplicit` | 1 | [rosenbrock](/docs/families/rosenbrock) |
+| Exponential | `Exponential` | 2 | [exponential](/docs/families/exponential) |
+| Newmark | `Newmark` | 1 | [newmark](/docs/families/newmark) |
+
+[catalog:families:end]: #
 
 The machinery underneath the implicit families:
 

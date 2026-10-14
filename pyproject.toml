@@ -7,7 +7,7 @@ authors = [
 maintainers = [
   { name="Rene Winchenbach", email="contact@fluids.dev" },
 ]
-description = "Solver-agnostic explicit ODE time integrators for SPH, in PyTorch."
+description = "Solver-agnostic explicit, implicit and geometric ODE time integrators for SPH, in PyTorch."
 readme = "README.md"
 keywords = ["sph", "ode", "integrator", "runge-kutta", "symplectic", "pytorch"]
 classifiers = [

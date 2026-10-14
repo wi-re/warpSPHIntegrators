@@ -6,6 +6,25 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ## [Unreleased]
 
+### Added — executable onboarding and catalog metadata (Phase 2)
+
+- Public `SchemeMetadata` and derived `IntegrationScheme` properties for stored
+  stages, companion order, estimate exponent, required/optional RHS accessors,
+  stage-count options and dense-output support. The existing 12-field scheme
+  tuple layout is preserved. TR-BDF2 and Gauss-Legendre 2 both expose
+  `estimate_order=3`, despite propagated orders 2 and 4.
+- Generate the complete catalog, family counts and site summary from the runtime
+  registry with `scripts/generate_catalog.py`; `--check` rejects stale artifacts.
+- Complete CPU oscillator example, repaired README/quick-start imports, and a
+  verbatim standalone script in the overview. The source validator executes
+  published blocks directly, labels caller-defined sketches and rejects missing
+  annotations or drift between included code and its source file.
+- Documentation builds, examples and catalog freshness now gate pull requests;
+  broken links and anchors fail the site build. Main-branch Pages deployment
+  retains its publication path and deployment-only write permissions.
+- Reconcile package description, result dataclass documentation, controller
+  signatures/estimate exponents and the legacy preferred-scheme selector contract.
+
 ### Added — schemes (108 → 137): wave 8 DIRK tableaus
 
 - 29 OrdinaryDiffEq v7.8.1 implicit tableaus: Kvaerno3/4/5,

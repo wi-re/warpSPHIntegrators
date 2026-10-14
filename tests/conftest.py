@@ -20,8 +20,10 @@ CATEGORIES = {
     # State machinery, field semantics, registry metadata, backend dispatch.
     'core': [
         'test_backend_dispatch.py',
+        'test_catalog.py',
         'test_copied_fields.py',
         'test_drift_fields.py',
+        'test_doc_examples.py',
         'test_family_enums.py',
         'test_groundwork.py',
         'test_kwargs_passthrough.py',
@@ -161,26 +163,15 @@ def emits_estimate(scheme):
     ETD2RK and the stage-count methods do not emit estimates; their dedicated
     suites cover their special RHS and per-step parameter requirements.
     """
-    fn = scheme.function
-    for attribute in ('butcherTableau', 'dirkTableau'):
-        tableau = getattr(fn, attribute, None)
-        if tableau is not None:
-            return isinstance(tableau.b, tuple)
-    tableau = getattr(fn, 'arkTableau', None)
-    if tableau is not None:
-        return tableau.d_explicit is not None and tableau.d_implicit is not None
-    tableau = getattr(fn, 'blockTableau', None)
-    if tableau is not None:
-        return tableau.companion_b is not None
-    return scheme.identifier.name in {'ros3p', 'exprb32'}
+    return scheme.has_error_estimate
 
 
 ESTIMATE_SCHEMES = [s.name for s in IntegrationSchemes if emits_estimate(s)]
 
 
 def estimate_order(scheme):
-    """Test-side estimate exponent; public catalog metadata is Phase 2 work."""
-    return {'trbdf2': 3, 'gaussLegendre2': 3}.get(scheme.identifier.name, scheme.order)
+    """Use the same public estimate exponent a caller uses with propose_dt."""
+    return scheme.estimate_order
 
 #: How far below the claimed order a measurement is allowed to sit. Convergence
 #: orders measured over four halvings land within a few hundredths of the true value;

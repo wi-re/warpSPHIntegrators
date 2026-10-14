@@ -1,4 +1,5 @@
 from .util import verbosePrint
+from .catalog import SchemeMetadata
 
 from .fields import *
 from .integration import *
@@ -102,6 +103,7 @@ from .drift import DriftField, drift_fields, drift_fields_active
 __version__ = "0.6.1"
 
 __all__ = [
+    "SchemeMetadata",
     "verbosePrint",
     "BaseState",
     "BlockState",

@@ -4,6 +4,7 @@ const sidebars = {
     'index',
     'quickstart',
     'selection',
+    'catalog',
     {
       type: 'category',
       label: 'Families',
