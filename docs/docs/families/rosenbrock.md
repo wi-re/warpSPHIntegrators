@@ -88,7 +88,7 @@ accurate to a few percent on nonlinear ones.
 
 ## Benchmarks
 
-`scripts/rosenbrock_benchmark.py` → `images/rosenbrock_benchmark.png` (wave
+`benchmarks/rosenbrock_benchmark.py` → `docs/assets/rosenbrock_benchmark.png` (wave
 equation and viscous Burgers, NOTES.md §3.14): order 3 measured on both
 semilinear problems with `w='jvp'`/`'fd'`, the order drop to 1 with
 `w='linear'`, and the per-step cost (2-3 $f$ + 3 GMRES in the shared operator)

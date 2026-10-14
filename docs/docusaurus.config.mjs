@@ -100,6 +100,7 @@ const config = {
             items: [
               { label: 'Wiki', to: 'docs' },
               { label: 'Nonlinear solver stack', to: 'docs/solver' },
+              { label: 'Development', to: 'docs/development' },
               { label: 'Explicit RK', to: 'docs/families/explicit-rk' },
               { label: 'DIRK', to: 'docs/families/dirk' },
               { label: 'Coupled fully implicit RK', to: 'docs/families/coupled-rk' },
@@ -117,12 +118,12 @@ const config = {
                 to: 'https://github.com/wi-re/warpSPHIntegrators/blob/main/README.md',
               },
               {
-                label: 'NOTES (measurements)',
-                to: 'https://github.com/wi-re/warpSPHIntegrators/blob/main/NOTES.md',
+                label: 'Numerical records',
+                to: 'https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/research/integrators/notes-index.md',
               },
               {
                 label: 'Roadmap',
-                to: 'https://github.com/wi-re/warpSPHIntegrators/blob/main/IMPLICIT_ROADMAP.md',
+                to: 'https://github.com/wi-re/warpSPHIntegrators/blob/main/REPOSITORY_PLAN.md',
               },
             ],
           },

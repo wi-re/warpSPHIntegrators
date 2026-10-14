@@ -118,7 +118,7 @@ $10^{-12}$ — the scale gate uses `gmres_restart` ≥ system size and asserts
 (restart 30: info 1536, residual $1.1\times10^{-3}$; no restart: info 0,
 residual $8.3\times10^{-13}$).
 
-Benchmark: `scripts/blockrk_benchmark.py` → `images/blockrk_benchmark.png`
+Benchmark: `benchmarks/blockrk_benchmark.py` → `docs/assets/blockrk_benchmark.png`
 — (1) energy drift vs. $T$ on the oscillator (GL2 flat at JFNK-noise level,
 RK4 secular); (2) stiff damping at $z = -10$ across the implicit family
 (Radau 0.0959, BDF5 0.65, GL2 0.30, trapezoidal 0.67); (3) the order ladder

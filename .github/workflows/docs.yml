@@ -35,6 +35,7 @@ jobs:
           OPENBLAS_NUM_THREADS: 1
           MKL_NUM_THREADS: 1
         run: |
+          python scripts/validate_repository.py
           python scripts/validate_doc_examples.py
           python scripts/generate_catalog.py --check
 

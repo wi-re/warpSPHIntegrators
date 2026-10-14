@@ -2,9 +2,22 @@
 
 All notable changes to `warpSPHIntegrators` are documented here. History before
 0.6.0 lives in the git log; the per-phase measurement record lives in
-[NOTES.md](NOTES.md).
+[NOTES.md](docs/research/integrators/notes-index.md).
 
 ## [Unreleased]
+
+### Changed — repository organization (Phase 3)
+
+- Consolidated current work in `REPOSITORY_PLAN.md`, added contributor/multicore
+  validation instructions and method dispositions, and organized plans/research
+  with numbered measurement indexes and compatibility links.
+- Moved notebooks into `examples`, benchmark/gallery drivers into `benchmarks`,
+  and durable plots into `docs/assets`; preserved coefficient extraction/oracle
+  tools, source pins and run evidence before ignoring local scratch output.
+- Corrected the historical SplitEuler equivalence: the pinned upstream method
+  is Forward Euler on a combined RHS, not Symplectic Euler.
+- Added offline repository link/anchor, notebook syntax, disposition inventory
+  and promoted-source integrity checks to the documentation workflow.
 
 ### Added — executable onboarding and catalog metadata (Phase 2)
 
@@ -65,7 +78,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 ### Added — schemes (64 → 71): the wave-1 SSPRK tableaus
 
 - Seven plain SSP tableaus from OrdinaryDiffEq v7.8.1 on the generic Butcher
-  driver (wave 1 of `SCHEME_EXPANSION_PLAN.md`): SSPRK53, SSPRK63, SSPRK73,
+  driver (wave 1 of `docs/plans/scheme-expansion.md`): SSPRK53, SSPRK63, SSPRK73,
   SSPRK83 (Ruuth's globally optimized order-3 methods; measured SSP
   coefficients 2.6506 / 3.5184 / 4.2879 / 5.1071), SSPRK54 (order 4;
   1.7693), KYKSSPRK42 (4-stage order 2; 2.2838) and KYK2014DGSSPRK_3S2
@@ -82,7 +95,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 ### Added — schemes (71 → 74): the wave-2 SSPRK 3(2) pairs and SSPRK932
 
 - Three more OrdinaryDiffEq v7.8.1 SSP tableaus on the generic Butcher
-  driver (wave 2 of `SCHEME_EXPANSION_PLAN.md`): SSPRK43 and SSPRK432
+  driver (wave 2 of `docs/plans/scheme-expansion.md`): SSPRK43 and SSPRK432
   (4-stage order 3 with an embedded order-2 estimate — the registry's first
   SSP 3(2) pairs; measured SSP coefficient 2.0, real axis [-5.149, 0] for
   both) and SSPRK932 (9-stage order 3; exact SSP coefficient 6.0, real axis
@@ -101,7 +114,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 ### Added — schemes (74 → 76): the wave-3 SSPRKMSVS multistep methods
 
 - Shu's strong-stability-preserving *multistep* methods from OrdinaryDiffEq
-  v7.8.1 (wave 3 of `SCHEME_EXPANSION_PLAN.md`), in a new driver
+  v7.8.1 (wave 3 of `docs/plans/scheme-expansion.md`), in a new driver
   `ssprkmsvs.py`: SSPRKMSVS32 (3-step, order 2, SSP C = 1/2) and
   SSPRKMSVS43 (4-step, order 3, SSP C = 1/3). The first non-Adams multistep
   schemes in the registry: the steady-state formula is a convex combination
@@ -127,7 +140,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
   parametric-relaxation variants of Heun / SSP RK3 / SSPRK54 with a free
   `κ` parameter that trades the SSP (TVD) constant for a much larger
   negative-real-axis stability interval (wave 4 of
-  `SCHEME_EXPANSION_PLAN.md`).
+  `docs/plans/scheme-expansion.md`).
 - **Not registered** in `IntegrationSchemes`: the relaxation parameter is
   `z = κ·dt`, so the tableau depends on both `κ` and `dt` (not a fixed
   tableau), and at `κ = 0` the methods duplicate already-registered schemes.
@@ -151,7 +164,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 - SSPRK53_2N1 / SSPRK53_2N2 / SSPRK53_H (Higueras & Roldán, *New third
   order low-storage SSP explicit Runge–Kutta methods*, arXiv:1809.04807) —
   5-stage order-3 low-storage SSP methods from OrdinaryDiffEq v7.8.1 (wave 5
-  of `SCHEME_EXPANSION_PLAN.md`), on the generic Butcher driver.
+  of `docs/plans/scheme-expansion.md`), on the generic Butcher driver.
 - **Screened before registration** (the plan's gate): all three are
   algebraically *distinct* one-step maps from the already-registered
   SSPRK53 — different stages and final b-row, one-step map differing by
@@ -178,7 +191,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 ### Added — schemes (79 → 97): the wave-6 Tsit5 + LowOrderRK workhorses
 
 - 18 OrdinaryDiffEq v7.8.1 tableaus on the generic Butcher driver (wave 6 of
-  `SCHEME_EXPANSION_PLAN.md`): the Tsit5 5(4) pair (ODE's recommended default
+  `docs/plans/scheme-expansion.md`): the Tsit5 5(4) pair (ODE's recommended default
   for unknown stiffness) and the LowOrderRK workhorses — OwrenZen3 3(2) /
   OwrenZen4 4(3) / OwrenZen5 5(4) (Owren–Zennaro embedded pairs), BS5 5(4)
   (Bogacki–Shampine), Stepanov5 5(4) (7-stage FSAL pair), Alshina2 2(1) /
@@ -217,7 +230,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 ### Added — schemes (97 → 108): the wave-7 high-order tableaus (Verner / HighOrderRK / Feagin / DP8)
 
 - Eleven high-order OrdinaryDiffEq v7.8.1 tableaus on the generic Butcher
-  driver (wave 7 of `SCHEME_EXPANSION_PLAN.md`): Verner's optimal pairs
+  driver (wave 7 of `docs/plans/scheme-expansion.md`): Verner's optimal pairs
   Vern6 6(5) / Vern7 7(6) / Vern8 8(7) / Vern9 9(8) (*Numer. Algorithms* 53
   (2010) 383-396), TanYam7 7(6) (Tanaka–Muramatsu–Yamashita, *IPSJ* 33.12
   (1992) 1512-1526), RKV76IIa 7(6) (Verner's 2024 "most efficient" 10-stage
@@ -337,7 +350,7 @@ Supported interpreters: Python 3.11–3.13 (`requires-python` is now enforced).
   `FAMILY_ENUMS` / `SCHEME_FAMILY`, alongside the existing
   `IntegrationSchemeType`.
 - TVD/SSP classifier over the whole registry (`tvd_analysis.py`,
-  `scripts/tvd_classifier.py`), on top of the existing `tvd.py` analysis
+  `benchmarks/tvd_classifier.py`), on top of the existing `tvd.py` analysis
   primitives.
 
 ### Fixed
@@ -357,4 +370,4 @@ Supported interpreters: Python 3.11–3.13 (`requires-python` is now enforced).
   matrix (push wall time ~31 min → ~8 min).
 - Scheme wiki moved from Sphinx to a Docusaurus site with KaTeX math at
   `https://fluids.dev/warpSPHIntegrators/`; demo notebooks added
-  (`viscous_burgers_demo.ipynb`, `jfnk_wave_equation.ipynb`).
+  (`examples/notebooks/viscous_burgers_demo.ipynb`, `examples/integrations/jfnk_wave_equation.ipynb`).

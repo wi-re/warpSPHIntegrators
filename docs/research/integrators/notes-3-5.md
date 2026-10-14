@@ -1,0 +1,27 @@
+> Historical measurement record; original section identifiers are retained.
+> [Record index](notes-index.md) · [Current execution plan](../../../REPOSITORY_PLAN.md)
+
+### 3.5 Shared groundwork (prerequisite for both) — DONE 2026-08-24
+
+| | Item | Where | Status |
+|---|---|---|---|
+| **S1** | `state_norm(state, rtol, atol)` — weighted RMS over integrated fields, Hairer–Wanner style, plus `state_difference`. `butcher._error_estimate` already builds a difference, so generalise rather than duplicate. | `fields.py` | **Done.** Both added; `_error_estimate` refactored to compute the embedded pair's two full solutions via the existing `_weighted_update` path and difference them with `state_difference`, rather than hand-linear-combining raw stage derivatives — equivalent for the additive update semantics every registered scheme uses (all 906 previously-passing tests still pass, including the embedded-pair suite), and correct for a nonlinear `apply_state_update` too, which the old approach silently assumed away. `state_difference` preserves a system wrapper (`get_reference_state` still works on its output) rather than unwrapping to the bare state. |
+| **S2** | `StepHistory` — an ordered container of `(t, dt, derivative projection)`, carried on `IntegrationResult` and accepted as a kwarg, exactly as `priorStep` is today. `priorStep` becomes the one-entry degenerate case; do **not** ship two overlapping reuse mechanisms. | new `history.py`, `specs.py`, `butcher.py` | **Done**, with one deliberate correction to the original sketch: `history=` is wired through `RungeKuttaB` as **pure bookkeeping** (it only populates `IntegrationResult.history`) and does **not** auto-derive `priorStep`. A first draft did auto-derive it, which silently turned on first-stage reuse — and its order cost (`reuse.py`) — for every caller that merely wanted history threaded, on non-FSAL tableaus too, with none of `integration._with_reuse_guard`'s warnings, since those only fire when `priorStep` itself is in `kwargs`. Caught by `test_testing_run_threads_history_without_changing_the_trajectory` (RK4 drifted by ~1e-4 with `history=True` alone). Reuse still opts in exactly as before: pass `priorStep=history.as_prior_step()` explicitly alongside `history=`. |
+| **S2g** | Two cheap history guards. **(a)** record `dt` in each entry and restart if it changes. **(b)** record the identity of the `uid` tensor (`data_ptr` + shape) and restart if it moves. | `history.py` | **Done**, inside `StepHistory.pushed`. |
+| **S3** | `IntegrationScheme` metadata: `implicit: bool`, `steps: int`, `stiffly_accurate: bool`, `stability: 'A'\|'L'\|'A(α)'\|None`, `startup_order: int`. | `util.py` | **Done** — five fields added, all defaulted so every existing positional registration in `integration.py` is untouched and every registered scheme reads back the plain-explicit-RK defaults (`implicit=False`, `steps=1`, ...). `reuse.py`'s "multistep wants its own answer" is **not yet done** — left for Phase 1, which is the first thing that will actually have a multistep tableau to answer for. |
+| **S4** | `NonlinearSolver` protocol: `solve(step, y0, norm, **opts) -> (y, converged, iterations)`. Ship `FixedPointSolver` with a **fixed iteration count** as the default (§3.1: 2 iterations for order 2). | new `solvers.py` | **Done**, with the callable renamed `step` (from the sketch's `residual`): what `FixedPointSolver` and every rung of the §3.4 ladder actually need is "the next iterate as a function of the current one" (`Y -> g(Y)`), not a signed residual, and naming it what it is avoids an `F(Y) = 0` framing nothing here uses yet. `converged=True` with no `tol` means "completed its fixed schedule", the only claim fixed-count Picard makes; `tol`+`norm` gives an early-exit variant using `state_norm`/`state_difference` from S1. |
+| **S5** | Generalise `testing.run` / `conftest.ALL_SCHEMES`. Both assume a stateless one-step callable `scheme(system, dt, f)`. | `testing.py` | **Partially done.** `testing.run` grew an opt-in `history=` kwarg that threads a `StepHistory` alongside (or instead of) `priorStep`-based reuse, verified inert for every currently-registered scheme (`test_history_kwarg_is_inert_for_schemes_that_do_not_use_it`, parametrized over all 27). `conftest.ALL_SCHEMES`/`order_of` untouched — they still assume one-step, no-starter schemes, which is still true of everything registered; that generalisation is Phase 1's own prerequisite once a multistep scheme exists to register, not groundwork with no consumer yet. |
+
+Verified 2026-08-24: full suite green, `954 passed, 54 skipped` (was `906 passed, 54 skipped`
+at the top of this session — no regressions, 48 new tests in `tests/test_groundwork.py`).
+`__init__.py` exports the new public surface (`state_difference`, `state_norm`,
+`HistoryEntry`, `StepHistory`, `NonlinearSolver`, `FixedPointSolver`, `SolveResult`).
+
+The `preprocess` caching policy that a general-purpose implicit driver would normally
+need as a blocker is **not needed** here — the simulation already carries and
+revalidates adjacency through the state (§3.0), by a better mechanism than a
+library-level cache would be. The one thing to check when Phase 2 lands is that the
+*implicit driver* reuses a single stage buffer across iterations rather than calling
+`initializeNewState` per iteration as the probe does, so the adjacency is carried once
+rather than re-cloned each time. That is also what §2.1's buffer pooling wants, so it
+is aligned work, not a detour.

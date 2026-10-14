@@ -170,7 +170,7 @@ nonlinear=)` for the semilinear split `f = L·y + N`. Both remain callable as
 the combined `f`, so a scheme that only needs the full right-hand side treats
 the split as fully implicit; a scheme that needs a split the RHS does not
 declare fails before the solve with an error naming the missing capability.
-See [NOTES.md §3.12](https://github.com/wi-re/warpSPHIntegrators/blob/main/NOTES.md#312-phase-14-the-structured-rhs-interface--done-2026-09-10).
+See [NOTES.md §3.12](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/research/integrators/notes-index.md#312-phase-14-the-structured-rhs-interface--done-2026-09-10).
 
 ## 5. Choose an Integration Scheme and Integrate
 

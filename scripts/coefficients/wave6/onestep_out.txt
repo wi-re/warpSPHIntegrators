@@ -1,0 +1,21 @@
+method         max|diff|       verdict
+--------------------------------------------
+Tsit5          0.0             MATCH
+OwrenZen3      0.0             MATCH
+OwrenZen4      0.0             MATCH
+OwrenZen5      0.0             MATCH
+BS5            0.0             MATCH
+Stepanov5      0.0             MATCH
+SIR54          0.0             MATCH
+Alshina2       0.0             MATCH
+Alshina3       0.0             MATCH
+Alshina6       0.0             MATCH
+MSRK5          0.0             MATCH
+MSRK6          0.0             MATCH
+RKO65          0.0             MATCH
+RKM            0.0             MATCH
+Ralston4       0.0             MATCH
+PSRK4p7q6      0.0             MATCH
+PSRK3p6q5      0.0             MATCH
+PSRK3p5q4      0.0             MATCH
+ONE-STEP CHECK DONE

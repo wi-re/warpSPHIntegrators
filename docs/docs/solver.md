@@ -143,9 +143,9 @@ else:
 ## Cost model
 
 The nonlinear-solver overhead is benchmarked, not assumed:
-`scripts/jfnk_cost_model.py` (and the `jfnk_wave_equation.ipynb` notebook)
+`benchmarks/jfnk_preconditioner_benchmark.py` and the `examples/integrations/jfnk_wave_equation.ipynb` notebook
 measure GMRES iterations vs. the frozen-operator condition number for the wave
-equation, and `scripts/blockrk_benchmark.py` the block-solve cost for the
+equation, and `benchmarks/blockrk_benchmark.py` the block-solve cost for the
 coupled pair. The practical rule of thumb (NOTES.md §3.4): for a problem whose
 stage-operator spectrum is clustered, JFNK at the default tolerances costs
 3-6 `step` evaluations per stage; for a spread (annular) spectrum, the inner

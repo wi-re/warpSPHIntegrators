@@ -24,6 +24,7 @@ const sidebars = {
     },
     'solver',
     'api',
+    'development',
   ],
 };
 

@@ -114,9 +114,15 @@ def artifacts(root=ROOT):
         Path('docs/src/data/catalog.json'): json.dumps(data, indent=2) + '\n',
         Path('docs/docs/catalog.md'): catalog_markdown(data),
     }
-    for page in ('README.md', 'docs/docs/index.md', 'docs/docs/selection.md'):
+    for page in ('README.md', 'docs/docs/index.md', 'docs/docs/selection.md',
+                 'docs/development/usage-reference.md'):
         text = (root / page).read_text()
         text = region(text, 'summary', summary_text(data))
+        # Included source is displayed verbatim in both entry points.
+        if page in ('README.md', 'docs/docs/index.md'):
+            text = re.sub(r'(\[example:include examples/harmonic_oscillator.py\]: #\n```python\n).*?^```',
+                          lambda m: m[1] + (root / 'examples/harmonic_oscillator.py').read_text() + '```',
+                          text, flags=re.M | re.S)
         if page == 'docs/docs/index.md':
             text = re.sub(r'## The \d+ families',
                           f"## The {data['summary']['family_count']} families", text)
@@ -125,11 +131,7 @@ def artifacts(root=ROOT):
                 rows.append(f"| {family['label']} | `{family['name']}` | {family['count']} | "
                             f"[{family['page']}](/docs/families/{family['page']}) |")
             text = region(text, 'families', '\n'.join(rows))
-            # An included script is always displayed verbatim in the overview.
-            text = re.sub(r'(\[example:include examples/harmonic_oscillator.py\]: #\n```python\n).*?^```',
-                          lambda m: m[1] + (root / 'examples/harmonic_oscillator.py').read_text() + '```',
-                          text, flags=re.M | re.S)
-        if page == 'README.md':
+        if page in ('README.md', 'docs/development/usage-reference.md'):
             n, e = data['summary']['scheme_count'], data['summary']['estimate_count']
             text = re.sub(r'\b\d+ registered schemes across \d+ families',
                           f"{n} registered schemes across {data['summary']['family_count']} families", text)

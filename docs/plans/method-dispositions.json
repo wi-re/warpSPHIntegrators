@@ -1,0 +1,4627 @@
+{
+  "audit_date": "2026-10-14",
+  "registry_baseline": "5eb45e0",
+  "source_pin": {
+    "package": "OrdinaryDiffEq",
+    "version": "7.8.1",
+    "metapackage_git_tree": "bae9b8e5f1d00e51c554648e5094e215164a19f8",
+    "environment": "scripts/coefficients/julia/Manifest.toml"
+  },
+  "registered_methods": [
+    {
+      "name": "Forward Euler",
+      "identifier": "forwardEuler",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "forwardEuler",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "forwardEuler"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Midpoint",
+      "identifier": "rungeKutta2",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "midpoint",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "midpoint"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Heun's Method (2nd order)",
+      "identifier": "heunsMethod",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "heunsMethod",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "heunsMethod"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Ralston's Method (2nd order)",
+      "identifier": "ralston2nd",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ralston",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ralston"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "RK3",
+      "identifier": "rungeKutta3",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "RK3",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "RK3"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Heun's Method (3rd order)",
+      "identifier": "heunsMethod3rd",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Heun3",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Heun3"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Ralston's Method (3rd order)",
+      "identifier": "ralston3rd",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ralston3",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ralston3"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Wray's Method (3rd order)",
+      "identifier": "wray3rd",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Wray3",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Wray3"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "SSP RK3",
+      "identifier": "sspRK3",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPRK3",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPRK3"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "SSPRK(10,4)",
+      "identifier": "ssprk104",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPRK104",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPRK104"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "SSPRK53",
+      "identifier": "ssprk53",
+      "status": "implemented",
+      "wave": 1,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSSPRK/src/ssprk_caches.jl and ssprk_perform_step.jl",
+        "constructor": "SSPRK53ConstantCache; recurrence in ssprk_perform_step.jl",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPRK53",
+        "materializer": "getButcherTableau; callable SSPRK53"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-3-21.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "SSPRK63",
+      "identifier": "ssprk63",
+      "status": "implemented",
+      "wave": 1,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSSPRK/src/ssprk_caches.jl and ssprk_perform_step.jl",
+        "constructor": "SSPRK63ConstantCache; recurrence in ssprk_perform_step.jl",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPRK63",
+        "materializer": "getButcherTableau; callable SSPRK63"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-3-21.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "SSPRK73",
+      "identifier": "ssprk73",
+      "status": "implemented",
+      "wave": 1,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSSPRK/src/ssprk_caches.jl and ssprk_perform_step.jl",
+        "constructor": "SSPRK73ConstantCache; recurrence in ssprk_perform_step.jl",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPRK73",
+        "materializer": "getButcherTableau; callable SSPRK73"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-3-21.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "SSPRK83",
+      "identifier": "ssprk83",
+      "status": "implemented",
+      "wave": 1,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSSPRK/src/ssprk_caches.jl and ssprk_perform_step.jl",
+        "constructor": "SSPRK83ConstantCache; recurrence in ssprk_perform_step.jl",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPRK83",
+        "materializer": "getButcherTableau; callable SSPRK83"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-3-21.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "SSPRK54",
+      "identifier": "ssprk54",
+      "status": "implemented",
+      "wave": 1,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSSPRK/src/ssprk_caches.jl and ssprk_perform_step.jl",
+        "constructor": "SSPRK54ConstantCache; recurrence in ssprk_perform_step.jl",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPRK54",
+        "materializer": "getButcherTableau; callable SSPRK54"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-3-21.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "KYKSSPRK42",
+      "identifier": "kykssprk42",
+      "status": "implemented",
+      "wave": 1,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSSPRK/src/ssprk_caches.jl and ssprk_perform_step.jl",
+        "constructor": "KYKSSPRK42ConstantCache; recurrence in ssprk_perform_step.jl",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "KYKSSPRK42",
+        "materializer": "getButcherTableau; callable KYKSSPRK42"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-3-21.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "KYK2014DGSSPRK_3S2",
+      "identifier": "kyk2014dgssprk3s2",
+      "status": "implemented",
+      "wave": 1,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSSPRK/src/ssprk_caches.jl and ssprk_perform_step.jl",
+        "constructor": "KYK2014DGSSPRK_3S2ConstantCache; recurrence in ssprk_perform_step.jl",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "KYK2014DGSSPRK_3S2",
+        "materializer": "getButcherTableau; callable KYK2014DGSSPRK_3S2"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-3-21.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "SSPRK43",
+      "identifier": "ssprk43",
+      "status": "implemented",
+      "wave": 2,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSSPRK/src/ssprk_caches.jl and ssprk_perform_step.jl",
+        "constructor": "SSPRK43ConstantCache; recurrence in ssprk_perform_step.jl",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPRK43",
+        "materializer": "getButcherTableau; callable SSPRK43"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order"
+      ],
+      "evidence": "docs/research/integrators/notes-3-22.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "SSPRK432",
+      "identifier": "ssprk432",
+      "status": "implemented",
+      "wave": 2,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSSPRK/src/ssprk_caches.jl and ssprk_perform_step.jl",
+        "constructor": "SSPRK432ConstantCache; recurrence in ssprk_perform_step.jl",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPRK432",
+        "materializer": "getButcherTableau; callable SSPRK432"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order"
+      ],
+      "evidence": "docs/research/integrators/notes-3-22.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "SSPRK932",
+      "identifier": "ssprk932",
+      "status": "implemented",
+      "wave": 2,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSSPRK/src/ssprk_caches.jl and ssprk_perform_step.jl",
+        "constructor": "SSPRK932ConstantCache; recurrence in ssprk_perform_step.jl",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPRK932",
+        "materializer": "getButcherTableau; callable SSPRK932"
+      },
+      "coefficient_modifications": [
+        "Source estimator deliberately omitted; failed/unsupported companion construction recorded, fixed-step registration retained"
+      ],
+      "evidence": "docs/research/integrators/notes-3-22.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "SSPRK53_2N1",
+      "identifier": "ssprk53_2n1",
+      "status": "implemented",
+      "wave": 5,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSSPRK/src/ssprk_caches.jl and ssprk_perform_step.jl",
+        "constructor": "SSPRK53_2N1ConstantCache; recurrence in ssprk_perform_step.jl",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPRK53_2N1",
+        "materializer": "getButcherTableau; callable SSPRK53_2N1"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-3-25.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "SSPRK53_2N2",
+      "identifier": "ssprk53_2n2",
+      "status": "implemented",
+      "wave": 5,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSSPRK/src/ssprk_caches.jl and ssprk_perform_step.jl",
+        "constructor": "SSPRK53_2N2ConstantCache; recurrence in ssprk_perform_step.jl",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPRK53_2N2",
+        "materializer": "getButcherTableau; callable SSPRK53_2N2"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-3-25.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "SSPRK53_H",
+      "identifier": "ssprk53_h",
+      "status": "implemented",
+      "wave": 5,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSSPRK/src/ssprk_caches.jl and ssprk_perform_step.jl",
+        "constructor": "SSPRK53_HConstantCache; recurrence in ssprk_perform_step.jl",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPRK53_H",
+        "materializer": "getButcherTableau; callable SSPRK53_H"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-3-25.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "RK4",
+      "identifier": "rungeKutta4",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "RK4",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "RK4"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "RK4 (alternative)",
+      "identifier": "rungeKutta4alt",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "RK4alt",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "RK4alt"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Nystrom 5th order",
+      "identifier": "nystrom5th",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Nystrom5",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Nystrom5"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Bogacki-Shampine 3(2)",
+      "identifier": "bogackiShampine",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "BogackiShampine",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "BogackiShampine"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Dormand-Prince 5(4)",
+      "identifier": "dormandPrince",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "DormandPrince",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "DormandPrince"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Cash-Karp 5(4)",
+      "identifier": "cashKarp",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "CashKarp",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "CashKarp"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Tsit5 5(4)",
+      "identifier": "tsit5",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqTsit5/src/tsit_tableaus.jl",
+        "constructor": "Tsit5ConstantCacheActual",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Tsit5",
+        "materializer": "getButcherTableau; callable Tsit5"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "OwrenZen3 3(2)",
+      "identifier": "owrenzen3",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqLowOrderRK/src/low_order_rk_tableaus.jl",
+        "constructor": "OwrenZen3ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "OwrenZen3",
+        "materializer": "getButcherTableau; callable OwrenZen3"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "OwrenZen4 4(3)",
+      "identifier": "owrenzen4",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqLowOrderRK/src/low_order_rk_tableaus.jl",
+        "constructor": "OwrenZen4ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "OwrenZen4",
+        "materializer": "getButcherTableau; callable OwrenZen4"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "OwrenZen5 5(4)",
+      "identifier": "owrenzen5",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqLowOrderRK/src/low_order_rk_tableaus.jl",
+        "constructor": "OwrenZen5ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "OwrenZen5",
+        "materializer": "getButcherTableau; callable OwrenZen5"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "BS5 5(4)",
+      "identifier": "bs5",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqLowOrderRK/src/low_order_rk_tableaus.jl",
+        "constructor": "BS5ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "BS5",
+        "materializer": "getButcherTableau; callable BS5"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Stepanov5 5(4)",
+      "identifier": "stefanov5",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqLowOrderRK/src/low_order_rk_tableaus.jl",
+        "constructor": "Stepanov5ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Stepanov5",
+        "materializer": "getButcherTableau; callable Stepanov5"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Alshina2 2(1)",
+      "identifier": "arushina2",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqLowOrderRK/src/low_order_rk_tableaus.jl",
+        "constructor": "Alshina2ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Alshina2",
+        "materializer": "getButcherTableau; callable Alshina2"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Alshina3",
+      "identifier": "arushina3",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqLowOrderRK/src/low_order_rk_tableaus.jl",
+        "constructor": "Alshina3ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Alshina3",
+        "materializer": "getButcherTableau; callable Alshina3"
+      },
+      "coefficient_modifications": [
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Alshina6",
+      "identifier": "arushina6",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqLowOrderRK/src/low_order_rk_tableaus.jl",
+        "constructor": "Alshina6ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Alshina6",
+        "materializer": "getButcherTableau; callable Alshina6"
+      },
+      "coefficient_modifications": [
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "MSRK5",
+      "identifier": "msrk5",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqLowOrderRK/src/low_order_rk_tableaus.jl",
+        "constructor": "MSRK5ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "MSRK5",
+        "materializer": "getButcherTableau; callable MSRK5"
+      },
+      "coefficient_modifications": [
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "MSRK6",
+      "identifier": "msrk6",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqLowOrderRK/src/low_order_rk_tableaus.jl",
+        "constructor": "MSRK6ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "MSRK6",
+        "materializer": "getButcherTableau; callable MSRK6"
+      },
+      "coefficient_modifications": [
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "SIR54",
+      "identifier": "sir54",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqLowOrderRK/src/low_order_rk_tableaus.jl",
+        "constructor": "SIR54ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SIR54",
+        "materializer": "getButcherTableau; callable SIR54"
+      },
+      "coefficient_modifications": [
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Ralston4",
+      "identifier": "raston4",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqLowOrderRK/src/low_order_rk_tableaus.jl",
+        "constructor": "Ralston4ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Ralston4",
+        "materializer": "getButcherTableau; callable Ralston4"
+      },
+      "coefficient_modifications": [
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "RKO65",
+      "identifier": "rko65",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqLowOrderRK/src/low_order_rk_tableaus.jl",
+        "constructor": "RKO65ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "RKO65",
+        "materializer": "getButcherTableau; callable RKO65"
+      },
+      "coefficient_modifications": [
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "RKM",
+      "identifier": "rkm",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqLowOrderRK/src/low_order_rk_tableaus.jl",
+        "constructor": "RKMConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "RKM",
+        "materializer": "getButcherTableau; callable RKM"
+      },
+      "coefficient_modifications": [
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "PSRK4p7q6",
+      "identifier": "psrk4p7q6",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqLowOrderRK/src/low_order_rk_tableaus.jl",
+        "constructor": "PSRK4p7q6ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "PSRK4p7q6",
+        "materializer": "getButcherTableau; callable PSRK4p7q6"
+      },
+      "coefficient_modifications": [
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim",
+        "Plain fixed-step tableau; name does not certify an embedded pair"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "PSRK3p6q5",
+      "identifier": "psrk3p6q5",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqLowOrderRK/src/low_order_rk_tableaus.jl",
+        "constructor": "PSRK3p6q5ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "PSRK3p6q5",
+        "materializer": "getButcherTableau; callable PSRK3p6q5"
+      },
+      "coefficient_modifications": [
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim",
+        "Plain fixed-step tableau; name does not certify an embedded pair"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "PSRK3p5q4",
+      "identifier": "psrk3p5q4",
+      "status": "implemented",
+      "wave": 6,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqLowOrderRK/src/low_order_rk_tableaus.jl",
+        "constructor": "PSRK3p5q4ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "PSRK3p5q4",
+        "materializer": "getButcherTableau; callable PSRK3p5q4"
+      },
+      "coefficient_modifications": [
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim",
+        "Plain fixed-step tableau; name does not certify an embedded pair"
+      ],
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Vern6 6(5)",
+      "identifier": "vern6",
+      "status": "implemented",
+      "wave": 7,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqVerner/src/verner_tableaus.jl",
+        "constructor": "Vern6Tableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Vern6",
+        "materializer": "getButcherTableau; callable Vern6"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-27.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Vern7 7(6)",
+      "identifier": "vern7",
+      "status": "implemented",
+      "wave": 7,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqVerner/src/verner_tableaus.jl",
+        "constructor": "Vern7Tableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Vern7",
+        "materializer": "getButcherTableau; callable Vern7"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-27.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Vern8 8(7)",
+      "identifier": "vern8",
+      "status": "implemented",
+      "wave": 7,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqVerner/src/verner_tableaus.jl",
+        "constructor": "Vern8Tableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Vern8",
+        "materializer": "getButcherTableau; callable Vern8"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-27.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Vern9 9(8)",
+      "identifier": "vern9",
+      "status": "implemented",
+      "wave": 7,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqVerner/src/verner_tableaus.jl",
+        "constructor": "Vern9Tableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Vern9",
+        "materializer": "getButcherTableau; callable Vern9"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-27.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "RKV76IIa 7(6)",
+      "identifier": "rkv76iia",
+      "status": "implemented",
+      "wave": 7,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqVerner/src/verner_tableaus.jl",
+        "constructor": "RKV76IIaTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "RKV76IIa",
+        "materializer": "getButcherTableau; callable RKV76IIa"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-27.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "TanYam7 7(6)",
+      "identifier": "tanyam7",
+      "status": "implemented",
+      "wave": 7,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqHighOrderRK/src/high_order_rk_tableaus.jl",
+        "constructor": "TanYam7ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "TanYam7",
+        "materializer": "getButcherTableau; callable TanYam7"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-27.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "TsitPap8 8(7)",
+      "identifier": "tsitpap8",
+      "status": "implemented",
+      "wave": 7,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqHighOrderRK/src/high_order_rk_tableaus.jl",
+        "constructor": "TsitPap8ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "TsitPap8",
+        "materializer": "getButcherTableau; callable TsitPap8"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
+      ],
+      "evidence": "docs/research/integrators/notes-3-27.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "DP8",
+      "identifier": "dp8",
+      "status": "implemented",
+      "wave": 7,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqHighOrderRK/src/high_order_rk_tableaus.jl",
+        "constructor": "DP8ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "DP8",
+        "materializer": "getButcherTableau; callable DP8"
+      },
+      "coefficient_modifications": [
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim",
+        "Source estimator deliberately omitted; failed/unsupported companion construction recorded, fixed-step registration retained"
+      ],
+      "evidence": "docs/research/integrators/notes-3-27.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Feagin10",
+      "identifier": "feagin10",
+      "status": "implemented",
+      "wave": 7,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqFeagin/src/feagin_tableaus.jl",
+        "constructor": "Feagin10ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Feagin10",
+        "materializer": "getButcherTableau; callable Feagin10"
+      },
+      "coefficient_modifications": [
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim",
+        "Source estimator deliberately omitted; failed/unsupported companion construction recorded, fixed-step registration retained"
+      ],
+      "evidence": "docs/research/integrators/notes-3-27.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Feagin12",
+      "identifier": "feagin12",
+      "status": "implemented",
+      "wave": 7,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqFeagin/src/feagin_tableaus.jl",
+        "constructor": "Feagin12ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Feagin12",
+        "materializer": "getButcherTableau; callable Feagin12"
+      },
+      "coefficient_modifications": [
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim",
+        "Source estimator deliberately omitted; failed/unsupported companion construction recorded, fixed-step registration retained"
+      ],
+      "evidence": "docs/research/integrators/notes-3-27.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Feagin14",
+      "identifier": "feagin14",
+      "status": "implemented",
+      "wave": 7,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqFeagin/src/feagin_tableaus.jl",
+        "constructor": "Feagin14ConstantCache",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Feagin14",
+        "materializer": "getButcherTableau; callable Feagin14"
+      },
+      "coefficient_modifications": [
+        "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim",
+        "Source estimator deliberately omitted; failed/unsupported companion construction recorded, fixed-step registration retained"
+      ],
+      "evidence": "docs/research/integrators/notes-3-27.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Leap Frog",
+      "identifier": "leapFrog",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "leapFrog",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "leapFrog"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "second-order dynamics meeting force/separability assumptions"
+    },
+    {
+      "name": "Symplectic Euler",
+      "identifier": "symplecticEuler",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "symplecticEuler",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "symplecticEuler"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "second-order dynamics meeting force/separability assumptions"
+    },
+    {
+      "name": "Velocity Verlet",
+      "identifier": "velocityVerlet",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "velocityVerlet",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "velocityVerlet"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "second-order dynamics meeting force/separability assumptions"
+    },
+    {
+      "name": "PEFRL",
+      "identifier": "pefrl",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "PEFRL",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "PEFRL"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "second-order dynamics meeting force/separability assumptions"
+    },
+    {
+      "name": "VEFRL",
+      "identifier": "vefrl",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "VEFRL",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "VEFRL"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "second-order dynamics meeting force/separability assumptions"
+    },
+    {
+      "name": "EPEC",
+      "identifier": "epec",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "midpoint",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "midpoint"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "EPEC Modified",
+      "identifier": "epecModified",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "heunsMethod",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "heunsMethod"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "TVD RK3",
+      "identifier": "tvdRK3",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "TVDRK3",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "TVDRK3"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "TVD RK2",
+      "identifier": "tvdRK2",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "TVDRK2",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "TVDRK2"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Semi-Implicit Euler",
+      "identifier": "semiImplicitEuler",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "<lambda>",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "<lambda>"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "second-order dynamics meeting force/separability assumptions"
+    },
+    {
+      "name": "Explicit Euler",
+      "identifier": "explicitEuler",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "<lambda>",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "<lambda>"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "ordinary nonstiff ODEs"
+    },
+    {
+      "name": "Backward Euler (implicit)",
+      "identifier": "backwardEuler",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "backwardEuler",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "backwardEuler"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "Implicit Midpoint",
+      "identifier": "implicitMidpoint",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "implicitMidpoint",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "implicitMidpoint"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "Trapezoidal (Crank-Nicolson)",
+      "identifier": "trapezoidal",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "trapezoidal",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "trapezoidal"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "SDIRK2",
+      "identifier": "sdirk2",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SDIRK2",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SDIRK2"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "TR-BDF2",
+      "identifier": "trbdf2",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "TRBDF2",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "TRBDF2"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "ESDIRK3(2)4L[2]SA",
+      "identifier": "esdirk324l2sa",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ESDIRK324L2SA",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ESDIRK324L2SA"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "ESDIRK4(3)6L[2]SA",
+      "identifier": "esdirk436l2sa",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ESDIRK436L2SA",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ESDIRK436L2SA"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "Kvaerno3",
+      "identifier": "kvaerno3",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "Kvaerno3ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Kvaerno3",
+        "materializer": "getDIRKTableau(Kvaerno3)"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments",
+        "c[1] corrected from gamma to 2*gamma (consistent row sum)"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "Kvaerno4",
+      "identifier": "kvaerno4",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "Kvaerno4ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Kvaerno4",
+        "materializer": "getDIRKTableau(Kvaerno4)"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments",
+        "c[1] corrected from gamma to 2*gamma (consistent row sum)"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "Kvaerno5",
+      "identifier": "kvaerno5",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "Kvaerno5ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Kvaerno5",
+        "materializer": "getDIRKTableau(Kvaerno5)"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments",
+        "c[1] corrected from gamma to 2*gamma (consistent row sum)"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "KenCarp3",
+      "identifier": "kencarp3",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "KenCarp3ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "KenCarp3",
+        "materializer": "getDIRKTableau(KenCarp3)"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "KenCarp4",
+      "identifier": "kencarp4",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "KenCarp4ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "KenCarp4",
+        "materializer": "getDIRKTableau(KenCarp4)"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "KenCarp47",
+      "identifier": "kencarp47",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "KenCarp47ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "KenCarp47",
+        "materializer": "getDIRKTableau(KenCarp47)"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "KenCarp5",
+      "identifier": "kencarp5",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "KenCarp5ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "KenCarp5",
+        "materializer": "getDIRKTableau(KenCarp5)"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "KenCarp58",
+      "identifier": "kencarp58",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "KenCarp58ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "KenCarp58",
+        "materializer": "getDIRKTableau(KenCarp58)"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "ESDIRK3(2)5L[2]SA",
+      "identifier": "esdirk325l2sa",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "ESDIRK325L2SAESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ESDIRK325L2SA",
+        "materializer": "getDIRKTableau(ESDIRK325L2SA)"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "ESDIRK4(3)6L[2]SA2",
+      "identifier": "esdirk436l2sa2",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "ESDIRK436L2SA2ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ESDIRK436L2SA2",
+        "materializer": "getDIRKTableau(ESDIRK436L2SA2)"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "ESDIRK4(3)7L[2]SA",
+      "identifier": "esdirk437l2sa",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "ESDIRK437L2SAESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ESDIRK437L2SA",
+        "materializer": "getDIRKTableau(ESDIRK437L2SA)"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "ESDIRK5(4)7L[2]SA2",
+      "identifier": "esdirk547l2sa2",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "ESDIRK547L2SA2ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ESDIRK547L2SA2",
+        "materializer": "getDIRKTableau(ESDIRK547L2SA2)"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments",
+        "Fourth node replaced by consistent row sum, not upstream stored 49/453"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "ESDIRK5(4)I8L[2]SA",
+      "identifier": "esdirk54i8l2sa",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "ESDIRK54I8L2SAESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ESDIRK54I8L2SA",
+        "materializer": "getDIRKTableau(ESDIRK54I8L2SA)"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "ESDIRK6(5)9L[2]SA",
+      "identifier": "esdirk659l2sa",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "ESDIRK659L2SAESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ESDIRK659L2SA",
+        "materializer": "getDIRKTableau(ESDIRK659L2SA)"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "SSPSDIRK2",
+      "identifier": "sspsdirk2",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "SSPSDIRK2ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPSDIRK2",
+        "materializer": "getDIRKTableau(SSPSDIRK2)"
+      },
+      "coefficient_modifications": [
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments",
+        "Nodes set to row sums [1/4,3/4]; symplectic classification, R(infinity)=+1"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "ARS222",
+      "identifier": "ars222",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "ARS222Tableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ARS222",
+        "materializer": "getDIRKTableau(ARS222)"
+      },
+      "coefficient_modifications": [
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "ARS232",
+      "identifier": "ars232",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "ARS232Tableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ARS232",
+        "materializer": "getDIRKTableau(ARS232)"
+      },
+      "coefficient_modifications": [
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "ARS343",
+      "identifier": "ars343",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "ARS343Tableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ARS343",
+        "materializer": "getDIRKTableau(ARS343)"
+      },
+      "coefficient_modifications": [
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "ARS443",
+      "identifier": "ars443",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "ARS443Tableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ARS443",
+        "materializer": "getDIRKTableau(ARS443)"
+      },
+      "coefficient_modifications": [
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "BHR553",
+      "identifier": "bhr553",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "BHR553Tableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "BHR553",
+        "materializer": "getDIRKTableau(BHR553)"
+      },
+      "coefficient_modifications": [
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "Cash4",
+      "identifier": "cash4",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "Cash4ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Cash4",
+        "materializer": "getDIRKTableau(Cash4)"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments",
+        "12-digit source precision retained; row-sum nodes and final weight normalization (7.8e-12)"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "CFNLIRK3",
+      "identifier": "cfnlirk3",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "CFNLIRK3ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "CFNLIRK3",
+        "materializer": "getDIRKTableau(CFNLIRK3)"
+      },
+      "coefficient_modifications": [
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "Hairer4",
+      "identifier": "hairer4",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "Hairer4ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Hairer4",
+        "materializer": "getDIRKTableau(Hairer4)"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "Hairer42",
+      "identifier": "hairer42",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "Hairer4ESDIRKIMEXTableau(Hairer42(), T, T2)",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "Hairer42",
+        "materializer": "getDIRKTableau(Hairer42)"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "SFSDIRK4",
+      "identifier": "sfstdirk4",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "SFSDIRK4ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SFSDIRK4",
+        "materializer": "getDIRKTableau(SFSDIRK4)"
+      },
+      "coefficient_modifications": [
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments",
+        "Row-sum nodes replace stored-node transcription noise (~9e-12); source precision retained"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "SFSDIRK5",
+      "identifier": "sfstdirk5",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "SFSDIRK5ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SFSDIRK5",
+        "materializer": "getDIRKTableau(SFSDIRK5)"
+      },
+      "coefficient_modifications": [
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments",
+        "Final b weight normalized by 1e-12; source nodes/12-digit precision retained"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "SFSDIRK6",
+      "identifier": "sfstdirk6",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "SFSDIRK6ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SFSDIRK6",
+        "materializer": "getDIRKTableau(SFSDIRK6)"
+      },
+      "coefficient_modifications": [
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments",
+        "12-digit source precision retained; row-sum nodes"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "SFSDIRK7",
+      "identifier": "sfstdirk7",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "SFSDIRK7ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SFSDIRK7",
+        "materializer": "getDIRKTableau(SFSDIRK7)"
+      },
+      "coefficient_modifications": [
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments",
+        "Final b weight normalized by 1e-12; source precision retained"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "SFSDIRK8",
+      "identifier": "sfstdirk8",
+      "status": "implemented",
+      "wave": 8,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl",
+        "constructor": "SFSDIRK8ESDIRKIMEXTableau",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SFSDIRK8",
+        "materializer": "getDIRKTableau(SFSDIRK8)"
+      },
+      "coefficient_modifications": [
+        "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments",
+        "Final b weight normalized by 1e-12; source precision retained"
+      ],
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with matrix-free implicit stage solves"
+    },
+    {
+      "name": "Gauss-Legendre 2",
+      "identifier": "gaussLegendre2",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "gaussLegendre2",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "gaussLegendre2"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "coupled stiff/geometric vector ODEs"
+    },
+    {
+      "name": "Radau IIA s=2",
+      "identifier": "radauIia2",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "radauIia2",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "radauIia2"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "coupled stiff/geometric vector ODEs"
+    },
+    {
+      "name": "ARK3(2)4L[2]SA",
+      "identifier": "ark324l2sa",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ARK324L2SA",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ARK324L2SA"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "split explicit/implicit ODEs"
+    },
+    {
+      "name": "ARK4(3)6L[2]SA",
+      "identifier": "ark436l2sa",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ARK436L2SA",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ARK436L2SA"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "split explicit/implicit ODEs"
+    },
+    {
+      "name": "Newmark",
+      "identifier": "newmark",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "newmark",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "newmark"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "position/velocity structural dynamics"
+    },
+    {
+      "name": "BDF1",
+      "identifier": "bdf1",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "BDF1",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "BDF1"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff fixed-step ODEs with startup qualification"
+    },
+    {
+      "name": "BDF2",
+      "identifier": "bdf2",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "BDF2",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "BDF2"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff fixed-step ODEs with startup qualification"
+    },
+    {
+      "name": "BDF3",
+      "identifier": "bdf3",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "BDF3",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "BDF3"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff fixed-step ODEs with startup qualification"
+    },
+    {
+      "name": "BDF4",
+      "identifier": "bdf4",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "BDF4",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "BDF4"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff fixed-step ODEs with startup qualification"
+    },
+    {
+      "name": "BDF5",
+      "identifier": "bdf5",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "BDF5",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "BDF5"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff fixed-step ODEs with startup qualification"
+    },
+    {
+      "name": "IMEX Euler",
+      "identifier": "imexEuler",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "IMEXEuler",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "IMEXEuler"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "split explicit/implicit ODEs"
+    },
+    {
+      "name": "SBDF2",
+      "identifier": "sbdf2",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SBDF2",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SBDF2"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "split explicit/implicit ODEs"
+    },
+    {
+      "name": "SBDF3",
+      "identifier": "sbdf3",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SBDF3",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SBDF3"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "split explicit/implicit ODEs"
+    },
+    {
+      "name": "CNAB2",
+      "identifier": "cnab2",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "CNAB2",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "CNAB2"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "split explicit/implicit ODEs"
+    },
+    {
+      "name": "Adams-Bashforth 2",
+      "identifier": "ab2",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "AB2",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "AB2"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "fixed-step ODEs with threaded history"
+    },
+    {
+      "name": "Adams-Bashforth 3",
+      "identifier": "ab3",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "AB3",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "AB3"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "fixed-step ODEs with threaded history"
+    },
+    {
+      "name": "Adams-Bashforth 4",
+      "identifier": "ab4",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "AB4",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "AB4"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "fixed-step ODEs with threaded history"
+    },
+    {
+      "name": "Adams-Bashforth 5",
+      "identifier": "ab5",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "AB5",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "AB5"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "fixed-step ODEs with threaded history"
+    },
+    {
+      "name": "Adams-Bashforth-Moulton 2 (PECE)",
+      "identifier": "abm2",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ABM2",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ABM2"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "fixed-step ODEs with threaded history"
+    },
+    {
+      "name": "Adams-Bashforth-Moulton 3 (PECE)",
+      "identifier": "abm3",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ABM3",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ABM3"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "fixed-step ODEs with threaded history"
+    },
+    {
+      "name": "Adams-Bashforth-Moulton 4 (PECE)",
+      "identifier": "abm4",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ABM4",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "ABM4"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "fixed-step ODEs with threaded history"
+    },
+    {
+      "name": "SSPRKMSVS32",
+      "identifier": "ssprkmsvs32",
+      "status": "implemented",
+      "wave": 3,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSSPRK/src/ssprk_caches.jl and ssprk_perform_step.jl",
+        "constructor": "SSPRKMSVS32ConstantCache; recurrence in ssprk_perform_step.jl",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPRKMSVS32"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-3-23.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "fixed-step ODEs with threaded history"
+    },
+    {
+      "name": "SSPRKMSVS43",
+      "identifier": "ssprkmsvs43",
+      "status": "implemented",
+      "wave": 3,
+      "source": {
+        "version": "7.8.1",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8 (metapackage git tree)",
+        "file": "lib/OrdinaryDiffEqSSPRK/src/ssprk_caches.jl and ssprk_perform_step.jl",
+        "constructor": "SSPRKMSVS43ConstantCache; recurrence in ssprk_perform_step.jl",
+        "verification": "pinned transcription recorded"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "SSPRKMSVS43"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-3-23.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "fixed-step ODEs with threaded history"
+    },
+    {
+      "name": "Adams-Moulton 2 (implicit)",
+      "identifier": "am2",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "AM2",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "AM2"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff fixed-step ODEs with startup qualification"
+    },
+    {
+      "name": "Adams-Moulton 3 (implicit)",
+      "identifier": "am3",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "AM3",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "AM3"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff fixed-step ODEs with startup qualification"
+    },
+    {
+      "name": "Adams-Moulton 4 (implicit)",
+      "identifier": "am4",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "AM4",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "AM4"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff fixed-step ODEs with startup qualification"
+    },
+    {
+      "name": "RKC1",
+      "identifier": "rkc1",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "RKC1",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "RKC1"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "diffusion-dominated ODEs with stage/spectral bound"
+    },
+    {
+      "name": "RKC2",
+      "identifier": "rkc2",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "RKC2",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "RKC2"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "diffusion-dominated ODEs with stage/spectral bound"
+    },
+    {
+      "name": "RKL2",
+      "identifier": "rkl2",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "RKL2",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "RKL2"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "diffusion-dominated ODEs with stage/spectral bound"
+    },
+    {
+      "name": "ROS3P",
+      "identifier": "ros3p",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "integrateROS3P",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "integrateROS3P"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py",
+        "tests/test_gradients.py"
+      ],
+      "intended_consumer": "stiff ODEs with linearized solves"
+    },
+    {
+      "name": "ETD2RK",
+      "identifier": "etd2rk",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "integrateETD2RK",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "integrateETD2RK"
+      },
+      "coefficient_modifications": [
+        "No additional transformation recorded here; inspect source and numerical record"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py"
+      ],
+      "intended_consumer": "semilinear or Jacobian-linearized stiff ODEs"
+    },
+    {
+      "name": "EXPRB32",
+      "identifier": "exprb32",
+      "status": "implemented",
+      "wave": null,
+      "source": {
+        "version": null,
+        "revision": "711aba8 (local audit baseline, not a primary-source revision)",
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "integrateEXPRB32",
+        "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/integration.py",
+        "constructor": "integrateEXPRB32"
+      },
+      "coefficient_modifications": [
+        "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order"
+      ],
+      "evidence": "docs/research/integrators/notes-index.md",
+      "tests": [
+        "tests/test_convergence.py",
+        "tests/test_tvd.py",
+        "tests/test_step_reuse.py",
+        "tests/test_embedded.py",
+        "tests/test_adaptive.py"
+      ],
+      "intended_consumer": "semilinear or Jacobian-linearized stiff ODEs"
+    }
+  ],
+  "other_dispositions": [
+    {
+      "name": "pRRK22 / pRRK33 / pRRK54",
+      "status": "implemented",
+      "reason": "Standalone drivers depend on kappa and dt; no fixed registry entry",
+      "source": "OrdinaryDiffEq 7.8.1, SSPRK recurrence/algorithm kappa fields",
+      "implementation": "src/warpSPHIntegrators/prrk.py",
+      "tests": "tests/test_prrk.py",
+      "evidence": "docs/research/integrators/notes-3-24.md",
+      "intended_consumer": "parameterized SSP relaxation"
+    },
+    {
+      "name": "SplitEuler",
+      "status": "equivalent",
+      "reason": "Forward Euler applied to the combined RHS f1+f2; historical Symplectic Euler equivalence claim corrected by direct source inspection",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqLowOrderRK/src/split_perform_step.jl, perform_step!(SplitEulerConstantCache / SplitEulerCache)",
+      "implementation": "src/warpSPHIntegrators/butcher.py",
+      "tests": "tests/test_convergence.py",
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "intended_consumer": "split RHS callbacks combined for an explicit Euler step"
+    },
+    {
+      "name": "ARS232 implicit side",
+      "status": "equivalent",
+      "reason": "Stored implicit tableau equals ARS222; both public registrations retained; upstream additive pairs differ",
+      "source": "OrdinaryDiffEq 7.8.1 ARS222Tableau / ARS232Tableau",
+      "implementation": "src/warpSPHIntegrators/dirk.py",
+      "tests": "tests/test_dirk.py",
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "intended_consumer": "compatibility with upstream scheme names"
+    },
+    {
+      "name": "Anas5 / FRK65",
+      "status": "deferred",
+      "reason": "Parameter-dependent fitted tableaus need a runtime parameter/step contract",
+      "source": "OrdinaryDiffEq 7.8.1 LowOrderRK Anas5ConstantCache / FRK65ConstantCache",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/research/integrators/notes-3-26.md",
+      "intended_consumer": "frequency-fitted/parameterized explicit ODE methods"
+    },
+    {
+      "name": "PFRK87",
+      "status": "deferred",
+      "reason": "perform_step! computes nu=omega*dt and runtime coefficients; fixed cache alone does not define the phase-fitted map",
+      "source": "OrdinaryDiffEq 7.8.1 HighOrderRK PFRK87ConstantCache / perform_step!",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "periodic ODEs with a verified frequency/step contract"
+    },
+    {
+      "name": "SDIRK22",
+      "status": "excluded",
+      "reason": "Algorithm constructor returns Trapezoid in pinned algorithms.jl; a compact SDIRK22Tableau exists but does not supply a trustworthy algorithm oracle",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqSDIRK/src/algorithms.jl, SDIRK22(;...) returns Trapezoid; sdirk_tableaus.jl contains SDIRK22Tableau(T)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/research/integrators/notes-3-28.md",
+      "intended_consumer": "none until source/solver is verified"
+    },
+    {
+      "name": "ExplicitTableaus.DormandPrince",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, DormandPrince(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.RKF5",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, RKF5(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.RungeFirst5",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, RungeFirst5(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Cassity5",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, Cassity5(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Lawson5",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, Lawson5(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.LutherKonen5",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, LutherKonen5(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.LutherKonen52",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, LutherKonen52(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.LutherKonen53",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, LutherKonen53(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.PapakostasPapaGeorgiou5",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, PapakostasPapaGeorgiou5(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.PapakostasPapaGeorgiou52",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, PapakostasPapaGeorgiou52(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Tsitouras5",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, Tsitouras5(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.BogakiShampine5",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, BogakiShampine5(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.SharpSmart5",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, SharpSmart5(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.BogakiShampine3",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, BogakiShampine3(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.CashKarp",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, CashKarp(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.RKF4",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, RKF4(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Butcher63",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Butcher63(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Butcher6",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Butcher6(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Butcher62",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Butcher62(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Verner6",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Verner6(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.DormandPrince6",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, DormandPrince6(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.SharpVerner6",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, SharpVerner6(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Verner9162",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Verner9162(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Verner916",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Verner916(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.VernerRobust6",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, VernerRobust6(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.VernerEfficient6",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, VernerEfficient6(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Verner7",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Verner7(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Verner8",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Verner8(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Papakostas6",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Papakostas6(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Lawson6",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Lawson6(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.TsitourasPapakostas6",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, TsitourasPapakostas6(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.DormandLockyerMcCorriganPrince6",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, DormandLockyerMcCorriganPrince6(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.TanakaKasugaYamashitaYazaki6D",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, TanakaKasugaYamashitaYazaki6D(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.TanakaKasugaYamashitaYazaki6C",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, TanakaKasugaYamashitaYazaki6C(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.TanakaKasugaYamashitaYazaki6B",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, TanakaKasugaYamashitaYazaki6B(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.TanakaKasugaYamashitaYazaki6A",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, TanakaKasugaYamashitaYazaki6A(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.MikkawyEisa",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, MikkawyEisa(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Chummund6",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Chummund6(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Chummund62",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Chummund62(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Huta62",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Huta62(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Huta6",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Huta6(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.EnrightVerner7",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, EnrightVerner7(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.VernerRobust7",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, VernerRobust7(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.VernerEfficient7",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, VernerEfficient7(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.SharpVerner7",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, SharpVerner7(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.SharpSmart7",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, SharpSmart7(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.TanakaYamashitaEfficient7",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, TanakaYamashitaEfficient7(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.TanakaYamashitaStable7",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, TanakaYamashitaStable7(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.CooperVerner8",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, CooperVerner8(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.CooperVerner82",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, CooperVerner82(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Curtis8",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, Curtis8(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.EnrightVerner8",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order8_9.jl, EnrightVerner8(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.dverk78",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order8_9.jl, dverk78(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.TsitourasPapakostas8",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order8_9.jl, TsitourasPapakostas8(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.VernerRobust9",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order8_9.jl, VernerRobust9(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.VernerEfficient9",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order8_9.jl, VernerEfficient9(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Sharp9",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order8_9.jl, Sharp9(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Tsitouras9",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order8_9.jl, Tsitouras9(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    },
+    {
+      "name": "ExplicitTableaus.Tsitouras92",
+      "status": "awaiting verification",
+      "reason": "Enumerated primary-source candidate; map equivalence, source estimator and a useful niche have not been established",
+      "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order8_9.jl, Tsitouras92(T,T_time)",
+      "implementation": null,
+      "tests": null,
+      "evidence": "docs/plans/scheme-expansion.md",
+      "intended_consumer": "only after equivalence/order/cost screening"
+    }
+  ]
+}

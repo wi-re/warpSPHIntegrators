@@ -75,7 +75,7 @@ with *fewer* total RHS evaluations than the implicit baselines at the default
 JFNK settings — the implicit methods pay for a Newton+GMRES solve per step,
 while RKL2 pays $s$ cheap evaluations (NOTES.md §3.13,
 `scripts/rkl2_benchmark.py`, `images/rkl2_benchmark.png`;
-`scripts/rkc_benchmark.py`, `images/rkc_benchmark.png`). The crossover: once
+`benchmarks/rkc_benchmark.py`, `docs/assets/rkc_benchmark.png`). The crossover: once
 the problem is stiff enough that the implicit solve converges in a small number
 of Krylov iterations, the implicit methods win; the benchmark plots both sides.
 

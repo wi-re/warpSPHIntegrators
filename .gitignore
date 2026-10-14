@@ -202,3 +202,5 @@ cython_debug/
 *.pt
 *.h5
 **/models/
+# Local probes/output preserved after durable oracles were promoted.
+.tmp/

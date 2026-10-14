@@ -1,0 +1,112 @@
+{
+  "julia/Project.toml": {
+    "original_scratch_path": ".tmp/wave6_julia/Project.toml",
+    "original_sha256": "e51848fa558485f97bd3d077476150f7274f9047231ab9e4907879866500488c",
+    "maintained_sha256": "e51848fa558485f97bd3d077476150f7274f9047231ab9e4907879866500488c"
+  },
+  "julia/Manifest.toml": {
+    "original_scratch_path": ".tmp/wave6_julia/Manifest.toml",
+    "original_sha256": "0a58203fb94b722d3398dbcd01dd757a4a7660111c5d1231287fc3e891c64cbe",
+    "maintained_sha256": "0a58203fb94b722d3398dbcd01dd757a4a7660111c5d1231287fc3e891c64cbe"
+  },
+  "wave1/ode_reference.jl": {
+    "original_scratch_path": ".tmp/ode_reference.jl",
+    "original_sha256": "225bdb5d44adcb728b26d412519b344c99a66146318f51f6dc71df22417c5d89",
+    "maintained_sha256": "a65a5dc11f3f2ec9c9675c7a5c08801a322ebf466082eacf75edf7d24f962969"
+  },
+  "wave1/wave1_tableaus.py": {
+    "original_scratch_path": ".tmp/wave1_tableaus.py",
+    "original_sha256": "24b4b0cd54597f96f479e9962766690918541dfdd182a629285f348442056db2",
+    "maintained_sha256": "001bc1da4db8e47a747216c8f6d0384f606c3bb0aed410a474e96b0fa3fbd291"
+  },
+  "wave6/extract_tableaus.jl": {
+    "original_scratch_path": ".tmp/wave6_julia/extract_tableaus.jl",
+    "original_sha256": "ca11f1d844e4bee0327b53fab9fb79dfb2fb071e90d50b0230babad180f37770",
+    "maintained_sha256": "ca11f1d844e4bee0327b53fab9fb79dfb2fb071e90d50b0230babad180f37770"
+  },
+  "wave6/onestep_check.jl": {
+    "original_scratch_path": ".tmp/wave6_julia/onestep_check.jl",
+    "original_sha256": "82462a46c30586a5e293d7075760fabf3ae97cc5fa88165db134f030471ba168",
+    "maintained_sha256": "c82c089be0edf56b96c9913f05ce42bd5506bfb24060ac59d497fbfd1314ad2b"
+  },
+  "wave6/extract_out.txt": {
+    "original_scratch_path": ".tmp/wave6_julia/extract_out.txt",
+    "original_sha256": "d758c1c361527e9b3e87129f3b102e5ad4a60c0aa93db18208508d8bfb6ae6a2",
+    "maintained_sha256": "d758c1c361527e9b3e87129f3b102e5ad4a60c0aa93db18208508d8bfb6ae6a2"
+  },
+  "wave6/onestep_out.txt": {
+    "original_scratch_path": ".tmp/wave6_julia/onestep_out.txt",
+    "original_sha256": "d8fb345f6f29f901eec08f62a7492a30e4b779b54cf664ae6f47cf6923a779bf",
+    "maintained_sha256": "d8fb345f6f29f901eec08f62a7492a30e4b779b54cf664ae6f47cf6923a779bf"
+  },
+  "wave6/verify_tableaus.py": {
+    "original_scratch_path": ".tmp/wave6_verify_probe.py",
+    "original_sha256": "2dfd74066ff2bd43fe67de2487c4814a01f0fc89146d0081d8e95652d1a0531d",
+    "maintained_sha256": "77c5f8187788bce5f8858cd4e4410f14a61b2d5f360fe2a23f0cb4b5575bfc62"
+  },
+  "wave7/extract_wave7.jl": {
+    "original_scratch_path": ".tmp/wave7_julia/extract_wave7.jl",
+    "original_sha256": "93ee5b2a87342042f59e2ee8b16b3d239926533027cdd2850ff5fa9aa20f9fde",
+    "maintained_sha256": "51a55fb1b1aca46cdb6d247fa8cfe7ae6fec487d42b86d2c80c1f6de0f8f92bd"
+  },
+  "wave7/onestep_wave7.jl": {
+    "original_scratch_path": ".tmp/wave7_julia/onestep_wave7.jl",
+    "original_sha256": "bc0e727796df243a138c96957044a28f51fcd56ce0895c2f6a713d0e37a1066a",
+    "maintained_sha256": "6ba7275995740012bd19bc910d16b238c83456f9bcd907f850f6f1f6d973cbdb"
+  },
+  "wave7/assemble_wave7.py": {
+    "original_scratch_path": ".tmp/wave7_julia/assemble_wave7.py",
+    "original_sha256": "bf6574872d8b886a27a1b380cae1a3b0f54aeb4575220577e27afe5b9c482941",
+    "maintained_sha256": "cddf2afa654e02abe96e06d724c2888ce5fd48cfb373bf346ecb790dcc9bb6ca"
+  },
+  "wave7/crosscheck_wave7.py": {
+    "original_scratch_path": ".tmp/wave7_julia/crosscheck_wave7.py",
+    "original_sha256": "c70f0e4c34359640370a7adaf1d7c3b14dd8b6d9b459efe427f3085fff83bd75",
+    "maintained_sha256": "9f25ccadf5bc0986807fb6753fd4313fff79af6af06627957c0d2cec35d5a55b"
+  },
+  "wave7/extract_wave7_out.txt": {
+    "original_scratch_path": ".tmp/wave7_julia/extract_wave7_out.txt",
+    "original_sha256": "a2086767d20d7c9957e4d997b8072cbdc287b4167815f7412b3aaa68f587aa43",
+    "maintained_sha256": "ad87d7c8319162b8ac0eae9212830e9a6143d54670820fa80f61b1edc66a3eca"
+  },
+  "wave7/onestep_wave7_out.txt": {
+    "original_scratch_path": ".tmp/wave7_julia/onestep_wave7_out.txt",
+    "original_sha256": "380807965f6f8d51e40698d00aa3838b3e221fcd015e39911af8921d10cad320",
+    "maintained_sha256": "380807965f6f8d51e40698d00aa3838b3e221fcd015e39911af8921d10cad320"
+  },
+  "wave7/wave7_tableaus.json": {
+    "original_scratch_path": ".tmp/wave7_julia/wave7_tableaus.json",
+    "original_sha256": "275521e72d3a5bc6af1479706c3fc52efa6e2a21582b1d4df340d1ba9187b6cc",
+    "maintained_sha256": "275521e72d3a5bc6af1479706c3fc52efa6e2a21582b1d4df340d1ba9187b6cc"
+  },
+  "wave8/extract_wave8.jl": {
+    "original_scratch_path": ".tmp/wave8_dirk/extract_wave8.jl",
+    "original_sha256": "055ad5a6167b8c550c2b5ffa795409057316f6065eba4de1537531bf395c8551",
+    "maintained_sha256": "404a9cdf24e29f3dba9cc3e55221da7d36cd71a8fec34856ac40f6bdc1176145"
+  },
+  "wave8/onestep_wave8.jl": {
+    "original_scratch_path": ".tmp/wave8_dirk/onestep_wave8.jl",
+    "original_sha256": "f750e4a5ec9cd3e3d442bb232eac7ad0a1862b3b12d91157fd6cf5319ffbaf56",
+    "maintained_sha256": "8d4c0b71678b77142c51e0a449b8a3ebfe85ef6074109d46c085a9e86ab314ab"
+  },
+  "wave8/exact_values.py": {
+    "original_scratch_path": ".tmp/wave8_dirk/exact_values.py",
+    "original_sha256": "d19135790a3726564db573b35ad4b5212ea604a31f2fc2d8f76f8e2d04c8f2fa",
+    "maintained_sha256": "874f2b4cc77cf4b847fc6efad1525a576a22f5a24fe7eb367faadbf3d578fa28"
+  },
+  "wave8/probe_wave8.py": {
+    "original_scratch_path": ".tmp/wave8_dirk/probe_wave8.py",
+    "original_sha256": "f50069d5628444b3fb83f9eff9793bdb8ab0df8987fb518df983c12b933819fd",
+    "maintained_sha256": "b7f42d42bec32d719a07ff3cd6cd236aee26b86ed268ee01915d6004d75b2570"
+  },
+  "wave8/extract_wave8_out.txt": {
+    "original_scratch_path": ".tmp/wave8_dirk/extract_wave8_out.txt",
+    "original_sha256": "9cfa18b8b7ecde827a5f0a51c58cb7a951c732cdf9428659c132e0776444d83c",
+    "maintained_sha256": "72956fc3d0d892b818ca5caa594972cae5932a2b7723a669633a384f85556efc"
+  },
+  "wave8/onestep_wave8_out.txt": {
+    "original_scratch_path": ".tmp/wave8_dirk/onestep_wave8_out.txt",
+    "original_sha256": "cfe2f00634f9b0907785133c6d82fe35df6acba1e1c0298f7e791bd851842e3f",
+    "maintained_sha256": "ceab53cb25b3eeab304ab5c24b6d449b39d90aebcfacccd2c87bb55882f2b0cf"
+  }
+}

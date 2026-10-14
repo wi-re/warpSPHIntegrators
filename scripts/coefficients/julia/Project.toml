@@ -1,0 +1,7 @@
+[deps]
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+OrdinaryDiffEqFeagin = "101fe9f7-ebb6-4678-b671-3a81e7194747"
+OrdinaryDiffEqHighOrderRK = "d28bc4f8-55e1-4f49-af69-84c1a99f0f58"
+OrdinaryDiffEqLowOrderRK = "1344f307-1e59-4825-a18e-ace9aa3fa4c6"
+OrdinaryDiffEqTsit5 = "b1df2697-797e-41e3-8120-5422d3b24e4a"
+OrdinaryDiffEqVerner = "79d7bb75-1356-48c1-b8c0-6832512096c2"

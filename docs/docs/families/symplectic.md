@@ -116,11 +116,11 @@ force structure of the problem.
 
 On the harmonic oscillator over $T = 100$ at the same cost: RK4's energy drift
 grows **linearly in $T$** (secular), while Velocity Verlet and PEFRL stay flat
-(bounded oscillation) — `images/energy_drift.png`, and
+(bounded oscillation) — the historical energy-drift plot (not retained in this checkout), and
 `tests/test_hamiltonian.py` pins the shadow-Hamiltonian defect at
 $\sim 10^{-13}$ (strict solve). On Kepler, the Verlet family's action-area
 defect is $\sim 10^{-9}$ (default solve) vs. $\sim 10^{-13}$ strict
-(`images/kepler_orbits.png`). The library's only symplectic method **above
+(the historical Kepler-orbit plot (not retained in this checkout)). The library's only symplectic method **above
 order 2** is Gauss-Legendre 2 — see [coupled-rk](coupled-rk).
 
 ## References

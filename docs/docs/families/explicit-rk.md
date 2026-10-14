@@ -559,7 +559,7 @@ mechanisms — see their pages.
 
 ## SSP / TVD landscape (measured)
 
-The registry-wide classification from `scripts/tvd_classifier.py`
+The registry-wide classification from `benchmarks/tvd_classifier.py`
 (NOTES.md §3.11; $n = 64$, step IC, CFL grid to 5):
 
 | Scheme | SSP coefficient $r$ (convex-combination CFL) | Measured per-step TVD CFL |

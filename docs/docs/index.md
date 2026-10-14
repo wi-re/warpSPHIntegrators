@@ -19,13 +19,14 @@ The three documents, in order of depth:
 |---|---|
 | `README.md` (repo root) | The short reference: quick start, the scheme table, API, benchmarks. |
 | This wiki | One page per driver family: the equations, the Butcher tableaus, the stability, the citations, and the test files that pin each claim. |
-| `NOTES.md` (repo root) | The detailed measurement record: derivations, stability-function sweeps, benchmark numbers, design decisions. |
+| [Numerical records](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/research/integrators/notes-index.md) | Dated derivations, stability sweeps, benchmark numbers and design decisions. |
 
-Interactive walkthroughs: `integrators.ipynb` (explicit methods, convergence
-order, stability regions, Hamiltonian energy drift), `viscous_burgers_demo.ipynb`
+Interactive walkthroughs: `examples/notebooks/integrators.ipynb` (explicit methods, convergence
+order, stability regions, Hamiltonian energy drift), `examples/notebooks/viscous_burgers_demo.ipynb`
 (semilinear benchmarks, the nonlinear-solver cost model),
-`jfnk_wave_equation.ipynb` (JFNK on the wave equation). The open-items-only
-roadmap is `IMPLICIT_ROADMAP.md` (repo root).
+`examples/integrations/jfnk_wave_equation.ipynb` (JFNK on the wave equation). The open-items-only
+designs are indexed in [developer documentation](/docs/development);
+`REPOSITORY_PLAN.md` is the current task list.
 
 ## Quick start
 
