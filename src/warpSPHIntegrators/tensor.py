@@ -73,9 +73,11 @@ def tensor_rhs(function, /, **parameters):
     forwarded. Inputs must be treated as read-only, as with the full protocol.
     A structured RHS retains its declared additive/semilinear capabilities.
     """
-    def adapt(fn):
+    def adapt(fn, *, combined=False):
         if fn is None:
             return None
+        if isinstance(fn,RHS) and not combined:
+            return tensor_rhs(fn,**parameters)
         if not callable(fn):
             raise TypeError('tensor_rhs needs a callable or structured RHS')
 
@@ -90,8 +92,8 @@ def tensor_rhs(function, /, **parameters):
         return evaluate
 
     if isinstance(function, RHS):
-        return RHS(combined=adapt(function), **{
+        return RHS(combined=adapt(function,combined=True), **{
             name: adapt(getattr(function, '_' + name)) for name in
-            ('explicit', 'implicit', 'linear', 'nonlinear')
-        })
+            ('explicit', 'implicit', 'linear', 'nonlinear','conservative','dissipative')
+        },autonomous=function.autonomous)
     return adapt(function)

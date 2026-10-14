@@ -17,6 +17,7 @@ from warpSPHIntegrators import (
     solve, Event, save_checkpoint, load_checkpoint,
     stage_block_preconditioner,
     stage_shifted_preconditioner,
+    ConservativeDissipativeRHS, Strang, Yoshida4, LinearExponentialFlow,
 )
 
 
@@ -70,6 +71,15 @@ shifted = getIntegrator('Radau IIA s=2')(TensorState(torch.ones_like(rates)),.01
             'tol':1e-10,'newton_tol':1e-7,'preconditioner':stage_shifted_preconditioner(
                 lambda state,context:lambda shift,v:v/(1+shift*rates))})
 assert shifted.step_status.tolerance_converged and torch.allclose(shifted.state.y,block.state.y,atol=1e-9)
+physical = tensor_rhs(ConservativeDissipativeRHS(lambda t,y:y,
+                SemilinearRHS(linear=lambda t,y:-2*y)))
+split = solve(Strang('RK4',LinearExponentialFlow(torch.tensor([[-2.]],dtype=torch.float64))),
+              TensorState(torch.ones(1,dtype=torch.float64)),.5,physical,dt=.05)
+assert split.successful and abs(split.state.y.item()-math.exp(-.5))<1e-6
+fourth = solve(Yoshida4('Implicit Midpoint',LinearExponentialFlow(torch.tensor([[-2.]],dtype=torch.float64))),
+               TensorState(torch.ones(1,dtype=torch.float64)),.5,physical,dt=.05,
+               solver_opts={'matvec':'jvp','tol':1e-12,'newton_tol':1e-9})
+assert fourth.successful and abs(fourth.state.y.item()-math.exp(-.5))<1e-6
 print(f'Installed wheel {package.__version__}: all modules/exports, py.typed, '
       f'{len(filter_schemes(state_kind="tensor"))} tensor drivers, advanced state protocol, '
-      'adaptive sampling/events, portable restart, stiff bootstrap and stage preconditioning pass')
+      'adaptive sampling/events, portable restart, stiff bootstrap, stage preconditioning and physical splitting pass')

@@ -218,7 +218,8 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
     Sampling never changes the numerical grid: off-grid samples require DP5 dense
     output. Events/checkpoints extend this contract through the helpers below.
     """
-    scheme = scheme if isinstance(scheme, IntegrationScheme) else getIntegrator(scheme)
+    from .splitting import SplitScheme
+    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme)) else getIntegrator(scheme)
     if restart is not None:
         if restart.scheme != scheme.identifier.name:
             raise ValueError('Checkpoint scheme does not match')

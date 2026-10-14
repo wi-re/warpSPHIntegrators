@@ -272,6 +272,9 @@ def initializeSystem(currentSystem, dt, *args, **kwargs):
     # print('Arguments: ', args)
     # print('Kwargs: ', kwargs)
     with record_function("[Integration] Initialize"):
+        if kwargs.get('_composition_substep',False):
+            hook=getattr(currentSystem,'initialize_substep',None)
+            return currentSystem if hook is None else hook(dt,*args,**kwargs)
         return currentSystem.initialize(dt, *args, **kwargs)
 
 def preprocessSystem(currentSystem , initialSystem , dt, *args, **kwargs):
@@ -293,6 +296,8 @@ def finalizeSystem(currentSystem , initialSystem , dt, *args, lastStageSystem=No
     """
     with record_function("[Integration] Finalize"):
         copy_finalized_fields(currentSystem, lastStageSystem)
+        if kwargs.get('_composition_substep',False):
+            return currentSystem
         return currentSystem.finalize(initialSystem, dt, *args, **kwargs)
 
 

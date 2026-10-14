@@ -30,7 +30,7 @@ from .fields import flatten_integrated, unflatten_integrated
 from .util import split_return
 
 #: The capability names an :class:`RHS` may declare.
-CAPABILITIES = frozenset({'explicit', 'implicit', 'linear', 'nonlinear'})
+CAPABILITIES = frozenset({'explicit', 'implicit', 'linear', 'nonlinear', 'conservative', 'dissipative'})
 
 
 # --------------------------------------------------------------------------- #
@@ -139,13 +139,21 @@ class RHS:
 
     def __init__(self, *, combined: Optional[Callable] = None,
                  explicit: Optional[Callable] = None, implicit: Optional[Callable] = None,
-                 linear: Optional[Callable] = None, nonlinear: Optional[Callable] = None):
+                 linear: Optional[Callable] = None, nonlinear: Optional[Callable] = None,
+                 conservative: Optional[Callable] = None, dissipative: Optional[Callable] = None,
+                 autonomous: bool = True):
+        if type(autonomous) is not bool:
+            raise ValueError('autonomous must be a bool')
+        for part in (combined,explicit,implicit,linear,nonlinear,conservative,dissipative):
+            if part is not None and not callable(part):raise TypeError('RHS parts must be callable')
         if combined is not None:
             self._combined = combined
         elif explicit is not None or implicit is not None:
             self._combined = _additive_combined(explicit, implicit)
         elif linear is not None or nonlinear is not None:
             self._combined = _semilinear_combined(linear, nonlinear)
+        elif conservative is not None or dissipative is not None:
+            self._combined = _additive_combined(conservative,dissipative)
         else:
             raise ValueError(
                 'RHS needs a combined callable or at least one split part '
@@ -154,9 +162,12 @@ class RHS:
         self._implicit = implicit
         self._linear = linear
         self._nonlinear = nonlinear
+        self._conservative,self._dissipative = conservative,dissipative
+        self.autonomous = autonomous
         self.provides = frozenset(
             name for name, part in (('explicit', explicit), ('implicit', implicit),
-                                    ('linear', linear), ('nonlinear', nonlinear))
+                                    ('linear', linear), ('nonlinear', nonlinear),
+                                    ('conservative',conservative),('dissipative',dissipative))
             if part is not None)
 
     def __call__(self, state, dt, *args, **kwargs):
@@ -176,6 +187,12 @@ def IMEXRHS(explicit: Callable, implicit: Callable) -> RHS:
     full right-hand side treat the split as fully implicit.
     """
     return RHS(explicit=explicit, implicit=implicit)
+
+
+def ConservativeDissipativeRHS(conservative, dissipative, *, combined=None, autonomous=True):
+    """Declare physical parts; geometry is checked separately, not inferred by name."""
+    if conservative is None or dissipative is None:raise TypeError('Both physical parts are required')
+    return RHS(combined=combined,conservative=conservative,dissipative=dissipative,autonomous=autonomous)
 
 
 def SemilinearRHS(linear: Callable, nonlinear: Optional[Callable] = None,
@@ -214,6 +231,8 @@ class ResolvedRHS:
     implicit: Optional[Callable]
     linear: Optional[Callable]
     nonlinear: Optional[Callable]
+    conservative: Optional[Callable] = None
+    dissipative: Optional[Callable] = None
 
 
 def _synthesize_nonlinear(combined: Callable, linear: Callable) -> Callable:
@@ -238,7 +257,8 @@ def _capability_error(scheme_name: str, f, capability: str):
         f'"{capability}" (e.g. SemilinearRHS(linear=..., ...) for the semilinear split).')
 
 
-def resolve(f, *, scheme_name: str, need_linear: bool = False) -> ResolvedRHS:
+def resolve(f, *, scheme_name: str, need_linear: bool = False,
+            need_conservative=False,need_dissipative=False) -> ResolvedRHS:
     """Resolve the split accessors a driver needs from ``f`` (a plain callable or an :class:`RHS`).
 
     Synthesizes what can be synthesized and requires what cannot:
@@ -276,8 +296,12 @@ def resolve(f, *, scheme_name: str, need_linear: bool = False) -> ResolvedRHS:
         nonlinear = f
     if need_linear and linear is None:
         raise _capability_error(scheme_name, f, 'linear')
+    conservative=f._conservative if isinstance(f,RHS) else None
+    dissipative=f._dissipative if isinstance(f,RHS) else None
+    for needed,part,key in ((need_conservative,conservative,'conservative'),(need_dissipative,dissipative,'dissipative')):
+        if needed and part is None:raise _capability_error(scheme_name,f,key)
     return ResolvedRHS(combined=combined, explicit=explicit, implicit=implicit,
-                       linear=linear, nonlinear=nonlinear)
+                       linear=linear, nonlinear=nonlinear,conservative=conservative,dissipative=dissipative)
 
 
 # --------------------------------------------------------------------------- #
@@ -314,7 +338,7 @@ def _assert_update_zero(label: str, a, atol: float):
 
 
 def check_contracts(rhs: RHS, sample_state, dt, *, rtol: float = 1e-8, atol: float = 1e-10,
-                    seed: int = 0) -> None:
+                    seed: int = 0, require_separable: bool = False) -> None:
     """Verify the declared splits of ``rhs`` are mutually consistent at ``sample_state``.
 
     The three contracts (NOTES S3.12), each checked only for the parts ``rhs``
@@ -335,6 +359,11 @@ def check_contracts(rhs: RHS, sample_state, dt, *, rtol: float = 1e-8, atol: flo
     provides = rhs.provides
 
     f_update, _ = split_return(rhs(sample_state, dt))
+    if {'conservative','dissipative'}<=provides:
+        c,_=split_return(rhs._conservative(sample_state,dt));d,_=split_return(rhs._dissipative(sample_state,dt))
+        _assert_updates_close('conservative + dissipative == f',add_updates(c,d),f_update,rtol,atol)
+        from .splitting import check_split_structure
+        check_split_structure(rhs,sample_state,dt,atol=atol,require_separable=require_separable)
 
     # (1) Additivity.
     if 'explicit' in provides and 'implicit' in provides:
@@ -363,7 +392,7 @@ def check_contracts(rhs: RHS, sample_state, dt, *, rtol: float = 1e-8, atol: flo
 
 
 __all__ = [
-    'CAPABILITIES', 'RHS', 'IMEXRHS', 'SemilinearRHS',
+    'CAPABILITIES', 'RHS', 'IMEXRHS', 'SemilinearRHS', 'ConservativeDissipativeRHS',
     'ResolvedRHS', 'resolve',
     'add_updates', 'sub_updates', 'check_contracts',
 ]
