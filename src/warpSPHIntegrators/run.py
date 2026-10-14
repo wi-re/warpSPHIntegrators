@@ -220,7 +220,8 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
     """
     from .splitting import SplitScheme
     from .generalized_alpha import GeneralizedAlpha
-    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme,GeneralizedAlpha)) else getIntegrator(scheme)
+    from .collocation import Collocation
+    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme,GeneralizedAlpha,Collocation)) else getIntegrator(scheme)
     if restart is not None:
         if restart.scheme != scheme.identifier.name:
             raise ValueError('Checkpoint scheme does not match')

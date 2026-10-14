@@ -138,12 +138,25 @@ repository links and documentation-site gates pass.
 
 Priority: after reliable gates and a concrete benefit. Size: varies by driver.
 
+Execution direction updated 14 October 2026: implement the backend backlog now,
+using understood standalone problems and backend scale tests. Frontend/PESPH
+integration is later application work and does not gate backend implementation.
+Continue between reviewed batches; retain source, numerical, ownership and cost
+gates for each driver. The remaining execution order is higher-stage collocation,
+variable-step multistep, stabilized/linearized/exponential drivers, general RKN,
+extrapolation/maps/switching, then operator/multirate/Taylor interfaces and
+low-storage screening. A source equivalence or unsupported problem-class finding
+must be recorded rather than counted as an implemented method.
+
 - [x] Clear the recorded Phase 6 spatial scale bar with shifted spatial ILU.
   [Follow-up evidence](docs/development/spatial-followup-validation.md).
 - [x] Complete wave 9 companion/source/catalog gates for the first s=3 batch;
   [validation](docs/development/phase8-wave9-validation.md). General downstream
   SPH spatial/field assembly remains application-specific.
-- [ ] Qualify higher-stage Gauss/Radau with their own scale/estimate/source evidence.
+- [x] Qualify higher-stage Gauss/Radau with their own scale/estimate/source evidence.
+  `Collocation(family, stages)` supplies stages 2–9, fixed/adaptive stepping and
+  a real Schur spatial-preconditioner interface; [backend evidence](docs/development/higher-collocation-validation.md).
+  Source order-switching and filtered controllers remain distinct driver work.
 - [x] Re-enumerate waves 10–11 against pinned sources and split simple tableaus
   from history, recurrence, or driver changes. Variable coefficients are primarily
   a timestep/history issue; do not assume fixed-step methods exclude non-autonomous

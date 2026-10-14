@@ -52,7 +52,7 @@ from .solvers import (NonlinearSolver, FixedPointSolver, RelaxedFixedPointSolver
                      SolveDiagnostics, SolveResult, SolverOptions)
 from .jfnk import (JFNKSolver, fd_matvec, jvp_matvec, gmres,
                   identity_preconditioner, diagonal_preconditioner)
-from .preconditioners import stage_block_preconditioner, stage_shifted_preconditioner
+from .preconditioners import stage_block_preconditioner, stage_shifted_preconditioner, stage_schur_preconditioner
 from .bdf import BDF1, BDF2, BDF3, BDF4, BDF5
 from .multistep import AM2, AM3, AM4
 from .imex import IMEXEuler
@@ -61,6 +61,7 @@ from .rhs import (RHS, IMEXRHS, SemilinearRHS, resolve, ResolvedRHS,
                  check_contracts, add_updates, sub_updates, CAPABILITIES)
 from .newmark import newmark, newmark_average_acceleration, newmark_linear_acceleration
 from .generalized_alpha import GeneralizedAlpha, GeneralizedAlphaMemory
+from .collocation import Collocation, collocation_tableau
 from .dirk import (TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA,
                    Kvaerno3, Kvaerno4, Kvaerno5, KenCarp3, KenCarp4, KenCarp47, KenCarp5,
                    KenCarp58, ESDIRK325L2SA, ESDIRK436L2SA2, ESDIRK437L2SA, ESDIRK547L2SA2,
@@ -111,11 +112,12 @@ from .drift import DriftField, drift_fields, drift_fields_active
 __version__ = "0.6.1"
 
 __all__ = [
+    "Collocation", "collocation_tableau",
     "GeneralizedAlpha", "GeneralizedAlphaMemory",
     "gaussLegendre3", "radauIia3",
     "ConservativeDissipativeRHS", "compose", "LieTrotter", "Strang", "Yoshida4", "SplitScheme",
     "LinearExponentialFlow", "classify_separable", "SeparabilityResult",
-    "stage_block_preconditioner", "stage_shifted_preconditioner",
+    "stage_block_preconditioner", "stage_shifted_preconditioner", "stage_schur_preconditioner",
     "save_checkpoint", "load_checkpoint",
     "solve", "assess_step", "snapshot_state", "StepStatus", "StepRecord",
     "RunSample", "RunResult", "RunError", "RunCheckpoint", "Event", "EventHit",

@@ -20,6 +20,7 @@
 - [Phase 8 first wave-9 batch and waves 10–11 source audit](phase8-wave9-validation.md)
 - [Known structural consumer, generalized-alpha prototype and source audit](structural-demo-validation.md)
 - [Generalized-alpha package driver, acceleration memory and consumer/work gates](generalized-alpha-validation.md)
+- [Higher-stage collocation, source oracle and real Schur spatial backend](higher-collocation-validation.md)
 - [Examples](../../examples/README.md) and [benchmarks](../../benchmarks/README.md)
 - [Coefficient extraction/oracle tools](../../scripts/coefficients/README.md)
 

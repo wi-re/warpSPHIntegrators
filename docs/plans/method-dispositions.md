@@ -15,6 +15,9 @@ Yoshida coefficient source and toy validation are recorded in
 The Phase 8 `GeneralizedAlpha(rho_inf)` factory is also outside that fixed ledger;
 its classical parameter source, accepted acceleration, structural consumer and
 numerical/work gates are recorded in [the driver validation](../development/generalized-alpha-validation.md).
+The `Collocation(family, stages)` factory extends Gauss/Radau stages 2–9 outside
+the fixed ledger. Its pinned coefficient/step oracle and Schur spatial backend
+are recorded in [the higher-stage validation](../development/higher-collocation-validation.md).
 
 ## Source pin and transformations
 

@@ -33,6 +33,15 @@ accepted by `solve`. `LinearExponentialFlow` supports small dense linear flows;
 `classify_separable` returns a `SeparabilityResult` with measured local diagnostics.
 See [the runnable guide and qualifications](operator-splitting).
 
+## Stage-parameterized collocation
+
+`Collocation(family='gauss', stages=4)` binds a stage-parameterized block driver
+for Gauss/Radau, with stage counts 2–9 and estimate-controlled `solve` support.
+`collocation_tableau` exposes its immutable float64 coefficients.
+`stage_schur_preconditioner` binds a Schur decomposition provider and a factory
+for shifted solves plus a matching frozen Jacobian action. See
+[the coupled backend guide](families/coupled-rk).
+
 ## Second-order numerical damping
 
 `GeneralizedAlpha(rho_inf=.5)` binds a classical fixed-step mechanics driver.

@@ -45,7 +45,7 @@ CATEGORIES = {
     'multistep': ['test_multistep.py'],
     'ark': ['test_ark.py'],
     'imex': ['test_imex.py', 'test_imexmultistep.py'],
-    'fullyimplicit': ['test_fullyimplicit.py','test_implicit_prototypes.py','test_firk_wave9.py'],
+    'fullyimplicit': ['test_fullyimplicit.py','test_implicit_prototypes.py','test_firk_wave9.py','test_collocation_factory.py'],
     'exponential': ['test_exponential.py'],
     'rosenbrock': ['test_rosenbrock.py'],
     'rkc': ['test_rkc.py'],

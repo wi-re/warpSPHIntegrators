@@ -1,0 +1,1635 @@
+{
+  "device": "cpu",
+  "dtype": "float64",
+  "numerical_threads": 1,
+  "parallel_cases": 3,
+  "contract": "Each step meets tolerance; <=120 Krylov iterations; <=256 MiB additional RSS; <=3x s=3 RHS work per stage. Timings include concurrent-case contention.",
+  "qualification": "Concrete backend stencil assembly and SciPy benchmark-only real Schur / shifted ILU; no frontend dependency. Stage count is parameterized; source coefficients verified for every supported count.",
+  "passed": true,
+  "cases": [
+    {
+      "family": "gauss",
+      "stages": 3,
+      "order": 6,
+      "problem": "reaction",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        9.0,
+        8.0,
+        6.0
+      ],
+      "rhs_calls": [
+        42,
+        39,
+        33
+      ],
+      "median_seconds": 0.02755449479445815,
+      "additional_peak_mib": 150.296875,
+      "factorization": {
+        "factorizations": 27,
+        "factor_seconds": 0.0015186043456196785,
+        "factor_nnz": 258
+      },
+      "rhs_ratio_per_stage": 1.0,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 3,
+      "order": 6,
+      "problem": "reaction",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        9.0,
+        8.0,
+        7.0
+      ],
+      "rhs_calls": [
+        42,
+        39,
+        36
+      ],
+      "median_seconds": 0.02984823565930128,
+      "additional_peak_mib": 151.4765625,
+      "factorization": {
+        "factorizations": 27,
+        "factor_seconds": 0.0027593718841671944,
+        "factor_nnz": 953
+      },
+      "rhs_ratio_per_stage": 1.0,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 3,
+      "order": 6,
+      "problem": "reaction",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        9.0,
+        8.0,
+        8.0
+      ],
+      "rhs_calls": [
+        42,
+        39,
+        39
+      ],
+      "median_seconds": 0.034591550938785076,
+      "additional_peak_mib": 158.734375,
+      "factorization": {
+        "factorizations": 27,
+        "factor_seconds": 0.008118289988487959,
+        "factor_nnz": 3736
+      },
+      "rhs_ratio_per_stage": 1.0,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 3,
+      "order": 6,
+      "problem": "diffusion",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        7.0,
+        6.0,
+        4.0
+      ],
+      "rhs_calls": [
+        36,
+        33,
+        27
+      ],
+      "median_seconds": 0.026324387174099684,
+      "additional_peak_mib": 155.359375,
+      "factorization": {
+        "factorizations": 27,
+        "factor_seconds": 0.0016381596215069294,
+        "factor_nnz": 275
+      },
+      "rhs_ratio_per_stage": 1.0,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 3,
+      "order": 6,
+      "problem": "diffusion",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        8.0,
+        7.0,
+        6.0
+      ],
+      "rhs_calls": [
+        39,
+        36,
+        33
+      ],
+      "median_seconds": 0.03490204666741192,
+      "additional_peak_mib": 149.64453125,
+      "factorization": {
+        "factorizations": 27,
+        "factor_seconds": 0.003492868971079588,
+        "factor_nnz": 1043
+      },
+      "rhs_ratio_per_stage": 1.0,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 3,
+      "order": 6,
+      "problem": "diffusion",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        9.0,
+        8.0,
+        8.0
+      ],
+      "rhs_calls": [
+        42,
+        39,
+        39
+      ],
+      "median_seconds": 0.04324364638887346,
+      "additional_peak_mib": 153.07421875,
+      "factorization": {
+        "factorizations": 27,
+        "factor_seconds": 0.009030828718096018,
+        "factor_nnz": 4135
+      },
+      "rhs_ratio_per_stage": 1.0,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 4,
+      "order": 8,
+      "problem": "reaction",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        9.0,
+        7.0,
+        6.0
+      ],
+      "rhs_calls": [
+        56,
+        48,
+        44
+      ],
+      "median_seconds": 0.044428709894418716,
+      "additional_peak_mib": 155.60546875,
+      "factorization": {
+        "factorizations": 36,
+        "factor_seconds": 0.002253178972750902,
+        "factor_nnz": 258
+      },
+      "rhs_ratio_per_stage": 0.9230769230769231,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 4,
+      "order": 8,
+      "problem": "reaction",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        9.0,
+        7.0,
+        7.0
+      ],
+      "rhs_calls": [
+        56,
+        48,
+        48
+      ],
+      "median_seconds": 0.04903667001053691,
+      "additional_peak_mib": 143.53515625,
+      "factorization": {
+        "factorizations": 36,
+        "factor_seconds": 0.004231949336826801,
+        "factor_nnz": 952
+      },
+      "rhs_ratio_per_stage": 0.9230769230769231,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 4,
+      "order": 8,
+      "problem": "reaction",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        10.0,
+        8.0,
+        7.0
+      ],
+      "rhs_calls": [
+        60,
+        52,
+        48
+      ],
+      "median_seconds": 0.05711043509654701,
+      "additional_peak_mib": 148.04296875,
+      "factorization": {
+        "factorizations": 36,
+        "factor_seconds": 0.011949135921895504,
+        "factor_nnz": 3729
+      },
+      "rhs_ratio_per_stage": 1.0,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 4,
+      "order": 8,
+      "problem": "diffusion",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        7.0,
+        5.0,
+        4.0
+      ],
+      "rhs_calls": [
+        48,
+        40,
+        36
+      ],
+      "median_seconds": 0.03372433944605291,
+      "additional_peak_mib": 155.359375,
+      "factorization": {
+        "factorizations": 36,
+        "factor_seconds": 0.0020270938985049725,
+        "factor_nnz": 275
+      },
+      "rhs_ratio_per_stage": 0.9090909090909091,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 4,
+      "order": 8,
+      "problem": "diffusion",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        8.0,
+        7.0,
+        5.0
+      ],
+      "rhs_calls": [
+        52,
+        48,
+        40
+      ],
+      "median_seconds": 0.034240359673276544,
+      "additional_peak_mib": 156.49609375,
+      "factorization": {
+        "factorizations": 36,
+        "factor_seconds": 0.003485973458737135,
+        "factor_nnz": 1043
+      },
+      "rhs_ratio_per_stage": 1.0,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 4,
+      "order": 8,
+      "problem": "diffusion",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        10.0,
+        8.0,
+        7.0
+      ],
+      "rhs_calls": [
+        60,
+        52,
+        48
+      ],
+      "median_seconds": 0.05512829730287194,
+      "additional_peak_mib": 160.29296875,
+      "factorization": {
+        "factorizations": 36,
+        "factor_seconds": 0.011568506248295307,
+        "factor_nnz": 4135
+      },
+      "rhs_ratio_per_stage": 1.0,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 5,
+      "order": 10,
+      "problem": "reaction",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        9.0,
+        7.0,
+        6.0
+      ],
+      "rhs_calls": [
+        70,
+        60,
+        55
+      ],
+      "median_seconds": 0.04158795555122197,
+      "additional_peak_mib": 155.60546875,
+      "factorization": {
+        "factorizations": 45,
+        "factor_seconds": 0.002157016657292843,
+        "factor_nnz": 257
+      },
+      "rhs_ratio_per_stage": 0.9230769230769231,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 5,
+      "order": 10,
+      "problem": "reaction",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        10.0,
+        7.0,
+        6.0
+      ],
+      "rhs_calls": [
+        75,
+        60,
+        55
+      ],
+      "median_seconds": 0.057296727085486054,
+      "additional_peak_mib": 156.73046875,
+      "factorization": {
+        "factorizations": 45,
+        "factor_seconds": 0.004993355832993984,
+        "factor_nnz": 950
+      },
+      "rhs_ratio_per_stage": 0.9230769230769231,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 5,
+      "order": 10,
+      "problem": "reaction",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        10.0,
+        8.0,
+        7.0
+      ],
+      "rhs_calls": [
+        75,
+        65,
+        60
+      ],
+      "median_seconds": 0.07178646745160222,
+      "additional_peak_mib": 162.05859375,
+      "factorization": {
+        "factorizations": 45,
+        "factor_seconds": 0.014676285441964865,
+        "factor_nnz": 3719
+      },
+      "rhs_ratio_per_stage": 1.0,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 5,
+      "order": 10,
+      "problem": "diffusion",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        7.0,
+        5.0,
+        4.0
+      ],
+      "rhs_calls": [
+        60,
+        50,
+        45
+      ],
+      "median_seconds": 0.04073704103939235,
+      "additional_peak_mib": 155.52734375,
+      "factorization": {
+        "factorizations": 45,
+        "factor_seconds": 0.00231470400467515,
+        "factor_nnz": 275
+      },
+      "rhs_ratio_per_stage": 0.9090909090909091,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 5,
+      "order": 10,
+      "problem": "diffusion",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        9.0,
+        6.0,
+        5.0
+      ],
+      "rhs_calls": [
+        70,
+        55,
+        50
+      ],
+      "median_seconds": 0.049917517928406596,
+      "additional_peak_mib": 156.80859375,
+      "factorization": {
+        "factorizations": 45,
+        "factor_seconds": 0.0048841554671525955,
+        "factor_nnz": 1043
+      },
+      "rhs_ratio_per_stage": 0.9166666666666666,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 5,
+      "order": 10,
+      "problem": "diffusion",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        10.0,
+        8.0,
+        7.0
+      ],
+      "rhs_calls": [
+        75,
+        65,
+        60
+      ],
+      "median_seconds": 0.07488747802563012,
+      "additional_peak_mib": 161.98046875,
+      "factorization": {
+        "factorizations": 45,
+        "factor_seconds": 0.014802492689341307,
+        "factor_nnz": 4134
+      },
+      "rhs_ratio_per_stage": 1.0,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 7,
+      "order": 14,
+      "problem": "reaction",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        10.0,
+        7.0,
+        4.0
+      ],
+      "rhs_calls": [
+        105,
+        84,
+        56
+      ],
+      "median_seconds": 0.07465399242937565,
+      "additional_peak_mib": 155.71484375,
+      "factorization": {
+        "factorizations": 56,
+        "factor_seconds": 0.003022522199898958,
+        "factor_nnz": 255
+      },
+      "rhs_ratio_per_stage": 0.9230769230769231,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 7,
+      "order": 14,
+      "problem": "reaction",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        10.0,
+        7.0,
+        5.0
+      ],
+      "rhs_calls": [
+        105,
+        84,
+        63
+      ],
+      "median_seconds": 0.06245455634780228,
+      "additional_peak_mib": 157.10546875,
+      "factorization": {
+        "factorizations": 56,
+        "factor_seconds": 0.005342008080333471,
+        "factor_nnz": 942
+      },
+      "rhs_ratio_per_stage": 0.9230769230769231,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 7,
+      "order": 14,
+      "problem": "reaction",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        10.0,
+        7.0,
+        5.0
+      ],
+      "rhs_calls": [
+        105,
+        84,
+        63
+      ],
+      "median_seconds": 0.08908580360002816,
+      "additional_peak_mib": 164.68359375,
+      "factorization": {
+        "factorizations": 56,
+        "factor_seconds": 0.0179350757971406,
+        "factor_nnz": 3691
+      },
+      "rhs_ratio_per_stage": 0.9230769230769231,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 7,
+      "order": 14,
+      "problem": "diffusion",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        8.0,
+        5.0,
+        3.0
+      ],
+      "rhs_calls": [
+        91,
+        70,
+        49
+      ],
+      "median_seconds": 0.056286972016096115,
+      "additional_peak_mib": 155.60546875,
+      "factorization": {
+        "factorizations": 56,
+        "factor_seconds": 0.002841643989086151,
+        "factor_nnz": 275
+      },
+      "rhs_ratio_per_stage": 0.9090909090909091,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 7,
+      "order": 14,
+      "problem": "diffusion",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        9.0,
+        6.0,
+        4.0
+      ],
+      "rhs_calls": [
+        98,
+        77,
+        56
+      ],
+      "median_seconds": 0.0702783321030438,
+      "additional_peak_mib": 157.37109375,
+      "factorization": {
+        "factorizations": 56,
+        "factor_seconds": 0.005891337525099516,
+        "factor_nnz": 1043
+      },
+      "rhs_ratio_per_stage": 0.9166666666666666,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 7,
+      "order": 14,
+      "problem": "diffusion",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        10.0,
+        7.0,
+        6.0
+      ],
+      "rhs_calls": [
+        105,
+        84,
+        70
+      ],
+      "median_seconds": 0.09447669587098062,
+      "additional_peak_mib": 161.98046875,
+      "factorization": {
+        "factorizations": 56,
+        "factor_seconds": 0.01713478844612837,
+        "factor_nnz": 4133
+      },
+      "rhs_ratio_per_stage": 0.9230769230769231,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 9,
+      "order": 18,
+      "problem": "reaction",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        10.0,
+        5.0,
+        4.0
+      ],
+      "rhs_calls": [
+        135,
+        81,
+        72
+      ],
+      "median_seconds": 0.08761068945750594,
+      "additional_peak_mib": 155.98046875,
+      "factorization": {
+        "factorizations": 63,
+        "factor_seconds": 0.003296134527772665,
+        "factor_nnz": 253
+      },
+      "rhs_ratio_per_stage": 0.6923076923076923,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 9,
+      "order": 18,
+      "problem": "reaction",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        10.0,
+        6.0,
+        5.0
+      ],
+      "rhs_calls": [
+        135,
+        90,
+        81
+      ],
+      "median_seconds": 0.10705357789993286,
+      "additional_peak_mib": 158.12109375,
+      "factorization": {
+        "factorizations": 63,
+        "factor_seconds": 0.007012411952018738,
+        "factor_nnz": 934
+      },
+      "rhs_ratio_per_stage": 0.7692307692307693,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 9,
+      "order": 18,
+      "problem": "reaction",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        10.0,
+        6.0,
+        5.0
+      ],
+      "rhs_calls": [
+        135,
+        90,
+        81
+      ],
+      "median_seconds": 0.08768731635063887,
+      "additional_peak_mib": 166.48046875,
+      "factorization": {
+        "factorizations": 63,
+        "factor_seconds": 0.01760773127898574,
+        "factor_nnz": 3655
+      },
+      "rhs_ratio_per_stage": 0.7692307692307693,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 9,
+      "order": 18,
+      "problem": "diffusion",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        8.0,
+        4.0,
+        3.0
+      ],
+      "rhs_calls": [
+        117,
+        81,
+        63
+      ],
+      "median_seconds": 0.05404740315862,
+      "additional_peak_mib": 155.8515625,
+      "factorization": {
+        "factorizations": 72,
+        "factor_seconds": 0.0033027520403265953,
+        "factor_nnz": 275
+      },
+      "rhs_ratio_per_stage": 0.8181818181818182,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 9,
+      "order": 18,
+      "problem": "diffusion",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        9.0,
+        6.0,
+        4.0
+      ],
+      "rhs_calls": [
+        126,
+        99,
+        72
+      ],
+      "median_seconds": 0.10001523909159005,
+      "additional_peak_mib": 158.12109375,
+      "factorization": {
+        "factorizations": 72,
+        "factor_seconds": 0.007726386655122042,
+        "factor_nnz": 1043
+      },
+      "rhs_ratio_per_stage": 0.9166666666666666,
+      "passed": true
+    },
+    {
+      "family": "gauss",
+      "stages": 9,
+      "order": 18,
+      "problem": "diffusion",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        10.0,
+        7.0,
+        5.0
+      ],
+      "rhs_calls": [
+        135,
+        108,
+        81
+      ],
+      "median_seconds": 0.12762495200149715,
+      "additional_peak_mib": 167.30859375,
+      "factorization": {
+        "factorizations": 72,
+        "factor_seconds": 0.022943103685975075,
+        "factor_nnz": 4133
+      },
+      "rhs_ratio_per_stage": 0.9230769230769231,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 3,
+      "order": 5,
+      "problem": "reaction",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        9.0,
+        5.0,
+        5.0
+      ],
+      "rhs_calls": [
+        43,
+        28,
+        28
+      ],
+      "median_seconds": 0.0238311062566936,
+      "additional_peak_mib": 155.07421875,
+      "factorization": {
+        "factorizations": 21,
+        "factor_seconds": 0.0012840628623962402,
+        "factor_nnz": 258
+      },
+      "rhs_ratio_per_stage": 1.0,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 3,
+      "order": 5,
+      "problem": "reaction",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        9.0,
+        5.0,
+        5.0
+      ],
+      "rhs_calls": [
+        43,
+        28,
+        28
+      ],
+      "median_seconds": 0.02457523252815008,
+      "additional_peak_mib": 156.19921875,
+      "factorization": {
+        "factorizations": 21,
+        "factor_seconds": 0.0024646460078656673,
+        "factor_nnz": 956
+      },
+      "rhs_ratio_per_stage": 1.0,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 3,
+      "order": 5,
+      "problem": "reaction",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        9.0,
+        6.0,
+        5.0
+      ],
+      "rhs_calls": [
+        43,
+        31,
+        28
+      ],
+      "median_seconds": 0.029004413867369294,
+      "additional_peak_mib": 159.38671875,
+      "factorization": {
+        "factorizations": 21,
+        "factor_seconds": 0.0070552523247897625,
+        "factor_nnz": 3745
+      },
+      "rhs_ratio_per_stage": 1.0,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 3,
+      "order": 5,
+      "problem": "diffusion",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        7.0,
+        3.0,
+        3.0
+      ],
+      "rhs_calls": [
+        37,
+        22,
+        22
+      ],
+      "median_seconds": 0.01650870288722217,
+      "additional_peak_mib": 155.26171875,
+      "factorization": {
+        "factorizations": 21,
+        "factor_seconds": 0.0012413356453180313,
+        "factor_nnz": 275
+      },
+      "rhs_ratio_per_stage": 1.0,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 3,
+      "order": 5,
+      "problem": "diffusion",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        8.0,
+        4.0,
+        4.0
+      ],
+      "rhs_calls": [
+        40,
+        25,
+        25
+      ],
+      "median_seconds": 0.021432369714602828,
+      "additional_peak_mib": 156.19921875,
+      "factorization": {
+        "factorizations": 21,
+        "factor_seconds": 0.002447756938636303,
+        "factor_nnz": 1043
+      },
+      "rhs_ratio_per_stage": 1.0,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 3,
+      "order": 5,
+      "problem": "diffusion",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        9.0,
+        6.0,
+        5.0
+      ],
+      "rhs_calls": [
+        43,
+        31,
+        28
+      ],
+      "median_seconds": 0.02957438281737268,
+      "additional_peak_mib": 159.19921875,
+      "factorization": {
+        "factorizations": 21,
+        "factor_seconds": 0.007057467009872198,
+        "factor_nnz": 4135
+      },
+      "rhs_ratio_per_stage": 1.0,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 4,
+      "order": 7,
+      "problem": "reaction",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        9.0,
+        5.0,
+        5.0
+      ],
+      "rhs_calls": [
+        57,
+        37,
+        37
+      ],
+      "median_seconds": 0.0332160834223032,
+      "additional_peak_mib": 155.63671875,
+      "factorization": {
+        "factorizations": 28,
+        "factor_seconds": 0.0017572217620909214,
+        "factor_nnz": 258
+      },
+      "rhs_ratio_per_stage": 0.9910714285714285,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 4,
+      "order": 7,
+      "problem": "reaction",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        9.0,
+        5.0,
+        5.0
+      ],
+      "rhs_calls": [
+        57,
+        37,
+        37
+      ],
+      "median_seconds": 0.033276978181675076,
+      "additional_peak_mib": 156.65234375,
+      "factorization": {
+        "factorizations": 28,
+        "factor_seconds": 0.003199376165866852,
+        "factor_nnz": 955
+      },
+      "rhs_ratio_per_stage": 0.9910714285714285,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 4,
+      "order": 7,
+      "problem": "reaction",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        10.0,
+        6.0,
+        5.0
+      ],
+      "rhs_calls": [
+        61,
+        41,
+        37
+      ],
+      "median_seconds": 0.03914899518713355,
+      "additional_peak_mib": 159.08984375,
+      "factorization": {
+        "factorizations": 28,
+        "factor_seconds": 0.009018020704388618,
+        "factor_nnz": 3738
+      },
+      "rhs_ratio_per_stage": 0.9919354838709676,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 4,
+      "order": 7,
+      "problem": "diffusion",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        7.0,
+        3.0,
+        3.0
+      ],
+      "rhs_calls": [
+        49,
+        29,
+        29
+      ],
+      "median_seconds": 0.02337218658067286,
+      "additional_peak_mib": 155.63671875,
+      "factorization": {
+        "factorizations": 28,
+        "factor_seconds": 0.0017228308133780956,
+        "factor_nnz": 275
+      },
+      "rhs_ratio_per_stage": 0.9886363636363636,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 4,
+      "order": 7,
+      "problem": "diffusion",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        8.0,
+        4.0,
+        4.0
+      ],
+      "rhs_calls": [
+        53,
+        33,
+        33
+      ],
+      "median_seconds": 0.029232382774353027,
+      "additional_peak_mib": 156.46484375,
+      "factorization": {
+        "factorizations": 28,
+        "factor_seconds": 0.003136353101581335,
+        "factor_nnz": 1043
+      },
+      "rhs_ratio_per_stage": 0.9899999999999999,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 4,
+      "order": 7,
+      "problem": "diffusion",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        10.0,
+        6.0,
+        5.0
+      ],
+      "rhs_calls": [
+        61,
+        41,
+        37
+      ],
+      "median_seconds": 0.038706384133547544,
+      "additional_peak_mib": 159.27734375,
+      "factorization": {
+        "factorizations": 28,
+        "factor_seconds": 0.008897177875041962,
+        "factor_nnz": 4135
+      },
+      "rhs_ratio_per_stage": 0.9919354838709676,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 5,
+      "order": 9,
+      "problem": "reaction",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        9.0,
+        5.0,
+        5.0
+      ],
+      "rhs_calls": [
+        71,
+        46,
+        46
+      ],
+      "median_seconds": 0.03234115079976618,
+      "additional_peak_mib": 155.63671875,
+      "factorization": {
+        "factorizations": 35,
+        "factor_seconds": 0.0018057776615023613,
+        "factor_nnz": 258
+      },
+      "rhs_ratio_per_stage": 0.9857142857142855,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 5,
+      "order": 9,
+      "problem": "reaction",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        10.0,
+        5.0,
+        5.0
+      ],
+      "rhs_calls": [
+        76,
+        46,
+        46
+      ],
+      "median_seconds": 0.03329531289637089,
+      "additional_peak_mib": 156.65234375,
+      "factorization": {
+        "factorizations": 35,
+        "factor_seconds": 0.003445178270339966,
+        "factor_nnz": 952
+      },
+      "rhs_ratio_per_stage": 0.9857142857142855,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 5,
+      "order": 9,
+      "problem": "reaction",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        10.0,
+        6.0,
+        5.0
+      ],
+      "rhs_calls": [
+        76,
+        51,
+        46
+      ],
+      "median_seconds": 0.03939890395849943,
+      "additional_peak_mib": 161.71484375,
+      "factorization": {
+        "factorizations": 35,
+        "factor_seconds": 0.010004632640630007,
+        "factor_nnz": 3729
+      },
+      "rhs_ratio_per_stage": 0.9870967741935482,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 5,
+      "order": 9,
+      "problem": "diffusion",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        7.0,
+        3.0,
+        3.0
+      ],
+      "rhs_calls": [
+        61,
+        36,
+        36
+      ],
+      "median_seconds": 0.02817386481910944,
+      "additional_peak_mib": 155.44921875,
+      "factorization": {
+        "factorizations": 35,
+        "factor_seconds": 0.0019435500726103783,
+        "factor_nnz": 275
+      },
+      "rhs_ratio_per_stage": 0.9818181818181819,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 5,
+      "order": 9,
+      "problem": "diffusion",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        9.0,
+        4.0,
+        4.0
+      ],
+      "rhs_calls": [
+        71,
+        41,
+        41
+      ],
+      "median_seconds": 0.03741993708536029,
+      "additional_peak_mib": 157.08984375,
+      "factorization": {
+        "factorizations": 35,
+        "factor_seconds": 0.003976435400545597,
+        "factor_nnz": 1043
+      },
+      "rhs_ratio_per_stage": 0.9839999999999999,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 5,
+      "order": 9,
+      "problem": "diffusion",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        10.0,
+        6.0,
+        5.0
+      ],
+      "rhs_calls": [
+        76,
+        51,
+        46
+      ],
+      "median_seconds": 0.03888979530893266,
+      "additional_peak_mib": 161.71484375,
+      "factorization": {
+        "factorizations": 35,
+        "factor_seconds": 0.009953066240996122,
+        "factor_nnz": 4135
+      },
+      "rhs_ratio_per_stage": 0.9870967741935482,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 7,
+      "order": 13,
+      "problem": "reaction",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        10.0,
+        5.0,
+        4.0
+      ],
+      "rhs_calls": [
+        106,
+        64,
+        57
+      ],
+      "median_seconds": 0.06072891689836979,
+      "additional_peak_mib": 155.82421875,
+      "factorization": {
+        "factorizations": 49,
+        "factor_seconds": 0.002581921871751547,
+        "factor_nnz": 256
+      },
+      "rhs_ratio_per_stage": 0.9795918367346937,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 7,
+      "order": 13,
+      "problem": "reaction",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        10.0,
+        5.0,
+        5.0
+      ],
+      "rhs_calls": [
+        106,
+        64,
+        64
+      ],
+      "median_seconds": 0.05414936994202435,
+      "additional_peak_mib": 157.1640625,
+      "factorization": {
+        "factorizations": 49,
+        "factor_seconds": 0.005155150778591633,
+        "factor_nnz": 946
+      },
+      "rhs_ratio_per_stage": 0.9795918367346937,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 7,
+      "order": 13,
+      "problem": "reaction",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        10.0,
+        6.0,
+        5.0
+      ],
+      "rhs_calls": [
+        106,
+        71,
+        64
+      ],
+      "median_seconds": 0.06497140089049935,
+      "additional_peak_mib": 162.08984375,
+      "factorization": {
+        "factorizations": 49,
+        "factor_seconds": 0.013538812287151814,
+        "factor_nnz": 3702
+      },
+      "rhs_ratio_per_stage": 0.9815668202764976,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 7,
+      "order": 13,
+      "problem": "diffusion",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        8.0,
+        3.0,
+        3.0
+      ],
+      "rhs_calls": [
+        92,
+        50,
+        50
+      ],
+      "median_seconds": 0.036601518746465445,
+      "additional_peak_mib": 155.26171875,
+      "factorization": {
+        "factorizations": 49,
+        "factor_seconds": 0.0024834019131958485,
+        "factor_nnz": 275
+      },
+      "rhs_ratio_per_stage": 0.9740259740259741,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 7,
+      "order": 13,
+      "problem": "diffusion",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        9.0,
+        4.0,
+        4.0
+      ],
+      "rhs_calls": [
+        99,
+        57,
+        57
+      ],
+      "median_seconds": 0.04416139656677842,
+      "additional_peak_mib": 157.33984375,
+      "factorization": {
+        "factorizations": 49,
+        "factor_seconds": 0.004911292809993029,
+        "factor_nnz": 1043
+      },
+      "rhs_ratio_per_stage": 0.977142857142857,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 7,
+      "order": 13,
+      "problem": "diffusion",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        10.0,
+        6.0,
+        5.0
+      ],
+      "rhs_calls": [
+        106,
+        71,
+        64
+      ],
+      "median_seconds": 0.08268716163001955,
+      "additional_peak_mib": 162.46484375,
+      "factorization": {
+        "factorizations": 49,
+        "factor_seconds": 0.015393845736980438,
+        "factor_nnz": 4133
+      },
+      "rhs_ratio_per_stage": 0.9815668202764976,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 9,
+      "order": 17,
+      "problem": "reaction",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        10.0,
+        5.0,
+        4.0
+      ],
+      "rhs_calls": [
+        136,
+        82,
+        73
+      ],
+      "median_seconds": 0.07882961188443005,
+      "additional_peak_mib": 156.01171875,
+      "factorization": {
+        "factorizations": 63,
+        "factor_seconds": 0.0030028834007680416,
+        "factor_nnz": 254
+      },
+      "rhs_ratio_per_stage": 0.976190476190476,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 9,
+      "order": 17,
+      "problem": "reaction",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        10.0,
+        5.0,
+        4.0
+      ],
+      "rhs_calls": [
+        136,
+        82,
+        73
+      ],
+      "median_seconds": 0.07256064284592867,
+      "additional_peak_mib": 157.83984375,
+      "factorization": {
+        "factorizations": 63,
+        "factor_seconds": 0.006838299799710512,
+        "factor_nnz": 938
+      },
+      "rhs_ratio_per_stage": 0.976190476190476,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 9,
+      "order": 17,
+      "problem": "reaction",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        10.0,
+        6.0,
+        4.0
+      ],
+      "rhs_calls": [
+        136,
+        91,
+        73
+      ],
+      "median_seconds": 0.10125516750849783,
+      "additional_peak_mib": 166.6953125,
+      "factorization": {
+        "factorizations": 63,
+        "factor_seconds": 0.019824257120490074,
+        "factor_nnz": 3669
+      },
+      "rhs_ratio_per_stage": 0.9784946236559139,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 9,
+      "order": 17,
+      "problem": "diffusion",
+      "n": 64,
+      "failures": [],
+      "iterations": [
+        8.0,
+        3.0,
+        3.0
+      ],
+      "rhs_calls": [
+        118,
+        64,
+        64
+      ],
+      "median_seconds": 0.05516964360140264,
+      "additional_peak_mib": 155.82421875,
+      "factorization": {
+        "factorizations": 63,
+        "factor_seconds": 0.0032170629128813744,
+        "factor_nnz": 275
+      },
+      "rhs_ratio_per_stage": 0.9696969696969697,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 9,
+      "order": 17,
+      "problem": "diffusion",
+      "n": 256,
+      "failures": [],
+      "iterations": [
+        9.0,
+        4.0,
+        4.0
+      ],
+      "rhs_calls": [
+        127,
+        73,
+        73
+      ],
+      "median_seconds": 0.06941341049969196,
+      "additional_peak_mib": 157.50390625,
+      "factorization": {
+        "factorizations": 63,
+        "factor_seconds": 0.006763613782823086,
+        "factor_nnz": 1043
+      },
+      "rhs_ratio_per_stage": 0.9733333333333332,
+      "passed": true
+    },
+    {
+      "family": "radau",
+      "stages": 9,
+      "order": 17,
+      "problem": "diffusion",
+      "n": 1024,
+      "failures": [],
+      "iterations": [
+        10.0,
+        6.0,
+        5.0
+      ],
+      "rhs_calls": [
+        136,
+        91,
+        82
+      ],
+      "median_seconds": 0.1143702887929976,
+      "additional_peak_mib": 166.71484375,
+      "factorization": {
+        "factorizations": 63,
+        "factor_seconds": 0.02502780733630061,
+        "factor_nnz": 4133
+      },
+      "rhs_ratio_per_stage": 0.9784946236559139,
+      "passed": true
+    }
+  ],
+  "source_sha256": {
+    "src/warpSPHIntegrators/collocation.py": "755411b2eaf419e0a6c9ecf054855e5cacc098a82717dd8085e408c538198a20",
+    "benchmarks/higher_collocation.py": "a0d90a667c6d4dc59b0cd99ba8a57d784205d3e5d6285423b85d8f89c0a4d89f"
+  }
+}

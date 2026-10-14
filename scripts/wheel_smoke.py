@@ -18,7 +18,7 @@ from warpSPHIntegrators import (
     stage_block_preconditioner,
     stage_shifted_preconditioner,
     ConservativeDissipativeRHS, Strang, Yoshida4, LinearExponentialFlow,
-    GeneralizedAlpha,
+    GeneralizedAlpha, Collocation,
 )
 
 
@@ -88,6 +88,10 @@ continued = solve(GeneralizedAlpha(.5),None,.35,mechanics.rhs,restart=alpha.chec
                   solver_opts={'matvec':'jvp','tol':1e-12,'newton_tol':1e-7})
 assert continued.successful and continued.history.latest.state.t == .35
 assert abs(continued.state.state.x.item()-mechanics.exact(.35)[0][0])<2e-4
+collocation=solve(Collocation('radau',5),TensorState(torch.ones(1,dtype=torch.float64)),.5,
+                  tensor_rhs(lambda t,y:-2*y),dt=.1,
+                  solver_opts={'matvec':'jvp','tol':1e-12,'newton_tol':1e-9})
+assert collocation.successful and abs(collocation.state.y.item()-math.exp(-1))<1e-10
 print(f'Installed wheel {package.__version__}: all modules/exports, py.typed, '
       f'{len(filter_schemes(state_kind="tensor"))} tensor drivers, advanced state protocol, '
       'adaptive sampling/events, portable restart, stiff bootstrap, stage preconditioning, physical splitting and generalized-alpha continuation pass')

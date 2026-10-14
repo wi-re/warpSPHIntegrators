@@ -1,0 +1,827 @@
+{
+  "device": "cpu",
+  "dtype": "float64",
+  "threads": 1,
+  "rows": [
+    {
+      "family": "gauss",
+      "stages": 2,
+      "propagated_order": 4,
+      "problem": "oscillator",
+      "measured_order": 3.916226146051022,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 0.17955894185659738,
+          "rhs_calls": 56,
+          "krylov_iterations": 16.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.4019656917080283
+        },
+        {
+          "h": 0.25,
+          "error": 0.01621601860647559,
+          "rhs_calls": 112,
+          "krylov_iterations": 32.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.03412612900137901
+        },
+        {
+          "h": 0.125,
+          "error": 0.0010740949983268633,
+          "rhs_calls": 224,
+          "krylov_iterations": 64.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.06440183520317078
+        }
+      ]
+    },
+    {
+      "family": "gauss",
+      "stages": 2,
+      "propagated_order": 4,
+      "problem": "nonlinear",
+      "measured_order": 3.78354163475607,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 0.0004467118591693908,
+          "rhs_calls": 106,
+          "krylov_iterations": 30.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.028965929057449102
+        },
+        {
+          "h": 0.25,
+          "error": 3.7107640061595504e-05,
+          "rhs_calls": 188,
+          "krylov_iterations": 52.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.05056235799565911
+        },
+        {
+          "h": 0.125,
+          "error": 2.6946589934961906e-06,
+          "rhs_calls": 348,
+          "krylov_iterations": 93.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.09095289977267385
+        }
+      ]
+    },
+    {
+      "family": "gauss",
+      "stages": 3,
+      "propagated_order": 6,
+      "problem": "oscillator",
+      "measured_order": 5.95746627974905,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 0.006767019739528535,
+          "rhs_calls": 108,
+          "krylov_iterations": 24.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.03864140622317791
+        },
+        {
+          "h": 0.25,
+          "error": 0.00011991447143672174,
+          "rhs_calls": 216,
+          "krylov_iterations": 48.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.07660889206454158
+        },
+        {
+          "h": 0.125,
+          "error": 1.92972555929094e-06,
+          "rhs_calls": 432,
+          "krylov_iterations": 96.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.15299980528652668
+        }
+      ]
+    },
+    {
+      "family": "gauss",
+      "stages": 3,
+      "propagated_order": 6,
+      "problem": "nonlinear",
+      "measured_order": 5.2830316689447026,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 2.8155902904891672e-05,
+          "rhs_calls": 204,
+          "krylov_iterations": 45.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.0687702801078558
+        },
+        {
+          "h": 0.25,
+          "error": 1.0540260212965613e-06,
+          "rhs_calls": 348,
+          "krylov_iterations": 74.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.11448650108650327
+        },
+        {
+          "h": 0.125,
+          "error": 2.707075275054649e-08,
+          "rhs_calls": 636,
+          "krylov_iterations": 131.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.2045820509083569
+        }
+      ]
+    },
+    {
+      "family": "gauss",
+      "stages": 4,
+      "propagated_order": 8,
+      "problem": "oscillator",
+      "measured_order": 7.968280486957944,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 0.00011256373165824396,
+          "rhs_calls": 176,
+          "krylov_iterations": 32.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.07604185305535793
+        },
+        {
+          "h": 0.25,
+          "error": 4.805970399979209e-07,
+          "rhs_calls": 352,
+          "krylov_iterations": 64.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.15122215868905187
+        },
+        {
+          "h": 0.125,
+          "error": 1.919064851474417e-09,
+          "rhs_calls": 704,
+          "krylov_iterations": 128.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.3024598262272775
+        }
+      ]
+    },
+    {
+      "family": "gauss",
+      "stages": 4,
+      "propagated_order": 8,
+      "problem": "nonlinear",
+      "measured_order": 6.719917812187835,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 2.1957346761913854e-06,
+          "rhs_calls": 324,
+          "krylov_iterations": 58.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.1326577621512115
+        },
+        {
+          "h": 0.25,
+          "error": 3.757620137267992e-08,
+          "rhs_calls": 544,
+          "krylov_iterations": 94.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.2160512558184564
+        },
+        {
+          "h": 0.125,
+          "error": 3.564643025200098e-10,
+          "rhs_calls": 964,
+          "krylov_iterations": 160.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.37149327900260687
+        }
+      ]
+    },
+    {
+      "family": "gauss",
+      "stages": 5,
+      "propagated_order": 10,
+      "problem": "oscillator",
+      "measured_order": 9.897520072035855,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 1.164224542077319e-06,
+          "rhs_calls": 260,
+          "krylov_iterations": 40.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.1325015709735453
+        },
+        {
+          "h": 0.25,
+          "error": 1.2206364252698165e-09,
+          "rhs_calls": 520,
+          "krylov_iterations": 80.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.2636007131077349
+        },
+        {
+          "h": 0.125,
+          "error": 1.2153056339059276e-12,
+          "rhs_calls": 1040,
+          "krylov_iterations": 160.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.5261019258759916
+        }
+      ]
+    },
+    {
+      "family": "gauss",
+      "stages": 5,
+      "propagated_order": 10,
+      "problem": "nonlinear",
+      "measured_order": 6.995394135663703,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 1.883965851101621e-07,
+          "rhs_calls": 460,
+          "krylov_iterations": 69.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.22062604734674096
+        },
+        {
+          "h": 0.25,
+          "error": 1.4765547673434298e-09,
+          "rhs_calls": 750,
+          "krylov_iterations": 108.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.34698273381218314
+        },
+        {
+          "h": 0.125,
+          "error": 5.267120073426668e-12,
+          "rhs_calls": 1315,
+          "krylov_iterations": 182.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.5896888477727771
+        }
+      ]
+    },
+    {
+      "family": "gauss",
+      "stages": 7,
+      "propagated_order": 14,
+      "problem": "oscillator",
+      "measured_order": null,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 4.287578625472577e-11,
+          "rhs_calls": 476,
+          "krylov_iterations": 56.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.3177907941862941
+        },
+        {
+          "h": 0.25,
+          "error": 3.558264793923627e-14,
+          "rhs_calls": 840,
+          "krylov_iterations": 96.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.5448206216096878
+        },
+        {
+          "h": 0.125,
+          "error": 6.689093723366568e-15,
+          "rhs_calls": 1456,
+          "krylov_iterations": 160.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.9112875661812723
+        }
+      ]
+    },
+    {
+      "family": "gauss",
+      "stages": 7,
+      "propagated_order": 14,
+      "problem": "nonlinear",
+      "measured_order": null,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 1.6015047066275656e-09,
+          "rhs_calls": 721,
+          "krylov_iterations": 80.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.4410843108780682
+        },
+        {
+          "h": 0.25,
+          "error": 2.6281199438926706e-12,
+          "rhs_calls": 1176,
+          "krylov_iterations": 126.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.7019272563047707
+        },
+        {
+          "h": 0.125,
+          "error": 1.2212453270876722e-15,
+          "rhs_calls": 2030,
+          "krylov_iterations": 209.0,
+          "precision_floor_steps": 0,
+          "seconds": 1.1685791541822255
+        }
+      ]
+    },
+    {
+      "family": "gauss",
+      "stages": 9,
+      "propagated_order": 18,
+      "problem": "oscillator",
+      "measured_order": null,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 3.3661962106634746e-13,
+          "rhs_calls": 648,
+          "krylov_iterations": 60.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.5210447167046368
+        },
+        {
+          "h": 0.25,
+          "error": 4.951594689828198e-14,
+          "rhs_calls": 1080,
+          "krylov_iterations": 96.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.8328105281107128
+        },
+        {
+          "h": 0.125,
+          "error": 4.912736883966318e-15,
+          "rhs_calls": 1872,
+          "krylov_iterations": 160.0,
+          "precision_floor_steps": 0,
+          "seconds": 1.3919851421378553
+        }
+      ]
+    },
+    {
+      "family": "gauss",
+      "stages": 9,
+      "propagated_order": 18,
+      "problem": "nonlinear",
+      "measured_order": null,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 1.509120606257852e-11,
+          "rhs_calls": 1008,
+          "krylov_iterations": 89.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.7482813750393689
+        },
+        {
+          "h": 0.25,
+          "error": 4.6629367034256575e-15,
+          "rhs_calls": 1584,
+          "krylov_iterations": 134.0,
+          "precision_floor_steps": 0,
+          "seconds": 1.1309259058907628
+        },
+        {
+          "h": 0.125,
+          "error": 5.551115123125783e-17,
+          "rhs_calls": 2664,
+          "krylov_iterations": 215.0,
+          "precision_floor_steps": 0,
+          "seconds": 1.8217855226248503
+        }
+      ]
+    },
+    {
+      "family": "radau",
+      "stages": 2,
+      "propagated_order": 3,
+      "problem": "oscillator",
+      "measured_order": 2.834145058526448,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 1.925289074468168,
+          "rhs_calls": 60,
+          "krylov_iterations": 16.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.01610071025788784
+        },
+        {
+          "h": 0.25,
+          "error": 0.3976993257653546,
+          "rhs_calls": 120,
+          "krylov_iterations": 32.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.03137592412531376
+        },
+        {
+          "h": 0.125,
+          "error": 0.05576891304550968,
+          "rhs_calls": 240,
+          "krylov_iterations": 64.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.06335375690832734
+        }
+      ]
+    },
+    {
+      "family": "radau",
+      "stages": 2,
+      "propagated_order": 3,
+      "problem": "nonlinear",
+      "measured_order": 2.7451975202702457,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 0.003283191666936247,
+          "rhs_calls": 114,
+          "krylov_iterations": 31.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.02932275366038084
+        },
+        {
+          "h": 0.25,
+          "error": 0.0005378503774027266,
+          "rhs_calls": 196,
+          "krylov_iterations": 52.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.04945305595174432
+        },
+        {
+          "h": 0.125,
+          "error": 8.021852644979344e-05,
+          "rhs_calls": 378,
+          "krylov_iterations": 99.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.09482810739427805
+        }
+      ]
+    },
+    {
+      "family": "radau",
+      "stages": 3,
+      "propagated_order": 5,
+      "problem": "oscillator",
+      "measured_order": 4.945874880539119,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 0.11593452979704116,
+          "rhs_calls": 112,
+          "krylov_iterations": 24.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.037794787902384996
+        },
+        {
+          "h": 0.25,
+          "error": 0.00436229351048395,
+          "rhs_calls": 224,
+          "krylov_iterations": 48.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.07518720300868154
+        },
+        {
+          "h": 0.125,
+          "error": 0.00014153315544035427,
+          "rhs_calls": 448,
+          "krylov_iterations": 96.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.1498374012298882
+        }
+      ]
+    },
+    {
+      "family": "radau",
+      "stages": 3,
+      "propagated_order": 5,
+      "problem": "nonlinear",
+      "measured_order": 4.347738095971306,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 0.00011284302247432931,
+          "rhs_calls": 208,
+          "krylov_iterations": 45.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.06859675422310829
+        },
+        {
+          "h": 0.25,
+          "error": 7.469515466707044e-06,
+          "rhs_calls": 368,
+          "krylov_iterations": 78.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.11870471388101578
+        },
+        {
+          "h": 0.125,
+          "error": 3.6685365528699165e-07,
+          "rhs_calls": 664,
+          "krylov_iterations": 135.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.2076291013509035
+        }
+      ]
+    },
+    {
+      "family": "radau",
+      "stages": 4,
+      "propagated_order": 7,
+      "problem": "oscillator",
+      "measured_order": 6.9647281031989605,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 0.002585735502585118,
+          "rhs_calls": 180,
+          "krylov_iterations": 32.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.07495392905548215
+        },
+        {
+          "h": 0.25,
+          "error": 2.2608751145125616e-05,
+          "rhs_calls": 360,
+          "krylov_iterations": 64.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.14893512008711696
+        },
+        {
+          "h": 0.125,
+          "error": 1.8100247062280417e-07,
+          "rhs_calls": 720,
+          "krylov_iterations": 128.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.2976765390485525
+        }
+      ]
+    },
+    {
+      "family": "radau",
+      "stages": 4,
+      "propagated_order": 7,
+      "problem": "nonlinear",
+      "measured_order": 5.826178786322832,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 7.257690183948284e-06,
+          "rhs_calls": 336,
+          "krylov_iterations": 60.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.13472256902605295
+        },
+        {
+          "h": 0.25,
+          "error": 2.1431263114157773e-07,
+          "rhs_calls": 560,
+          "krylov_iterations": 96.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.2173026599921286
+        },
+        {
+          "h": 0.125,
+          "error": 3.7774018912806184e-09,
+          "rhs_calls": 1004,
+          "krylov_iterations": 166.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.3795954491943121
+        }
+      ]
+    },
+    {
+      "family": "radau",
+      "stages": 5,
+      "propagated_order": 9,
+      "problem": "oscillator",
+      "measured_order": 8.973727876358977,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 3.311179214243731e-05,
+          "rhs_calls": 264,
+          "krylov_iterations": 40.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.1307813050225377
+        },
+        {
+          "h": 0.25,
+          "error": 7.03026283299657e-08,
+          "rhs_calls": 528,
+          "krylov_iterations": 80.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.259856132324785
+        },
+        {
+          "h": 0.125,
+          "error": 1.39833200574202e-10,
+          "rhs_calls": 1056,
+          "krylov_iterations": 160.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.5201949859037995
+        }
+      ]
+    },
+    {
+      "family": "radau",
+      "stages": 5,
+      "propagated_order": 9,
+      "problem": "nonlinear",
+      "measured_order": 7.257949430102178,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 5.672904418441149e-07,
+          "rhs_calls": 464,
+          "krylov_iterations": 69.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.2170567698776722
+        },
+        {
+          "h": 0.25,
+          "error": 7.584828543016897e-09,
+          "rhs_calls": 773,
+          "krylov_iterations": 111.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.3522747098468244
+        },
+        {
+          "h": 0.125,
+          "error": 4.955474919299263e-11,
+          "rhs_calls": 1356,
+          "krylov_iterations": 187.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.5967260389588773
+        }
+      ]
+    },
+    {
+      "family": "radau",
+      "stages": 7,
+      "propagated_order": 13,
+      "problem": "oscillator",
+      "measured_order": null,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 1.6777977895898744e-09,
+          "rhs_calls": 480,
+          "krylov_iterations": 56.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.3141807019710541
+        },
+        {
+          "h": 0.25,
+          "error": 2.6204038938715257e-13,
+          "rhs_calls": 904,
+          "krylov_iterations": 104.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.5832181209698319
+        },
+        {
+          "h": 0.125,
+          "error": 7.688294445529209e-15,
+          "rhs_calls": 1486,
+          "krylov_iterations": 160.0,
+          "precision_floor_steps": 1,
+          "seconds": 0.9019383490085602
+        }
+      ]
+    },
+    {
+      "family": "radau",
+      "stages": 7,
+      "propagated_order": 13,
+      "problem": "nonlinear",
+      "measured_order": 8.497989655568452,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 4.398225006418954e-09,
+          "rhs_calls": 760,
+          "krylov_iterations": 85.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.4636384160257876
+        },
+        {
+          "h": 0.25,
+          "error": 1.2165435325783847e-11,
+          "rhs_calls": 1205,
+          "krylov_iterations": 129.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.7071028812788427
+        },
+        {
+          "h": 0.125,
+          "error": 1.1157741397482823e-14,
+          "rhs_calls": 2053,
+          "krylov_iterations": 210.0,
+          "precision_floor_steps": 0,
+          "seconds": 1.158271973952651
+        }
+      ]
+    },
+    {
+      "family": "radau",
+      "stages": 9,
+      "propagated_order": 17,
+      "problem": "oscillator",
+      "measured_order": null,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 3.796407632705723e-13,
+          "rhs_calls": 670,
+          "krylov_iterations": 62.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.5347503600642085
+        },
+        {
+          "h": 0.25,
+          "error": 8.554268404736831e-14,
+          "rhs_calls": 1151,
+          "krylov_iterations": 99.0,
+          "precision_floor_steps": 1,
+          "seconds": 0.8582090740092099
+        },
+        {
+          "h": 0.125,
+          "error": 5.662137425588298e-15,
+          "rhs_calls": 1888,
+          "krylov_iterations": 160.0,
+          "precision_floor_steps": 0,
+          "seconds": 1.382620198186487
+        }
+      ]
+    },
+    {
+      "family": "radau",
+      "stages": 9,
+      "propagated_order": 17,
+      "problem": "nonlinear",
+      "measured_order": null,
+      "qualification": "Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.",
+      "results": [
+        {
+          "h": 0.5,
+          "error": 3.958111616242377e-11,
+          "rhs_calls": 1030,
+          "krylov_iterations": 91.0,
+          "precision_floor_steps": 0,
+          "seconds": 0.7631551930680871
+        },
+        {
+          "h": 0.25,
+          "error": 2.2148949341271873e-14,
+          "rhs_calls": 1610,
+          "krylov_iterations": 136.0,
+          "precision_floor_steps": 0,
+          "seconds": 1.1480014179833233
+        },
+        {
+          "h": 0.125,
+          "error": 5.551115123125783e-17,
+          "rhs_calls": 2689,
+          "krylov_iterations": 216.0,
+          "precision_floor_steps": 0,
+          "seconds": 1.8396000456996262
+        }
+      ]
+    }
+  ],
+  "source_sha256": {
+    "src/warpSPHIntegrators/collocation.py": "755411b2eaf419e0a6c9ecf054855e5cacc098a82717dd8085e408c538198a20",
+    "benchmarks/collocation_accuracy.py": "2dbf4a28f93c034d2d30fe9189cf3b3c6498bf0059b9515760e69455d52e909e"
+  }
+}

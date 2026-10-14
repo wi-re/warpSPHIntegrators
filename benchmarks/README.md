@@ -19,6 +19,8 @@ python benchmarks/tvd_classifier.py --help
 | `firk_registration.py` | Known oscillator/cubic-decay accuracy and measured RHS/Krylov work for s=2/3 |
 | `structural_modes.py` | Coupled-mass generalized-alpha prototype: modal energy/phase, Newmark parity, order, spectral radius and source controls |
 | `generalized_alpha.py` | Package driver versus independent structural reference: accepted acceleration, modal energy, resolved order and directly counted RHS/GMRES work |
+| `higher_collocation.py` | Parameterized Gauss/Radau spatial scale through nine stages, with real Schur and shifted sparse ILU |
+| `collocation_accuracy.py` | Known oscillator/cubic-decay refinement, full RHS work and strict-solve precision floors for stage-parameterized collocation |
 | `stiff_startup.py` | BDF implicit/explicit startup and low-order control |
 | `splitting_validation.py` | Known oscillator orders/contraction/energy, Burgers reference/CFL and qualified exact-flow merging |
 | `jfnk_preconditioner_benchmark.py` | Krylov/preconditioning cost |

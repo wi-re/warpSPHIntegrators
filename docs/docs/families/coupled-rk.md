@@ -9,6 +9,43 @@ and Radau IIA $s=2/3$. These are the collocation methods whose Butcher $a$
 matrices are **coupled** ($a_{ij} \neq 0$ for $j > i$) — a DIRK driver cannot
 take them, because no stage is a function of already-known quantities alone.
 
+## Stage-parameterized backend
+
+`Collocation('gauss', stages)` and `Collocation('radau', stages)` extend this block
+backend to stage counts 2–9. They are parameterized factories outside the four
+fixed catalog records. Gauss has propagated order `2*stages` and the source's
+same-node order-`stages-1` companion. Radau has propagated order `2*stages-1`
+and a derived unsmoothed order-`stages` companion with one extra null-stage call.
+These companions keep their own estimate exponents; the existing fixed records
+and their estimators are unchanged. The factory works with fixed or adaptive
+`solve`, in-memory/tensor-file restart, field/parameter gradients and the normal
+block-solver options. Dense output and source order-switching/filter controllers
+are separate interfaces.
+
+[example:run higher_collocation]: #
+```python
+import math
+import torch
+from warpSPHIntegrators import Collocation, TensorState, tensor_rhs, solve
+
+method = Collocation('radau', 5)  # propagated order 9; companion order 5
+result = solve(method, TensorState(torch.ones(1, dtype=torch.float64)), .5,
+               tensor_rhs(lambda t, y: -2*y), dt=.1,
+               solver_opts={'matvec': 'jvp', 'tol': 1e-12, 'newton_tol': 1e-9})
+assert result.successful
+assert abs(result.state.y.item() - math.exp(-1)) < 1e-10
+```
+
+For larger stages, `stage_schur_preconditioner(build_operator, decompose)` uses
+an orthogonal real Schur stage basis and backward substitution over one/two-stage
+blocks. This avoids a globally ill-conditioned eigenvector basis. The operator
+factory returns a shifted spatial solve and its matching frozen Jacobian action;
+the decomposition callback supplies real `(T,Q)` satisfying `A=Q*T*Q.T`.
+Applications can provide sparse, multigrid or matrix-free operations independently
+of frontend integration. The backend adds no SciPy runtime dependency; the
+reference stencil benchmark uses optional SciPy Schur and sparse ILU routines.
+See [the higher-stage backend validation](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/higher-collocation-validation.md).
+
 ## The block driver
 
 A step is one **$s \times s$ block solve**. The $s$ stage states are packed

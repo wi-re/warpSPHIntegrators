@@ -7,7 +7,7 @@ import numpy as np
 import scipy.sparse as sparse
 from scipy.sparse.linalg import splu,spilu
 import torch
-from warpSPHIntegrators import stage_shifted_preconditioner
+from warpSPHIntegrators import stage_shifted_preconditioner, stage_schur_preconditioner
 
 
 def spatial_preconditioner(diagonal,diffusion,mode,metrics=None):
@@ -24,7 +24,7 @@ def spatial_preconditioner(diagonal,diffusion,mode,metrics=None):
         metrics['factorizations']+=1;metrics['factor_seconds']+=time.perf_counter()-start
         metrics['factor_nnz']=max(metrics['factor_nnz'],lu.L.nnz+lu.U.nnz)
         return lu
-    if mode.startswith('shifted'):
+    if mode.startswith(('shifted','schur')):
         def build(state,context):
             d=diagonal(state,context)[0].detach().cpu().numpy()
             j=jacobian(d).astype(np.complex128);identity=sparse.eye(len(d),format='csc',dtype=np.complex128)
@@ -34,7 +34,15 @@ def spatial_preconditioner(diagonal,diffusion,mode,metrics=None):
                 if key not in factors:factors[key]=factor(identity-key*j)
                 out=factors[key].solve(vector.detach().cpu().numpy())
                 return torch.as_tensor(out,dtype=vector.dtype,device=vector.device)
+            if mode.startswith('schur'):
+                def action(vector):
+                    out=j@vector.detach().cpu().numpy()
+                    return torch.as_tensor(out.real,dtype=vector.dtype,device=vector.device)
+                return solve,action
             return solve
+        if mode.startswith('schur'):
+            from scipy.linalg import schur
+            return stage_schur_preconditioner(build,lambda a:schur(a,output='real'))
         return stage_shifted_preconditioner(build)
     cached=None
     def apply(vector,state,context):

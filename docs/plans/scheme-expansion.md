@@ -2,7 +2,8 @@
 
 **Status: waves 1–8 committed; Phase 8 implements the first wave-9 batch
 (three-stage Gauss/Radau) and a parameterized classical generalized-alpha driver.
-Higher stages and the remaining waves 10–16 members retain their gates.**
+Parameterized Gauss/Radau stages 2–9 are also implemented with source/numerical/
+spatial gates; remaining waves 10–16 members retain their gates.**
 The registry contains 139 schemes (137 before this batch; 64 at planning time).
 The current execution gates are in [REPOSITORY_PLAN.md](../../REPOSITORY_PLAN.md).
 
@@ -280,8 +281,12 @@ Radau uses the explicitly derived unsmoothed order-3 companion, not the source's
 filtered adaptive controller. Actual registered-driver work includes companion
 calls and passes the same spatial gate. See
 [the first-batch record](../development/phase8-wave9-validation.md).
-Gauss s>=4, Radau s>=4 and variable-order controllers remain separate batches:
-the first s=3 result does not qualify their solve scaling or estimators.
+The subsequent `Collocation(family, stages)` backend supplies stage counts 2–9,
+with a pinned coefficient/nonlinear-step oracle, order/stability identities,
+derived/source companions and a Schur sparse-space scale gate. These are
+parameterized factories outside the four fixed records; [evidence](../development/higher-collocation-validation.md).
+Variable-order source controllers and source filtering remain separate driver
+work. Frontend availability is not a gate for implementing those interfaces.
 
 ## Wave 10 — multistep extensions (C3/C4, ~16 methods)
 
