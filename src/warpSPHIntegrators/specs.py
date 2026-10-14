@@ -77,9 +77,9 @@ class IntegrationResult:
                 propagated solution and the lower-order embedded one. Drives step
                 size control; the initial state cancels, so this is a pure
                 difference, not a state you can continue integrating from.
-        history: Set only by schemes that were passed a ``history=`` kwarg (see
-                `warpSPHIntegrators.history.StepHistory`); `None` otherwise. Feed it
-                back in as `history=` on the next step to keep the run threaded.
+        history: Accepted history/memory, when supplied or owned by a history-
+                dependent driver. Feed it back as `history=` on the next step;
+                the run API owns this threading automatically.
     """
     state: Any
     stages: List[StageResult] = field(default_factory=list)
@@ -87,6 +87,9 @@ class IntegrationResult:
     history: Optional[Any] = None
     #: One diagnostics object per nonlinear stage, or one for a single-stage method.
     solver_diagnostics: Optional[Any] = None
+    #: A startup/variable-order driver can emit an estimate with a different
+    #: exponent than its steady scheme metadata. None uses the scheme default.
+    estimate_order: Optional[int] = None
 
     @property
     def step_status(self):

@@ -21,6 +21,7 @@
 - [Known structural consumer, generalized-alpha prototype and source audit](structural-demo-validation.md)
 - [Generalized-alpha package driver, acceleration memory and consumer/work gates](generalized-alpha-validation.md)
 - [Higher-stage collocation, source oracle and real Schur spatial backend](higher-collocation-validation.md)
+- [Variable-step Adams, ramped estimates, fifth-order PECE and portable history](variable-adams-validation.md)
 - [Examples](../../examples/README.md) and [benchmarks](../../benchmarks/README.md)
 - [Coefficient extraction/oracle tools](../../scripts/coefficients/README.md)
 

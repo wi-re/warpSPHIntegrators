@@ -21,6 +21,7 @@ python benchmarks/tvd_classifier.py --help
 | `generalized_alpha.py` | Package driver versus independent structural reference: accepted acceleration, modal energy, resolved order and directly counted RHS/GMRES work |
 | `higher_collocation.py` | Parameterized Gauss/Radau spatial scale through nine stages, with real Schur and shifted sparse ILU |
 | `collocation_accuracy.py` | Known oscillator/cubic-decay refinement, full RHS work and strict-solve precision floors for stage-parameterized collocation |
+| `variable_adams.py` | Known vector reaction at fixed/alternating steps, adaptive accuracy/work and startup/steady estimator exponents |
 | `stiff_startup.py` | BDF implicit/explicit startup and low-order control |
 | `splitting_validation.py` | Known oscillator orders/contraction/energy, Burgers reference/CFL and qualified exact-flow merging |
 | `jfnk_preconditioner_benchmark.py` | Krylov/preconditioning cost |

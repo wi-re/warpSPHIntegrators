@@ -221,7 +221,8 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
     from .splitting import SplitScheme
     from .generalized_alpha import GeneralizedAlpha
     from .collocation import Collocation
-    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme,GeneralizedAlpha,Collocation)) else getIntegrator(scheme)
+    from .variable_adams import VariableAdams
+    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme,GeneralizedAlpha,Collocation,VariableAdams)) else getIntegrator(scheme)
     if restart is not None:
         if restart.scheme != scheme.identifier.name:
             raise ValueError('Checkpoint scheme does not match')
@@ -257,8 +258,9 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
     for name,value in (('max_steps',max_steps),('max_attempts',max_attempts),('max_rejections',max_rejections)):
         if type(value) is not int or value < 1:
             raise ValueError(f'{name} must be a positive integer')
-    if adaptive and (not scheme.has_error_estimate or scheme.metadata.history_length):
-        raise ValueError('Adaptive runs require a one-step estimate-emitting scheme')
+    if adaptive and (not scheme.has_error_estimate or
+                     scheme.metadata.history_length and scheme.metadata.history_requires_constant_dt):
+        raise ValueError('Adaptive runs require an estimate-emitting scheme with variable-step history support')
     if 'priorStep' in step_options:
         raise ValueError('The runner owns priorStep; use a checkpoint to resume reuse')
     current = snapshot(state)
@@ -352,6 +354,9 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
         attempts += 1
         try:
             result = scheme(trial, signed_h, f, *rhs_args, **options)
+            estimate_order = scheme.metadata.estimate_order if result.estimate_order is None else result.estimate_order
+            if adaptive and (type(estimate_order) is not int or estimate_order<1):
+                raise ValueError('Estimate order must be a positive integer')
             status = assess_step(result)
             if status.finite and not math.isclose(float(result.state.t), float(current.t)+signed_h,rel_tol=0,abs_tol=4*math.ulp(float(current.t)+signed_h)):
                 raise ValueError('Step returned an incorrect final time')
@@ -365,7 +370,7 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
                 rejected += 1
                 if not adaptive:
                     return finish(status.termination if status.termination != 'completed' else 'step_failure')
-                new_size = propose_dt(error,h,scheme.estimate_order) if error is not None and math.isfinite(error) else h*.2
+                new_size = propose_dt(error,h,estimate_order) if error is not None and math.isfinite(error) else h*.2
                 step_size = min(h*.9,new_size)
                 continue
             end_values = [_event_value(event,result.state,snapshot) for event in events]
@@ -405,7 +410,9 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
             sample(t,value); index += 1
         if save_steps:
             sample(float(current.t),current)
-        step_size = min(maximum,propose_dt(error,h,scheme.estimate_order)) if adaptive else nominal
+        step_size = min(maximum,propose_dt(error,h,estimate_order)) if adaptive else nominal
+        if adaptive and hasattr(scheme,'max_step_ratio'):
+            step_size=min(step_size,h*scheme.max_step_ratio)
         if callback is not None and callback(snapshot(StepRecord(signed_h,result,status,error))) is False:
             sample(float(current.t),current)
             return finish('callback')

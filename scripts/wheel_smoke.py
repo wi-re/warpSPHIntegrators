@@ -18,7 +18,7 @@ from warpSPHIntegrators import (
     stage_block_preconditioner,
     stage_shifted_preconditioner,
     ConservativeDissipativeRHS, Strang, Yoshida4, LinearExponentialFlow,
-    GeneralizedAlpha, Collocation,
+    GeneralizedAlpha, Collocation, VariableAdams,
 )
 
 
@@ -92,6 +92,12 @@ collocation=solve(Collocation('radau',5),TensorState(torch.ones(1,dtype=torch.fl
                   tensor_rhs(lambda t,y:-2*y),dt=.1,
                   solver_opts={'matvec':'jvp','tol':1e-12,'newton_tol':1e-9})
 assert collocation.successful and abs(collocation.state.y.item()-math.exp(-1))<1e-10
+adams=solve(VariableAdams(4,'abm'),TensorState(torch.ones(1,dtype=torch.float64)),.3,
+            tensor_rhs(lambda t,y:-y),dt=.025)
+with tempfile.TemporaryDirectory() as directory:
+    path=Path(directory)/'adams.pt';save_checkpoint(adams.checkpoint,path)
+    restored=solve(VariableAdams(4,'abm'),None,.6,tensor_rhs(lambda t,y:-y),restart=load_checkpoint(path))
+assert restored.successful and abs(restored.state.y.item()-math.exp(-.6))<1e-6
 print(f'Installed wheel {package.__version__}: all modules/exports, py.typed, '
       f'{len(filter_schemes(state_kind="tensor"))} tensor drivers, advanced state protocol, '
       'adaptive sampling/events, portable restart, stiff bootstrap, stage preconditioning, physical splitting and generalized-alpha continuation pass')

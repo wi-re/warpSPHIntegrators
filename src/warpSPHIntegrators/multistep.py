@@ -25,6 +25,7 @@ calling convention is exactly what `testing.run(..., history=True)` already does
 """
 
 from typing import Optional
+import math
 
 import numpy as np
 from torch.profiler import record_function
@@ -53,6 +54,14 @@ def getABCoefficients(order: int) -> np.ndarray:
         return np.array([1901 / 720, -2774 / 720, 2616 / 720, -1274 / 720, 251 / 720])
     else:
         raise ValueError(f"No Adams-Bashforth coefficients recorded for order {order}")
+
+
+def _constant_history(history,needed,dt):
+    history=history if history is not None else StepHistory(maxlen=max(1,needed))
+    if history.context is not None:return StepHistory(history.maxlen)
+    if history.latest is not None and not math.isclose(history.latest.dt,dt,rel_tol=1e-12,abs_tol=0):
+        return StepHistory(history.maxlen)
+    return history
 
 
 def getAMCoefficients(order: int) -> np.ndarray:
@@ -113,7 +122,7 @@ def AdamsBashforth(initialState, dt, f, order: int, *args,
     reject_prior_step(f'AB{order}', kwargs.pop('priorStep', None))
     starter = DormandPrince
     needed = order - 1
-    history = history if history is not None else StepHistory(maxlen=needed)
+    history = _constant_history(history,needed,dt)
 
     with record_function(f"[Integration] AB{order}"):
         if len(history) < needed:
@@ -140,7 +149,7 @@ def AdamsBashforth(initialState, dt, f, order: int, *args,
 
 def AdamsBashforthMoulton(initialState, dt, f, order: int, *args,
                           history: Optional[StepHistory] = None, **kwargs):
-    """One Adams-Bashforth-Moulton (PECE) step of the given `order` (2-4).
+    """One Adams-Bashforth-Moulton (PECE) step of the given `order` (2-5).
 
     Predict-Evaluate-Correct-Evaluate with a *fixed* (uniterated) correction, per
     NOTES.md S3.6: the AM corrector uses the predictor's new evaluation in place of the
@@ -154,7 +163,7 @@ def AdamsBashforthMoulton(initialState, dt, f, order: int, *args,
     reject_prior_step(f'ABM{order}', kwargs.pop('priorStep', None))
     starter = DormandPrince
     needed = order - 1
-    history = history if history is not None else StepHistory(maxlen=needed)
+    history = _constant_history(history,needed,dt)
 
     with record_function(f"[Integration] ABM{order}"):
         if len(history) < needed:
@@ -223,7 +232,7 @@ def AdamsMoulton(initialState, dt, f, order: int, *args,
     reject_prior_step(f'AM{order}', kwargs.pop('priorStep', None))
     starter = DormandPrince
     needed = order - 1
-    history = history if history is not None else StepHistory(maxlen=max(1, needed))
+    history = _constant_history(history,needed,dt)
 
     with record_function(f"[Integration] AM{order}"):
         if len(history) < needed:
@@ -317,6 +326,7 @@ AB5 = adamsBashforthScheme(5)
 ABM2 = adamsBashforthMoultonScheme(2)
 ABM3 = adamsBashforthMoultonScheme(3)
 ABM4 = adamsBashforthMoultonScheme(4)
+ABM5 = adamsBashforthMoultonScheme(5)
 AM2 = adamsMoultonScheme(2)
 AM3 = adamsMoultonScheme(3)
 AM4 = adamsMoultonScheme(4)

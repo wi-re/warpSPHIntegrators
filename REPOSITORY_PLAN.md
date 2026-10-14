@@ -161,6 +161,10 @@ must be recorded rather than counted as an implemented method.
   from history, recurrence, or driver changes. Variable coefficients are primarily
   a timestep/history issue; do not assume fixed-step methods exclude non-autonomous
   RHS functions.
+- [x] Implement variable-step AB/ABM orders 3–5, ramped startup estimates,
+  adaptive acceptance/rollback and portable tensor history. Register classical
+  fixed-step AB5/AM5 PECE and fix before-consumption timestep invalidation in
+  constant Adams. [Backend evidence](docs/development/variable-adams-validation.md).
 - [x] Prioritize a benchmarked niche: s=3 collocation improves known-consumer
   accuracy/work while passing the spatial bar. Generalized-alpha is source-confirmed
   and now has a [known two-mass consumer and linear prototype](docs/development/structural-demo-validation.md).

@@ -6,6 +6,19 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ## [Unreleased]
 
+### Added — Phase 8 backend expansion
+
+- Stage-parameterized Gauss/Radau collocation for stages 2–9, with pinned
+  coefficient/nonlinear oracles and an orthogonal real Schur spatial-preconditioner
+  interface that passes the higher-stage stencil scale gate.
+- Variable-step AB/ABM factories at orders 3–5, ramped startup estimates,
+  transactional adaptive history and weights-only tensor restart metadata.
+- Registered classical fixed-step AB5/AM5 PECE (order 5), bringing the fixed
+  catalog to 140. Constant-coefficient Adams now reset before consuming history
+  after a timestep change.
+- Classical generalized-alpha factory with accepted acceleration, restart,
+  lifecycle, quantity-coupling and gradient validation on known structural modes.
+
 ### Added — understood structural consumer
 
 - Added a two-mass demo with exact slow/fast modes, a dense linear generalized-alpha

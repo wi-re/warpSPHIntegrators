@@ -31,9 +31,18 @@ def save_checkpoint(checkpoint, path):
             raise TypeError('Portable checkpoints require tensor updates without auxiliary objects')
         return dict(dy=update.dy.detach().clone(),aux=aux)
 
+    def context(value):
+        if isinstance(value,torch.Tensor):return value.detach().clone()
+        if value is None or type(value) in (str,int,float,bool):return value
+        if isinstance(value,(tuple,list)):return type(value)(context(v) for v in value)
+        if isinstance(value,dict) and all(type(k) is str for k in value):
+            return {k:context(v) for k,v in value.items()}
+        raise TypeError('Portable history context must contain only tensors and primitive metadata')
+
     payload = dict(format=_FORMAT, scheme=checkpoint.scheme, state=state(checkpoint.state),
         history=[dict(t=e.t, dt=e.dt, stage=stage(e.update,e.aux), state=state(e.state))
                  for e in checkpoint.history], maxlen=checkpoint.history.maxlen,
+        history_context=context(checkpoint.history.context),
         prior=None if checkpoint.prior_step is None else stage(checkpoint.prior_step.update,checkpoint.prior_step.aux),
         last_dt=checkpoint.last_dt, next_dt=checkpoint.next_dt,
         configuration=snapshot_state(checkpoint.configuration,detach=True))
@@ -51,5 +60,5 @@ def load_checkpoint(path, *, map_location=None):
                for e in payload['history']]
     prior = None if payload['prior'] is None else StageResult(payload['prior']['aux'],_TensorUpdate(payload['prior']['dy']))
     return RunCheckpoint(payload['scheme'],state(payload['state']),
-        StepHistory(payload['maxlen'],entries),prior,payload['last_dt'],payload['next_dt'],
+        StepHistory(payload['maxlen'],entries,context=payload.get('history_context')),prior,payload['last_dt'],payload['next_dt'],
         payload['configuration'])

@@ -2,7 +2,7 @@
 sidebar_label: Multistep (explicit)
 ---
 
-# Explicit linear multistep — Adams-Bashforth, PECE & SSPRKMSVS (`MultistepExplicit`) — 9 schemes
+# Explicit linear multistep — Adams-Bashforth, PECE & SSPRKMSVS (`MultistepExplicit`) — 10 schemes
 
 The explicit linear multistep family, driven by `multistep.py` (the Adams
 family) and `ssprkmsvs.py` (Shu's SSP multistep, below):
@@ -14,6 +14,46 @@ $$
 where $f^{n-j} = f(t^{n-j}, y^{n-j})$ are **stored past right-hand-side
 evaluations** carried in the scheme's `StepHistory` (derivative history,
 threaded across calls with `history=`). No solves.
+
+## Variable-step backend
+
+`VariableAdams(order=3, kind='abm')` supplies fixed-order variable-step Adams at
+orders 3–5, with fixed or adaptive `solve`. Choose `kind='ab'` for the pure
+predictor or `kind='abm'` for the source's order-(p-1) predictor and order-p
+corrector. These six parameter choices are separate from the fixed catalog.
+Coefficients integrate the Lagrange basis on the actual time grid and match the
+pinned source's divided-difference helpers on constant and irregular histories.
+
+[example:run variable_adams]: #
+```python
+import math
+import torch
+from warpSPHIntegrators import VariableAdams, TensorState, tensor_rhs, solve
+
+method = VariableAdams(4, 'abm')
+result = solve(method, TensorState(torch.ones(1, dtype=torch.float64)), 1.,
+               tensor_rhs(lambda t, y: -y), dt=.1,
+               adaptive=True, rtol=1e-7, atol=1e-10)
+assert result.successful
+assert abs(result.state.y.item() - math.exp(-1)) < 1e-5
+```
+
+AB compares with an order-(p-1) predictor; ABM uses the source same-order
+difference estimate with exponent p+1. Neither a same-order difference nor a
+requested local tolerance guarantees that exact global error. DP5 startup uses
+an available-history Adams comparison with exponents 2,3,... before switching
+to the steady exponent. The runner uses the exponent on each result and respects
+the method's maximum step growth, so an optimistic starter does not cause
+repeated resets. History stays valid across ordinary step changes. Large ratio
+changes, time discontinuities, incompatible history/layouts and changed particle
+IDs restart safely. Pass `restart_history=True` for RHS/parameter discontinuities.
+
+Direct callers must thread accepted `result.history`; `solve` owns that threading,
+rollback and checkpointing. Tensor checkpoints preserve primitive/tensor history
+context through the weights-only format. Input state/history are cloned. Endpoint
+copied fields come from the corrected physical state; warm AB/ABM therefore cost
+two/three RHS calls, including re-evaluation of the start and corrected endpoint.
+These are explicit nonstiff methods. See [backend evidence](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/variable-adams-validation.md).
 
 ## Adams-Bashforth (pure predictor)
 
@@ -34,7 +74,7 @@ order-dependent) stability region on the real axis; and a cold start.
 
 ## Adams-Bashforth-Moulton (PECE predictor-corrector)
 
-`ABM2`–`ABM4` run a **predictor–corrector** pair per step:
+`ABM2`–`ABM5` evaluate the current derivative, then run a **predictor–corrector** pair per step:
 
 1. **P**redict $y^{n+1}$ with the order-$p$ Adams-Bashforth weights (the table
    above) — no new evaluation;
@@ -47,13 +87,14 @@ order-dependent) stability region on the real axis; and a cold start.
 | 2 | $\tfrac{1}{2},\ \tfrac{1}{2}$ |
 | 3 | $\tfrac{5}{12},\ \tfrac{8}{12},\ -\tfrac{1}{12}$ |
 | 4 | $\tfrac{9}{24},\ \tfrac{19}{24},\ -\tfrac{5}{24},\ \tfrac{1}{24}$ |
+| 5 | $\tfrac{251}{720},\ \tfrac{646}{720},\ -\tfrac{264}{720},\ \tfrac{106}{720},\ -\tfrac{19}{720}$ |
 
-4. **E**valuate again for the history (the corrected point's derivative is
-   stored) — a second evaluation.
+4. Store the step-start derivative in history. The next step evaluates the
+   corrected endpoint as its new current point, completing PECE across steps.
 
-So ABM costs **2 evaluations per step** — the same cost as the *implicit*
-Adams-Moulton of the same order ([multistep-implicit](multistep-implicit)),
-but with a wider (explicit) stability region and no solve. The pairing of the
+So ABM costs **2 evaluations per step** after startup: current and predicted
+endpoint. Its explicit correction avoids the nonlinear solve of
+[implicit Adams-Moulton](multistep-implicit) and has conditional stability. The pairing of the
 order-$p$ AB predictor with the order-$p$ AM corrector is what makes the PECE
 scheme order $p$ (NOTES.md §3.6).
 
@@ -109,7 +150,7 @@ implicit (NOTES.md §3.11).
 
 - **AB2-AB5**: the cheapest way to buy order 2-5 on a non-stiff problem whose
   RHS is expensive to evaluate (one evaluation per step).
-- **ABM2-4**: same cost as the implicit Adams-Moulton, no solve, wider
+- **ABM2-5**: two RHS calls after startup, an explicit correction and bounded
   stability region — the default choice when an implicit solve is not worth it.
 - **SSPRKMSVS32/43**: order 2 / 3 at one evaluation per step *and* a
   strong-stability-preserving (convex-combination) step — the choice when the

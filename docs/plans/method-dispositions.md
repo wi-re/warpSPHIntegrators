@@ -2,7 +2,7 @@
 
 Original audit at `5eb45e0`, supplemented by the Phase 8 first wave-9 batch on
 14 October 2026. The [JSON ledger](method-dispositions.json)
-records all 139 registered identifiers plus standalone, equivalent, deferred and
+records all 140 registered identifiers plus standalone, equivalent, deferred and
 screening candidates. It includes implementation/source constructors, modifications,
 test files, numerical evidence and intended consumers. Method implementation and
 primary-source verification are separate fields: legacy methods remain implemented

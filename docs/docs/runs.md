@@ -52,15 +52,20 @@ startup and can reduce its accuracy. Reuse uses FSAL only at unchanged steps;
 `reuse=False` disables it. Callbacks that alter external RHS parameters also need
 reuse disabled.
 
-Adaptive mode requires a one-step estimate emitter. Scalar `rtol` / `atol` or
+Variable-coefficient `VariableAdams` retains compatible history across step
+changes, including adaptive steps; large ratio changes can restart it safely.
+
+Adaptive mode requires an estimate emitter with one-step or variable-step
+history support. Scalar `rtol` / `atol` or
 field-name maps control a weighted RMS norm over all integrated entries:
 `error / (atol + rtol * max(abs(old), abs(new)))`. Missing map fields retain
 `rtol=1e-3`, `atol=1e-6`; unknown fields, nonfinite or negative tolerances, and
 fields with both tolerances zero are rejected. Accept when that norm is at most
-one and the step status permits acceptance. The controller uses the catalog's
-`estimate_order`, including exponent three for TR-BDF2 and Gauss-Legendre 2.
+one and the step status permits acceptance. The controller uses a per-result
+`estimate_order` during ramped startup, otherwise the scheme's steady metadata,
+including exponent three for TR-BDF2 and Gauss-Legendre 2.
 Rejected attempts shrink the step. Nonfinite states, derivatives or estimates
-are rejected; no history-dependent scheme has adaptive coefficients here.
+are rejected. Constant-coefficient multistep methods remain fixed-step.
 
 `dt_min=1e-14`, `dt_max` (initially the larger of `dt` and interval length),
 `max_steps=100000`, `max_attempts=200000` and `max_rejections=1000` bound runs.

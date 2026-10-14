@@ -633,6 +633,7 @@ EXPECTED_VERDICTS = {
     'Adams-Bashforth-Moulton 2 (PECE)': (None, 1.5, False),
     'Adams-Bashforth-Moulton 3 (PECE)': (None, 1.5, False),
     'Adams-Bashforth-Moulton 4 (PECE)': (None, 1.5, False),
+    'Adams-Bashforth-Moulton 5 (PECE)': (None, 1.5, False),
     # Shu's SSP multistep (wave 3): no tableau the SSP scan reads, so no ssp_cfl.
     # The measured 1.5 is the shared Dormand-Prince cold start's limit, NOT the
     # methods' steady-state SSP bounds (C = 1/2 for SSPRKMSVS32, C = 1/3 for

@@ -63,7 +63,7 @@ IDs are rejected. Step shortening preserves acceleration. A rejected trial
 preserves accepted state/history through the runner; external lifecycle effects
 still require its transaction hooks. Custom systems use application serialization
 for portable restart. The factory has no estimator, dense output or event
-localization and is separate from the 139 fixed catalog entries.
+localization and is separate from the fixed catalog entries.
 
 ## What the problem means
 

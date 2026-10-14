@@ -61,7 +61,7 @@ from .dirk import (backwardEuler as implicitBackwardEuler, implicitMidpoint, tra
 from .fullyimplicit import gaussLegendre2, radauIia2, gaussLegendre3, radauIia3
 from .ark import ARK324L2SA, ARK436L2SA
 from .newmark import newmark
-from .multistep import AB2, AB3, AB4, AB5, ABM2, ABM3, ABM4, AM2, AM3, AM4
+from .multistep import AB2, AB3, AB4, AB5, ABM2, ABM3, ABM4, ABM5, AM2, AM3, AM4
 from .ssprkmsvs import SSPRKMSVS32, SSPRKMSVS43
 from .bdf import BDF1, BDF2, BDF3, BDF4, BDF5
 from .imex import IMEXEuler
@@ -421,6 +421,9 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     ABM4, 'Adams-Bashforth-Moulton 4 (PECE)', IntegrationSchemeType.abm4, 4, True,
     implicit=False, steps=3, startup_order=4))
+IntegrationSchemes.append(IntegrationScheme(
+    ABM5, 'Adams-Bashforth-Moulton 5 (PECE)', IntegrationSchemeType.abm5, 5, True,
+    implicit=False, steps=4, startup_order=5))
 
 # ---- SSP multistep (NOTES.md S3.23, SCHEME_EXPANSION_PLAN wave 3) ---------- #
 # Shu's strong-stability-preserving multistep methods (ssprkmsvs.py): convex

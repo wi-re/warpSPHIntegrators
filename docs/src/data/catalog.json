@@ -1,6 +1,6 @@
 {
   "summary": {
-    "scheme_count": 139,
+    "scheme_count": 140,
     "family_count": 11,
     "estimate_count": 47,
     "max_order": 14
@@ -28,7 +28,7 @@
       "name": "MultistepExplicit",
       "label": "Multistep explicit",
       "page": "multistep-explicit",
-      "count": 9
+      "count": 10
     },
     {
       "name": "DIRK",
@@ -3290,6 +3290,31 @@
       "requires_separable": false,
       "supports_drift_fields": false,
       "history_length": 3,
+      "history_requires_constant_dt": true
+    },
+    {
+      "name": "Adams-Bashforth-Moulton 5 (PECE)",
+      "identifier": "abm5",
+      "family": "MultistepExplicit",
+      "order": 5,
+      "implicit": false,
+      "stability": null,
+      "fsal": false,
+      "reuse_order": null,
+      "steps": 4,
+      "startup_order": 5,
+      "stage_count": null,
+      "embedded_order": null,
+      "estimate_order": null,
+      "required_capabilities": [],
+      "optional_capabilities": [],
+      "required_options": [],
+      "dense_output": false,
+      "estimate_extra_stages": 0,
+      "state_kind": "tensor",
+      "requires_separable": false,
+      "supports_drift_fields": false,
+      "history_length": 4,
       "history_requires_constant_dt": true
     },
     {

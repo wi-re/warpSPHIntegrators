@@ -33,6 +33,15 @@ accepted by `solve`. `LinearExponentialFlow` supports small dense linear flows;
 `classify_separable` returns a `SeparabilityResult` with measured local diagnostics.
 See [the runnable guide and qualifications](operator-splitting).
 
+## Variable-step Adams
+
+`VariableAdams(order=3, kind='abm', max_step_ratio=4.)` supplies variable-step
+AB/ABM orders 3–5 for fixed/adaptive trajectories. `adams_weights(nodes)` exposes
+normalized cardinal integration. `IntegrationResult.estimate_order` can override
+the steady estimator exponent during startup. `StepHistory.context` holds
+method-owned trajectory metadata; variable methods explicitly opt into
+`pushed(..., preserve_dt=True, context=...)`. See [the Adams backend](families/multistep-explicit).
+
 ## Stage-parameterized collocation
 
 `Collocation(family='gauss', stages=4)` binds a stage-parameterized block driver
@@ -118,7 +127,7 @@ The per-stage update descriptor passed to the system's apply methods.
 
 | Name | Purpose |
 |---|---|
-| `IntegrationSchemes` | The registry: every registered scheme (139), each a `IntegrationScheme` |
+| `IntegrationSchemes` | The registry: every registered scheme (140), each a `IntegrationScheme` |
 | `IntegrationScheme` | The registry record: `function`, `name`, `identifier`, `order`, `dissipation`, `reuse_order`, `fsal`, `implicit`, `steps`, `stiffly_accurate`, `stability`, `startup_order` |
 | `SchemeMetadata` / `scheme.metadata` | Frozen metadata derived from the driver's tableau: stages, companion order, estimate exponent, required/optional RHS accessors, per-step options and dense output |
 | `scheme.has_error_estimate` / `scheme.estimate_order` | Whether a step emits an estimate, and its exponent q for `propose_dt`; q is 3 for both TR-BDF2 and Gauss-Legendre 2 |

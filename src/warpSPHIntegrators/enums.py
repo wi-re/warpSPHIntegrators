@@ -240,6 +240,8 @@ class IntegrationSchemeType(Enum):
     # Wave 9, first scale-qualified batch: stage-count names; orders 6/5.
     gaussLegendre3 = 137
     radauIia3 = 138
+    # Wave 10: classical fixed-step AB5/AM5 PECE, no adaptive-pair claim.
+    abm5 = 139
 
 
 # --------------------------------------------------------------------------- #
@@ -247,7 +249,7 @@ class IntegrationSchemeType(Enum):
 # --------------------------------------------------------------------------- #
 #
 # IntegrationSchemeType is the single enum that captures every registered
-# scheme, but a 139-member flat list does not tell a user which entry is an
+# scheme, but a 140-member flat list does not tell a user which entry is an
 # explicit scheme and which is an implicit one. The family enums below are
 # thin VIEWS of the same members: every member keeps the same name and the
 # same int value as its IntegrationSchemeType counterpart, so all four lookup
@@ -258,7 +260,7 @@ class IntegrationSchemeType(Enum):
 #     getIntegrator('RK4')
 #     getIntegrator('rungeKutta4')
 #
-# and the families are exhaustive and disjoint over the 139 members (pinned in
+# and the families are exhaustive and disjoint over the 140 members (pinned in
 # tests/test_family_enums.py). `SCHEME_FAMILY` maps a scheme's identifier to
 # the family enum class it belongs to; IntegrationScheme.family is the same
 # fact on the registered scheme object.
@@ -368,7 +370,7 @@ class MultistepExplicit(Enum):
     """Explicit linear multistep (Adams family `multistep.py`, SSPRKMSVS `ssprkmsvs.py`).
 
     Adams-Bashforth 2-5 (pure predictor, one evaluation after startup), the
-    Adams-Bashforth-Moulton 2-4 PECE predictor-correctors (two evaluations
+    Adams-Bashforth-Moulton 2-5 PECE predictor-correctors (two evaluations
     after startup), and Shu's SSP multistep SSPRKMSVS32/43 (convex
     combinations of forward-Euler substeps across past states, one evaluation
     after startup, fixed-step only). All carry state-bearing `StepHistory`.
@@ -380,6 +382,7 @@ class MultistepExplicit(Enum):
     abm2 = IntegrationSchemeType.abm2.value
     abm3 = IntegrationSchemeType.abm3.value
     abm4 = IntegrationSchemeType.abm4.value
+    abm5 = IntegrationSchemeType.abm5.value
     ssprkmsvs32 = IntegrationSchemeType.ssprkmsvs32.value
     ssprkmsvs43 = IntegrationSchemeType.ssprkmsvs43.value
 

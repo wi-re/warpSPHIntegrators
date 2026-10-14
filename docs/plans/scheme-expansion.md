@@ -4,7 +4,8 @@
 (three-stage Gauss/Radau) and a parameterized classical generalized-alpha driver.
 Parameterized Gauss/Radau stages 2–9 are also implemented with source/numerical/
 spatial gates; remaining waves 10–16 members retain their gates.**
-The registry contains 139 schemes (137 before this batch; 64 at planning time).
+The registry contains 140 schemes (139 before fixed ABM5; 137 before the first
+wave-9 batch; 64 at planning time).
 The current execution gates are in [REPOSITORY_PLAN.md](../../REPOSITORY_PLAN.md).
 
 Scope: the schemes present in local **OrdinaryDiffEq v7.8.1** but missing from this
@@ -290,6 +291,15 @@ work. Frontend availability is not a gate for implementing those interfaces.
 
 ## Wave 10 — multistep extensions (C3/C4, ~16 methods)
 
+Implemented backend batch: `VariableAdams(order, kind)` covers fixed-order
+variable-step AB/ABM at orders 3–5, with a pinned coefficient oracle, ramped
+startup estimates, transactional adaptive runs and portable history. Classical
+fixed AB5/AM5 PECE is registered as `abm5`, with an explicit repository startup/
+cache policy rather than a full upstream ABM54 equivalence claim. The fixed
+catalog is now 140. [Evidence](../development/variable-adams-validation.md).
+Adaptive order selection, Nordsieck/NDF/BDF variants, CNLF and AMF remain separate
+backend work; frontend availability is not an implementation gate.
+
 - `bdf.py`: NordsieckBDF (Nordsieck-form BDF), QNDF / QNDF1 / QNDF2
   (quasi-constant-step NDF — inspect order/history semantics), MEBDF2 (modified extended BDF).
 - `multistep.py`: ABM54 (fifth-order predictor/corrector, **not** a source 5(4)
@@ -298,7 +308,7 @@ work. Frontend availability is not a gate for implementing those interfaces.
   timestep ratios, history and controller state before
   transcribing).
 - New small Nordsieck driver: AN5, JVODE (ODEPACK's classic).
-- `imexmultistep.py`: CNLF2 (Crank–Nicolson–Lefort–Fortunato 2).
+- `imexmultistep.py`: CNLF2 (Crank–Nicolson–Leapfrog 2).
 - AMF (`OrdinaryDiffEqAMF`, amf.jl + linsolve.jl): **Approximate Matrix
   Factorization**, a Rosenbrock-W wrapper with structured split factors. It needs
   operator/factorization contracts and is not an Adams–Moulton extension.
@@ -340,15 +350,17 @@ phi/Krylov formulas. None is assumed to be a plain-tableau transcription.
 A general Runge–Kutta–Nystrom driver (a, b, b* tableaus on the position/velocity
 form) replaces the hand-rolled `Nystrom5th` as the family driver:
 RKN4, Nystrom4 (+ Nystrom4VelocityIndependent), DPRKN12, DPRKN4, DPRKN5, DPRKN6,
-DPRKN6FM, DPRKN8, FineRKN4, FineRKN5, ERKN4/5/7 (exponential RKN — phi-Krylov, same
-pattern as `exponential.py`), IRKN3/4 (implicit RKN — JFNK). Plus **PDIRK44**
+DPRKN6FM, DPRKN8, FineRKN4, FineRKN5, ERKN4/5/7 (source embedded/trigonometrically
+designed explicit RKN tableaus; the pinned implementations use constant RKN
+coefficients, not a phi-Krylov driver), IRKN3/4 (**improved**, fixed-step
+velocity-independent RKN with history, not implicit JFNK). Plus **PDIRK44**
 (`OrdinaryDiffEqPDIRK`): partitioned DIRK for second-order ODEs — split-state driver
 (position and velocity each run a DIRK half), comparable in scale to the ARK pair
 machinery.
 
 **Gate:** order on the oscillator/kepler second-order problems; Nystrom5th
 regression (the new driver must reproduce the existing hand-rolled method's order);
-block-solve scale for IRKN/PDIRK at s>2.
+history/startup/order for improved IRKN; block-solve scale for PDIRK at s>2.
 
 ## Wave 13 — new medium drivers (C4, ~11 methods)
 

@@ -54,7 +54,7 @@ from .jfnk import (JFNKSolver, fd_matvec, jvp_matvec, gmres,
                   identity_preconditioner, diagonal_preconditioner)
 from .preconditioners import stage_block_preconditioner, stage_shifted_preconditioner, stage_schur_preconditioner
 from .bdf import BDF1, BDF2, BDF3, BDF4, BDF5
-from .multistep import AM2, AM3, AM4
+from .multistep import AM2, AM3, AM4, ABM5
 from .imex import IMEXEuler
 from .imexmultistep import SBDF2, SBDF3, CNAB2
 from .rhs import (RHS, IMEXRHS, SemilinearRHS, resolve, ResolvedRHS,
@@ -62,6 +62,7 @@ from .rhs import (RHS, IMEXRHS, SemilinearRHS, resolve, ResolvedRHS,
 from .newmark import newmark, newmark_average_acceleration, newmark_linear_acceleration
 from .generalized_alpha import GeneralizedAlpha, GeneralizedAlphaMemory
 from .collocation import Collocation, collocation_tableau
+from .variable_adams import VariableAdams, adams_weights
 from .dirk import (TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA,
                    Kvaerno3, Kvaerno4, Kvaerno5, KenCarp3, KenCarp4, KenCarp47, KenCarp5,
                    KenCarp58, ESDIRK325L2SA, ESDIRK436L2SA2, ESDIRK437L2SA, ESDIRK547L2SA2,
@@ -112,6 +113,8 @@ from .drift import DriftField, drift_fields, drift_fields_active
 __version__ = "0.6.1"
 
 __all__ = [
+    "ABM5",
+    "VariableAdams", "adams_weights",
     "Collocation", "collocation_tableau",
     "GeneralizedAlpha", "GeneralizedAlphaMemory",
     "gaussLegendre3", "radauIia3",

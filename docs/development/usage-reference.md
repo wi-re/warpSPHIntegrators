@@ -4,7 +4,7 @@ A flexible, fully differentiable numerical ODE integration library for PyTorch. 
 
 [catalog:summary:start]: #
 
-**139 registered schemes across 11 families**, with orders through 14 and 47 estimate emitters.
+**140 registered schemes across 11 families**, with orders through 14 and 47 estimate emitters.
 
 [catalog:summary:end]: #
 
@@ -27,7 +27,7 @@ blended with a reference state", and your system object decides what that means.
 
 ### Key Features
 
-- **Multiple Integration Schemes**: 139 registered schemes across 11 families, including Runge-Kutta up to 14th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; stabilized explicit super-timestepping for parabolic stiffness (RKC1/RKC2/RKL2, no nonlinear solver); diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA, Newmark) via a pluggable `NonlinearSolver`; coupled fully implicit RK (Gauss-Legendre 2, Radau IIA s=2) via one coupled JFNK block solve per step; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4); implicit multistep (BDF1–BDF5, fully implicit Adams-Moulton 2–4); additive (IMEX) RK (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA), IMEX Euler, and IMEX multistep (SBDF2/SBDF3: BDF2/BDF3 implicit backbone with explicit endpoint extrapolation; CNAB2: trapezoidal backbone with the AB2 increment), all through an explicit/implicit RHS split; Rosenbrock-W (ROS3P: one linear solve per stage against a frozen Jacobian, no Newton loop); and the exponential family (ETD2RK: the linear part `L` integrated exactly through matrix-free `exp(hL)` / `phi_k(hL)` Krylov builds, the nonlinear remainder quadrature; EXPRB32: order-3 exponential Rosenbrock, L-stable, full frozen Jacobian with matrix-free `phi_k` Krylov builds, embedded (3, 2) estimator, no semilinear split required)
+- **Multiple Integration Schemes**: 140 registered schemes across 11 families, including Runge-Kutta up to 14th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; stabilized explicit super-timestepping for parabolic stiffness (RKC1/RKC2/RKL2, no nonlinear solver); diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA, Newmark) via a pluggable `NonlinearSolver`; coupled fully implicit RK (Gauss-Legendre 2, Radau IIA s=2) via one coupled JFNK block solve per step; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4); implicit multistep (BDF1–BDF5, fully implicit Adams-Moulton 2–4); additive (IMEX) RK (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA), IMEX Euler, and IMEX multistep (SBDF2/SBDF3: BDF2/BDF3 implicit backbone with explicit endpoint extrapolation; CNAB2: trapezoidal backbone with the AB2 increment), all through an explicit/implicit RHS split; Rosenbrock-W (ROS3P: one linear solve per stage against a frozen Jacobian, no Newton loop); and the exponential family (ETD2RK: the linear part `L` integrated exactly through matrix-free `exp(hL)` / `phi_k(hL)` Krylov builds, the nonlinear remainder quadrature; EXPRB32: order-3 exponential Rosenbrock, L-stable, full frozen Jacobian with matrix-free `phi_k` Krylov builds, embedded (3, 2) estimator, no semilinear split required)
 - **Adaptive Step Control & Dense Output**: `estimate_error_norm` + `propose_dt` turn all 47 estimate emitters' `IntegrationResult.error` into a predictive step-size controller (safety factor, growth clamps, zero-error growth) with the caller-driven accept/reject loop; Dormand–Prince carries a published dense output — Shampine's 1986 quartic continuous extension, exact at the step endpoints and `O(dt^5)` in between (NOTES.md §3.17)
 - **Flexible State Management**: Custom state objects with metadata-driven field behavior (integrated, constant, copied, ephemeral, custom)
 - **Type-Safe Protocol**: Structural typing for integration systems with clear separation of concerns
@@ -693,7 +693,7 @@ mechanism `history=`'s multi-entry `StepHistory` generalizes past, not an altern
 
 ## Supported Integrators
 
-The registry contains 139 schemes. The table summarizes the established driver
+The registry contains 140 schemes. The table summarizes the established driver
 choices; the [family wiki](../docs/index.md) has the expanded catalogs.
 
 This table is a short reference for common driver choices. Stability is the
@@ -771,7 +771,7 @@ position-only Hamiltonian.
 
 ## Family enums
 
-The registry's single `IntegrationSchemeType` enum captures all 139 schemes, but
+The registry's single `IntegrationSchemeType` enum captures all 140 schemes, but
 a flat list of members does not tell a user which entry is an explicit scheme
 and which is an implicit one. The library therefore also ships one enum per
 driver family — `ExplicitRK`, `Symplectic`, `RelaxedChebyshev`,

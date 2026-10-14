@@ -57,14 +57,20 @@ class StepHistory:
     been empty, because that is always a valid (if less accurate) thing to do.
     """
 
-    __slots__ = ('_entries', 'maxlen', '_uid_fingerprint')
+    __slots__ = ('_entries', 'maxlen', '_uid_fingerprint', '_context')
 
-    def __init__(self, maxlen: int, entries=(), _uid_fingerprint=None):
+    def __init__(self, maxlen: int, entries=(), _uid_fingerprint=None, *, context=None):
         if maxlen < 1:
             raise ValueError(f'StepHistory needs maxlen >= 1, got {maxlen}')
         self.maxlen = maxlen
         self._entries = tuple(entries)[-maxlen:]
         self._uid_fingerprint = _uid_fingerprint
+        self._context = context
+
+    @property
+    def context(self):
+        """Method-owned trajectory metadata, carried with the history value."""
+        return self._context
 
     def __len__(self):
         return len(self._entries)
@@ -87,13 +93,17 @@ class StepHistory:
         latest = self.latest
         return latest.as_prior_step() if latest is not None else None
 
-    def pushed(self, entry: HistoryEntry, *, uid=None) -> 'StepHistory':
+    def pushed(self, entry: HistoryEntry, *, uid=None, preserve_dt=False, context=None) -> 'StepHistory':
         """A new history with ``entry`` appended, restarting first if invalidated.
 
         Returns a new :class:`StepHistory` rather than mutating -- history is carried
         on ``IntegrationResult`` the same way state is, so it follows the same
         value-not-reference convention (NOTES.md 4.1) instead of becoming a second,
         aliasing exception to it.
+
+        Variable-coefficient drivers opt into preserve_dt and explicitly supply
+        their context. A different/legacy stepper cannot silently preserve another
+        method's trajectory metadata by appending an unrelated entry.
         """
         entries = self._entries
         if entries:
@@ -104,10 +114,11 @@ class StepHistory:
                 and self._uid_fingerprint is not None
                 and self._uid_fingerprint != _uid_fingerprint(uid)
             )
-            if dt_changed or uid_changed:
+            if (dt_changed and not preserve_dt) or uid_changed:
                 entries = ()
         new_fingerprint = _uid_fingerprint(uid) if uid is not None else self._uid_fingerprint
-        return StepHistory(self.maxlen, (*entries, entry), _uid_fingerprint=new_fingerprint)
+        return StepHistory(self.maxlen, (*entries, entry), _uid_fingerprint=new_fingerprint,
+                           context=context)
 
     def __repr__(self):
         return f'StepHistory(maxlen={self.maxlen}, entries={len(self._entries)})'

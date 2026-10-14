@@ -1,0 +1,636 @@
+{
+  "device": "cpu",
+  "dtype": "float64",
+  "threads": 1,
+  "vector_cases": [
+    {
+      "method": "Variable Adams-AB 3",
+      "n": 64,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 2,
+      "rhs_calls": 170,
+      "max_absolute_error": 3.527805084956731e-06,
+      "seconds": 0.054522651713341475
+    },
+    {
+      "method": "Variable Adams-ABM 3",
+      "n": 64,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 2,
+      "rhs_calls": 248,
+      "max_absolute_error": 1.2485530905999298e-06,
+      "seconds": 0.07672599796205759
+    },
+    {
+      "method": "Variable Adams-AB 4",
+      "n": 64,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 3,
+      "rhs_calls": 175,
+      "max_absolute_error": 1.8997059133933625e-07,
+      "seconds": 0.0640823831781745
+    },
+    {
+      "method": "Variable Adams-ABM 4",
+      "n": 64,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 3,
+      "rhs_calls": 252,
+      "max_absolute_error": 6.224258547547074e-08,
+      "seconds": 0.10245308792218566
+    },
+    {
+      "method": "Variable Adams-AB 5",
+      "n": 64,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 4,
+      "rhs_calls": 180,
+      "max_absolute_error": 1.1435836754988826e-08,
+      "seconds": 0.08371684793382883
+    },
+    {
+      "method": "Variable Adams-ABM 5",
+      "n": 64,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 4,
+      "rhs_calls": 256,
+      "max_absolute_error": 3.5520791048099243e-09,
+      "seconds": 0.1333398879505694
+    },
+    {
+      "method": "Adams-Bashforth 5",
+      "n": 64,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 4,
+      "rhs_calls": 104,
+      "max_absolute_error": 1.1435836742845762e-08,
+      "seconds": 0.010923702735453844
+    },
+    {
+      "method": "Adams-Bashforth-Moulton 5 (PECE)",
+      "n": 64,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 4,
+      "rhs_calls": 180,
+      "max_absolute_error": 8.875981356154528e-10,
+      "seconds": 0.016271441243588924
+    },
+    {
+      "method": "Dormand-Prince 5(4)",
+      "n": 64,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 0,
+      "rhs_calls": 560,
+      "max_absolute_error": 1.001920595100625e-11,
+      "seconds": 0.04720871802419424
+    },
+    {
+      "method": "Variable Adams-AB 3",
+      "n": 64,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 2,
+      "rhs_calls": 170,
+      "max_absolute_error": 4.694845698906269e-06,
+      "seconds": 0.04900478385388851
+    },
+    {
+      "method": "Variable Adams-ABM 3",
+      "n": 64,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 2,
+      "rhs_calls": 248,
+      "max_absolute_error": 1.8082925269981287e-06,
+      "seconds": 0.08541836403310299
+    },
+    {
+      "method": "Variable Adams-AB 4",
+      "n": 64,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 3,
+      "rhs_calls": 175,
+      "max_absolute_error": 2.7053321473811953e-07,
+      "seconds": 0.10052836127579212
+    },
+    {
+      "method": "Variable Adams-ABM 4",
+      "n": 64,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 3,
+      "rhs_calls": 252,
+      "max_absolute_error": 1.0235314335145518e-07,
+      "seconds": 0.10318489884957671
+    },
+    {
+      "method": "Variable Adams-AB 5",
+      "n": 64,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 4,
+      "rhs_calls": 180,
+      "max_absolute_error": 2.063504973490171e-08,
+      "seconds": 0.08327390113845468
+    },
+    {
+      "method": "Variable Adams-ABM 5",
+      "n": 64,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 4,
+      "rhs_calls": 256,
+      "max_absolute_error": 5.5188822071366994e-09,
+      "seconds": 0.1533256438560784
+    },
+    {
+      "method": "Adams-Bashforth 5",
+      "n": 64,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 80,
+      "rhs_calls": 560,
+      "max_absolute_error": 6.031163155700847e-11,
+      "seconds": 0.06807183381170034
+    },
+    {
+      "method": "Adams-Bashforth-Moulton 5 (PECE)",
+      "n": 64,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 80,
+      "rhs_calls": 560,
+      "max_absolute_error": 6.031163155700847e-11,
+      "seconds": 0.04897049628198147
+    },
+    {
+      "method": "Dormand-Prince 5(4)",
+      "n": 64,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 0,
+      "rhs_calls": 560,
+      "max_absolute_error": 6.031163155700847e-11,
+      "seconds": 0.04641300207003951
+    },
+    {
+      "method": "Variable Adams-AB 3",
+      "n": 16384,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 2,
+      "rhs_calls": 170,
+      "max_absolute_error": 3.5278315844052e-06,
+      "seconds": 0.08240113267675042
+    },
+    {
+      "method": "Variable Adams-ABM 3",
+      "n": 16384,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 2,
+      "rhs_calls": 248,
+      "max_absolute_error": 1.2485995057563704e-06,
+      "seconds": 0.11640512570738792
+    },
+    {
+      "method": "Variable Adams-AB 4",
+      "n": 16384,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 3,
+      "rhs_calls": 175,
+      "max_absolute_error": 1.8997059133933625e-07,
+      "seconds": 0.09799049375578761
+    },
+    {
+      "method": "Variable Adams-ABM 4",
+      "n": 16384,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 3,
+      "rhs_calls": 252,
+      "max_absolute_error": 6.224258547547074e-08,
+      "seconds": 0.14490120485424995
+    },
+    {
+      "method": "Variable Adams-AB 5",
+      "n": 16384,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 4,
+      "rhs_calls": 180,
+      "max_absolute_error": 1.1435836754988826e-08,
+      "seconds": 0.1194281056523323
+    },
+    {
+      "method": "Variable Adams-ABM 5",
+      "n": 16384,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 4,
+      "rhs_calls": 256,
+      "max_absolute_error": 3.5520791048099243e-09,
+      "seconds": 0.17960087396204472
+    },
+    {
+      "method": "Adams-Bashforth 5",
+      "n": 16384,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 4,
+      "rhs_calls": 104,
+      "max_absolute_error": 1.1435836742845762e-08,
+      "seconds": 0.02387830661609769
+    },
+    {
+      "method": "Adams-Bashforth-Moulton 5 (PECE)",
+      "n": 16384,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 4,
+      "rhs_calls": 180,
+      "max_absolute_error": 8.875981356154528e-10,
+      "seconds": 0.03226606920361519
+    },
+    {
+      "method": "Dormand-Prince 5(4)",
+      "n": 16384,
+      "grid": "constant",
+      "steps": 80,
+      "startup_steps": 0,
+      "rhs_calls": 560,
+      "max_absolute_error": 1.001920595100625e-11,
+      "seconds": 0.10123156476765871
+    },
+    {
+      "method": "Variable Adams-AB 3",
+      "n": 16384,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 2,
+      "rhs_calls": 170,
+      "max_absolute_error": 4.695590481201134e-06,
+      "seconds": 0.08620450273156166
+    },
+    {
+      "method": "Variable Adams-ABM 3",
+      "n": 16384,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 2,
+      "rhs_calls": 248,
+      "max_absolute_error": 1.808298540881964e-06,
+      "seconds": 0.12232047319412231
+    },
+    {
+      "method": "Variable Adams-AB 4",
+      "n": 16384,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 3,
+      "rhs_calls": 175,
+      "max_absolute_error": 2.7053321473811953e-07,
+      "seconds": 0.10464553022757173
+    },
+    {
+      "method": "Variable Adams-ABM 4",
+      "n": 16384,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 3,
+      "rhs_calls": 252,
+      "max_absolute_error": 1.0235314335145518e-07,
+      "seconds": 0.15106185479089618
+    },
+    {
+      "method": "Variable Adams-AB 5",
+      "n": 16384,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 4,
+      "rhs_calls": 180,
+      "max_absolute_error": 2.063504973490171e-08,
+      "seconds": 0.11963361501693726
+    },
+    {
+      "method": "Variable Adams-ABM 5",
+      "n": 16384,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 4,
+      "rhs_calls": 256,
+      "max_absolute_error": 5.5188822071366994e-09,
+      "seconds": 0.17812133813276887
+    },
+    {
+      "method": "Adams-Bashforth 5",
+      "n": 16384,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 80,
+      "rhs_calls": 560,
+      "max_absolute_error": 6.031163155700847e-11,
+      "seconds": 0.09766550874337554
+    },
+    {
+      "method": "Adams-Bashforth-Moulton 5 (PECE)",
+      "n": 16384,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 80,
+      "rhs_calls": 560,
+      "max_absolute_error": 6.031163155700847e-11,
+      "seconds": 0.09719661995768547
+    },
+    {
+      "method": "Dormand-Prince 5(4)",
+      "n": 16384,
+      "grid": "alternating",
+      "steps": 80,
+      "startup_steps": 0,
+      "rhs_calls": 560,
+      "max_absolute_error": 6.031163155700847e-11,
+      "seconds": 0.09915952291339636
+    }
+  ],
+  "adaptive_cases": [
+    {
+      "method": "Variable Adams-AB 3",
+      "rtol": 0.0001,
+      "steps": 38,
+      "rejected_steps": 4,
+      "rhs_calls": 109,
+      "absolute_error": 1.9591534201252037e-05,
+      "seconds": 0.030842167790979147,
+      "estimate_exponents": [
+        2,
+        3
+      ]
+    },
+    {
+      "method": "Variable Adams-AB 3",
+      "rtol": 1e-06,
+      "steps": 169,
+      "rejected_steps": 7,
+      "rhs_calls": 402,
+      "absolute_error": 2.0488766505621925e-07,
+      "seconds": 0.12485712487250566,
+      "estimate_exponents": [
+        2,
+        3
+      ]
+    },
+    {
+      "method": "Variable Adams-AB 3",
+      "rtol": 1e-08,
+      "steps": 766,
+      "rejected_steps": 7,
+      "rhs_calls": 1586,
+      "absolute_error": 2.0662740130017454e-09,
+      "seconds": 0.545460888184607,
+      "estimate_exponents": [
+        2,
+        3
+      ]
+    },
+    {
+      "method": "Variable Adams-ABM 3",
+      "rtol": 0.0001,
+      "steps": 12,
+      "rejected_steps": 4,
+      "rhs_calls": 68,
+      "absolute_error": 0.00038899421624424835,
+      "seconds": 0.016125202644616365,
+      "estimate_exponents": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "method": "Variable Adams-ABM 3",
+      "rtol": 1e-06,
+      "steps": 32,
+      "rejected_steps": 6,
+      "rhs_calls": 142,
+      "absolute_error": 1.1325944588497228e-05,
+      "seconds": 0.03866609092801809,
+      "estimate_exponents": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "method": "Variable Adams-ABM 3",
+      "rtol": 1e-08,
+      "steps": 98,
+      "rejected_steps": 9,
+      "rhs_calls": 369,
+      "absolute_error": 3.4831835854509663e-07,
+      "seconds": 0.11114893713966012,
+      "estimate_exponents": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "method": "Variable Adams-AB 4",
+      "rtol": 0.0001,
+      "steps": 20,
+      "rejected_steps": 4,
+      "rhs_calls": 78,
+      "absolute_error": 1.715472922136918e-05,
+      "seconds": 0.02229165006428957,
+      "estimate_exponents": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "method": "Variable Adams-AB 4",
+      "rtol": 1e-06,
+      "steps": 61,
+      "rejected_steps": 7,
+      "rhs_calls": 196,
+      "absolute_error": 1.859112183644207e-07,
+      "seconds": 0.06276868283748627,
+      "estimate_exponents": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "method": "Variable Adams-AB 4",
+      "rtol": 1e-08,
+      "steps": 180,
+      "rejected_steps": 10,
+      "rhs_calls": 450,
+      "absolute_error": 1.9016021812756634e-09,
+      "seconds": 0.17455358197912574,
+      "estimate_exponents": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "method": "Variable Adams-ABM 4",
+      "rtol": 0.0001,
+      "steps": 10,
+      "rejected_steps": 5,
+      "rhs_calls": 69,
+      "absolute_error": 0.00039515406307141787,
+      "seconds": 0.018203299026936293,
+      "estimate_exponents": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "method": "Variable Adams-ABM 4",
+      "rtol": 1e-06,
+      "steps": 20,
+      "rejected_steps": 7,
+      "rhs_calls": 113,
+      "absolute_error": 7.845110643084352e-06,
+      "seconds": 0.03377502830699086,
+      "estimate_exponents": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "method": "Variable Adams-ABM 4",
+      "rtol": 1e-08,
+      "steps": 45,
+      "rejected_steps": 8,
+      "rhs_calls": 195,
+      "absolute_error": 1.847558613876643e-07,
+      "seconds": 0.07329176412895322,
+      "estimate_exponents": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "method": "Variable Adams-AB 5",
+      "rtol": 0.0001,
+      "steps": 15,
+      "rejected_steps": 6,
+      "rhs_calls": 77,
+      "absolute_error": 1.3303652538154687e-05,
+      "seconds": 0.023376142140477896,
+      "estimate_exponents": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "method": "Variable Adams-AB 5",
+      "rtol": 1e-06,
+      "steps": 33,
+      "rejected_steps": 7,
+      "rhs_calls": 125,
+      "absolute_error": 1.6109781436624004e-07,
+      "seconds": 0.04509749077260494,
+      "estimate_exponents": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "method": "Variable Adams-AB 5",
+      "rtol": 1e-08,
+      "steps": 81,
+      "rejected_steps": 11,
+      "rhs_calls": 269,
+      "absolute_error": 1.7025109100288205e-09,
+      "seconds": 0.1057812781073153,
+      "estimate_exponents": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "method": "Variable Adams-ABM 5",
+      "rtol": 0.0001,
+      "steps": 9,
+      "rejected_steps": 6,
+      "rhs_calls": 73,
+      "absolute_error": 0.00044496499122584354,
+      "seconds": 0.021349968388676643,
+      "estimate_exponents": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "method": "Variable Adams-ABM 5",
+      "rtol": 1e-06,
+      "steps": 15,
+      "rejected_steps": 8,
+      "rhs_calls": 105,
+      "absolute_error": 6.501505862982482e-06,
+      "seconds": 0.03391283191740513,
+      "estimate_exponents": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "method": "Variable Adams-ABM 5",
+      "rtol": 1e-08,
+      "steps": 29,
+      "rejected_steps": 9,
+      "rhs_calls": 154,
+      "absolute_error": 1.2148076825035936e-07,
+      "seconds": 0.07577429199591279,
+      "estimate_exponents": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    }
+  ],
+  "qualification": "Tolerance controls a local difference estimate, not a guaranteed global error. Fixed-coefficient Adams deliberately restart on alternating h. Variable AB/ABM re-evaluate the start and corrected endpoint, costing 2/3 RHS calls after startup.",
+  "source_sha256": {
+    "src/warpSPHIntegrators/variable_adams.py": "a1f9c8113ca878daac70ad8c18b591c71f25b7d0103c18b007c4c86595feeae7",
+    "src/warpSPHIntegrators/run.py": "16d71a19acb7bf7ed5646df16a251b0ab260462098137c358643513a08b10fcb",
+    "benchmarks/variable_adams.py": "369618a1c114cb7e48e4511de8f6152e14e9df5fab9bed8f68d1b8bc69e426c8"
+  }
+}

@@ -4,6 +4,12 @@ import torch
 from .fields import BlockState, flatten_integrated
 
 
+def _stage_matrix(context,vector):
+    value=context['tableau_a']
+    if isinstance(value,torch.Tensor):return value.to(dtype=vector.dtype,device=vector.device).clone()
+    return torch.tensor(value,dtype=vector.dtype,device=vector.device)
+
+
 def stage_block_preconditioner(jacobian_diagonal):
     """Approximate (I - dt*A*J)^-1 by an independent s-by-s solve per DOF.
 
@@ -32,7 +38,7 @@ def stage_block_preconditioner(jacobian_diagonal):
                 diagonal = diagonal.expand(s,n)
             if diagonal.shape != (s,n) or not torch.isfinite(diagonal).all():
                 raise ValueError('Jacobian diagonal must be finite and have shape (N,) or (s,N)')
-            a = torch.tensor(context['tableau_a'],dtype=vector.dtype,device=vector.device)
+            a = _stage_matrix(context,vector)
             if a.shape != (s,s):
                 raise ValueError('Preconditioner tableau must match the stage count')
             matrices = torch.eye(s,dtype=vector.dtype,device=vector.device).expand(n,s,s) - context['dt']*a.unsqueeze(0)*diagonal.T.unsqueeze(1)
@@ -67,7 +73,7 @@ def stage_shifted_preconditioner(build_shifted_solver, *, condition_limit=1e8):
         if vector.ndim!=1 or vector.numel()!=s*n or vector.dtype not in (torch.float32,torch.float64):
             raise ValueError('Expected a real floating stage-major vector')
         if cached is None or cached[0] is not state or cached[1] is not context:
-            a=torch.tensor(context['tableau_a'],dtype=vector.dtype,device=vector.device)
+            a=_stage_matrix(context,vector)
             if a.shape!=(s,s) or not torch.isfinite(a).all():
                 raise ValueError('Stage matrix must be finite and match the block')
             eigenvalues,basis=torch.linalg.eig(a)
@@ -120,15 +126,19 @@ def stage_schur_preconditioner(build_operator, decompose):
         tolerance=100*s*torch.finfo(vector.dtype).eps
         if cached is None or cached[0] is not state or cached[1] is not context:
             t,q=decompose(context['tableau_a'])
-            t=torch.as_tensor(t,dtype=vector.dtype,device=vector.device)
-            q=torch.as_tensor(q,dtype=vector.dtype,device=vector.device)
-            a=torch.tensor(context['tableau_a'],dtype=vector.dtype,device=vector.device)
+            t=torch.as_tensor(t,device=vector.device);q=torch.as_tensor(q,device=vector.device)
+            if t.is_complex() or q.is_complex():raise ValueError('Expected a real Schur decomposition')
+            t=t.to(vector.dtype);q=q.to(vector.dtype)
+            a=_stage_matrix(context,vector)
             identity=torch.eye(s,dtype=vector.dtype,device=vector.device)
             if (t.shape!=(s,s) or q.shape!=(s,s) or not torch.isfinite(t).all() or not torch.isfinite(q).all()
                     or not torch.allclose(q.T@q,identity,atol=tolerance,rtol=tolerance)
                     or not torch.allclose(q@t@q.T,a,atol=tolerance,rtol=tolerance)
                     or torch.tril(t,-2).abs().max()>tolerance):
                 raise ValueError('Expected a finite real orthogonal Schur decomposition')
+            subdiagonal=torch.diagonal(t,offset=-1).abs()>tolerance
+            if s>2 and (subdiagonal[:-1]&subdiagonal[1:]).any():
+                raise ValueError('Real Schur blocks must have size one or two')
             spatial,jacobian=build_operator(state,context)
             if not callable(spatial) or not callable(jacobian):
                 raise TypeError('Operator factory must return shifted solve and Jacobian action callables')

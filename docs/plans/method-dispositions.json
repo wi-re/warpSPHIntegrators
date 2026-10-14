@@ -4033,6 +4033,36 @@
         "tests/test_tvd.py"
       ],
       "intended_consumer": "high-accuracy stiff ordinary ODEs with spatial preconditioning at scale"
+    },
+    {
+      "name": "Adams-Bashforth-Moulton 5 (PECE)",
+      "identifier": "abm5",
+      "status": "implemented",
+      "wave": 10,
+      "source": {
+        "version": "OrdinaryDiffEq 7.8.1 / AdamsBashforthMoulton 2.2.0",
+        "revision": "bae9b8e5f1d00e51c554648e5094e215164a19f8",
+        "file": "lib/OrdinaryDiffEqAdamsBashforthMoulton/src/adams_bashforth_moulton_perform_step.jl",
+        "constructor": "ABM54ConstantCache corrector coefficients / AB5 predictor",
+        "verification": "Pinned coefficient-functional oracle and repository one-step test; classical AB5/AM5 with explicit repository startup/cache policy, not full upstream solver equivalence"
+      },
+      "implementation": {
+        "file": "src/warpSPHIntegrators/multistep.py",
+        "constructor": "ABM5"
+      },
+      "coefficient_modifications": [
+        "Classical AB5 predictor and AM5 corrector; no embedded estimate claimed",
+        "DP5 startup instead of the pinned source startup/cache implementation",
+        "Constant-dt history is invalidated before formula consumption"
+      ],
+      "evidence": "docs/development/variable-adams-validation.md",
+      "tests": [
+        "tests/test_variable_adams.py",
+        "tests/test_convergence.py",
+        "tests/test_multistep.py",
+        "tests/test_tvd.py"
+      ],
+      "intended_consumer": "nonstiff problems with expensive RHS evaluations"
     }
   ],
   "other_dispositions": [
