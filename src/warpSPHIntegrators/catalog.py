@@ -23,6 +23,8 @@ class SchemeMetadata:
     requires_separable: bool = False
     supports_drift_fields: bool = False
     history_length: int = 0
+    # Algorithmic one-step memory remains valid when a step is shortened.
+    history_requires_constant_dt: bool = True
 
     @property
     def has_error_estimate(self) -> bool:

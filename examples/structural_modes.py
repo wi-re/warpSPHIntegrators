@@ -118,6 +118,28 @@ def registered_newmark_trajectory(model,dt,end):
     return states
 
 
+def generalized_alpha_trajectory(model,dt,end,rho_inf=.5):
+    """Exercise the package's nonlinear protocol driver on the dense toy model."""
+    from warpSPHIntegrators import GeneralizedAlpha, solve
+    initial=model.initial();n=initial.q.numel()
+    state=testing.ParticleSystem(testing.ParticleState(initial.q.clone(),initial.v.clone(),
+            torch.zeros_like(initial.q),torch.ones_like(initial.q)))
+    def rhs(system,dt,**kwargs):
+        s=get_reference_state(system)
+        return testing.ParticleUpdate(s.u,model.acceleration(s.x,s.u),s.e*0),None
+    result=solve(GeneralizedAlpha(rho_inf),state,end,rhs,dt=dt,save_steps=True,
+                 solver_opts=dict(matvec='jvp',tol=1e-12,newton_tol=1e-7))
+    if not result.successful:raise RuntimeError(f'Generalized-alpha run failed: {result.termination}')
+    # Samples contain physical fields. The final checkpoint also owns the
+    # algorithmic acceleration needed to continue this damped trajectory.
+    states=[initial]
+    for sample in result.samples:
+        if sample.t==initial.t:continue
+        s=get_reference_state(sample.state)
+        states.append(ModeState(s.x,s.u,model.acceleration(s.x,s.u),sample.t))
+    return states,result
+
+
 def amplification_matrix(mu,rho_inf,**controls):
     """Map on [q,h*v,h^2*a], using h=1; includes the algorithmic mode."""
     if not math.isfinite(mu) or mu<0:raise ValueError('finite nonnegative mu required')

@@ -60,6 +60,7 @@ from .imexmultistep import SBDF2, SBDF3, CNAB2
 from .rhs import (RHS, IMEXRHS, SemilinearRHS, resolve, ResolvedRHS,
                  check_contracts, add_updates, sub_updates, CAPABILITIES)
 from .newmark import newmark, newmark_average_acceleration, newmark_linear_acceleration
+from .generalized_alpha import GeneralizedAlpha, GeneralizedAlphaMemory
 from .dirk import (TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA,
                    Kvaerno3, Kvaerno4, Kvaerno5, KenCarp3, KenCarp4, KenCarp47, KenCarp5,
                    KenCarp58, ESDIRK325L2SA, ESDIRK436L2SA2, ESDIRK437L2SA, ESDIRK547L2SA2,
@@ -110,6 +111,7 @@ from .drift import DriftField, drift_fields, drift_fields_active
 __version__ = "0.6.1"
 
 __all__ = [
+    "GeneralizedAlpha", "GeneralizedAlphaMemory",
     "gaussLegendre3", "radauIia3",
     "ConservativeDissipativeRHS", "compose", "LieTrotter", "Strang", "Yoshida4", "SplitScheme",
     "LinearExponentialFlow", "classify_separable", "SeparabilityResult",

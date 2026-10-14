@@ -49,7 +49,7 @@ CATEGORIES = {
     'exponential': ['test_exponential.py'],
     'rosenbrock': ['test_rosenbrock.py'],
     'rkc': ['test_rkc.py'],
-    'newmark': ['test_newmark.py','test_structural_demo.py'],
+    'newmark': ['test_newmark.py','test_structural_demo.py','test_generalized_alpha.py'],
     # Cross-family properties over the whole registry.
     'convergence': ['test_convergence.py', 'test_embedded.py'],
     'reuse': ['test_step_reuse.py'],

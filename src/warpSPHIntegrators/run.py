@@ -219,7 +219,8 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
     output. Events/checkpoints extend this contract through the helpers below.
     """
     from .splitting import SplitScheme
-    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme)) else getIntegrator(scheme)
+    from .generalized_alpha import GeneralizedAlpha
+    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme,GeneralizedAlpha)) else getIntegrator(scheme)
     if restart is not None:
         if restart.scheme != scheme.identifier.name:
             raise ValueError('Checkpoint scheme does not match')
@@ -327,7 +328,11 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
             return finish('max_rejections')
         remaining = abs(end-float(current.t))
         h = min(step_size, maximum, remaining)
-        if math.isclose(h,remaining,rel_tol=0,abs_tol=4*math.ulp(end)):
+        # Repeated additions can leave a roundoff-sized remainder after the
+        # intended last step. Even a near-zero extra step advances algorithmic
+        # memory. Bound accumulated time rounding when clipping to the endpoint.
+        time_roundoff = 4*(accepted+1)*max(math.ulp(t0),math.ulp(end))
+        if math.isclose(h,remaining,rel_tol=0,abs_tol=time_roundoff):
             h = remaining
         if (h < minimum and remaining > minimum) or float(current.t)+direction*h == float(current.t):
             return finish('min_dt')
@@ -335,7 +340,8 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
         trial = snapshot(current)
         trial_history = snapshot(history)
         same_dt = last_dt is not None and math.isclose(last_dt,signed_h,rel_tol=1e-12,abs_tol=0)
-        if trial_history.latest is not None and not math.isclose(trial_history.latest.dt,signed_h,rel_tol=1e-12,abs_tol=0):
+        if (scheme.metadata.history_requires_constant_dt and trial_history.latest is not None
+                and not math.isclose(trial_history.latest.dt,signed_h,rel_tol=1e-12,abs_tol=0)):
             trial_history = StepHistory(history.maxlen)  # reset BEFORE the formula consumes history
         options = dict(step_options, history=trial_history)
         if reuse and scheme.fsal and same_dt and prior is not None:

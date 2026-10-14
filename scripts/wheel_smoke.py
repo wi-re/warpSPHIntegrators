@@ -18,6 +18,7 @@ from warpSPHIntegrators import (
     stage_block_preconditioner,
     stage_shifted_preconditioner,
     ConservativeDissipativeRHS, Strang, Yoshida4, LinearExponentialFlow,
+    GeneralizedAlpha,
 )
 
 
@@ -80,6 +81,13 @@ fourth = solve(Yoshida4('Implicit Midpoint',LinearExponentialFlow(torch.tensor([
                TensorState(torch.ones(1,dtype=torch.float64)),.5,physical,dt=.05,
                solver_opts={'matvec':'jvp','tol':1e-12,'newton_tol':1e-9})
 assert fourth.successful and abs(fourth.state.y.item()-math.exp(-.5))<1e-6
+mechanics = testing.oscillator_problem()
+alpha = solve(GeneralizedAlpha(.5),mechanics.initial(),.2,mechanics.rhs,dt=.01,
+              solver_opts={'matvec':'jvp','tol':1e-12,'newton_tol':1e-7})
+continued = solve(GeneralizedAlpha(.5),None,.35,mechanics.rhs,restart=alpha.checkpoint,
+                  solver_opts={'matvec':'jvp','tol':1e-12,'newton_tol':1e-7})
+assert continued.successful and continued.history.latest.state.t == .35
+assert abs(continued.state.state.x.item()-mechanics.exact(.35)[0][0])<2e-4
 print(f'Installed wheel {package.__version__}: all modules/exports, py.typed, '
       f'{len(filter_schemes(state_kind="tensor"))} tensor drivers, advanced state protocol, '
-      'adaptive sampling/events, portable restart, stiff bootstrap, stage preconditioning and physical splitting pass')
+      'adaptive sampling/events, portable restart, stiff bootstrap, stage preconditioning, physical splitting and generalized-alpha continuation pass')

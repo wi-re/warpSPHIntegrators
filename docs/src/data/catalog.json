@@ -96,7 +96,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Midpoint",
@@ -120,7 +121,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Heun's Method (2nd order)",
@@ -144,7 +146,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Ralston's Method (2nd order)",
@@ -168,7 +171,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "RK3",
@@ -192,7 +196,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Heun's Method (3rd order)",
@@ -216,7 +221,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Ralston's Method (3rd order)",
@@ -240,7 +246,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Wray's Method (3rd order)",
@@ -264,7 +271,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SSP RK3",
@@ -288,7 +296,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SSPRK(10,4)",
@@ -312,7 +321,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SSPRK53",
@@ -336,7 +346,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SSPRK63",
@@ -360,7 +371,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SSPRK73",
@@ -384,7 +396,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SSPRK83",
@@ -408,7 +421,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SSPRK54",
@@ -432,7 +446,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "KYKSSPRK42",
@@ -456,7 +471,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "KYK2014DGSSPRK_3S2",
@@ -480,7 +496,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SSPRK43",
@@ -504,7 +521,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SSPRK432",
@@ -528,7 +546,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SSPRK932",
@@ -552,7 +571,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SSPRK53_2N1",
@@ -576,7 +596,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SSPRK53_2N2",
@@ -600,7 +621,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SSPRK53_H",
@@ -624,7 +646,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "RK4",
@@ -648,7 +671,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "RK4 (alternative)",
@@ -672,7 +696,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Nystrom 5th order",
@@ -696,7 +721,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Bogacki-Shampine 3(2)",
@@ -720,7 +746,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Dormand-Prince 5(4)",
@@ -744,7 +771,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Cash-Karp 5(4)",
@@ -768,7 +796,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Tsit5 5(4)",
@@ -792,7 +821,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "OwrenZen3 3(2)",
@@ -816,7 +846,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "OwrenZen4 4(3)",
@@ -840,7 +871,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "OwrenZen5 5(4)",
@@ -864,7 +896,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "BS5 5(4)",
@@ -888,7 +921,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Stepanov5 5(4)",
@@ -912,7 +946,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Alshina2 2(1)",
@@ -936,7 +971,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Alshina3",
@@ -960,7 +996,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Alshina6",
@@ -984,7 +1021,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "MSRK5",
@@ -1008,7 +1046,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "MSRK6",
@@ -1032,7 +1071,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SIR54",
@@ -1056,7 +1096,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Ralston4",
@@ -1080,7 +1121,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "RKO65",
@@ -1104,7 +1146,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "RKM",
@@ -1128,7 +1171,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "PSRK4p7q6",
@@ -1152,7 +1196,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "PSRK3p6q5",
@@ -1176,7 +1221,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "PSRK3p5q4",
@@ -1200,7 +1246,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Vern6 6(5)",
@@ -1224,7 +1271,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Vern7 7(6)",
@@ -1248,7 +1296,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Vern8 8(7)",
@@ -1272,7 +1321,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Vern9 9(8)",
@@ -1296,7 +1346,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "RKV76IIa 7(6)",
@@ -1320,7 +1371,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "TanYam7 7(6)",
@@ -1344,7 +1396,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "TsitPap8 8(7)",
@@ -1368,7 +1421,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "DP8",
@@ -1392,7 +1446,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Feagin10",
@@ -1416,7 +1471,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Feagin12",
@@ -1440,7 +1496,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Feagin14",
@@ -1464,7 +1521,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Leap Frog",
@@ -1488,7 +1546,8 @@
       "state_kind": "second_order",
       "requires_separable": true,
       "supports_drift_fields": true,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Symplectic Euler",
@@ -1512,7 +1571,8 @@
       "state_kind": "second_order",
       "requires_separable": true,
       "supports_drift_fields": true,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Velocity Verlet",
@@ -1536,7 +1596,8 @@
       "state_kind": "second_order",
       "requires_separable": true,
       "supports_drift_fields": true,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "PEFRL",
@@ -1560,7 +1621,8 @@
       "state_kind": "second_order",
       "requires_separable": true,
       "supports_drift_fields": true,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "VEFRL",
@@ -1584,7 +1646,8 @@
       "state_kind": "second_order",
       "requires_separable": true,
       "supports_drift_fields": true,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "EPEC",
@@ -1608,7 +1671,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "EPEC Modified",
@@ -1632,7 +1696,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "TVD RK3",
@@ -1656,7 +1721,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "TVD RK2",
@@ -1680,7 +1746,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Semi-Implicit Euler",
@@ -1704,7 +1771,8 @@
       "state_kind": "second_order",
       "requires_separable": false,
       "supports_drift_fields": true,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Explicit Euler",
@@ -1728,7 +1796,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Backward Euler (implicit)",
@@ -1752,7 +1821,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Implicit Midpoint",
@@ -1776,7 +1846,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Trapezoidal (Crank-Nicolson)",
@@ -1800,7 +1871,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SDIRK2",
@@ -1824,7 +1896,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "TR-BDF2",
@@ -1848,7 +1921,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "ESDIRK3(2)4L[2]SA",
@@ -1872,7 +1946,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "ESDIRK4(3)6L[2]SA",
@@ -1896,7 +1971,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Kvaerno3",
@@ -1920,7 +1996,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Kvaerno4",
@@ -1944,7 +2021,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Kvaerno5",
@@ -1968,7 +2046,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "KenCarp3",
@@ -1992,7 +2071,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "KenCarp4",
@@ -2016,7 +2096,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "KenCarp47",
@@ -2040,7 +2121,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "KenCarp5",
@@ -2064,7 +2146,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "KenCarp58",
@@ -2088,7 +2171,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "ESDIRK3(2)5L[2]SA",
@@ -2112,7 +2196,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "ESDIRK4(3)6L[2]SA2",
@@ -2136,7 +2221,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "ESDIRK4(3)7L[2]SA",
@@ -2160,7 +2246,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "ESDIRK5(4)7L[2]SA2",
@@ -2184,7 +2271,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "ESDIRK5(4)I8L[2]SA",
@@ -2208,7 +2296,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "ESDIRK6(5)9L[2]SA",
@@ -2232,7 +2321,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SSPSDIRK2",
@@ -2256,7 +2346,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "ARS222",
@@ -2280,7 +2371,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "ARS232",
@@ -2304,7 +2396,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "ARS343",
@@ -2328,7 +2421,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "ARS443",
@@ -2352,7 +2446,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "BHR553",
@@ -2376,7 +2471,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Cash4",
@@ -2400,7 +2496,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "CFNLIRK3",
@@ -2424,7 +2521,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Hairer4",
@@ -2448,7 +2546,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Hairer42",
@@ -2472,7 +2571,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SFSDIRK4",
@@ -2496,7 +2596,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SFSDIRK5",
@@ -2520,7 +2621,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SFSDIRK6",
@@ -2544,7 +2646,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SFSDIRK7",
@@ -2568,7 +2671,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SFSDIRK8",
@@ -2592,7 +2696,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Gauss-Legendre 2",
@@ -2616,7 +2721,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Radau IIA s=2",
@@ -2640,7 +2746,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Gauss-Legendre 3",
@@ -2664,7 +2771,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Radau IIA s=3",
@@ -2688,7 +2796,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "ARK3(2)4L[2]SA",
@@ -2715,7 +2824,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "ARK4(3)6L[2]SA",
@@ -2742,7 +2852,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Newmark",
@@ -2766,7 +2877,8 @@
       "state_kind": "second_order",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "BDF1",
@@ -2790,7 +2902,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 1
+      "history_length": 1,
+      "history_requires_constant_dt": true
     },
     {
       "name": "BDF2",
@@ -2814,7 +2927,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 1
+      "history_length": 1,
+      "history_requires_constant_dt": true
     },
     {
       "name": "BDF3",
@@ -2838,7 +2952,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 2
+      "history_length": 2,
+      "history_requires_constant_dt": true
     },
     {
       "name": "BDF4",
@@ -2862,7 +2977,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 3
+      "history_length": 3,
+      "history_requires_constant_dt": true
     },
     {
       "name": "BDF5",
@@ -2886,7 +3002,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 4
+      "history_length": 4,
+      "history_requires_constant_dt": true
     },
     {
       "name": "IMEX Euler",
@@ -2913,7 +3030,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SBDF2",
@@ -2940,7 +3058,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 1
+      "history_length": 1,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SBDF3",
@@ -2967,7 +3086,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 2
+      "history_length": 2,
+      "history_requires_constant_dt": true
     },
     {
       "name": "CNAB2",
@@ -2994,7 +3114,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 1
+      "history_length": 1,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Adams-Bashforth 2",
@@ -3018,7 +3139,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 1
+      "history_length": 1,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Adams-Bashforth 3",
@@ -3042,7 +3164,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 2
+      "history_length": 2,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Adams-Bashforth 4",
@@ -3066,7 +3189,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 3
+      "history_length": 3,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Adams-Bashforth 5",
@@ -3090,7 +3214,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 4
+      "history_length": 4,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Adams-Bashforth-Moulton 2 (PECE)",
@@ -3114,7 +3239,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 1
+      "history_length": 1,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Adams-Bashforth-Moulton 3 (PECE)",
@@ -3138,7 +3264,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 2
+      "history_length": 2,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Adams-Bashforth-Moulton 4 (PECE)",
@@ -3162,7 +3289,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 3
+      "history_length": 3,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SSPRKMSVS32",
@@ -3186,7 +3314,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 2
+      "history_length": 2,
+      "history_requires_constant_dt": true
     },
     {
       "name": "SSPRKMSVS43",
@@ -3210,7 +3339,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 3
+      "history_length": 3,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Adams-Moulton 2 (implicit)",
@@ -3234,7 +3364,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 1
+      "history_length": 1,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Adams-Moulton 3 (implicit)",
@@ -3258,7 +3389,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 2
+      "history_length": 2,
+      "history_requires_constant_dt": true
     },
     {
       "name": "Adams-Moulton 4 (implicit)",
@@ -3282,7 +3414,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 3
+      "history_length": 3,
+      "history_requires_constant_dt": true
     },
     {
       "name": "RKC1",
@@ -3309,7 +3442,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "RKC2",
@@ -3336,7 +3470,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "RKL2",
@@ -3363,7 +3498,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "ROS3P",
@@ -3390,7 +3526,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "ETD2RK",
@@ -3418,7 +3555,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     },
     {
       "name": "EXPRB32",
@@ -3445,7 +3583,8 @@
       "state_kind": "tensor",
       "requires_separable": false,
       "supports_drift_fields": false,
-      "history_length": 0
+      "history_length": 0,
+      "history_requires_constant_dt": true
     }
   ]
 }
