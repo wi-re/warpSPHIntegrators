@@ -38,7 +38,7 @@ CATEGORIES = {
         'test_preconditioner.py', 'test_spatial_preconditioner.py',
     ],
     # Family-specific drivers and tableaus.
-    'dirk': ['test_dirk.py'],
+    'dirk': ['test_dirk.py', 'test_parallel_dirk.py'],
     'prrk': ['test_prrk.py'],
     'bdf': ['test_bdf.py','test_stiff_startup.py','test_ndf.py','test_adaptive_ndf.py'],
     'am': ['test_am.py'],

@@ -691,6 +691,7 @@ contracts allow it.
 | `StabilizedRK` | RKL1/2, RKG1/2 | Supplied stages or negative-real spectral bound; full-stage storage |
 | `Nystrom` | 14 qualified VI/VD configurations | Second-order mechanics with position/velocity/quantity quadratures; structure assumptions are checked or declared |
 | `ImprovedNystrom` | Improved Nyström orders 3 and 4 | Fixed-step velocity-independent mechanics; corrected startup and owned history reduce warm-step force calls |
+| `ParallelDIRK` | Parallel DIRK, four stages / order four | L-stable ordinary ODE map, executed serially; four nonlinear solves and no embedded estimate |
 | `NDF` / `AdaptiveNDF` | Fixed target 1–5 / accepted target-order selection | Implicit difference history with quasi-constant step policy; distinct from the full upstream controller |
 | `Extrapolation` | Euler 2–8; midpoint 2/4/6/8/10 | Fixed-target explicit extrapolation, adaptive timestep, full-state quantities |
 | `ExpandedRK` | 54 checked main maps, 19 estimates | Source-expanded low-storage-family coefficients; current execution uses full-stage buffers |

@@ -27,6 +27,11 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Added — Phase 8 backend expansion
 
+- Source-qualified PDIRK44 factory with serial full-state stage solves, exact
+  fourth-order/A/L-stability gates, endpoint refresh, gradients and portable
+  continuation. PDIRK means parallel DIRK for ordinary first-order ODEs; the
+  package retains independent stage groups without an internal-threading claim.
+
 - Improved Nyström orders three and four with corrected nonautonomous startup,
   source-checked warm recurrences, owned and guarded fixed-step history, component
   quadratures, in-memory restart and force/accuracy measurements on known modes.

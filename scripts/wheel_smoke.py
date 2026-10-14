@@ -24,6 +24,7 @@ from warpSPHIntegrators import (
     FunctionMap,tensor_map,MapTransition,
     ExpandedRK,expanded_rk_methods,
     ImprovedNystrom,
+    ParallelDIRK,
 )
 
 
@@ -89,6 +90,9 @@ assert fourth.successful and abs(fourth.state.y.item()-math.exp(-.5))<1e-6
 mechanics = testing.oscillator_problem()
 improved=solve(ImprovedNystrom(4,'declared'),mechanics.initial(),.5,mechanics.rhs,dt=.03125)
 assert improved.successful and abs(improved.state.state.x.item()-mechanics.exact(.5)[0][0])<1e-6
+parallel=solve(ParallelDIRK(),TensorState(torch.ones(1,dtype=torch.float64)),.25,
+    tensor_rhs(lambda t,y:-y),dt=.0625,solver_opts={'matvec':'jvp','tol':1e-13,'newton_tol':1e-8})
+assert parallel.successful and abs(parallel.state.y.item()-math.exp(-.25))<1e-6
 alpha = solve(GeneralizedAlpha(.5),mechanics.initial(),.2,mechanics.rhs,dt=.01,
               solver_opts={'matvec':'jvp','tol':1e-12,'newton_tol':1e-7})
 continued = solve(GeneralizedAlpha(.5),None,.35,mechanics.rhs,restart=alpha.checkpoint,

@@ -378,9 +378,11 @@ DPRKN6FM, DPRKN8, FineRKN4, FineRKN5, ERKN4/5/7 (source embedded/trigonometrical
 designed explicit RKN tableaus; the pinned implementations use constant RKN
 coefficients, not a phi-Krylov driver), IRKN3/4 (**improved**, fixed-step
 velocity-independent RKN with history, not implicit JFNK). Plus **PDIRK44**
-(`OrdinaryDiffEqPDIRK`): partitioned DIRK for second-order ODEs — split-state driver
-(position and velocity each run a DIRK half), comparable in scale to the ARK pair
-machinery.
+(`OrdinaryDiffEqPDIRK`): **parallel** DIRK for ordinary first-order ODEs, with
+two independent pairs of implicit stages. The earlier partitioned-mechanics
+classification was incorrect. ParallelDIRK now executes the source map through
+the serial DIRK driver; [validation](../development/parallel-dirk-validation.md).
+No internal-threading implementation or performance claim is implied.
 
 The [IRKN source-path audit](../development/irkn-source-audit.md) executes actual
 mutable kernels and records unusable constant-cache paths. Source time-dependent
@@ -392,7 +394,8 @@ lifecycle and known-consumer force measurements;
 
 **Gate:** order on the oscillator/kepler second-order problems; Nystrom5th
 regression (the new driver must reproduce the existing hand-rolled method's order);
-history/startup/order for improved IRKN; block-solve scale for PDIRK at s>2.
+history/startup/order for improved IRKN; source/order/stability/solve and consumer
+gates for PDIRK44. Stage-threading cost belongs to the execution backend.
 
 ## Wave 13 — new medium drivers (C4, ~11 methods)
 

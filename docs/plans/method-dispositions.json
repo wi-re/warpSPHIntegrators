@@ -1,5 +1,5 @@
 {
-  "audit_date": "2026-10-14",
+  "audit_date": "2026-10-15",
   "registry_baseline": "5eb45e0",
   "source_pin": {
     "package": "OrdinaryDiffEq",
@@ -6176,6 +6176,19 @@
       ],
       "evidence": "docs/development/improved-nystrom-validation.md",
       "intended_consumer": "Smooth fixed-step velocity-independent mechanics with expensive forces; owned history and passive quantities"
+    },
+    {
+      "name": "PDIRK44 serial backend",
+      "status": "implemented",
+      "wave": 12,
+      "reason": "Pinned ordinary first-order parallel DIRK map executed by serial full-state DIRK solver; no stage-threading claim",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; PDIRK 2.4.1 actual coefficient constructor and both constant-cache step branches",
+      "implementation": "src/warpSPHIntegrators/parallel_dirk.py",
+      "tests": [
+        "tests/test_parallel_dirk.py"
+      ],
+      "evidence": "docs/development/parallel-dirk-validation.md",
+      "intended_consumer": "Fourth-order L-stable ordinary ODE steps; independent stage groups available to future execution backends"
     }
   ]
 }

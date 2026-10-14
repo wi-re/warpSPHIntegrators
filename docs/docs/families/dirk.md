@@ -20,7 +20,29 @@ estimation; the only new piece is the stage solve.
 
 ## The tableaus
 
-All 37 are in `dirk.getDIRKTableau`, covered by convergence, tableau consistency, reuse,
+### Parallel DIRK (`ParallelDIRK()`)
+
+The additional `ParallelDIRK()` factory implements the pinned PDIRK44 map
+outside the 37 fixed DIRK entries. It solves ordinary first-order ODEs with four
+implicit stages, two independent pairs, and order four. Its stability function is
+`R(z)=(z+3)*(9*z*z-20*z+12)/((z-2)**2*(2*z-3)**2)`: A-stable and L-stable.
+It has no embedded estimate, FSAL reuse or SSP guarantee. Coupled first-order
+quantities follow the same RK weights.
+
+This backend executes the stages serially using JFNK, with the usual DIRK
+solver and preconditioner options. Its independent groups remain available for
+future execution backends; there is no internal-threading speed claim. A fifth,
+zero-weight endpoint evaluation refreshes copied fields. Use fixed timesteps
+and resupply solver options when continuing from a checkpoint.
+
+On 4,096 nonlinear forced reaction modes, sixteen steps of size .0625 gave
+maximum error 4.80e-6 with 790 actual RHS calls. Radau IIA with two stages gave
+1.34e-5 with 422 calls; the six-stage ESDIRK4 method gave 1.75e-7 with 880 calls.
+These are fixed-step comparisons, not equal-error speed rankings. They support
+PDIRK as another four-stage L-stable option rather than a new default. See
+[source and numerical validation](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/parallel-dirk-validation.md).
+
+All 37 fixed records are in `dirk.getDIRKTableau`, covered by convergence, tableau consistency, reuse,
 stability, adaptive and gradient tests (NOTES.md §§3.6 and 3.28).
 
 ### MEBDF2 (`mebdf2`)

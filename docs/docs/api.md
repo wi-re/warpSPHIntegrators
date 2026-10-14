@@ -77,6 +77,28 @@ rates and a previous-velocity contribution; custom finalize must opt into
 parameters require `restart_history=True`. No error estimate or physical-subflow
 support. See [force-history mechanics](families/nystrom#improved-nyström-reusing-force-history).
 
+## Parallel DIRK with serial stage execution
+
+`ParallelDIRK()` supplies the fixed fourth-order, L-stable PDIRK44 map for ordinary
+first-order ODEs. Four nonlinear stage solves use the usual DIRK/JFNK options;
+an endpoint refresh supplies copied fields. There is no embedded estimate or
+stage threading. Independent stage groups are `((0,1),(2,3))`.
+
+[example:run parallel-dirk]: #
+```python
+import math
+import torch
+from warpSPHIntegrators import ParallelDIRK, TensorState, tensor_rhs, solve
+
+result = solve(ParallelDIRK(), TensorState(torch.ones(1, dtype=torch.float64)),
+               .5, tensor_rhs(lambda t, y: -y), dt=.0625,
+               solver_opts={'matvec': 'jvp', 'tol': 1e-13, 'newton_tol': 1e-8})
+assert result.successful
+assert abs(result.state.y.item() - math.exp(-.5)) < 1e-6
+```
+
+See [the method and measured tradeoff](families/dirk#parallel-dirk-paralleldirk).
+
 ## Second-order numerical damping
 
 `GeneralizedAlpha(rho_inf=.5)` binds a classical fixed-step mechanics driver.

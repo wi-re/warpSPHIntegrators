@@ -204,14 +204,18 @@ must be recorded rather than counted as an implemented method.
 - [ ] Resolve the remaining wave-11 stabilized, Rosenbrock and exponential
   candidates, plus approximate-matrix-factorization operator contracts. These
   need recurrence/operator/solver and consumer gates, rather than only tableaus.
-- [ ] Resolve improved IRKN history and partitioned DIRK candidates from wave 12
+- [x] Resolve improved IRKN history and parallel DIRK candidates from wave 12
   with their startup, second-order state, solve and source qualifications.
   [The improved-IRKN source audit](docs/development/irkn-source-audit.md) now
   records constant-cache failures and order-two nonautonomous source startup.
   ImprovedNystrom now implements corrected startup with source warm trajectories,
   nonlinear/time-dependent order, lifecycle, gradients, guarded history, restart
   and measured force/accuracy gates; [validation](docs/development/improved-nystrom-validation.md).
-  Partitioned DIRK retains its own solve/parallel-stage qualification.
+  ParallelDIRK now implements the ordinary first-order PDIRK44 map through the
+  serial DIRK solver, with source branch equivalence, exact order/stability,
+  lifecycle/gradient/restart and consumer gates; [validation](docs/development/parallel-dirk-validation.md).
+  Source inspection corrected the old plan's mistaken partitioned-mechanics
+  classification. Internal stage threading remains an execution-backend concern.
 - [x] Prioritize a benchmarked niche: s=3 collocation improves known-consumer
   accuracy/work while passing the spatial bar. Generalized-alpha is source-confirmed
   and now has a [known two-mass consumer and linear prototype](docs/development/structural-demo-validation.md).
