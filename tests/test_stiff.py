@@ -8,6 +8,7 @@ import torch
 from warpSPHIntegrators import StepHistory, getIntegrator, get_reference_state, testing
 from warpSPHIntegrators.stability import bdf_is_stable, oscillator_is_stable, oscillator_spectral_radius, rk_is_stable, rk_stability_function
 from warpSPHIntegrators.integration import IntegrationSchemes
+from warpSPHIntegrators.enums import DIRK
 
 
 STATE_SPACE_IMPLICIT = [
@@ -35,6 +36,11 @@ STATE_SPACE_IMPLICIT = [
     # startup steps respectively, and are pinned at the rates their shared
     # explicit startup can absorb (the tests below).
     'SBDF2',
+]
+STATE_SPACE_IMPLICIT += [
+    s.name for s in IntegrationSchemes
+    if s.family is DIRK and s.stability in {'A', 'L'}
+    and s.name not in STATE_SPACE_IMPLICIT
 ]
 
 
@@ -126,6 +132,15 @@ def test_every_tableau_is_consistent_at_the_dahlquist_origin():
 @pytest.mark.parametrize('name', [
     'Backward Euler (implicit)', 'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)',
     'SDIRK2', 'TR-BDF2', 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
+    # Wave 8 (NOTES.md 3.28): the 24 A-stable new tableaus (22 L-stable plus
+    # Kvaerno4 and SSPSDIRK2, A-stable not L). All contain these three LHP
+    # probe points; SFSDIRK4-8 are NOT A-stable (bounded real-axis region only)
+    # and stay out of this list.
+    'Kvaerno3', 'Kvaerno4', 'Kvaerno5', 'KenCarp3', 'KenCarp4', 'KenCarp47',
+    'KenCarp5', 'KenCarp58', 'ESDIRK3(2)5L[2]SA', 'ESDIRK4(3)6L[2]SA2',
+    'ESDIRK4(3)7L[2]SA', 'ESDIRK5(4)7L[2]SA2', 'ESDIRK5(4)I8L[2]SA',
+    'ESDIRK6(5)9L[2]SA', 'SSPSDIRK2', 'ARS222', 'ARS232', 'ARS343', 'ARS443',
+    'BHR553', 'Cash4', 'CFNLIRK3', 'Hairer4', 'Hairer42',
 ])
 @pytest.mark.parametrize('z', [-10.0, -10.0 + 4.0j, -0.25 + 3.0j])
 def test_a_stable_dirk_schemes_contain_known_left_half_plane_points(name, z):
@@ -136,6 +151,14 @@ def test_a_stable_dirk_schemes_contain_known_left_half_plane_points(name, z):
 @pytest.mark.parametrize('name', [
     'Backward Euler (implicit)', 'SDIRK2', 'TR-BDF2',
     'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
+    # Wave 8 (NOTES.md 3.28): the 19 new L-stable tableaus whose measured
+    # |R(-100)| lands under 0.1 (2.6e-3 .. 7.9e-2). The three new L-stable
+    # tableaus with a large damping constant (|R(-100)| = 0.149/0.125/0.106)
+    # are pinned at larger |z| in the test below.
+    'Kvaerno3', 'Kvaerno5', 'KenCarp3', 'KenCarp4', 'KenCarp5', 'KenCarp58',
+    'ESDIRK3(2)5L[2]SA', 'ESDIRK4(3)6L[2]SA2', 'ESDIRK5(4)I8L[2]SA',
+    'ESDIRK6(5)9L[2]SA', 'ARS222', 'ARS232', 'ARS343', 'ARS443', 'BHR553',
+    'Cash4', 'CFNLIRK3', 'Hairer4', 'Hairer42',
 ])
 def test_l_stable_dirk_schemes_damp_the_negative_real_axis(name):
     """L-stability, method-specifically: the stability function decays along the
@@ -151,6 +174,28 @@ def test_l_stable_dirk_schemes_damp_the_negative_real_axis(name):
     assert r < 0.1, f'{name}: |R(-100)| = {r:.4f}, expected strong L-stable damping'
 
 
+@pytest.mark.parametrize('name', [
+    'KenCarp47', 'ESDIRK4(3)7L[2]SA', 'ESDIRK5(4)7L[2]SA2',
+])
+def test_l_stable_dirk_schemes_with_large_damping_constants(name):
+    """The complement of the < 0.1 test: L-stable tableaus whose C in
+    R(z) ~= C/|z| is large enough that |R(-100)| still exceeds 0.1 (measured
+    KenCarp47 0.149, ESDIRK4(3)7L[2]SA 0.125, ESDIRK5(4)7L[2]SA2 0.106).
+    L-stability is pinned at larger |z|: |R(-1000)| < 0.1 (measured
+    2.6e-2/2.2e-2/1.5e-2) and |R(-1e6)| < 1e-4 (measured 2.8e-5/2.4e-5/1.6e-5).
+    A fine left-half-plane grid (NOTES.md 3.28) found no |R| > 1 for any of
+    the three, so the classification stays 'L' despite the large constant."""
+    tab = getIntegrator(name).function.dirkTableau
+    r100 = abs(rk_stability_function(tab, -100.0))
+    r1000 = abs(rk_stability_function(tab, -1000.0))
+    r1e6 = abs(rk_stability_function(tab, -1e6))
+    assert r100 > 0.1, (
+        f'{name}: |R(-100)| = {r100:.4f}; this test covers the large-constant '
+        f'L-stable row (the < 0.1 test covers the rest)')
+    assert r1000 < 0.1, f'{name}: |R(-1000)| = {r1000:.4f}, expected L-stable decay'
+    assert r1e6 < 1e-4, f'{name}: |R(-1e6)| = {r1e6:.3e}, expected decay to 0'
+
+
 @pytest.mark.parametrize('name', ['Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)'])
 def test_a_stable_but_not_l_dirk_schemes_approach_unit_magnitude(name):
     """The companion: A-stable but not L-stable tableaus have R(z) -> -1 along
@@ -160,6 +205,25 @@ def test_a_stable_but_not_l_dirk_schemes_approach_unit_magnitude(name):
     tab = getIntegrator(name).function.dirkTableau
     r = abs(rk_stability_function(tab, -100.0))
     assert r > 0.9, f'{name}: |R(-100)| = {r:.4f}, expected approach to 1 (A-stable, not L)'
+
+
+@pytest.mark.parametrize('name', ['Kvaerno4', 'SSPSDIRK2'])
+def test_a_stable_not_l_dirk_schemes_damp_sub_l(name):
+    """The middle class of the stability='A' flag (wave 8, NOTES.md 3.28):
+    A-stable (they pass the probe-point test above) but not L-stable, so R(z)
+    does not decay to 0 along the negative real axis.
+
+    Measured at z = -100: Kvaerno4 |R| = 0.629, SSPSDIRK2 |R| = 0.852 -- more
+    damping than the unit-magnitude class (|R(-100)| = 49/51 ~= 0.961 there)
+    but far from the L-stable < 0.1. As z -> -inf, Kvaerno4 settles at a
+    nonzero A-stable asymptote |R(inf)| = 0.7175 while SSPSDIRK2 settles at
+    |R(inf)| ~= 1 (R(inf) = -1), so neither decays ~ C/|z| like the L-stable
+    row: both sit strictly between the two tests above."""
+    tab = getIntegrator(name).function.dirkTableau
+    r = abs(rk_stability_function(tab, -100.0))
+    assert 0.1 < r < 0.9, (
+        f'{name}: |R(-100)| = {r:.4f}, expected sub-L damping (strictly between '
+        f'the L-stable < 0.1 row and the unit-magnitude > 0.9 row)')
 
 
 @pytest.mark.parametrize('order', [1, 2])

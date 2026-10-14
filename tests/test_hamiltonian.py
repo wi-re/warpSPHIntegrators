@@ -92,6 +92,7 @@ def test_bounded_energy_schemes_are_exactly_the_expected_set():
         # measurement below); Radau IIA s=2 is deliberately not in this set:
         # L-stable and dissipative (kepler energy growth 8.1 over 8x the time).
         'Gauss-Legendre 2',
+        'SSPSDIRK2',  # composition of two implicit-midpoint half-steps
     }
 
 
@@ -116,6 +117,7 @@ LINEARLY_SYMPLECTIC = {
     'Leap Frog', 'Symplectic Euler', 'Velocity Verlet', 'PEFRL', 'VEFRL',
     'Semi-Implicit Euler', 'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)',
     'Newmark',
+    'SSPSDIRK2',
     # Measured, not assumed: Gauss-Legendre 2 preserves the oscillator phase area
     # (strict-solve defect 3.05e-13) even though its tableau is *not* symmetric
     # (a_12 != a_21). Radau IIA s=2 is deliberately absent -- its defect is
@@ -184,7 +186,7 @@ def test_every_scheme_has_the_expected_linear_oscillator_area_property(scheme):
                     f'test_high_order_area_defect_grows_with_the_step')
     solver = None
     if scheme.name in {'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)',
-                       'Newmark', 'Gauss-Legendre 2'}:
+                       'Newmark', 'Gauss-Legendre 2', 'SSPSDIRK2'}:
         # Gauss-Legendre 2 needs the strict solve too: with the default JFNK
         # tolerances its area defect is 4.29e-06 (solver noise), the strict
         # solve recovers 3.05e-13 (the method's true symplecticity).
@@ -222,7 +224,7 @@ def test_high_order_area_defect_grows_with_the_step(name):
         f'area-preserving at every step, reclassify deliberately')
 
 
-@pytest.mark.parametrize('name', ['Implicit Midpoint', 'Newmark', 'Gauss-Legendre 2'])
+@pytest.mark.parametrize('name', ['Implicit Midpoint', 'Newmark', 'Gauss-Legendre 2', 'SSPSDIRK2'])
 def test_strict_jfnk_restores_linear_symplecticity(name):
     solver = JFNKSolver(tol=1e-12, gmres_tol=1e-12, newton_tol=1e-12, fd_eps=1e-6)
     determinant = float(torch.linalg.det(_phase_jacobian(

@@ -5,7 +5,7 @@ import FeatureCard from '@site/src/components/FeatureCard';
 export default () => (
   <Layout
     title="warpSPHIntegrators — scheme wiki"
-    description="Differentiable ODE integrators for PyTorch: 64 schemes across 11 families, matrix-free implicit machinery, end-to-end autograd."
+    description="Differentiable ODE integrators for PyTorch: 137 schemes across 11 families, matrix-free implicit machinery, end-to-end autograd."
   >
     <header className="hero hero--primary">
       <div className="container text--center">
@@ -14,7 +14,7 @@ export default () => (
           <span className="heroSubtitle">scheme wiki</span>
         </h1>
         <p className="heroTagline">
-          Differentiable ODE integrators for PyTorch — 64 schemes across 11
+          Differentiable ODE integrators for PyTorch — 137 schemes across 11
           families, from explicit RK through coupled fully-implicit
           collocation to exponential integrators.
         </p>
@@ -42,9 +42,9 @@ export default () => (
     <main>
       <div className="container pad-top--lg pad-bottom--lg">
         <div className="row">
-          <FeatureCard title="64 schemes, 11 families">
-            Equations and Butcher tableaus transcribed verbatim from the
-            source, stability, per-step cost, and the citations — with the
+          <FeatureCard title="137 schemes, 11 families">
+            Equations and Butcher tableaus with source citations and documented
+            corrections, stability, and per-step cost — with the
             test files that pin every measured claim.
           </FeatureCard>
           <FeatureCard title="Matrix-free implicit machinery">

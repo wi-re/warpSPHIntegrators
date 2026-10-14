@@ -57,7 +57,12 @@ from .imexmultistep import SBDF2, SBDF3, CNAB2
 from .rhs import (RHS, IMEXRHS, SemilinearRHS, resolve, ResolvedRHS,
                  check_contracts, add_updates, sub_updates, CAPABILITIES)
 from .newmark import newmark, newmark_average_acceleration, newmark_linear_acceleration
-from .dirk import TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA
+from .dirk import (TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA,
+                   Kvaerno3, Kvaerno4, Kvaerno5, KenCarp3, KenCarp4, KenCarp47, KenCarp5,
+                   KenCarp58, ESDIRK325L2SA, ESDIRK436L2SA2, ESDIRK437L2SA, ESDIRK547L2SA2,
+                   ESDIRK54I8L2SA, ESDIRK659L2SA, SSPSDIRK2, ARS222, ARS232, ARS343, ARS443,
+                   BHR553, Cash4, CFNLIRK3, Hairer4, Hairer42, SFSDIRK4, SFSDIRK5, SFSDIRK6,
+                   SFSDIRK7, SFSDIRK8)
 from .fullyimplicit import gaussLegendre2, radauIia2, BlockTableau
 from .ark import ARK324L2SA, ARK436L2SA
 from .rkc import RKC1, RKC2, RKL2, stage_count
@@ -157,6 +162,37 @@ __all__ = [
     "TRBDF2",
     "ESDIRK324L2SA",
     "ESDIRK436L2SA",
+    # Wave 8 (SCHEME_EXPANSION_PLAN, 2026-10-13): the remaining ODE v7.8.1
+    # OrdinaryDiffEqSDIRK tableaus (NOTES.md 3.28).
+    "Kvaerno3",
+    "Kvaerno4",
+    "Kvaerno5",
+    "KenCarp3",
+    "KenCarp4",
+    "KenCarp47",
+    "KenCarp5",
+    "KenCarp58",
+    "ESDIRK325L2SA",
+    "ESDIRK436L2SA2",
+    "ESDIRK437L2SA",
+    "ESDIRK547L2SA2",
+    "ESDIRK54I8L2SA",
+    "ESDIRK659L2SA",
+    "SSPSDIRK2",
+    "ARS222",
+    "ARS232",
+    "ARS343",
+    "ARS443",
+    "BHR553",
+    "Cash4",
+    "CFNLIRK3",
+    "Hairer4",
+    "Hairer42",
+    "SFSDIRK4",
+    "SFSDIRK5",
+    "SFSDIRK6",
+    "SFSDIRK7",
+    "SFSDIRK8",
     "gaussLegendre2",
     "radauIia2",
     "BlockTableau",

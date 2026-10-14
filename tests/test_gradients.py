@@ -23,7 +23,9 @@ import torch
 
 from warpSPHIntegrators import JFNKSolver, get_reference_state, getIntegrator, testing
 from warpSPHIntegrators.history import StepHistory
-from warpSPHIntegrators.testing import ParticleState, ParticleSystem
+from warpSPHIntegrators.integration import IntegrationSchemes
+from warpSPHIntegrators.enums import DIRK as DIRKFamily
+from warpSPHIntegrators.testing import ParticleState, ParticleSystem, ParticleUpdate
 
 
 K = 4.0
@@ -69,41 +71,57 @@ def _dx_dx0(scheme_name, steps, **kwargs):
 #: Every implicit scheme that closes its stage equation with JFNK. Enough steps that
 #: the multistep schemes are past their explicit cold start and genuinely running the
 #: implicit path -- the bug this file guards hid behind exactly that handover.
+# ROS3P uses the frozen linear-operator gradient path instead of JFNK's IFT.
+# Its linear and nonlinear parity checks live in test_rosenbrock.py.
+IMPLICIT_GRADIENT_EXCLUSIONS = {'ROS3P': 'dedicated frozen-operator parity tests'}
 IMPLICIT_SCHEMES = [
-    ('Backward Euler (implicit)', 2),
-    ('Implicit Midpoint', 2),
-    ('Trapezoidal (Crank-Nicolson)', 2),
-    ('SDIRK2', 2),
-    ('TR-BDF2', 2),
-    ('ESDIRK3(2)4L[2]SA', 2),
-    ('ESDIRK4(3)6L[2]SA', 2),
-    ('ARK3(2)4L[2]SA', 2),
-    ('ARK4(3)6L[2]SA', 2),
-    ('IMEX Euler', 2),
-    ('Newmark', 2),
-    ('BDF1', 2),
-    ('BDF2', 4),
-    ('BDF3', 5),
-    ('BDF4', 6),
-    ('BDF5', 7),
-    ('Adams-Moulton 2 (implicit)', 4),
-    ('Adams-Moulton 3 (implicit)', 5),
-    ('Adams-Moulton 4 (implicit)', 6),
-    # The coupled fully implicit block pair: one-step schemes, so two integration
-    # steps each. Their stage systems close with the same JFNK (JVP matvec), so
-    # they take the same implicit-function-theorem re-attachment path.
-    ('Gauss-Legendre 2', 2),
-    ('Radau IIA s=2', 2),
-    # The IMEX multistep family: history threaded through the same IFT path,
-    # with enough steps to be past the Dormand-Prince cold start (the BDF
-    # family's convention: startup count + implicit steps).
-    ('SBDF2', 4),
-    ('SBDF3', 5),
-    ('CNAB2', 4),
+    (s.name, s.steps + 3 if s.startup_order is not None else 2)
+    for s in IntegrationSchemes
+    if s.implicit and s.name not in IMPLICIT_GRADIENT_EXCLUSIONS
 ]
 
-EXPLICIT_SCHEMES = ['RK4', 'Dormand-Prince 5(4)', 'SSP RK3', 'Velocity Verlet',
-                    'PEFRL', 'Adams-Bashforth 2', 'Adams-Bashforth-Moulton 3 (PECE)']
+
+# Per-step stage-count and exponential/Krylov drivers have dedicated vector
+# gradient parity tests in test_rkc.py and test_exponential.py. ETD2RK also
+# requires a SemilinearRHS, absent from this oscillator test.
+EXPLICIT_GRADIENT_EXCLUSIONS = {
+    'RKC1': 'dedicated stage-count gradient parity tests',
+    'RKC2': 'dedicated stage-count gradient parity tests',
+    'RKL2': 'dedicated stage-count gradient parity tests',
+    'ETD2RK': 'dedicated semilinear Krylov gradient parity tests',
+    'EXPRB32': 'dedicated exponential Rosenbrock gradient parity tests',
+}
+EXPLICIT_SCHEMES = [s.name for s in IntegrationSchemes
+                    if not s.implicit and s.name not in EXPLICIT_GRADIENT_EXCLUSIONS]
+
+
+@pytest.mark.parametrize('s', [s for s in IntegrationSchemes if s.family is DIRKFamily],
+                         ids=lambda s: s.name)
+def test_dirk_rhs_parameter_gradient_matches_finite_differences(s):
+    """The IFT must retain captured RHS parameters as well as state roots."""
+    solver = JFNKSolver(tol=1e-12, gmres_tol=1e-12, newton_tol=1e-12)
+
+    def integrate(k_value, track):
+        k = torch.tensor(k_value, dtype=torch.float64, requires_grad=track)
+        _, state = _oscillator_at(requires_grad=track)
+
+        def rhs(system, dt, **kwargs):
+            ref = get_reference_state(system)
+            return ParticleUpdate(dxdt=ref.u, dudt=-k * ref.x,
+                                  dedt=torch.zeros_like(ref.e)), None
+
+        for _ in range(2):
+            state = s(state, DT, rhs, solver=solver).state
+        return get_reference_state(state).x.sum(), k
+
+    out, k = integrate(K, True)
+    (gradient,) = torch.autograd.grad(out, k)
+    h = 1e-4
+    with torch.no_grad():
+        plus, _ = integrate(K + h, False)
+        minus, _ = integrate(K - h, False)
+    expected = float(plus - minus) / (2 * h)
+    assert float(gradient) == pytest.approx(expected, rel=1e-5, abs=1e-8)
 
 
 def _exact_sensitivity(steps):
@@ -129,8 +147,10 @@ def test_gradient_flows_through_every_implicit_scheme(name, steps):
 @pytest.mark.parametrize('name', EXPLICIT_SCHEMES)
 def test_gradient_still_flows_through_explicit_schemes(name):
     """Explicit schemes were never broken; nothing in the fix may change that."""
-    grad = _dx_dx0(name, 3)
-    assert grad == pytest.approx(_exact_sensitivity(3), abs=0.02)
+    s = getIntegrator(name)
+    steps = max(3, s.steps + 3) if s.startup_order is not None else 3
+    grad = _dx_dx0(name, steps)
+    assert grad == pytest.approx(_exact_sensitivity(steps), abs=0.02)
 
 
 # --------------------------------------------------------------------------- #

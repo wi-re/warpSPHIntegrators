@@ -13,16 +13,18 @@ when -- reuse actually costs order.
 import warnings
 
 import pytest
+import numpy as np
 
-from warpSPHIntegrators import getIntegrator, is_fsal, step_reuse_order, supports_step_reuse, testing
+from warpSPHIntegrators import (JFNKSolver, getIntegrator, is_fsal, step_reuse_order,
+                                supports_step_reuse, testing)
 from warpSPHIntegrators.reuse import step_reuse_analysis
 
 from conftest import ORDER_TOLERANCE, dts_for, order_of, problem
 
 
 #: The FSAL tableaus. Reuse on these is exact, not merely harmless: the reused stage
-#: is f(t^{n+1}, y^{n+1}). The four DIRK entries are stiffly accurate with an explicit
-#: first stage (Phase 10), so the implicit analogue of FSAL holds for them too. The
+#: is f(t^{n+1}, y^{n+1}). The 24 DIRK entries are stiffly accurate with an explicit
+#: first stage, so the implicit analogue of FSAL holds for them too. The
 #: difference for those is exact only up to the JFNK solve's last-bit sensitivity
 #: (~1e-11: the reused stage perturbs the next implicit stage's initial guess by a
 #: roundoff, and the nonlinear solve lands on a different last-bit iterate), rather
@@ -43,6 +45,29 @@ FSAL_SCHEMES = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)',
                 'Vern6 6(5)',
                 'Trapezoidal (Crank-Nicolson)', 'TR-BDF2',
                 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA']
+
+# Wave 8: the 20 explicit-first-stage, stiffly accurate DIRKs.
+FSAL_SCHEMES += [
+    'Kvaerno3', 'Kvaerno4', 'Kvaerno5', 'KenCarp3', 'KenCarp4', 'KenCarp47',
+    'KenCarp5', 'KenCarp58', 'ESDIRK3(2)5L[2]SA', 'ESDIRK4(3)6L[2]SA2',
+    'ESDIRK4(3)7L[2]SA', 'ESDIRK5(4)7L[2]SA2', 'ESDIRK5(4)I8L[2]SA',
+    'ESDIRK6(5)9L[2]SA', 'ARS222', 'ARS232', 'ARS343', 'ARS443', 'BHR553',
+    'CFNLIRK3',
+]
+
+
+@pytest.mark.parametrize('name', FSAL_SCHEMES)
+def test_fsal_tableaus_have_matching_endpoint_and_explicit_first_stage(name):
+    s = getIntegrator(name)
+    fn = s.function
+    tab = getattr(fn, 'dirkTableau', None)
+    if tab is None:
+        tab = fn.butcherTableau
+    b = tab.b[0] if isinstance(tab.b, tuple) else tab.b
+    assert np.allclose(tab.a[0], 0.0, atol=1e-13, rtol=0)
+    assert tab.c[0] == pytest.approx(0.0, abs=1e-13)
+    assert tab.c[-1] == pytest.approx(1.0, abs=1e-13)
+    assert np.allclose(tab.a[-1], b, atol=1e-13, rtol=0)
 
 
 #: On the linear autonomous oscillator, SSPRK(10,4)'s a[-1] weights satisfy the
@@ -126,8 +151,16 @@ def test_fsal_reuse_is_free(name, problem_name, step_sizes):
     assert supports_step_reuse(s)
 
     dts = dts_for(name, problem_name, step_sizes)
-    order_off, errors_off = order_of(s, problem_name, dts)
-    order_on, errors_on = order_of(s, problem_name, dts, reuse=True)
+    # Exact FSAL equivalence is a property of converged implicit stages.
+    # Default-solve noise reaches 1.2e-10 for the new high-order pairs;
+    # use a strict solve instead of relaxing the equality tolerance. The
+    # default-solve reuse orders remain covered by test_dirk.py.
+    opts = {}
+    if hasattr(s.function, 'dirkTableau'):
+        opts['solver'] = JFNKSolver(tol=1e-12, gmres_tol=1e-12, newton_tol=1e-12,
+                                   fd_eps=1e-6)
+    order_off, errors_off = order_of(s, problem_name, dts, **opts)
+    order_on, errors_on = order_of(s, problem_name, dts, reuse=True, **opts)
     assert order_on is not None, f'{name} on {problem_name}: no usable errors with reuse: {errors_on}'
     assert order_on >= order_off - ORDER_TOLERANCE
 

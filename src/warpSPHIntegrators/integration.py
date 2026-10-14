@@ -52,7 +52,12 @@ from .verlet import leapFrog, symplecticEuler, velocityVerlet
 from .tvd import TVDRK3, TVDRK2
 from .ruth import PEFRL, VEFRL
 from .dirk import (backwardEuler as implicitBackwardEuler, implicitMidpoint, trapezoidal,
-                   SDIRK2, TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA)
+                   SDIRK2, TRBDF2, ESDIRK324L2SA, ESDIRK436L2SA,
+                   Kvaerno3, Kvaerno4, Kvaerno5, KenCarp3, KenCarp4, KenCarp47, KenCarp5,
+                   KenCarp58, ESDIRK325L2SA, ESDIRK436L2SA2, ESDIRK437L2SA, ESDIRK547L2SA2,
+                   ESDIRK54I8L2SA, ESDIRK659L2SA, SSPSDIRK2, ARS222, ARS232, ARS343, ARS443,
+                   BHR553, Cash4, CFNLIRK3, Hairer4, Hairer42, SFSDIRK4, SFSDIRK5, SFSDIRK6,
+                   SFSDIRK7, SFSDIRK8)
 from .fullyimplicit import gaussLegendre2, radauIia2
 from .ark import ARK324L2SA, ARK436L2SA
 from .newmark import newmark
@@ -208,6 +213,103 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     ESDIRK436L2SA, 'ESDIRK4(3)6L[2]SA', IntegrationSchemeType.esdirk436l2sa, 4, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+# ---- Wave 8: the remaining ODE v7.8.1 DIRK tableaus (NOTES.md 3.28) -------- #
+# All on the JFNK DIRK driver. Coefficients from the ODE v7.8.1 tableaus,
+# verified one step against the real ODE solvers (NOTES.md 3.28). Stability
+# strings from a left-half-plane stability-function grid (same file): the
+# sub-A set is L-stable except kvaerno4 (A-stable, R(inf) ~ 0.72) and
+# sspsdirk2 (A-stable, R(inf) -> 1); the ARS family, bhr553, cash4, hairer4,
+# hairer42 and cfnlirk3 are L-stable too; the sfstdirk4-8 family has only a
+# bounded real-axis stability region (no A(alpha) sector), so it registers
+# stability=None like the other bounded-region schemes.
+IntegrationSchemes.append(IntegrationScheme(
+    Kvaerno3, 'Kvaerno3', IntegrationSchemeType.kvaerno3, 3, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    Kvaerno4, 'Kvaerno4', IntegrationSchemeType.kvaerno4, 4, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='A'))
+IntegrationSchemes.append(IntegrationScheme(
+    Kvaerno5, 'Kvaerno5', IntegrationSchemeType.kvaerno5, 5, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    KenCarp3, 'KenCarp3', IntegrationSchemeType.kencarp3, 3, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    KenCarp4, 'KenCarp4', IntegrationSchemeType.kencarp4, 4, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    KenCarp47, 'KenCarp47', IntegrationSchemeType.kencarp47, 4, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    KenCarp5, 'KenCarp5', IntegrationSchemeType.kencarp5, 5, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    KenCarp58, 'KenCarp58', IntegrationSchemeType.kencarp58, 5, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    ESDIRK325L2SA, 'ESDIRK3(2)5L[2]SA', IntegrationSchemeType.esdirk325l2sa, 3, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    ESDIRK436L2SA2, 'ESDIRK4(3)6L[2]SA2', IntegrationSchemeType.esdirk436l2sa2, 4, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    ESDIRK437L2SA, 'ESDIRK4(3)7L[2]SA', IntegrationSchemeType.esdirk437l2sa, 4, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    ESDIRK547L2SA2, 'ESDIRK5(4)7L[2]SA2', IntegrationSchemeType.esdirk547l2sa2, 5, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    ESDIRK54I8L2SA, 'ESDIRK5(4)I8L[2]SA', IntegrationSchemeType.esdirk54i8l2sa, 5, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    ESDIRK659L2SA, 'ESDIRK6(5)9L[2]SA', IntegrationSchemeType.esdirk659l2sa, 6, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    SSPSDIRK2, 'SSPSDIRK2', IntegrationSchemeType.sspsdirk2, 2, False,
+    # Two implicit-midpoint half-steps: symplectic, R(infinity) = +1.
+    implicit=True, steps=1, stiffly_accurate=False, stability='A'))
+IntegrationSchemes.append(IntegrationScheme(
+    ARS222, 'ARS222', IntegrationSchemeType.ars222, 2, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    ARS232, 'ARS232', IntegrationSchemeType.ars232, 2, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    ARS343, 'ARS343', IntegrationSchemeType.ars343, 3, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    ARS443, 'ARS443', IntegrationSchemeType.ars443, 3, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    BHR553, 'BHR553', IntegrationSchemeType.bhr553, 3, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    Cash4, 'Cash4', IntegrationSchemeType.cash4, 4, True,
+    implicit=True, steps=1, stiffly_accurate=False, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    CFNLIRK3, 'CFNLIRK3', IntegrationSchemeType.cfnlirk3, 3, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    Hairer4, 'Hairer4', IntegrationSchemeType.hairer4, 4, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    Hairer42, 'Hairer42', IntegrationSchemeType.hairer42, 4, True,
+    implicit=True, steps=1, stiffly_accurate=True, stability='L'))
+IntegrationSchemes.append(IntegrationScheme(
+    SFSDIRK4, 'SFSDIRK4', IntegrationSchemeType.sfstdirk4, 4, True,
+    implicit=True, steps=1, stiffly_accurate=False))
+IntegrationSchemes.append(IntegrationScheme(
+    SFSDIRK5, 'SFSDIRK5', IntegrationSchemeType.sfstdirk5, 4, True,
+    implicit=True, steps=1, stiffly_accurate=False))
+IntegrationSchemes.append(IntegrationScheme(
+    SFSDIRK6, 'SFSDIRK6', IntegrationSchemeType.sfstdirk6, 4, True,
+    implicit=True, steps=1, stiffly_accurate=False))
+IntegrationSchemes.append(IntegrationScheme(
+    SFSDIRK7, 'SFSDIRK7', IntegrationSchemeType.sfstdirk7, 4, True,
+    implicit=True, steps=1, stiffly_accurate=False))
+IntegrationSchemes.append(IntegrationScheme(
+    SFSDIRK8, 'SFSDIRK8', IntegrationSchemeType.sfstdirk8, 4, True,
+    implicit=True, steps=1, stiffly_accurate=False))
 # ---- Coupled (block) fully implicit RK (NOTES.md S3.18, Phase 6) ----------- #
 # The stage equations are coupled (a_ij != 0 for i != j), so they are solved as
 # one s-by-s block system (fullyimplicit.BlockState) rather than s sequential

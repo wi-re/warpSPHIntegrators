@@ -93,6 +93,29 @@ def test_rkc_achieves_its_registered_order_on_diffusion(scheme, family, order):
         f'Errors: {[f"{e:.3e}" for e in errors]}')
 
 
+@pytest.mark.parametrize('scheme,family,order', SCHEMES, ids=['RKC1', 'RKC2', 'RKL2'])
+def test_stage_count_driver_gradient_matches_diffusion_finite_difference(scheme, family, order):
+    """The generic gradient net excludes these per-step-stage-count drivers."""
+    prob = _diffusion(n=16)
+    initial = get_reference_state(prob.initial()).x
+    direction = torch.linspace(-0.3, 0.7, 16, dtype=torch.float64)
+    weights = torch.linspace(0.2, 1.0, 16, dtype=torch.float64)
+
+    def objective(x):
+        system = prob.initial()
+        get_reference_state(system).x = x
+        final = _integrate(scheme, prob, system, dt=0.005, T=0.01, s_stages=8)
+        return (get_reference_state(final).x * weights).sum()
+
+    root = initial.clone().requires_grad_(True)
+    (gradient,) = torch.autograd.grad(objective(root), root)
+    h = 1e-5
+    with torch.no_grad():
+        expected = (objective(initial + h * direction) -
+                    objective(initial - h * direction)) / (2 * h)
+    assert float(gradient @ direction) == pytest.approx(float(expected), rel=1e-7, abs=1e-9)
+
+
 # --------------------------------------------------------------------------- #
 # Stability: bounded iff dt * |lambda_max| <= K(s)                            #
 # --------------------------------------------------------------------------- #

@@ -1,7 +1,9 @@
 # Scheme expansion plan — OrdinaryDiffEq gap (staged by family and complexity)
 
-**Status: waves 1–7 done (2026-10-13); waves 8–16 not started.** Registry at 108
-schemes (64 at planning time).
+**Status: waves 1–8 committed, including the Phase 1 validation gate
+(2026-10-14); waves 9–16 unstarted.**
+The committed registry contains 137 schemes (108 before wave 8; 64 at planning time).
+The current execution gates are in [REPOSITORY_PLAN.md](REPOSITORY_PLAN.md).
 
 Scope: the schemes present in local **OrdinaryDiffEq v7.8.1** but missing from this
 library, staged into 16 waves ordered by complexity. Waves 1–5 cover the SSPRK gap;
@@ -158,6 +160,67 @@ Hairer42, SDIRK22, SFSDIRK4/5/6/7/8.
 `stability` machinery); A(alpha) cone checks where applicable; JFNK convergence on
 the semilinear test problems. Note: ODE's ESDIRK436L2SA2 is a *different* method
 from our ESDIRK4(3)6L[2]SA — transcribe side by side, do not assume identity.
+
+**Status 2026-10-14: implementation, numerical validation and documentation
+committed with the Phase 1 gate; wave not yet released.**
+29 of the 30 tableaus registered (registry 108 -> 137, DIRK 7 -> 36); SDIRK22 is
+deliberately absent — its ODE constructor is a stub (`return Trapezoid(...)`,
+algorithms.jl:314-330) with orphaned tableau fields, so there is nothing to
+transcribe. The bundled changes include: `dirk.py` (29 tableaus),
+`enums.py`, `integration.py`, `__init__.py`, and
+`tests/{test_dirk,test_state,test_embedded,test_stiff,test_family_enums,conftest}.py`.
+
+What worked (fix phase, after the first full run's 18 failures):
+
+- ODE's stored b weights sum to 1 + up to 7.8e-12 (Cash4, SFSDIRK5/7/8): nudging
+  only the LAST b weight makes sum(b) == 1 exactly, with no a/c or metadata
+  ripple (pinned in the dirk.py block comments).
+- The JFNK DIRK families sit on a higher effective roundoff floor than the
+  explicit schemes: per-(scheme, problem) coarser grids in conftest
+  `PROBLEM_COARSE_GRIDS` (ESDIRK6(5)9L[2]SA on osc/forced; Cash4, SFSDIRK5/7/8
+  on two-to-three problems each) keep the measured order in band.
+- ESDIRK4(3)7L[2]SA on `forced` is superconvergent (measures 5.0 on every grid
+  above the floor) — no grid satisfies the two-sided order test, so it gets a
+  one-sided exception cell (the BS5 precedent).
+- Total f-call counting is unreliable for the reuse test (JFNK iteration noise
+  shifts per-step counts by -7..+3): counting evaluations AT the step-start time
+  is deterministic (no-reuse 20, reuse 1, saved exactly 19).
+- `_stage_times` now collapses consecutive repeated stage times: the JFNK
+  iteration count varies between steps; the stage-time pattern is what is
+  invariant.
+- ODE stores EXTRA stages vs the published forms for 12 methods (an FSAL-tail row
+  at c = 1 and/or null stages: Kvaerno3/4/5, KenCarp3/4/5, ARS222/443, Cash4,
+  CFNLIRK3, Hairer4/42): the registered stage counts are ODE's stored counts;
+  R(z) is unchanged by the extras (identity verified).
+
+Findings (pinned in NOTES.md 3.28 + tests): ODE stored-c execution bug (5
+methods store c != row sums; we register row-sum c); stability 22 L-stable /
+2 A-not-L (Kvaerno4, SSPSDIRK2) / 5 not A-stable (SFSDIRK4-8 have a bounded
+real-axis region only); reuse 20 lossless / 9 refused; 17 embedded (p, p-1) pairs
+(3 need the one-sided band); orders per ODE `alg_order` (ARS443 and BHR553 are
+order 3; SFSDIRK5-8 are ALL order 4).
+
+Validation and documentation gate completed during repository Phase 1:
+
+- Corrected stage counts, Cash4 stage timing, the SSPSDIRK2 stiff-limit sign
+  and geometric classification in NOTES §3.28; retained coefficient corrections,
+  upstream differences, solver-floor and superconvergence evidence.
+- Added the changelog entry and expanded the DIRK catalog from 7 to 36;
+  refreshed overview/API/selection/README and site counts to 137.
+- Recorded all 29 TVD verdicts and separated completeness from per-scheme sweeps.
+- Added metadata-driven adaptive and implicit/explicit gradient coverage,
+  36 DIRK RHS-parameter checks, semilinear Burgers and stiff-relaxation checks.
+- Resolved the audited Kepler failures with strict-solve proofs and justified
+  default grids. Exact FSAL and linear geometry checks use strict stage solves
+  without widening their tolerances; default-solve property tests remain active.
+- Full CPU Python gate: **6,459 passed, 605 skipped, zero failures**, 270.23s
+  with eight work-stealing workers. Docusaurus production build passes.
+  Final CI shard timings and partition evidence are retained in the
+  [Phase 1 validation record](docs/development/phase1-validation.md).
+
+Landing: one bundled wave 8 / Phase 1 commit. The numerical evidence remains
+in NOTES §3.28 and the Phase 1 validation record.
+Package metadata remains 0.6.1; these changes are unreleased.
 
 ### Wave 9 — FIRK block tableaus (`OrdinaryDiffEqFIRK`, 6 tableaus on the existing block driver)
 

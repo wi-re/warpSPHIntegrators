@@ -7,7 +7,7 @@ import rehypeKatex from 'rehype-katex';
 const config = {
   title: 'warpSPHIntegrators',
   tagline:
-    'Differentiable ODE integrators for PyTorch — 64 schemes across 11 families',
+    'Differentiable ODE integrators for PyTorch — 137 schemes across 11 families',
   favicon: 'img/favicon.svg',
   organizationName: 'wi-re',
   projectName: 'warpSPHIntegrators',

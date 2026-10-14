@@ -198,6 +198,45 @@ class IntegrationSchemeType(Enum):
     feagin10 = 105
     feagin12 = 106
     feagin14 = 107
+    # The OrdinaryDiffEq wave-8 DIRK tableaus (SCHEME_EXPANSION_PLAN,
+    # 2026-10-13): the remaining ODE v7.8.1 OrdinaryDiffEqSDIRK methods
+    # (NOTES.md 3.28), all on the JFNK DIRK driver. Sub-batch A is the L-stable
+    # stiff workhorse set (kvaerno4 is A- but not L-stable, R(inf) ~ 0.72;
+    # sspsdirk2 is A- but not L-stable, R(inf) -> 1). Sub-batch B: the L-stable
+    # ARS family + bhr553, the L-stable cash4/hairer4/hairer42 (embedded (4,3)
+    # pairs), and the ferracina-spijker sfstdirk4-8 (order 4 throughout; bounded
+    # real-axis stability region, no A(alpha) sector). SDIRK22 deliberately
+    # absent: ODE's constructor is a stub (returns Trapezoid), so there is no
+    # executable method to transcribe.
+    kvaerno3 = 108
+    kvaerno4 = 109
+    kvaerno5 = 110
+    kencarp3 = 111
+    kencarp4 = 112
+    kencarp47 = 113
+    kencarp5 = 114
+    kencarp58 = 115
+    esdirk325l2sa = 116
+    esdirk436l2sa2 = 117
+    esdirk437l2sa = 118
+    esdirk547l2sa2 = 119
+    esdirk54i8l2sa = 120
+    esdirk659l2sa = 121
+    sspsdirk2 = 122
+    ars222 = 123
+    ars232 = 124
+    ars343 = 125
+    ars443 = 126
+    bhr553 = 127
+    cash4 = 128
+    cfnlirk3 = 129
+    hairer4 = 130
+    hairer42 = 131
+    sfstdirk4 = 132
+    sfstdirk5 = 133
+    sfstdirk6 = 134
+    sfstdirk7 = 135
+    sfstdirk8 = 136
 
 
 # --------------------------------------------------------------------------- #
@@ -205,7 +244,7 @@ class IntegrationSchemeType(Enum):
 # --------------------------------------------------------------------------- #
 #
 # IntegrationSchemeType is the single enum that captures every registered
-# scheme, but a 108-member flat list does not tell a user which entry is an
+# scheme, but a 137-member flat list does not tell a user which entry is an
 # explicit scheme and which is an implicit one. The family enums below are
 # thin VIEWS of the same members: every member keeps the same name and the
 # same int value as its IntegrationSchemeType counterpart, so all four lookup
@@ -216,7 +255,7 @@ class IntegrationSchemeType(Enum):
 #     getIntegrator('RK4')
 #     getIntegrator('rungeKutta4')
 #
-# and the families are exhaustive and disjoint over the 108 members (pinned in
+# and the families are exhaustive and disjoint over the 137 members (pinned in
 # tests/test_family_enums.py). `SCHEME_FAMILY` maps a scheme's identifier to
 # the family enum class it belongs to; IntegrationScheme.family is the same
 # fact on the registered scheme object.
@@ -346,8 +385,13 @@ class DIRK(Enum):
     """Diagonally implicit Runge-Kutta (`dirk.py`, JFNK-closed by default).
 
     Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2 and the
-    two ESDIRKs (explicit first stage + L[2] damping). The stiffly accurate
-    tableaus with an explicit first stage accept lossless `priorStep` reuse.
+    ESDIRKs (explicit first stage + L[2] damping), plus the wave-8 ODE
+    tableaus: the Kvaerno and KenCarp stiff workhorses, the Kennedy-Carpenter
+    ESDIRK325/436L2SA2/437/547L2SA2/54I8/659L2SA family, SSPSDIRK2, the
+    L-stable ARS family + BHR553, Cash4/Hairer4/Hairer42 (embedded (4,3)
+    pairs), and the Ferracina-Spijker SFSDIRK4-8 (NOTES.md 3.28). The
+    stiffly accurate tableaus with an explicit first stage accept lossless
+    `priorStep` reuse.
     """
     backwardEuler = IntegrationSchemeType.backwardEuler.value
     implicitMidpoint = IntegrationSchemeType.implicitMidpoint.value
@@ -356,6 +400,35 @@ class DIRK(Enum):
     trbdf2 = IntegrationSchemeType.trbdf2.value
     esdirk324l2sa = IntegrationSchemeType.esdirk324l2sa.value
     esdirk436l2sa = IntegrationSchemeType.esdirk436l2sa.value
+    kvaerno3 = IntegrationSchemeType.kvaerno3.value
+    kvaerno4 = IntegrationSchemeType.kvaerno4.value
+    kvaerno5 = IntegrationSchemeType.kvaerno5.value
+    kencarp3 = IntegrationSchemeType.kencarp3.value
+    kencarp4 = IntegrationSchemeType.kencarp4.value
+    kencarp47 = IntegrationSchemeType.kencarp47.value
+    kencarp5 = IntegrationSchemeType.kencarp5.value
+    kencarp58 = IntegrationSchemeType.kencarp58.value
+    esdirk325l2sa = IntegrationSchemeType.esdirk325l2sa.value
+    esdirk436l2sa2 = IntegrationSchemeType.esdirk436l2sa2.value
+    esdirk437l2sa = IntegrationSchemeType.esdirk437l2sa.value
+    esdirk547l2sa2 = IntegrationSchemeType.esdirk547l2sa2.value
+    esdirk54i8l2sa = IntegrationSchemeType.esdirk54i8l2sa.value
+    esdirk659l2sa = IntegrationSchemeType.esdirk659l2sa.value
+    sspsdirk2 = IntegrationSchemeType.sspsdirk2.value
+    ars222 = IntegrationSchemeType.ars222.value
+    ars232 = IntegrationSchemeType.ars232.value
+    ars343 = IntegrationSchemeType.ars343.value
+    ars443 = IntegrationSchemeType.ars443.value
+    bhr553 = IntegrationSchemeType.bhr553.value
+    cash4 = IntegrationSchemeType.cash4.value
+    cfnlirk3 = IntegrationSchemeType.cfnlirk3.value
+    hairer4 = IntegrationSchemeType.hairer4.value
+    hairer42 = IntegrationSchemeType.hairer42.value
+    sfstdirk4 = IntegrationSchemeType.sfstdirk4.value
+    sfstdirk5 = IntegrationSchemeType.sfstdirk5.value
+    sfstdirk6 = IntegrationSchemeType.sfstdirk6.value
+    sfstdirk7 = IntegrationSchemeType.sfstdirk7.value
+    sfstdirk8 = IntegrationSchemeType.sfstdirk8.value
 
 
 class CoupledRK(Enum):

@@ -1,8 +1,8 @@
-"""DIRK driver (NOTES.md S3.6 Phase 2): the four shipped tableaus and the FixedPointSolver.
+"""DIRK driver (NOTES.md §§3.6, 3.28): 36 tableaus and pluggable stage solves.
 
 Most of the generic behaviour (state cloning, copied/ephemeral fields, stage times,
 kwargs passthrough) is already covered for these schemes by the existing parametrized
-`scheme` fixture in every other test file -- adding four entries to `IntegrationSchemes`
+`scheme` fixture in every other test file -- adding entries to `IntegrationSchemes`
 pulled them into all of that for free. This file covers what's specific to DIRK: the
 convergence order of each tableau, the Picard solver's own behaviour (stiff divergence,
 iteration-count control, pluggability), and the two-tier "converged vs. shipped default"
@@ -16,25 +16,110 @@ import numpy as np
 import pytest
 import torch
 
+from conftest import dts_for
 from warpSPHIntegrators import (FixedPointSolver, get_reference_state, getIntegrator,
                                 is_fsal, step_reuse_order, supports_step_reuse, testing)
 from warpSPHIntegrators.dirk import DIRK, _dirk_reuses_first_stage, getDIRKTableau
+from warpSPHIntegrators import JFNKSolver
+from warpSPHIntegrators.stability import rk_stability_function
 
 DIRK_SCHEMES = [
     'Backward Euler (implicit)', 'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)',
     'SDIRK2', 'TR-BDF2', 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
+    # Wave 8 (SCHEME_EXPANSION_PLAN, 2026-10-13; NOTES.md 3.28): the remaining
+    # ODE v7.8.1 DIRK tableaus.
+    'Kvaerno3', 'Kvaerno4', 'Kvaerno5', 'KenCarp3', 'KenCarp4', 'KenCarp47',
+    'KenCarp5', 'KenCarp58', 'ESDIRK3(2)5L[2]SA', 'ESDIRK4(3)6L[2]SA2',
+    'ESDIRK4(3)7L[2]SA', 'ESDIRK5(4)7L[2]SA2', 'ESDIRK5(4)I8L[2]SA',
+    'ESDIRK6(5)9L[2]SA', 'SSPSDIRK2', 'ARS222', 'ARS232', 'ARS343', 'ARS443',
+    'BHR553', 'Cash4', 'CFNLIRK3', 'Hairer4', 'Hairer42', 'SFSDIRK4', 'SFSDIRK5',
+    'SFSDIRK6', 'SFSDIRK7', 'SFSDIRK8',
 ]
 
 # Stiffly accurate (a[-1] == b, c[-1] == 1) WITH an explicit first stage
 # (a[0,0] == 0): the previous step's last stage IS y^{n+1}, so its converged
 # derivative is exactly the f(t^{n+1}, y^{n+1}) the next step's first stage needs.
-# Reuse is lossless for exactly these four (Phase 10). The other three either have an
-# implicit first stage (SDIRK2) or are single-stage (backward Euler, implicit
-# midpoint), so they cannot consume a reused k0 and reject priorStep.
+# Reuse is lossless for exactly these (Phase 10; wave-8 additions per NOTES.md
+# 3.28). The no-reuse schemes either have an implicit first stage (SDIRK2,
+# SSPSDIRK2, Cash4, Hairer4, Hairer42, SFSDIRK4-8) or are single-stage
+# (backward Euler, implicit midpoint), so they cannot consume a reused k0 and
+# reject priorStep.
 DIRK_REUSE_SCHEMES = [
     'Trapezoidal (Crank-Nicolson)', 'TR-BDF2', 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
+    'Kvaerno3', 'Kvaerno4', 'Kvaerno5', 'KenCarp3', 'KenCarp4', 'KenCarp47',
+    'KenCarp5', 'KenCarp58', 'ESDIRK3(2)5L[2]SA', 'ESDIRK4(3)6L[2]SA2',
+    'ESDIRK4(3)7L[2]SA', 'ESDIRK5(4)7L[2]SA2', 'ESDIRK5(4)I8L[2]SA',
+    'ESDIRK6(5)9L[2]SA', 'ARS222', 'ARS232', 'ARS343', 'ARS443', 'BHR553',
+    'CFNLIRK3',
 ]
-DIRK_NO_REUSE_SCHEMES = ['Backward Euler (implicit)', 'Implicit Midpoint', 'SDIRK2']
+DIRK_NO_REUSE_SCHEMES = [
+    'Backward Euler (implicit)', 'Implicit Midpoint', 'SDIRK2', 'SSPSDIRK2',
+    'Cash4', 'Hairer4', 'Hairer42', 'SFSDIRK4', 'SFSDIRK5', 'SFSDIRK6',
+    'SFSDIRK7', 'SFSDIRK8',
+]
+
+
+def test_sspsdirk2_is_symplectic_midpoint_composition():
+    tab = getDIRKTableau('SSPSDIRK2')
+    assert np.array_equal(tab.a, [[0.25, 0.0], [0.5, 0.25]])
+    assert np.array_equal(tab.b, [0.5, 0.5])
+    b = tab.b
+    assert np.max(np.abs(b[:, None] * tab.a + b[None, :] * tab.a.T
+                         - b[:, None] * b[None, :])) == 0.0
+    for z in [-100.0, -1.0, 1j, -2.0 + 3j]:
+        assert rk_stability_function(tab, z) == pytest.approx(((1 + z/4) / (1 - z/4))**2)
+    assert rk_stability_function(tab, -1e8) == pytest.approx(1.0, abs=2e-7)
+    assert not getIntegrator('SSPSDIRK2').dissipation
+
+
+@pytest.mark.parametrize('name', ['ESDIRK4(3)7L[2]SA', 'ESDIRK6(5)9L[2]SA', 'SFSDIRK6'])
+def test_strict_solve_recovers_kepler_order_on_standard_grid(name):
+    """Distinguish stage-solver noise from tableau defects without loosening order."""
+    s = getIntegrator(name)
+    solver = JFNKSolver(tol=1e-14, gmres_tol=1e-14, newton_tol=1e-14, fd_eps=1e-6)
+
+    def step(state, dt, f, **kwargs):
+        return s(state, dt, f, solver=solver, **kwargs)
+
+    grid = testing.default_step_sizes()
+    order, errors = testing.convergence(step, testing.kepler_problem(), grid, T=2.0)
+    assert order == pytest.approx(s.order, abs=0.15), errors
+    assert all(b < a for a, b in zip(errors, errors[1:]) if b >= 1e-13), errors
+
+
+@pytest.fixture(scope='module')
+def semilinear_reference():
+    """A nonlinear semilinear vector problem; the reference is step-refined."""
+    prob = testing.viscous_burgers_problem(n=16, nu=0.1)
+    rk4 = getIntegrator('RK4')
+    coarse = get_reference_state(testing.run(rk4, prob, 0.0005, T=0.1)).x
+    fine = get_reference_state(testing.run(rk4, prob, 0.00025, T=0.1)).x
+    assert torch.max(torch.abs(coarse - fine)) < 1e-9
+    return prob, fine
+
+
+@pytest.mark.parametrize('name', DIRK_SCHEMES)
+def test_dirk_converges_on_semilinear_burgers(name, semilinear_reference):
+    """Every registered DIRK solves the full L*y+N problem with its default JFNK.
+
+    Stability-limited SFSDIRK methods use the same small grid as the others;
+    their stronger stiff-step limitations are pinned by the stability tests.
+    """
+    prob, reference = semilinear_reference
+    s = getIntegrator(name)
+    errors = []
+    for dt in [0.02, 0.01]:
+        state = prob.initial()
+        for _ in range(round(0.1 / dt)):
+            result = s(state, dt, prob.rhs)
+            state = result.state
+            assert all(d is None or d.termination in {'tolerance', 'stagnation'}
+                       for d in result.solver_diagnostics)
+        final = get_reference_state(state).x
+        assert torch.isfinite(final).all()
+        errors.append(float(torch.max(torch.abs(final - reference))))
+    assert errors[1] < errors[0], f'{name}: {errors}'
+    assert errors[1] < 0.03, f'{name}: {errors}'
 
 
 def test_newmark_reaches_second_order_on_the_oscillator():
@@ -66,6 +151,11 @@ def test_newmark_rejects_invalid_beta_or_gamma(kwargs):
 @pytest.mark.parametrize('name', [
     'backwardEuler', 'implicitMidpoint', 'trapezoidal', 'SDIRK2', 'TRBDF2',
     'ESDIRK324L2SA', 'ESDIRK436L2SA',
+    'Kvaerno3', 'Kvaerno4', 'Kvaerno5', 'KenCarp3', 'KenCarp4', 'KenCarp47',
+    'KenCarp5', 'KenCarp58', 'ESDIRK325L2SA', 'ESDIRK436L2SA2', 'ESDIRK437L2SA',
+    'ESDIRK547L2SA2', 'ESDIRK54I8L2SA', 'ESDIRK659L2SA', 'SSPSDIRK2', 'ARS222',
+    'ARS232', 'ARS343', 'ARS443', 'BHR553', 'Cash4', 'CFNLIRK3', 'Hairer4',
+    'Hairer42', 'SFSDIRK4', 'SFSDIRK5', 'SFSDIRK6', 'SFSDIRK7', 'SFSDIRK8',
 ])
 def test_dirk_tableau_row_sums_match_c(name):
     tab = getDIRKTableau(name)
@@ -109,11 +199,18 @@ def test_trbdf2_embedded_pair_is_the_published_third_order_pair():
     assert b_embedded @ tab.c ** 2 == pytest.approx(1.0 / 3.0, abs=1e-15)
 
 
-@pytest.mark.parametrize('name', ['trapezoidal', 'ESDIRK324L2SA', 'ESDIRK436L2SA'])
+@pytest.mark.parametrize('name', [
+    'trapezoidal', 'ESDIRK324L2SA', 'ESDIRK436L2SA',
+    'Kvaerno3', 'Kvaerno4', 'Kvaerno5', 'KenCarp3', 'KenCarp4', 'KenCarp47',
+    'KenCarp5', 'KenCarp58', 'ESDIRK325L2SA', 'ESDIRK436L2SA2', 'ESDIRK437L2SA',
+    'ESDIRK547L2SA2', 'ESDIRK54I8L2SA', 'ESDIRK659L2SA', 'ARS222', 'ARS232',
+    'ARS343', 'ARS443', 'BHR553', 'CFNLIRK3',
+])
 def test_esdirk_like_tableaus_have_an_explicit_first_stage(name):
     """a[0,0] == 0: exercises the DIRK driver's non-Picard branch on a real
     tableau. For the ESDIRKs this is the 'E' in the name -- the first stage
-    evaluates f explicitly and needs no solve."""
+    evaluates f explicitly and needs no solve. The wave-8 Kvaerno, KenCarp,
+    ARS, BHR and CFNLIRK tableaus open the same way (NOTES.md 3.28)."""
     tab = getDIRKTableau(name)
     assert tab.a[0, 0] == 0.0
     assert tab.c[0] == 0.0
@@ -127,8 +224,22 @@ def test_esdirk_like_tableaus_have_an_explicit_first_stage(name):
 @pytest.mark.parametrize('problem_name', ['oscillator', 'forced', 'damped'])
 def test_dirk_scheme_reaches_its_claimed_order(name, problem_name):
     s = getIntegrator(name)
-    dts = testing.default_step_sizes(0.1, 5)
+    # ESDIRK6(5)9L[2]SA's standard-grid errors sit at the roundoff floor on
+    # oscillator/forced (NOTES.md 3.28); dts_for gives it the coarser grid.
+    dts = dts_for(name, problem_name, testing.default_step_sizes(0.1, 5))
     order, errors = testing.convergence(s, testing.PROBLEMS[problem_name](), dts, T=2.0)
+    if (name, problem_name) == ('ESDIRK4(3)7L[2]SA', 'forced'):
+        # Superconvergent cell: this (scheme, problem) pair measures ~5.0 on
+        # EVERY grid above the roundoff floor, so the two-sided band can never
+        # be met -- the order-4 error term nearly vanishes on this problem and
+        # a higher-order term dominates (NOTES.md 3.28, the same phenomenon as
+        # BS5 on forced, which test_convergence.py treats one-sided). Assert
+        # the one-sided lower bound instead.
+        assert order is not None and order >= s.order - 0.15, (
+            f'{name} on {problem_name}: measured order {order}, claimed {s.order}. '
+            f'errors={errors}'
+        )
+        return
     assert order == pytest.approx(s.order, abs=0.15), (
         f'{name} on {problem_name}: measured order {order:.3f}, claimed {s.order}. '
         f'errors={errors}'
@@ -276,7 +387,7 @@ def test_dirk_reuse_preserves_the_measured_order(name, step_sizes):
     assert step_reuse_order(s) == s.order
     assert supports_step_reuse(s) and is_fsal(s)
     for problem_name in ['oscillator', 'forced']:
-        order, errors = order_of(s, problem_name, step_sizes, reuse=True)
+        order, errors = order_of(s, problem_name, dts_for(name, problem_name, step_sizes), reuse=True)
         assert order is not None, f'{name} produced no usable errors: {errors}'
         assert order >= s.order - ORDER_TOLERANCE, (
             f'{name} on {problem_name}: reuse dropped the order to {order:.2f}, '
@@ -285,21 +396,28 @@ def test_dirk_reuse_preserves_the_measured_order(name, step_sizes):
 
 @pytest.mark.parametrize('name', DIRK_REUSE_SCHEMES)
 def test_dirk_reuse_saves_an_explicit_evaluation_per_step(name):
-    """One saved RHS per step (the explicit first stage), within JFNK iteration noise.
+    """One saved RHS per reusable step (the explicit first stage), counted exactly.
 
-    The implicit stages' JFNK cost is unchanged in expectation -- the reused k0 only
-    perturbs the next stage's initial guess by a roundoff, which shifts the iteration
-    count by a few. So the saving is "one explicit evaluation per reusable step", not
-    an exact count of total f calls.
+    The saving is isolated to evaluations AT the step-start time t^n: stage 0 sits
+    exactly there (c[0] = 0, so the driver sets the stage time to t^n + 0*dt, which
+    is t^n bit-for-bit), and no other stage of any of these tableaus shares that
+    time. Without reuse, every step evaluates f at its start; with reuse, only the
+    first step does, because the reused k0 IS the previous step's final-stage
+    evaluation, which sits at t^n since every one of these schemes is stiffly
+    accurate. Counting total f calls instead is unreliable: JFNK's iteration count
+    on the implicit stages varies by a few from step to step (NOTES.md 3.28 measured
+    per-step savings of -7 to +3 for KenCarp47), so the total is a band, not a count.
     """
     s = getIntegrator(name)
     prob = testing.PROBLEMS['oscillator']()
 
     def count(reuse):
-        calls = {'n': 0}
+        at_step_start = {'n': 0}
+        t_start = float(prob.initial().t)
 
         def f(system, dt, *args, **kwargs):
-            calls['n'] += 1
+            if float(system.t) == t_start:
+                at_step_start['n'] += 1
             return prob.rhs(system, dt)
 
         system = prob.initial()
@@ -309,14 +427,16 @@ def test_dirk_reuse_saves_an_explicit_evaluation_per_step(name):
             for _ in range(20):
                 result = s(system, dt=0.05, f=f, priorStep=prior if reuse else None)
                 system, prior = result.state, result.stages[-1]
-        return calls['n']
+                t_start = float(result.state.t)
+        return at_step_start['n']
 
     saved = count(False) - count(True)
-    # 20 steps, but the first has no prior, so 19 reusable steps, each saving exactly
-    # one explicit evaluation. The JFNK iteration noise is a few, so allow a band.
-    assert 0.5 * 19 <= saved <= 1.5 * 19, (
-        f'{name}: saved {saved} RHS evaluations over 19 reusable steps, '
-        f'expected ~19 (one explicit stage per step)')
+    # 20 steps; the first has no prior in either mode. No-reuse therefore counts
+    # 20 step-start evaluations, reuse counts 1, and the difference is exactly the
+    # 19 reusable steps' explicit first stages.
+    assert saved == 19, (
+        f'{name}: saved {saved} step-start evaluations over 19 reusable steps, '
+        f'expected exactly 19 (one explicit stage per step)')
 
 
 @pytest.mark.parametrize('name', DIRK_SCHEMES)

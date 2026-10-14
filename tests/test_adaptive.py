@@ -27,6 +27,7 @@ from warpSPHIntegrators import (
 )
 from warpSPHIntegrators.adaptive import _DP5_B_MAIN
 from warpSPHIntegrators.butcher import getButcherTableau
+from conftest import ESTIMATE_SCHEMES, estimate_order
 
 #: The estimate emitters (tests/test_embedded.py): the (p, p-1) embedded pairs
 #: plus the built-in estimates. The power q the estimate scales as h^q is the
@@ -34,20 +35,7 @@ from warpSPHIntegrators.butcher import getButcherTableau
 #: estimate O(h**(order+1)), and Gauss-Legendre 2, whose null-stage companion
 #: is only order 2 (the 2-stage-only order-2 pair is degenerate -- b itself --
 #: for both block tableaus), so the estimate is O(h**(order-1)) = h^3.
-EMBEDDED = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)', 'Cash-Karp 5(4)',
-            # The wave-2 ODE SSPRK 3(2) pairs (SCHEME_EXPANSION_PLAN, 2026-10-12);
-            # the estimate scales as h^order (h^3).
-            'SSPRK43', 'SSPRK432',
-            'TR-BDF2', 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
-            'ARK3(2)4L[2]SA', 'ARK4(3)6L[2]SA', 'ROS3P', 'EXPRB32',
-            'Gauss-Legendre 2', 'Radau IIA s=2']
-
-
-def estimate_order(scheme) -> int:
-    """The power q the estimate scales as h^q (NOTES.md S3.17)."""
-    return (scheme.order + 1 if scheme.name == 'TR-BDF2'
-            else scheme.order - 1 if scheme.name == 'Gauss-Legendre 2'
-            else scheme.order)
+EMBEDDED = ESTIMATE_SCHEMES
 
 
 def run_adaptive(scheme, prob, T, dt0, *, rtol=1e-6, atol=1e-9,
@@ -178,18 +166,25 @@ def test_adaptive_loop_holds_the_contract_on_the_oscillator():
     assert state.t == pytest.approx(2.0, abs=1e-12)
 
 
-@pytest.mark.parametrize('name', ['SSPRK43', 'SSPRK432'])
-def test_adaptive_loop_smoke_on_new_ssprk_pairs(name):
-    """Wave-2 gate: the new 3(2) pairs drive the caller-driven accept/reject
-    loop to the target on the oscillator -- it accepts steps, every accepted
-    step sits at or under the target norm, and it reaches T."""
+@pytest.mark.parametrize('name', EMBEDDED)
+def test_adaptive_loop_reaches_target_for_every_estimate_emitter(name):
+    """Every estimate-emitting driver must complete the caller's adaptive loop.
+
+    ROS3P/EXPRB32 need the forced problem to activate their estimates. A
+    moderate tolerance keeps high-order pairs above the float64 solve floor.
+    """
     s = getIntegrator(name)
-    prob = testing.PROBLEMS['oscillator']()
+    prob_name = 'forced' if name in ('ROS3P', 'EXPRB32') else 'oscillator'
+    prob = testing.PROBLEMS[prob_name]()
     state, accepted, rejected, norms = run_adaptive(s, prob, T=2.0, dt0=0.1,
                                                     rtol=1e-6, atol=1e-9)
     assert accepted > 0
     assert all(n <= 1.0 for n in norms), 'an accepted step must sit at the target'
     assert float(state.t) == pytest.approx(2.0, abs=1e-12)
+    ex, eu = prob.exact(2.0)
+    final = get_reference_state(state)
+    error = abs(float(final.x[0]) - ex[0]) + abs(float(final.u[0]) - eu[0])
+    assert error < 1e-3, f'{name}: final error {error:.3e}'
 
 
 def test_rejections_trigger_and_gate_holds_on_van_der_pol_mu10():

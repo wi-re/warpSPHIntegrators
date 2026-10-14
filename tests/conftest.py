@@ -1,6 +1,9 @@
 import warnings
+import json
+from pathlib import Path
 
 import pytest
+from _pytest.mark.expression import Expression
 
 from warpSPHIntegrators import testing
 from warpSPHIntegrators.integration import IntegrationSchemes
@@ -18,10 +21,12 @@ CATEGORIES = {
     'core': [
         'test_backend_dispatch.py',
         'test_copied_fields.py',
+        'test_drift_fields.py',
         'test_family_enums.py',
         'test_groundwork.py',
         'test_kwargs_passthrough.py',
         'test_state.py',
+        'test_test_gates.py',
     ],
     # The JFNK / GMRES solver core and its preconditioning hooks.
     'solvers': [
@@ -30,6 +35,7 @@ CATEGORIES = {
     ],
     # Family-specific drivers and tableaus.
     'dirk': ['test_dirk.py'],
+    'prrk': ['test_prrk.py'],
     'bdf': ['test_bdf.py'],
     'am': ['test_am.py'],
     'multistep': ['test_multistep.py'],
@@ -41,21 +47,52 @@ CATEGORIES = {
     'rkc': ['test_rkc.py'],
     'newmark': ['test_newmark.py'],
     # Cross-family properties over the whole registry.
-    'convergence': ['test_convergence.py', 'test_embedded.py', 'test_step_reuse.py'],
-    'stability': ['test_benchmarks.py', 'test_hamiltonian.py', 'test_stiff.py', 'test_tvd.py'],
+    'convergence': ['test_convergence.py', 'test_embedded.py'],
+    'reuse': ['test_step_reuse.py'],
+    'geometry': ['test_hamiltonian.py'],
+    'stability': ['test_benchmarks.py', 'test_stiff.py', 'test_tvd.py'],
     'gradients': ['test_adaptive.py', 'test_gradients.py'],
     'rhs': ['test_rhs.py'],
 }
 
 #: Reverse of CATEGORIES: test file -> category marker.
-_FILE_MARKER = {f: marker for marker, files in CATEGORIES.items() for f in files}
+def category_map(categories):
+    result = {}
+    for marker, files in categories.items():
+        for filename in files:
+            if filename in result:
+                raise pytest.UsageError(f'{filename} belongs to multiple test categories')
+            result[filename] = marker
+    return result
+
+
+_FILE_MARKER = category_map(CATEGORIES)
+CI_SHARDS = json.loads((Path(__file__).parents[1] / '.github/test-shards.json').read_text())
+
+
+def validate_shards(categories, shards):
+    expressions = [Expression.compile(shard) for shard in shards]
+    for category in categories:
+        matches = sum(expr.evaluate(lambda name: name == category) for expr in expressions)
+        if matches != 1:
+            raise pytest.UsageError(
+                f'test category {category!r} matches {matches} CI shards; expected exactly one')
+    return expressions
 
 
 def pytest_collection_modifyitems(config, items):
+    expressions = validate_shards(CATEGORIES, CI_SHARDS)
     for item in items:
         marker = _FILE_MARKER.get(item.fspath.basename)
-        if marker:
-            item.add_marker(getattr(pytest.mark, marker))
+        if marker is None:
+            raise pytest.UsageError(
+                f'{item.fspath.basename} lacks a test category; add it to CATEGORIES')
+        item.add_marker(getattr(pytest.mark, marker))
+        markers = {mark.name for mark in item.iter_markers()}
+        matches = sum(expr.evaluate(lambda name: name in markers) for expr in expressions)
+        if matches != 1:
+            raise pytest.UsageError(
+                f'{item.nodeid} matches {matches} CI shards; expected exactly one')
 
 
 #: Schemes that take a per-step stage count (`s=`, or `lambda_max=`) the generic
@@ -116,6 +153,35 @@ def _scheme_params():
 #: Every registered scheme, as pytest params keyed by display name.
 ALL_SCHEMES = _scheme_params()
 
+
+def emits_estimate(scheme):
+    """Read driver/tableau metadata rather than duplicating the growing catalog.
+
+    ROS3P and EXPRB32 have built-in estimates instead of a Butcher companion.
+    ETD2RK and the stage-count methods do not emit estimates; their dedicated
+    suites cover their special RHS and per-step parameter requirements.
+    """
+    fn = scheme.function
+    for attribute in ('butcherTableau', 'dirkTableau'):
+        tableau = getattr(fn, attribute, None)
+        if tableau is not None:
+            return isinstance(tableau.b, tuple)
+    tableau = getattr(fn, 'arkTableau', None)
+    if tableau is not None:
+        return tableau.d_explicit is not None and tableau.d_implicit is not None
+    tableau = getattr(fn, 'blockTableau', None)
+    if tableau is not None:
+        return tableau.companion_b is not None
+    return scheme.identifier.name in {'ros3p', 'exprb32'}
+
+
+ESTIMATE_SCHEMES = [s.name for s in IntegrationSchemes if emits_estimate(s)]
+
+
+def estimate_order(scheme):
+    """Test-side estimate exponent; public catalog metadata is Phase 2 work."""
+    return {'trbdf2': 3, 'gaussLegendre2': 3}.get(scheme.identifier.name, scheme.order)
+
 #: How far below the claimed order a measurement is allowed to sit. Convergence
 #: orders measured over four halvings land within a few hundredths of the true value;
 #: 0.15 leaves room for that without admitting a lost order.
@@ -164,6 +230,22 @@ PROBLEM_COARSE_GRIDS = {
         # this grid pins its lower-order REUSE order in test_step_reuse.py
         # (measured 7.04 here vs the predicted 6).
         'Feagin12': [1.0, 0.5, 0.25, 0.125],
+        # Wave 8 (NOTES.md 3.28): the order-6 ESDIRK's standard-grid errors sit
+        # at the floor from dt = 0.025 down (2.8e-13, 9.0e-15, 3.9e-15), so no
+        # order is measurable there; on this grid all four points sit above the
+        # floor and measure 6.00.
+        'ESDIRK6(5)9L[2]SA': [0.5, 0.25, 0.125, 0.0625],
+        # Wave 8 (NOTES.md 3.28): the 12-digit ODE DIRK families sit on a
+        # higher effective roundoff floor than the explicit schemes (their JFNK
+        # solves leave a small residual per stage), so their standard-grid
+        # finest points are floor-contaminated and the measured order drifts
+        # out of band. These are the coarsest grids whose measured order stays
+        # within 0.15 of the claimed one (Cash4: 3.998, SFSDIRK5: 3.914,
+        # SFSDIRK7: 4.013, SFSDIRK8: 3.901).
+        'Cash4': [0.1, 0.05, 0.025, 0.0125],
+        'SFSDIRK5': [0.2, 0.1, 0.05, 0.025],
+        'SFSDIRK7': [0.4, 0.2, 0.1, 0.05],
+        'SFSDIRK8': [0.2, 0.1, 0.05, 0.025],
     },
     'oscillator': {
         'Vern6 6(5)': [0.4, 0.2, 0.1, 0.05],
@@ -177,8 +259,24 @@ PROBLEM_COARSE_GRIDS = {
         'Feagin10': [0.4, 0.2, 0.1, 0.05],
         'Feagin12': [0.4, 0.2, 0.1, 0.05],
         'Feagin14': [0.4, 0.2, 0.1, 0.05],
+        # Wave 8 (NOTES.md 3.28): the order-6 ESDIRK's standard-grid errors are
+        # floor-contaminated at the two finest points (8.8e-14, 5.7e-15), which
+        # drags the measured order to 5.84 (below the 6 - 0.15 bound); on this
+        # grid all four points sit above the floor and measure 5.89.
+        'ESDIRK6(5)9L[2]SA': [0.5, 0.25, 0.125, 0.0625],
+        # Wave 8 (NOTES.md 3.28): roundoff-floor grids, as under 'forced'
+        # (measured 4.050 and 3.990 respectively).
+        'SFSDIRK5': [0.1, 0.05, 0.025, 0.0125],
+        'SFSDIRK8': [0.2, 0.1, 0.05, 0.025],
     },
     'kepler': {
+        # Phase 1: default JFNK noise contaminates the standard-grid finest
+        # pair. Strict solves restore orders 3.998 / 5.998 / 3.999 there;
+        # these default-solve grids measure 4.009 / 5.966 / 3.990 instead.
+        # The strict-solve standard-grid regression lives in test_dirk.py.
+        'ESDIRK4(3)7L[2]SA': [0.2, 0.1, 0.05, 0.025],
+        'ESDIRK6(5)9L[2]SA': [0.4, 0.2, 0.1, 0.05],
+        'SFSDIRK6': [0.4, 0.2, 0.1, 0.05],
         'Vern6 6(5)': [1.0, 0.5, 0.25, 0.125],
         'Vern7 7(6)': [0.4, 0.2, 0.1, 0.05],
         'Vern8 8(7)': [0.4, 0.2, 0.1, 0.05],
@@ -208,6 +306,11 @@ PROBLEM_COARSE_GRIDS = {
         'Feagin10': [0.4, 0.2, 0.1, 0.05],
         'Feagin12': [0.4, 0.2, 0.1, 0.05],
         'Feagin14': [0.4, 0.2, 0.1, 0.05],
+        # Wave 8 (NOTES.md 3.28): roundoff-floor grids, as under 'forced'
+        # (measured 4.087, 4.033 and 3.993 respectively).
+        'SFSDIRK5': [0.1, 0.05, 0.025, 0.0125],
+        'SFSDIRK7': [0.2, 0.1, 0.05, 0.025],
+        'SFSDIRK8': [0.2, 0.1, 0.05, 0.025],
     },
 }
 
@@ -243,7 +346,7 @@ def problem(name):
     return testing.PROBLEMS[name]()
 
 
-def order_of(scheme, problem_name, dts, T=2.0, reuse=False):
+def order_of(scheme, problem_name, dts, T=2.0, reuse=False, **step_options):
     """Measured convergence order, with reuse warnings silenced.
 
     The warnings are the feature under test in test_step_reuse.py; everywhere else
@@ -251,5 +354,6 @@ def order_of(scheme, problem_name, dts, T=2.0, reuse=False):
     """
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', RuntimeWarning)
-        order, errors = testing.convergence(scheme, problem(problem_name), dts, T, reuse=reuse)
+        order, errors = testing.convergence(scheme, problem(problem_name), dts, T,
+                                           reuse=reuse, **step_options)
     return order, errors

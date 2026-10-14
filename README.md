@@ -19,8 +19,8 @@ blended with a reference state", and your system object decides what that means.
 
 ### Key Features
 
-- **Multiple Integration Schemes**: Runge-Kutta up to 5th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; stabilized explicit super-timestepping for parabolic stiffness (RKC1/RKC2/RKL2, no nonlinear solver); diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA, Newmark) via a pluggable `NonlinearSolver`; coupled fully implicit RK (Gauss-Legendre 2, Radau IIA s=2) via one coupled JFNK block solve per step; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4); implicit multistep (BDF1–BDF5, fully implicit Adams-Moulton 2–4); additive (IMEX) RK (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA), IMEX Euler, and IMEX multistep (SBDF2/SBDF3: BDF2/BDF3 implicit backbone with explicit endpoint extrapolation; CNAB2: trapezoidal backbone with the AB2 increment), all through an explicit/implicit RHS split; Rosenbrock-W (ROS3P: one linear solve per stage against a frozen Jacobian, no Newton loop); and the exponential family (ETD2RK: the linear part `L` integrated exactly through matrix-free `exp(hL)` / `phi_k(hL)` Krylov builds, the nonlinear remainder quadrature; EXPRB32: order-3 exponential Rosenbrock, L-stable, full frozen Jacobian with matrix-free `phi_k` Krylov builds, embedded (3, 2) estimator, no semilinear split required)
-- **Adaptive Step Control & Dense Output**: `estimate_error_norm` + `propose_dt` turn the twelve embedded-estimator schemes' `IntegrationResult.error` into a predictive step-size controller (safety factor, growth clamps, zero-error growth) with the caller-driven accept/reject loop; Dormand–Prince carries a published dense output — Shampine's 1986 quartic continuous extension, exact at the step endpoints and `O(dt^5)` in between (NOTES.md §3.17)
+- **Multiple Integration Schemes**: 137 registered schemes across 11 families, including Runge-Kutta up to 14th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; stabilized explicit super-timestepping for parabolic stiffness (RKC1/RKC2/RKL2, no nonlinear solver); diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA, Newmark) via a pluggable `NonlinearSolver`; coupled fully implicit RK (Gauss-Legendre 2, Radau IIA s=2) via one coupled JFNK block solve per step; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4); implicit multistep (BDF1–BDF5, fully implicit Adams-Moulton 2–4); additive (IMEX) RK (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA), IMEX Euler, and IMEX multistep (SBDF2/SBDF3: BDF2/BDF3 implicit backbone with explicit endpoint extrapolation; CNAB2: trapezoidal backbone with the AB2 increment), all through an explicit/implicit RHS split; Rosenbrock-W (ROS3P: one linear solve per stage against a frozen Jacobian, no Newton loop); and the exponential family (ETD2RK: the linear part `L` integrated exactly through matrix-free `exp(hL)` / `phi_k(hL)` Krylov builds, the nonlinear remainder quadrature; EXPRB32: order-3 exponential Rosenbrock, L-stable, full frozen Jacobian with matrix-free `phi_k` Krylov builds, embedded (3, 2) estimator, no semilinear split required)
+- **Adaptive Step Control & Dense Output**: `estimate_error_norm` + `propose_dt` turn all 45 estimate emitters' `IntegrationResult.error` into a predictive step-size controller (safety factor, growth clamps, zero-error growth) with the caller-driven accept/reject loop; Dormand–Prince carries a published dense output — Shampine's 1986 quartic continuous extension, exact at the step endpoints and `O(dt^5)` in between (NOTES.md §3.17)
 - **Flexible State Management**: Custom state objects with metadata-driven field behavior (integrated, constant, copied, ephemeral, custom)
 - **Type-Safe Protocol**: Structural typing for integration systems with clear separation of concerns
 - **Fully Differentiable**: All operations preserve gradient flow for end-to-end learning
@@ -285,7 +285,7 @@ accept/reject loop driven by the caller (NOTES.md §3.17). The first two are
 
 The implicit and stiff families above (TR-BDF2, the ESDIRKs, the ARKs, ROS3P,
 EXPRB32, and the coupled block pair Gauss–Legendre 2 / Radau IIA s=2) also
-return embedded estimates, so all twelve feed the same adaptive helpers
+return embedded estimates, so all 45 estimate emitters feed the same adaptive helpers
 (the block pair's companion is the null-stage order-2 quadrature, so both
 report `q = 3`). **Dormand–Prince additionally has published dense output**:
 `dormand_prince_dense_output` evaluates one step's quartic continuous extension
@@ -293,6 +293,11 @@ report `q = 3`). **Dormand–Prince additionally has published dense output**:
 the step endpoints, `O(dt^5)` in between — for output at fixed times under a
 varying `dt`. The other emitters have no published interpolant
 (NOTES.md §3.17).
+
+The expanded pairs include Tsit5/OwrenZen, Verner/TsitPap and 17 new DIRK
+companions. The [family catalog](docs/docs/families/dirk.md) records wave 8
+orders, stored stages, stability and reuse. KenCarp/ARS names provide their
+pure implicit tableaus; ARK remains the additive split interface.
 
 ### Symplectic Methods
 
@@ -358,10 +363,10 @@ Each stage's implicit diagonal term is closed with a `NonlinearSolver`. The defa
 Jacobian-vector products, so it can converge where Picard iteration diverges. For a fixed-depth,
 CUDA-graph-capturable non-stiff solve, explicitly pass `FixedPointSolver(iterations=...)` or the
 damped `RelaxedFixedPointSolver(relaxation=..., iterations=...)`. The stiffly accurate schemes
-with an explicit first stage — Trapezoidal, TR-BDF2, and the two ESDIRKs — implement lossless
+with an explicit first stage — 24 DIRKs including Trapezoidal, TR-BDF2, and the ESDIRKs — implement lossless
 `priorStep` reuse (the previous step's last stage *is* `f(t^{n+1}, y^{n+1})`); the rest reject it
 with the standard warning. See [NOTES.md §3.6](NOTES.md#36-valid-schemes-and-what-each-costs) for
-the derivation and the remaining scheme work:
+the derivation and [the DIRK family catalog](docs/docs/families/dirk.md) for all 36 methods:
 
 | Scheme | Order | Stability | Use Case |
 |--------|-------|-----------|----------|
@@ -647,7 +652,10 @@ mechanism `history=`'s multi-entry `StepHistory` generalizes past, not an altern
 
 ## Supported Integrators
 
-This registry-aligned table is the short reference for every available scheme. Stability is the
+The registry contains 137 schemes. The table summarizes the established driver
+choices; the [family wiki](docs/docs/index.md) has the expanded catalogs.
+
+This table is a short reference for common driver choices. Stability is the
 scalar Dahlquist classification when it applies. `yes` means the direct nonlinear Kepler
 symplectic-form test passes; `linear only` means the linear oscillator map preserves phase area,
 but the scheme is not generally symplectic. A `conditional` result assumes a separable,
@@ -722,7 +730,7 @@ position-only Hamiltonian.
 
 ## Family enums
 
-The registry's single `IntegrationSchemeType` enum captures all 64 schemes, but
+The registry's single `IntegrationSchemeType` enum captures all 137 schemes, but
 a flat list of members does not tell a user which entry is an explicit scheme
 and which is an implicit one. The library therefore also ships one enum per
 driver family — `ExplicitRK`, `Symplectic`, `RelaxedChebyshev`,
@@ -755,7 +763,7 @@ from warpSPHIntegrators import IntegrationSchemes, DIRK
 | `Symplectic` | Symplectic Euler, Leap Frog, Velocity Verlet, PEFRL, VEFRL | position/velocity splitting (`verlet.py`, `ruth.py`) |
 | `RelaxedChebyshev` | RKC1, RKC2, RKL2 | Chebyshev recurrences (`rkc.py`) |
 | `MultistepExplicit` | AB2-5, ABM2-4 (PECE) | Adams linear multistep (`multistep.py`) |
-| `DIRK` | Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3/4 | diagonally implicit, JFNK-closed (`dirk.py`) |
+| `DIRK` | 36 methods: Backward Euler, Midpoint, Trapezoidal, SDIRK2/TR-BDF2, Kvaerno, KenCarp, ESDIRK, SSPSDIRK2, ARS, Cash/Hairer, SFSDIRK | diagonally implicit, JFNK-closed (`dirk.py`) |
 | `CoupledRK` | Gauss-Legendre 2, Radau IIA s=2 | coupled s-by-s block solve (`fullyimplicit.py`) |
 | `MultistepImplicit` | BDF1-5, Adams-Moulton 2-4 (implicit) | implicit linear multistep (`bdf.py`, `multistep.py`) |
 | `IMEX` | IMEX Euler, ARK3/4, SBDF2/3, CNAB2 | additive split (`imex.py`, `ark.py`, `imexmultistep.py`) |
@@ -1284,8 +1292,8 @@ method runs.
     plain callables) (NOTES.md §3.15–§3.16).
 
 Explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4), implicit multistep
-(BDF1–BDF5, fully implicit Adams-Moulton 2–4), seven DIRK schemes (Backward Euler, Implicit
-Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA), two
+(BDF1–BDF5, fully implicit Adams-Moulton 2–4), 36 DIRK schemes through order 6 (including Kvaerno, KenCarp, ESDIRK,
+ARS, Cash/Hairer and SFSDIRK), two
 additive IMEX pairs (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA), three IMEX multistep schemes
 (SBDF2, SBDF3, CNAB2), one Rosenbrock-W scheme (ROS3P), two exponential integrators
 (ETD2RK, EXPRB32), and two coupled fully implicit RK schemes (Gauss-Legendre 2,
@@ -1379,7 +1387,7 @@ Contributions welcome! Areas of interest:
 
 - Remaining schemes and families — see [IMPLICIT_ROADMAP.md](IMPLICIT_ROADMAP.md) (open items only): BDF6, the coupled block s=3 pair, Lobatto IIIA-IIIB, SSPRK(5,4), generalized-alpha, symplectic composition, one-step RKN, higher-order Rosenbrock-W
 - An adaptive-stepping driver (output at fixed times, event location) and variable-step multistep coefficients (NOTES.md §3.17)
-- Extending the [docs/](docs/index.md) wiki (new families, new schemes)
+- Extending the [docs/](docs/docs/index.md) wiki (new families, new schemes)
 - Performance optimizations
 - Additional state field behaviors
 

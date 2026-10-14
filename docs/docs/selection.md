@@ -5,7 +5,7 @@ title: Choosing a Scheme
 
 # Choosing a Scheme
 
-One hundred and eight schemes in eleven families. This page is the
+One hundred and thirty-seven schemes in eleven families. This page is the
 decision path; the
 [families](families/explicit-rk) pages have the details, the
 [solver](solver) page the JFNK mechanics, and the README's
@@ -48,12 +48,17 @@ the full registry reference.
 | Mildly stiff, one solve per step | **Adams-Moulton 2–4 (implicit)** | JFNK-corrected AM: AM2 (trapezoidal) is A-stable, AM3/4 only have a bounded region. Iterated correction beats same-order PECE by an order of magnitude on a stiff nonlinear relaxation |
 | Stiff + symplectic (separable Hamiltonian) | **Gauss-Legendre 2** | Order 4, symplectic (measured, phase-area defect ~1e-13); not L-stable |
 
+The [DIRK catalog](families/dirk) now includes Kvaerno, KenCarp, ARS,
+Cash/Hairer and ESDIRK methods through order 6. Kvaerno4 and SSPSDIRK2
+are A-stable with nonzero stiff limits; SFSDIRK4–8 have bounded stability
+regions. The KenCarp/ARS names here provide the implicit half only.
+
 ## Cost notes
 
 - **Evaluations per step.** AB: 1 (with `history=`); BDF/AM: 1 RHS + one nonlinear
   solve per step (the solve itself costs GMRES matvecs); explicit RK: the stage
   count; RKC/RKL: $s$ stages chosen per step from $dt\cdot\lvert\lambda_{max}\rvert$.
-- **Reuse.** `priorStep=` is lossless for the stiffly accurate DIRKs (the
+- **Reuse.** `priorStep=` is lossless for the stiffly accurate DIRKs with an explicit first stage (the
   previous step's last stage *is* $f(t^{n+1}, y^{n+1})$) and exact for FSAL
   pairs; `warmStart=` takes the previous converged stage *states* as the block
   solve's initial guess for the coupled tableaus. Everything else refuses with

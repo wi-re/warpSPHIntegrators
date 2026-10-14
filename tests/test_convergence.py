@@ -53,8 +53,9 @@ def test_scheme_achieves_registered_order(scheme, problem_name, step_sizes):
 @pytest.mark.parametrize('problem_name', ['oscillator', 'forced', 'kepler'])
 def test_error_decreases_monotonically(scheme, problem_name, step_sizes):
     """A halved step must not increase the error. Catches instability, not just order."""
-    _, errors = order_of(scheme, problem_name, step_sizes)
-    for coarse, fine, dt_c, dt_f in zip(errors, errors[1:], step_sizes, step_sizes[1:]):
+    grid = dts_for(scheme.name, problem_name, step_sizes)
+    _, errors = order_of(scheme, problem_name, grid)
+    for coarse, fine, dt_c, dt_f in zip(errors, errors[1:], grid, grid[1:]):
         if fine < 1e-13:
             continue  # at the roundoff floor, ordering is meaningless
         assert fine < coarse, (

@@ -10,7 +10,7 @@ import math
 import pytest
 import torch
 
-from conftest import EXACT_ON_LINEAR_PROBLEMS, dts_for
+from conftest import EXACT_ON_LINEAR_PROBLEMS, ESTIMATE_SCHEMES, dts_for, estimate_order
 from warpSPHIntegrators import getIntegrator, get_reference_state, testing
 from warpSPHIntegrators.butcher import getButcherTableau
 
@@ -52,7 +52,19 @@ EMBEDDED = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)', 'Cash-Karp 5(4)',
             # pairs. DP8 and the Feagin tableaus are PLAIN (no embedded weight
             # vector) and stay out of this list.
             'Vern6 6(5)', 'Vern7 7(6)', 'Vern8 8(7)', 'Vern9 9(8)',
-            'RKV76IIa 7(6)', 'TanYam7 7(6)', 'TsitPap8 8(7)']
+            'RKV76IIa 7(6)', 'TanYam7 7(6)', 'TsitPap8 8(7)',
+            # The wave-8 DIRK embedded pairs (SCHEME_EXPANSION_PLAN, 2026-10-13;
+            # NOTES.md 3.28): each is (p, p-1) (ODE's btilde is the error weight,
+            # registered as b_embed = b - btilde), so the estimate is the embedded
+            # branch's local error, O(dt^p) = dt^order, like the wave-6/7 pairs.
+            # The remaining 12 wave-8 DIRK tableaus (SSPSDIRK2, ARS222-443,
+            # BHR553, CFNLIRK3, SFSDIRK4-8) carry no embedded weight vector and
+            # stay out of this list.
+            'Kvaerno3', 'Kvaerno4', 'Kvaerno5', 'KenCarp3', 'KenCarp4',
+            'KenCarp47', 'KenCarp5', 'KenCarp58', 'ESDIRK3(2)5L[2]SA',
+            'ESDIRK4(3)6L[2]SA2', 'ESDIRK4(3)7L[2]SA', 'ESDIRK5(4)7L[2]SA2',
+            'ESDIRK5(4)I8L[2]SA', 'ESDIRK6(5)9L[2]SA', 'Cash4', 'Hairer4',
+            'Hairer42']
 
 
 #: Wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13): per-pair grids for the new (p, p-1)
@@ -70,6 +82,24 @@ EMBEDDED_GRID = {
     'TanYam7 7(6)': [0.4, 0.2, 0.1, 0.05],
     'TsitPap8 8(7)': [0.8, 0.4, 0.2, 0.1],
 }
+
+#: Wave 8 (SCHEME_EXPANSION_PLAN, 2026-10-13; NOTES.md 3.28): three wave-8 DIRK
+#: pairs whose measured single-step estimate rates on the standard grid sit
+#: ABOVE the asymptotic dt^order rate (pre-asymptotic overshoot of the (p, p-1)
+#: difference, and for KenCarp5 the finest magnitude 2.7e-15 also sits at the
+#: roundoff floor, where its rate is meaningless): KenCarp5 6.20/6.12/(floor),
+#: ESDIRK4(3)7L[2]SA 4.77/4.69/4.55, ESDIRK6(5)9L[2]SA 6.27/6.14/(6.09 at the
+#: floor). They run the standard grid with the one-sided band, which admits the
+#: overshoot (nothing may undershoot by more than half an order).
+EMBEDDED_GRID.update({
+    'KenCarp5': [0.1, 0.05, 0.025, 0.0125],
+    'ESDIRK4(3)7L[2]SA': [0.1, 0.05, 0.025, 0.0125],
+    'ESDIRK6(5)9L[2]SA': [0.1, 0.05, 0.025, 0.0125],
+})
+
+
+def test_recorded_estimate_inventory_matches_driver_metadata():
+    assert set(EMBEDDED) == set(ESTIMATE_SCHEMES)
 
 
 @pytest.mark.parametrize('name', EMBEDDED)
@@ -124,9 +154,7 @@ def test_error_estimate_has_the_embedded_order(name):
     # degenerate -- b itself -- for both block tableaus), so its estimate is
     # O(dt^3) = dt^(order-1), not dt^order; Radau IIA s=2 (order 3) lands on
     # the default dt^order either way.
-    expected = (s.order + 1 if s.name == 'TR-BDF2'
-                else s.order - 1 if s.name == 'Gauss-Legendre 2'
-                else s.order)
+    expected = estimate_order(s)
     if name in EMBEDDED_GRID:
         # One-sided band: the coarsest pair of the coarser grids can still be
         # pre-asymptotic (overshooting the asymptotic rate), so only the low

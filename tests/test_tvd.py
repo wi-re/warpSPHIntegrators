@@ -584,6 +584,36 @@ EXPECTED_VERDICTS = {
     'TR-BDF2': (1.0 + math.sqrt(2.0), 5.0, True),
     'ESDIRK3(2)4L[2]SA': (0.0, 5.0, True),
     'ESDIRK4(3)6L[2]SA': (0.0, 5.0, True),
+    # Wave 8: measured with the same CFL grid and scan caps below.
+    'Kvaerno3': (0.0, 5.0, True),
+    'Kvaerno4': (0.0, 5.0, True),
+    'Kvaerno5': (0.12167340688544225, 5.0, True),
+    'KenCarp3': (0.0, 5.0, True),
+    'KenCarp4': (0.0, 5.0, True),
+    'KenCarp47': (0.0, 5.0, True),
+    'KenCarp5': (0.0, 5.0, True),
+    'KenCarp58': (0.0, 5.0, True),
+    'ESDIRK3(2)5L[2]SA': (0.11176233817083416, 5.0, True),
+    'ESDIRK4(3)6L[2]SA2': (0.0, 5.0, True),
+    'ESDIRK4(3)7L[2]SA': (0.0, 5.0, True),
+    'ESDIRK5(4)7L[2]SA2': (0.0, 5.0, True),
+    'ESDIRK5(4)I8L[2]SA': (0.0, 5.0, True),
+    'ESDIRK6(5)9L[2]SA': (0.0, 5.0, True),
+    'SSPSDIRK2': (4.0, 5.0, True),
+    'ARS222': (2.4142135630766486, 5.0, True),
+    'ARS232': (2.4142135630766486, 5.0, True),
+    'ARS343': (0.0, 5.0, True),
+    'ARS443': (0.0, 5.0, True),
+    'BHR553': (0.0, 5.0, True),
+    'Cash4': (0.0, 5.0, True),
+    'CFNLIRK3': (0.0, 5.0, True),
+    'Hairer4': (0.13667198545180206, 5.0, True),
+    'Hairer42': (0.09274881117186362, 5.0, True),
+    'SFSDIRK4': (4.0, 5.0, True),
+    'SFSDIRK5': (4.0, 5.0, True),
+    'SFSDIRK6': (4.0, 5.0, True),
+    'SFSDIRK7': (4.0, 5.0, True),
+    'SFSDIRK8': (4.0, 5.0, True),
     'ARK3(2)4L[2]SA': (0.0, 5.0, True),
     'ARK4(3)6L[2]SA': (0.0, 5.0, True),
     'Newmark': (None, None, False),
@@ -652,28 +682,20 @@ EXPECTED_VERDICTS = {
 CFLS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 5.0]
 
 
-def test_classifier_verdicts_match_the_recorded_landscape():
-    """The Phase 13 gate: a verdict is recorded for every registered scheme.
-    Runs the same sweep `scripts/tvd_classifier.py` prints (~1 minute)."""
-    prob = advection('step')
-    verdicts = tvd_analysis.classify_all(
-        IntegrationSchemes, prob, CFLS, DT_SCALE, mu_max=4.0)
-    got = {v.scheme for v in verdicts}
-    assert got == set(EXPECTED_VERDICTS), (
-        f'registry drift: missing {set(EXPECTED_VERDICTS) - got}, '
-        f'unexpected {got - set(EXPECTED_VERDICTS)}')
-    failures = []
-    for v in verdicts:
-        ssp, tvd, uncond = EXPECTED_VERDICTS[v.scheme]
-        if v.ssp_cfl is None or ssp is None:
-            ssp_ok = v.ssp_cfl is None and ssp is None
-        else:
-            ssp_ok = abs(v.ssp_cfl - ssp) <= 2e-3
-        tvd_ok = (v.tvd_cfl is None and tvd is None) or \
-            (v.tvd_cfl is not None and v.tvd_cfl == tvd)
-        if not (ssp_ok and tvd_ok and v.unconditional == uncond):
-            failures.append(
-                f'{v.scheme}: got (ssp={v.ssp_cfl}, tvd={v.tvd_cfl}, '
-                f'uncond={v.unconditional}), expected (ssp={ssp}, tvd={tvd}, '
-                f'uncond={uncond})')
-    assert not failures, 'verdict table drift:\n' + '\n'.join(failures)
+def test_recorded_landscape_covers_the_registry():
+    """Cheap completeness gate: no sweep is needed to detect registry drift."""
+    assert {s.name for s in IntegrationSchemes} == set(EXPECTED_VERDICTS)
+
+
+@pytest.mark.parametrize('s', IntegrationSchemes, ids=lambda s: s.name)
+def test_classifier_verdicts_match_the_recorded_landscape(s):
+    """One sweep per scheme, so xdist distributes the expensive measurements."""
+    assert s.name in EXPECTED_VERDICTS, f'missing verdict for {s.name}'
+    v = tvd_analysis.classify_tvd(s, advection('step'), CFLS, DT_SCALE, mu_max=4.0)
+    ssp, tvd, uncond = EXPECTED_VERDICTS[s.name]
+    if ssp is None:
+        assert v.ssp_cfl is None
+    else:
+        assert v.ssp_cfl == pytest.approx(ssp, abs=2e-3)
+    assert v.tvd_cfl == tvd
+    assert v.unconditional == uncond

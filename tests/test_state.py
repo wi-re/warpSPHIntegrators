@@ -98,14 +98,24 @@ def test_clone_keeps_ephemeral_but_still_copies():
 # --------------------------------------------------------------------------- #
 
 def _stage_times(scheme, dt, steps, t0=0.0):
-    """Times at which the scheme evaluates f, per step."""
+    """Distinct times at which the scheme evaluates f, per step.
+
+    Implicit stages are solved iteratively (JFNK), which re-evaluates f at the
+    stage time once per solver iteration. The pattern of interest here is the
+    stage-time structure, so consecutive repeats of one time are collapsed: the
+    iteration count is a solver property, not part of the tableau, and it can
+    vary from step to step (a cold-start step occasionally takes a different
+    count -- the wave-8 KenCarp47/58 and SFSDIRK5-8 tableaus showed it).
+    """
     prob = testing.PROBLEMS['oscillator']()
     system = prob.initial()
     system.t = t0
     per_step = []
 
     def recording_rhs(state, step_dt, **kwargs):
-        per_step[-1].append(float(state.t))
+        t = float(state.t)
+        if not (per_step[-1] and per_step[-1][-1] == t):
+            per_step[-1].append(t)
         return prob.rhs(state, step_dt, **kwargs)
 
     for _ in range(steps):
@@ -126,6 +136,10 @@ def _stage_times(scheme, dt, steps, t0=0.0):
 DRIFT_BEFORE_FIRST_EVALUATION = {
     'PEFRL', 'Backward Euler (implicit)', 'Implicit Midpoint', 'SDIRK2', 'BDF1',
     'IMEX Euler', 'Gauss-Legendre 2', 'Radau IIA s=2',
+    # Wave 8 (NOTES.md 3.28): DIRK tableaus with an implicit first stage
+    # (c[0] != 0), so their first f evaluation sits at t^n + c[0]*dt.
+    'SSPSDIRK2', 'Cash4', 'Hairer4', 'Hairer42', 'SFSDIRK4', 'SFSDIRK5',
+    'SFSDIRK6', 'SFSDIRK7', 'SFSDIRK8',
 }
 
 
@@ -177,6 +191,17 @@ def test_stage_times_stay_within_the_step(scheme):
         slack = 1.5
     elif scheme.name in ('SSPRK53_2N1', 'TsitPap8 8(7)'):
         slack = 0.01
+    elif scheme.name in ('ESDIRK4(3)6L[2]SA2', 'Kvaerno5', 'BHR553', 'Cash4'):
+        # Wave 8 (NOTES.md 3.28): tableau nodes outside [0, 1] --
+        # ESDIRK4(3)6L[2]SA2 c4 = 1.046923, Kvaerno5 c2 = 1.230333,
+        # BHR553 c3 = 1.5, Cash4 c2 = -0.7 (its c row is scrambled: the step
+        # OPENS at c1 = 0.4359 and the -0.7 node is the second stage).
+        slack = {
+            'ESDIRK4(3)6L[2]SA2': 0.05,
+            'Kvaerno5': 0.25,
+            'BHR553': 0.5,
+            'Cash4': 0.7,
+        }[scheme.name]
     else:
         slack = 0.0
     for step, stage_times in enumerate(_stage_times(scheme, dt, steps=2, t0=1.0)):

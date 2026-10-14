@@ -6,6 +6,43 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ## [Unreleased]
 
+### Added — schemes (108 → 137): wave 8 DIRK tableaus
+
+- 29 OrdinaryDiffEq v7.8.1 implicit tableaus: Kvaerno3/4/5,
+  KenCarp3/4/47/5/58, six ESDIRK L[2]SA variants through order 6,
+  SSPSDIRK2, ARS222/232/343/443, BHR553, Cash4, CFNLIRK3,
+  Hairer4/42 and SFSDIRK4–8. DIRK grows from 7 to 36 methods;
+  17 additions carry embedded estimates and 20 support lossless reuse.
+  KenCarp/ARS entries provide pure implicit tableaus; ARS222/232
+  have identical stored implicit maps. SDIRK22 is intentionally omitted
+  because the inspected upstream constructor is a trapezoidal stub.
+- Row-sum stage nodes correct inconsistent upstream stored nodes. Rounded
+  main weights of Cash4 and SFSDIRK5/7/8 have only their last entry adjusted
+  to sum to one. Stored stage counts, coefficient provenance, source
+  differences and numerical qualifications are recorded in NOTES §3.28.
+- Stability gates distinguish 22 L-stable, two A-stable/non-L-stable
+  (Kvaerno4, SSPSDIRK2), and five bounded-region (SFSDIRK4–8) additions.
+  SSPSDIRK2 is symplectic: two midpoint half-steps, with stiff limit +1;
+  it registers `dissipation=False` and has direct geometry tests.
+
+### Fixed — Phase 1 validation gates
+
+- CI now includes drift-field and pRRK tests. Collection rejects missing
+  categories and overlapping shard coverage; CI and pytest read the same
+  shard inventory. TVD completeness is checked separately from the expensive
+  measurements, which are parameterized per scheme for xdist.
+- All 45 estimate emitters receive adaptive-loop coverage selected from
+  driver metadata. Implicit gradients use the registry and startup metadata;
+  all 36 DIRKs check captured RHS-parameter gradients against finite differences.
+  ROS3P retains its dedicated frozen-operator gradient checks.
+- Extend FSAL expectations and verify endpoint/first-stage relationships.
+  Kepler convergence checks distinguish solver noise from tableau defects
+  using default-solve coarse grids and strict-solve standard-grid regressions,
+  with the existing order tolerance unchanged.
+- Refresh the DIRK catalog, overview counts, selection notes, README and
+  site landing data for the 137-scheme working tree. These changes are
+  unreleased; package metadata remains at 0.6.1.
+
 ### Added — schemes (64 → 71): the wave-1 SSPRK tableaus
 
 - Seven plain SSP tableaus from OrdinaryDiffEq v7.8.1 on the generic Butcher

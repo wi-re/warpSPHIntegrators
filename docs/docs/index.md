@@ -5,7 +5,7 @@ sidebar_label: Overview
 # warpSPHIntegrators — scheme wiki
 
 Differentiable ODE integration for PyTorch (and, eventually, NVIDIA Warp):
-a typed state/update system, **108 registered time-stepping schemes across 11
+a typed state/update system, **137 registered time-stepping schemes across 11
 families**, and a matrix-free implicit machinery (JFNK + GMRES) that keeps the
 implicit schemes differentiable through the solves.
 
@@ -60,7 +60,7 @@ Every scheme in the registry belongs to exactly one family enum (see the
 | Symplectic | `Symplectic` | 6 | Geometric position/velocity splitting for second-order ODEs | [symplectic](/docs/families/symplectic) |
 | Relaxed Chebyshev | `RelaxedChebyshev` | 3 | Matrix-free super-timestepping, real-axis stability $O(s^2)$ in stages | [relaxed-chebyshev](/docs/families/relaxed-chebyshev) |
 | Multistep explicit | `MultistepExplicit` | 9 | Adams-Bashforth, PECE Adams-Bashforth-Moulton, and SSPRKMSVS32/43 | [multistep-explicit](/docs/families/multistep-explicit) |
-| DIRK | `DIRK` | 7 | Diagonally implicit RK, one JFNK solve per implicit stage | [dirk](/docs/families/dirk) |
+| DIRK | `DIRK` | 36 | Diagonally implicit RK, one JFNK solve per implicit stage | [dirk](/docs/families/dirk) |
 | Coupled RK | `CoupledRK` | 2 | Gauss-Legendre 2, Radau IIA s=2 — one $s\times s$ JFNK block solve | [coupled-rk](/docs/families/coupled-rk) |
 | Multistep implicit | `MultistepImplicit` | 8 | BDF1-5 and JFNK-corrected Adams-Moulton | [multistep-implicit](/docs/families/multistep-implicit) |
 | IMEX | `IMEX` | 6 | Additive explicit/implicit splits (IMEX Euler, ARK, SBDF/CNAB) | [imex](/docs/families/imex) |
