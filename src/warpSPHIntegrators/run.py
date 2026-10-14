@@ -208,7 +208,7 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
           dt_min=None, dt_max=None, max_steps=100000, max_attempts=200000,
           max_rejections=1000, history=None, reuse=None, allow_stagnation=None,
           sample_times=(), save_steps=False, callback=None, transaction=None,
-          snapshot=snapshot_state, restart=None, raise_on_failure=True,
+          snapshot=snapshot_state, restart=None, events=(), raise_on_failure=True,
           rhs_args=(), **step_options):
     """Integrate to t_end, committing only accepted state/history/side effects.
 
@@ -287,6 +287,11 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
                 continue
             if adaptive or not math.isclose((t-t0)/ (direction*nominal), round((t-t0)/(direction*nominal)), rel_tol=0, abs_tol=1e-10):
                 raise ValueError('Off-grid sampling requires Dormand-Prince dense output')
+    events = tuple(events)
+    if any(not isinstance(event, Event) for event in events):
+        raise TypeError('events must contain Event objects')
+    if events and not scheme.metadata.dense_output:
+        raise ValueError('Event localization requires Dormand-Prince dense output')
     if transaction is not None and not all(callable(getattr(transaction, key, None)) for key in ('begin','commit','rollback')):
         raise TypeError('transaction needs begin, commit and rollback hooks')
     def finish(reason):
@@ -305,6 +310,13 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
         return finish('nonfinite_input')
     sample(t0,current)
     index = int(bool(requested) and requested[0] == t0)
+    event_values = [_event_value(event,current,snapshot) for event in events]
+    if restart is None:
+        for i,(event,value) in enumerate(zip(events,event_values)):
+            if value == 0:
+                hits.append(EventHit(i,event.name,t0,snapshot(current)))
+                if event.terminal:
+                    return finish('event')
     while direction*(end-float(current.t)) > 0:
         if accepted >= max_steps:
             return finish('max_steps')
@@ -348,6 +360,16 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
                 new_size = propose_dt(error,h,scheme.estimate_order) if error is not None and math.isfinite(error) else h*.2
                 step_size = min(h*.9,new_size)
                 continue
+            end_values = [_event_value(event,result.state,snapshot) for event in events]
+            located = _locate_events(events,event_values,end_values,snapshot(current),result,signed_h,options,rhs_args,snapshot)
+            terminal = next((hit for hit in located if events[hit.index].terminal),None)
+            if terminal is not None and abs(terminal.t-float(result.state.t)) > events[terminal.index].time_tol:
+                if transaction is not None:
+                    transaction.rollback(token)
+                    active = False
+                rejected += 1
+                step_size = abs(terminal.t-float(current.t))
+                continue  # recompute the truncated step, including its lifecycle and history
             if transaction is not None:
                 transaction.commit(token,snapshot(result))
                 active = False
@@ -363,6 +385,8 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
         prior = result.stages[-1] if result.stages else None
         last_dt = signed_h
         accepted += 1
+        hits.extend(located)
+        event_values = end_values
         while index < len(requested) and (direction*(requested[index]-float(current.t)) <= 0 or
                                         math.isclose(requested[index],float(current.t),rel_tol=0,abs_tol=4*math.ulp(float(current.t)))):
             t = requested[index]
@@ -377,6 +401,66 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
         if callback is not None and callback(snapshot(StepRecord(signed_h,result,status,error))) is False:
             sample(float(current.t),current)
             return finish('callback')
+        if terminal is not None:
+            sample(float(current.t),current)
+            return finish('event')
     sample(end,current)
     return finish('finished')
 
+
+@dataclass(frozen=True)
+class Event:
+    function: Any
+    name: str = 'event'
+    terminal: bool = False
+    direction: int = 0
+    time_tol: float = 1e-10
+
+    def __post_init__(self):
+        if not callable(self.function) or type(self.terminal) is not bool or self.direction not in (-1,0,1):
+            raise ValueError('Event needs a callable, bool terminal and direction -1/0/1')
+        _positive('event time_tol',self.time_tol)
+
+
+@dataclass(frozen=True)
+class EventHit:
+    index: int
+    name: str
+    t: float
+    state: Any
+
+
+def _event_value(event,state,snapshot):
+    value = float(event.function(float(state.t),snapshot(state)))
+    if not math.isfinite(value):
+        raise ValueError('Event values must be finite scalars')
+    return value
+
+
+def _locate_events(events, old, new, state, result, dt, options, args, snapshot):
+    hits = []
+    for i,(event,left,right) in enumerate(zip(events,old,new)):
+        if left == 0 or left*right > 0:
+            continue
+        change = (right-left) * (1 if dt > 0 else -1)
+        if event.direction and change*event.direction <= 0:
+            continue
+        lo,hi = 0.,1.
+        if right == 0:
+            lo = hi = 1.
+        for _ in range(80):
+            if abs(dt)*(hi-lo) <= event.time_tol:
+                break
+            mid = (lo+hi)/2
+            sampled = dormand_prince_dense_output(snapshot(state),result.stages,dt,mid,*args,**options)
+            value = _event_value(event,sampled,snapshot)
+            if value == 0:
+                lo = hi = mid; break
+            if left*value <= 0:
+                hi = mid
+            else:
+                lo = mid; left = value
+        theta = (lo+hi)/2
+        sampled = dormand_prince_dense_output(snapshot(state),result.stages,dt,theta,*args,**options)
+        hits.append(EventHit(i,event.name,float(sampled.t),snapshot(sampled)))
+    return sorted(hits,key=lambda hit:(hit.t-float(state.t))/dt)
