@@ -8,6 +8,10 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Added — Phase 8 backend expansion
 
+- Adaptive NDF target-order selection with normalized neighboring defects,
+  mature history transitions and portable controller state. Candidate ratios
+  match 135 pinned source-controller cases; startup/retry policies are explicit.
+
 - Fixed-target-order NDF 1–5 with source-checked difference resampling, implicit
   RK startup, quasi-constant adaptive step blocks, full-state affine quadratures
   and portable history. Rapid caller timestep changes safely restart instead of

@@ -160,6 +160,55 @@ equivalence. Fixed-step characteristic-root checks include negative-real decay
 at all five orders; orders 3–5 have boundaries entering the left half-plane and
 do not have full A-stability. Local defect tolerances do not bound global error.
 
+### Adaptive target order
+
+`AdaptiveNDF(max_order=5, max_step_ratio=2.)` starts at target order one and
+selects among orders 1 through `max_order` during adaptive runs. It uses the
+same NDF kernel, lifecycle and quadrature. Mature accepted differences supply
+the neighboring-order defects; all candidates use the runner's full field norm
+and tolerances. Main/lower/upper proposal safety factors are 1.2/1.3/1.4,
+matching the pinned QNDF candidate mathematics. `ndf_order_proposals` exposes
+these scalar candidate ratios independently of the accepted-step policy.
+
+[example:run adaptive target-order NDF]: #
+```python
+import math
+import torch
+from warpSPHIntegrators import AdaptiveNDF, TensorState, tensor_rhs, solve
+
+records = []
+result = solve(AdaptiveNDF(), TensorState(torch.ones(1, dtype=torch.float64)),
+               1., tensor_rhs(lambda t, y: -y), dt=.001, adaptive=True,
+               rtol=1e-7, atol=1e-9, callback=records.append)
+assert result.successful
+assert abs(result.state.y.item() - math.exp(-1)) < 2e-6
+assert max(r.result.history.context['last_order'] for r in records) >= 3
+```
+
+The factory's `order` is None because it is dynamic. On each accepted result,
+`history.context['last_order']` identifies the target order just used;
+`history.context['order']` identifies the next history order. Per-result
+`estimate_order` supplies the estimator exponent. Fixed runs and direct steps
+retain the current order; use `adaptive=True` for automatic order selection.
+Portable checkpoints include both controller and difference state.
+
+The policy waits for at least p+2 equal steps before comparing orders and moves
+at most one order at a time. A change holds h while the new order matures.
+Ratios outside the growth deadband remain bounded by `max_step_ratio` and the
+runner's `dt_max`. A zero defect supplies no evidence for raising order.
+Rejected trials retain accepted memory and use the runner's shrink policy;
+NDF can safely restart through its implicit starter. Order changes occur on
+owned accepted trial memory before an external transaction commits.
+
+This implements adaptive order selection with package-specific maturity,
+startup, hold/deadband and retry policies. It does not reproduce upstream
+QNDF's full order/rejection controller or derivative-discontinuity detector.
+Call `restart_history=True` when changing RHS parameters. As with other
+adaptive drivers, gradients follow the selected numerical path and do not
+differentiate discrete controller decisions. Known-consumer benchmarks compare
+this policy against fixed-target NDF5, KenCarp5 and DP5; automatic order selection
+does not promise lower work than choosing a suitable fixed target in advance.
+
 ## References
 
 - Hairer, Nørsett, Wanner, *Solving ODEs I* (1993), Ch. 4 — Adams; *Solving ODEs II* (1996), Ch. 4 — BDF and A($\alpha$) stability.

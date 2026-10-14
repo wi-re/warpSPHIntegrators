@@ -5089,6 +5089,19 @@
       ],
       "evidence": "docs/development/ndf-backend-validation.md",
       "intended_consumer": "Use NDF factory for its variable-history policy; avoid duplicate fixed registration"
+    },
+    {
+      "name": "Adaptive NDF target-order backend",
+      "status": "implemented",
+      "wave": 10,
+      "reason": "Accepted target orders 1\u20135 with source-checked neighboring proposals, full-field normalization, owned difference/controller transitions and portable restart. Package maturity/hold/startup/retry policy is explicit; not complete upstream QNDF controller equivalence.",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; BDF 2.4.5 QNDF accepted-controller candidate mathematics",
+      "implementation": "src/warpSPHIntegrators/adaptive_ndf.py",
+      "tests": [
+        "tests/test_adaptive_ndf.py"
+      ],
+      "evidence": "docs/development/adaptive-ndf-validation.md",
+      "intended_consumer": "Dissipative ODEs with unknown appropriate target order, explicit RHS and owned full-state quantities"
     }
   ]
 }

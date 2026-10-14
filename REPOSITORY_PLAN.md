@@ -177,8 +177,12 @@ must be recorded rather than counted as an implemented method.
   separate. [Backend evidence](docs/development/nystrom-backend-validation.md).
 - [x] Implement fixed-target-order NDF 1–5 difference state, source resampling,
   order-preserving implicit startup, adaptive quasi-constant blocks and portable
-  tensor continuation. Arbitrary rapid grid changes restart safely; variable-order
-  QNDF remains a distinct extension. [Backend evidence](docs/development/ndf-backend-validation.md).
+  tensor continuation. Arbitrary rapid grid changes restart safely.
+  [Backend evidence](docs/development/ndf-backend-validation.md).
+- [x] Add adaptive NDF target-order selection with source-checked neighboring
+  proposals, owned mature-history transitions, field-tolerance normalization and
+  portable controller state. Exact upstream QNDF retry/discontinuity policy remains
+  distinct. [Backend evidence](docs/development/adaptive-ndf-validation.md).
 - [x] Prioritize a benchmarked niche: s=3 collocation improves known-consumer
   accuracy/work while passing the spatial bar. Generalized-alpha is source-confirmed
   and now has a [known two-mass consumer and linear prototype](docs/development/structural-demo-validation.md).

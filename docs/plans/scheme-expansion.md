@@ -3,7 +3,8 @@
 **Status: waves 1–8 committed; Phase 8 implements the first wave-9 batch
 (three-stage Gauss/Radau) and a parameterized classical generalized-alpha driver.
 Parameterized Gauss/Radau stages 2–9, variable Adams, MEBDF2/CNLF2, stabilized
-Legendre/Gegenbauer, fourteen generalized Nyström and fixed-order NDF 1–5 backends are implemented
+Legendre/Gegenbauer, fourteen generalized Nyström, fixed-order NDF 1–5 and
+adaptive NDF target-order backends are implemented
 with source/numerical/consumer gates; remaining waves 10–16 members retain theirs.**
 The registry contains 142 schemes (140 before MEBDF2/CNLF2; 139 before fixed ABM5; 137 before the first
 wave-9 batch; 64 at planning time).
@@ -305,8 +306,10 @@ step-body oracles, ownership/gradient/restart tests and known-consumer measureme
 the fixed catalog is 142. [Evidence](../development/implicit-extensions-validation.md).
 Fixed-target-order NDF 1–5 now supplies source-checked differences, resampling,
 implicit startup, accepted quasi-constant blocks and portable restart.
-[Evidence](../development/ndf-backend-validation.md). Adaptive order selection,
-Nordsieck/BDF variants and AMF remain separate backend work; frontend availability
+[Evidence](../development/ndf-backend-validation.md). AdaptiveNDF adds accepted
+target-order selection with source-checked candidate mathematics and explicit
+package maturity/startup/retry policies; [evidence](../development/adaptive-ndf-validation.md).
+Full upstream QNDF retry/discontinuity semantics, Nordsieck/BDF variants and AMF remain separate backend work; frontend availability
 is not an implementation gate.
 
 - `bdf.py`: NordsieckBDF (Nordsieck-form BDF), QNDF / QNDF1 / QNDF2

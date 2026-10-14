@@ -149,6 +149,13 @@ the runner's accepted adaptive proposal. The result owns trial memory; the hook
 returns a positive finite magnitude before the external transaction commits.
 NDF uses this to hold quasi-constant blocks. Rejection still shrinks immediately.
 
+An order-selecting driver can instead expose
+`adapt_step(result, h, proposal, *, error_norm, norm_estimate)`. The scalar
+`error_norm` and `norm_estimate(error_state)` use the same old/new field scales
+as acceptance. AdaptiveNDF uses these to compare neighboring defects and update
+owned trial history before commit. This hook may not mutate external state.
+Its returned magnitude is validated and capped by `dt_max` and method ratios.
+
 Portable history entries may have `update=None, aux=None` when the method stores
 its state entirely in `history.context`. These serialize with a null stage;
 older checkpoint entries with tensor updates continue to load. NDF's difference

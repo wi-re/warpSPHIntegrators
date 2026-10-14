@@ -5,7 +5,7 @@ hooks; callbacks/events must otherwise treat inputs as read-only. No solver,
 coefficient, or existing single-step acceptance semantics are replaced here.
 """
 
-from dataclasses import dataclass, fields, is_dataclass
+from dataclasses import dataclass, fields, is_dataclass, replace
 import copy
 from enum import Enum
 import math
@@ -199,7 +199,7 @@ def _error_norm(result, previous, rtol, atol):
         value = getattr(error, name)
         scale = atol[name] + rtol[name] * torch.maximum(getattr(old, name).abs(), getattr(new, name).abs())
         weighted = torch.where(scale > 0, value/scale, torch.where(value == 0, 0., float('inf')))
-        total += float(weighted.square().sum())
+        total += float(weighted.detach().square().sum())
         count += weighted.numel()
     return math.sqrt(total/count) if count else 0.
 
@@ -225,7 +225,8 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
     from .stabilized import StabilizedRK
     from .nystrom import Nystrom
     from .ndf import NDF
-    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme,GeneralizedAlpha,Collocation,VariableAdams,StabilizedRK,Nystrom,NDF)) else getIntegrator(scheme)
+    from .adaptive_ndf import AdaptiveNDF
+    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme,GeneralizedAlpha,Collocation,VariableAdams,StabilizedRK,Nystrom,NDF,AdaptiveNDF)) else getIntegrator(scheme)
     if restart is not None:
         if restart.scheme != scheme.identifier.name:
             raise ValueError('Checkpoint scheme does not match')
@@ -387,10 +388,14 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
                 step_size = abs(terminal.t-float(current.t))
                 continue  # recompute the truncated step, including its lifecycle and history
             next_size=min(maximum,propose_dt(error,h,estimate_order)) if adaptive else nominal
-            if adaptive and hasattr(scheme,'next_step_size'):
-                next_size=scheme.next_step_size(result,h,next_size)
+            if adaptive and (hasattr(scheme,'adapt_step') or hasattr(scheme,'next_step_size')):
+                if hasattr(scheme,'adapt_step'):
+                    next_size=scheme.adapt_step(result,h,next_size,error_norm=error,
+                        norm_estimate=lambda estimate:_error_norm(replace(result,error=estimate),current,rel,absolute))
+                else:next_size=scheme.next_step_size(result,h,next_size)
                 if isinstance(next_size,bool) or not isinstance(next_size,Real) or not math.isfinite(next_size) or next_size<=0:
                     raise ValueError('Method next_step_size must return a positive finite number')
+                next_size=min(maximum,next_size)
             if adaptive and hasattr(scheme,'max_step_ratio'):
                 next_size=min(next_size,h*scheme.max_step_ratio)
             if transaction is not None:

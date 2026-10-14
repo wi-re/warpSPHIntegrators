@@ -18,7 +18,7 @@ from warpSPHIntegrators import (
     stage_block_preconditioner,
     stage_shifted_preconditioner,
     ConservativeDissipativeRHS, Strang, Yoshida4, LinearExponentialFlow,
-    GeneralizedAlpha, Collocation, VariableAdams, StabilizedRK, Nystrom, NystromWeights, NDF,
+    GeneralizedAlpha, Collocation, VariableAdams, StabilizedRK, Nystrom, NystromWeights, NDF, AdaptiveNDF,
 )
 
 
@@ -118,6 +118,13 @@ with tempfile.TemporaryDirectory() as directory:
     path=Path(directory)/'ndf.pt';save_checkpoint(ndf.checkpoint,path)
     restored=solve(NDF(3),None,.6,rhs,restart=load_checkpoint(path))
 assert restored.successful and abs(restored.state.y.item()-math.exp(-.6))<1e-5
+adaptive_ndf=solve(AdaptiveNDF(),TensorState(torch.ones(1,dtype=torch.float64)),1.,rhs,
+    dt=.001,adaptive=True,rtol=1e-7,atol=1e-9)
+assert adaptive_ndf.successful and adaptive_ndf.history.context['order']>=3
+with tempfile.TemporaryDirectory() as directory:
+    path=Path(directory)/'adaptive-ndf.pt';save_checkpoint(adaptive_ndf.checkpoint,path)
+    resumed_ndf=solve(AdaptiveNDF(),None,2.,rhs,restart=load_checkpoint(path))
+assert resumed_ndf.successful and abs(resumed_ndf.state.y.item()-math.exp(-2))<2e-6
 print(f'Installed wheel {package.__version__}: all modules/exports, py.typed, '
       f'{len(filter_schemes(state_kind="tensor"))} tensor drivers, advanced state protocol, '
       'adaptive sampling/events, portable restart, stiff bootstrap, stage preconditioning, physical splitting and generalized-alpha continuation pass')

@@ -196,6 +196,12 @@ exposes immutable source R*U coefficients. `NDFQuadrature(known_state, weights,
 bootstrap)` describes its affine full-state step, including implicit RK startup.
 See [the history and lifecycle contract](families/multistep-implicit).
 
+`AdaptiveNDF(max_order=5, max_step_ratio=2.)` selects accepted target orders
+1–5 in adaptive runs. `order` is None; the actual and next orders live in
+`history.context['last_order']` and `['order']`. `ndf_order_proposals` supplies
+source-checked scalar candidate ratios. This uses the NDF history/quadrature
+contract and a package-specific accepted-order policy.
+
 | Name | Signature (abridged) | Purpose |
 |---|---|---|
 | `IntegrationResult` | `IntegrationResult(state, stages=..., error=None, history=None, solver_diagnostics=None)` | What every scheme returns |
