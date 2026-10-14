@@ -6,6 +6,7 @@ const sidebars = {
     'tensor-ode',
     'runs',
     'operator-splitting',
+    'structural-demo',
     'options',
     'selection',
     'catalog',

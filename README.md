@@ -60,6 +60,7 @@ if __name__ == '__main__':
 [The run API](docs/docs/runs.md) adds fixed/adaptive trajectories, rejection,
 sampling, events and checkpoints; see [the complete run example](examples/run_ode.py).
 [Physical splitting](docs/docs/operator-splitting.md) covers autonomous compositions.
+[The structural demo](docs/docs/structural-demo.md) shows slow/fast modes and controlled numerical damping on two coupled masses.
 The [full protocol example](examples/harmonic_oscillator.py) covers tagged
 position/velocity states and custom SPH lifecycle behavior.
 

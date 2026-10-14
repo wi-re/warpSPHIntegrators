@@ -21,13 +21,14 @@ fixed-point solver is accepted through the usual `solver=` override).
 
 ## Parameters and variants
 
-$\beta, \gamma \in [0, 1]$ (validated at construction). The two registered
-variants:
+$\beta, \gamma \in [0, 1]$ (validated when stepping); gamma=1/2 is the
+second-order condition for ordinary Newmark. The registered default and callable
+linear-acceleration variant are:
 
 | Scheme | $\beta$ | $\gamma$ | Note |
 |---|---|---|---|
 | Newmark (default = `newmark_average_acceleration`) | $1/4$ | $1/2$ | constant **average acceleration** — the standard structural-dynamics choice; unconditionally stable for the linear oscillator, no numerical damping |
-| `newmark_linear_acceleration` | $1/6$ | $1/2$ | **linear acceleration** — the standard with numerical damping (energy dissipation) of the linear oscillator |
+| `newmark_linear_acceleration` | $1/6$ | $1/2$ | **linear acceleration** — conditionally stable, with no algorithmic damping on the stable undamped linear oscillator |
 
 The default `newmark(state, dt, f, ..., beta=0.25, gamma=0.5)` accepts any
 admissible pair. The RHS must expose a velocity derivative — an update with a
@@ -38,8 +39,9 @@ is what supplies $a_n$ and the implicit $a_{n+1}$ guess.
 
 Order 2. For the linear oscillator the average-acceleration variant is
 unconditionally stable (its frequency response is bounded for all
-$\mathrm{dt}\,\omega$); the linear-acceleration variant adds the standard
-numerical damping. Newmark is **not** symplectic in general (measured
+$\mathrm{dt}\,\omega$); linear acceleration is stable only for
+$\mathrm{dt}\,\omega\le\sqrt{12}$ and does not add numerical damping there.
+Phase error remains even when linear modal energy is preserved. Newmark is **not** symplectic in general (measured
 dissipative in the Hamiltonian test suite — it is absent from the symplectic
 sets in `tests/test_hamiltonian.py`; the geometric alternatives for
 conservative dynamics are the [symplectic family](symplectic) and
@@ -58,6 +60,11 @@ refused; `history=` is threaded like the other one-step implicit schemes.
   runs is the point — use a symplectic scheme instead.
 
 ## References
+
+The [two-mass structural demo](../structural-demo) compares the actual registered
+driver against an exact modal solution and a generalized-alpha prototype. It
+shows why preserving an underresolved fast mode's energy is not the same as
+representing its motion accurately.
 
 - Newmark, N. M., *Equations of motion for structural dynamics*, Journal of Engineering Mechanics, ASCE 77 (1959) 679-709 — the $\beta$-$\gamma$ family.
 - Hughes, T. J. R., *The Finite Element Method* (1987), Ch. 15 — the unconditional-stability and damping analysis.

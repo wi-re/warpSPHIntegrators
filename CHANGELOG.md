@@ -6,6 +6,16 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ## [Unreleased]
 
+### Added — understood structural consumer
+
+- Added a two-mass demo with exact slow/fast modes, a dense linear generalized-alpha
+  prototype, actual Newmark comparison and a measured behavior/refinement gallery.
+- The prototype carries algorithmic acceleration, verifies selective damping and
+  second-order refinement, and includes controls for acceleration reset and the
+  pinned source's beta mismatch. It remains outside the 139-method catalog.
+- Corrected Newmark documentation: linear acceleration is conditionally stable
+  and does not provide algorithmic damping on the stable undamped oscillator.
+
 ### Added — Phase 8 first wave-9 batch
 
 - Registered three-stage Gauss-Legendre (order 6) and Radau IIA (order 5), bringing

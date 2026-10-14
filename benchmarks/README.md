@@ -17,6 +17,7 @@ python benchmarks/tvd_classifier.py --help
 | `implicit_scale.py --spatial`, `spatial_preconditioners.py` | Sparse reference/ILU and shifted spatial solve follow-up |
 | `implicit_scale.py --spatial --registered --selected-only` | Actual s=3 registration gate, direct reference and preferred shifted ILU with companion work |
 | `firk_registration.py` | Known oscillator/cubic-decay accuracy and measured RHS/Krylov work for s=2/3 |
+| `structural_modes.py` | Coupled-mass generalized-alpha prototype: modal energy/phase, Newmark parity, order, spectral radius and source controls |
 | `stiff_startup.py` | BDF implicit/explicit startup and low-order control |
 | `splitting_validation.py` | Known oscillator orders/contraction/energy, Burgers reference/CFL and qualified exact-flow merging |
 | `jfnk_preconditioner_benchmark.py` | Krylov/preconditioning cost |

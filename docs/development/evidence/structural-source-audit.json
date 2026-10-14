@@ -1,0 +1,33 @@
+{
+  "monorepo_version": "7.8.1",
+  "monorepo_tree": "bae9b8e5f1d00e51c554648e5094e215164a19f8",
+  "bundled_newmark_version": "2.4.0",
+  "source_sha256": {
+    "lib/OrdinaryDiffEqNewmark/src/algorithms.jl": "73f6b8f98a341d812fb2d84acfd29916e2d47fb80d5fe58f638deb3ad0c4700d",
+    "lib/OrdinaryDiffEqNewmark/src/newmark_perform_step.jl": "9c9cd14561c42a7ca25b9dc0c116675d7781922be9927dc6056e71ebfd8144b2"
+  },
+  "primary_reference": {
+    "doi": "10.1115/1.2900803",
+    "implementation": "https://petsc.org/release/src/ts/impls/implicit/alpha/alpha2.c.html",
+    "convention": "PETSc uses new-state alpha weights; the prototype uses their complements as old-state weights"
+  },
+  "findings": [
+    {
+      "topic": "beta",
+      "pinned_expression": "(1/2 + alpha_f - alpha_m)^2 / 4",
+      "classical_expression": "(1 + alpha_f - alpha_m)^2 / 4",
+      "anchor": "rho_inf=1 gives pinned beta=1/16, classical beta=1/4"
+    },
+    {
+      "topic": "acceleration memory",
+      "pinned_behavior": "Physical acceleration is refreshed each step; source doc records first-order damped variants",
+      "prototype_behavior": "Carry accepted algorithmic acceleration; initialize once from physical force"
+    },
+    {
+      "topic": "gamma guard",
+      "pinned_behavior": "gamma <= 1 rejects part of the advertised rho_inf range",
+      "classical_anchor": "rho_inf=0 gives gamma=1.5 and beta=1"
+    }
+  ],
+  "qualification": "Negative controls isolate the beta expression and acceleration-reset behavior; they do not execute or reproduce the full upstream solver"
+}

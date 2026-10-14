@@ -148,7 +148,10 @@ Priority: after reliable gates and a concrete benefit. Size: varies by driver.
   RHS functions.
 - [x] Prioritize a benchmarked niche: s=3 collocation improves known-consumer
   accuracy/work while passing the spatial bar. Generalized-alpha is source-confirmed
-  for a later structural toy batch; further Rosenbrock additions need stage-driver
+  and now has a [known two-mass consumer and linear prototype](docs/development/structural-demo-validation.md).
+  It demonstrates selective damping and identifies pinned-source parameter/memory
+  issues; production acceleration/restart/lifecycle contracts remain to implement.
+  Further Rosenbrock additions need stage-driver
   compatibility and a measured advantage.
 - [ ] Advance wave 12/13 work through Phase 7 where contracts overlap. Design
   extrapolation and map semantics independently where they do not.
