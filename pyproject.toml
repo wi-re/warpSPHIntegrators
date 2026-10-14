@@ -37,7 +37,7 @@ license = {file = "license.md"}
 test = ["pytest", "pytest-xdist"]
 dev = ["pytest", "pytest-xdist", "build", "wheel", "setuptools>=61.0", "twine"]
 examples = ["matplotlib", "tqdm", "jupyter", "ipympl"]
-benchmark = ["matplotlib"]
+benchmark = ["matplotlib", "scipy"]
 
 [project.urls]
 Repository = "https://github.com/wi-re/warpSPHIntegrators"

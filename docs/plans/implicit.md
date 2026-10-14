@@ -26,8 +26,9 @@ and the git history; the pre-2026-09-15 text of this file remains in git.
 - [x] **Gauss-Legendre s=3 and Radau IIA s=3 scale evaluation.** Repository
   Phase 6 prototypes and the local stage-block preconditioner pass the reaction
   sweep; mesh-refined diffusion fails the declared work/tolerance gate.
-  Registration remains deferred. A spatial/field-aware preconditioner must clear
-  the same bar before wave 9 reopens. [Evidence](../development/phase6-validation.md).
+  The [spatial follow-up](../development/spatial-followup-validation.md) now
+  clears those recorded cases. Companion/source/catalog gates still defer
+  registration; general SPH assembly remains application-specific. [Evidence](../development/phase6-validation.md).
 - [?] **Lobatto IIIA-IIIB.** Only for a concrete partitioned/separable Hamiltonian
   downstream — it needs the component partition (`f_q` / `f_p` accessors, which
   Phase 14 explicitly left out of scope), not this additive block solve.

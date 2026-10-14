@@ -20,7 +20,8 @@ retains the baseline findings and migration rationale.
 The 137-scheme catalog is committed locally and remains unreleased beyond package
 0.6.1. Expansion waves 1–8 are complete with recorded exceptions; waves 9–16
 remain subject to the gates below. Commit creation and package publication are
-separate actions. **Phase 7 is next; wave 9 remains gated by the failed Phase 6 diffusion sweep.**
+separate actions. **Phase 7 is next. The spatial follow-up clears the recorded wave 9 scale cases;
+companion/source/catalog gates remain before registration.**
 
 ## Phase 3 completion record
 
@@ -123,8 +124,10 @@ delivers measured order/stability/cost improvements on an actual consumer.
 
 Priority: after reliable gates and a concrete benefit. Size: varies by driver.
 
-- [ ] Reopen wave 9 only after spatial/field-aware preconditioning clears the
-  recorded Phase 6 bar and companion/source gates are verified.
+- [x] Clear the recorded Phase 6 spatial scale bar with shifted spatial ILU.
+  [Follow-up evidence](docs/development/spatial-followup-validation.md).
+- [ ] Complete wave 9 companion/source/catalog gates before registration; general
+  downstream SPH spatial/field assembly remains application-specific.
 - [ ] Re-enumerate waves 10–11 against pinned sources and split simple tableaus
   from history, recurrence, or driver changes. Variable coefficients are primarily
   a timestep/history issue; do not assume fixed-step methods exclude non-autonomous

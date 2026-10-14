@@ -247,7 +247,7 @@ Package metadata remains 0.6.1; these changes are unreleased.
 
 <a id="wave-9--firk-block-tableaus-ordinarydiffeqfirk-seven-listed-stage-configurations"></a>
 
-### Wave 9 — FIRK tableaus — scale gate failed, registrations deferred
+### Wave 9 — FIRK tableaus — spatial follow-up passes, registrations deferred
 
 The original list mixed stage counts and upstream propagated-order names. Gauss
 s=3/4/5 means orders 6/8/10. Upstream RadauIIA3 is order 3, s=2 (already ours);
@@ -265,8 +265,9 @@ helps reaction problems but exceeds the Krylov work bar at diffusion N=256 and
 fails tolerance at N=1024. The registry stays at 137. See
 [the measurement and gate decision](../development/phase6-validation.md).
 
-Reopen only after spatial/field-aware preconditioning meets the same recorded
-work, memory, failure and time bar on the challenging spatial case. Registration
+The [spatial follow-up](../development/spatial-followup-validation.md) now clears
+the same work, memory, failure and time bar on the recorded 1D spatial cases.
+Generic SPH assembly remains application-specific. Registration
 then still requires companions/estimate rates, coefficient/source validation and
 complete numerical/gradient gates. No Lobatto addition is implied; its partitioned
 interface remains a separate design.

@@ -35,7 +35,7 @@ CATEGORIES = {
     # The JFNK / GMRES solver core and its preconditioning hooks.
     'solvers': [
         'test_jfnk.py',
-        'test_preconditioner.py',
+        'test_preconditioner.py', 'test_spatial_preconditioner.py',
     ],
     # Family-specific drivers and tableaus.
     'dirk': ['test_dirk.py'],

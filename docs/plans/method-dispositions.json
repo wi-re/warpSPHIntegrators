@@ -4626,7 +4626,7 @@
     {
       "name": "Gauss s=3 / Radau IIA s=3",
       "status": "deferred",
-      "reason": "Numerical prototypes pass orders 6/5, collocation, stability, symmetry and gradients; Phase 6 diffusion scale gate fails, so wave 9 remains unregistered",
+      "reason": "Numerical prototypes pass orders 6/5, collocation, stability, symmetry and gradients; shifted spatial ILU clears recorded 1D scale cases, but companion/source/catalog gates remain",
       "source": "Collocation derivation at shifted Gauss/Radau nodes; Hairer & Wanner, coimbra.pdf",
       "implementation": "benchmarks/collocation_prototypes.py",
       "tests": "tests/test_implicit_prototypes.py",

@@ -134,6 +134,37 @@ passes reaction cases but fails the diffusion scale gate; higher-stage prototype
 remain unregistered. See the
 [Phase 6 evidence](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/phase6-validation.md).
 
+## Spatial solves for coupled stages
+
+`stage_shifted_preconditioner(build_shifted_solver)` diagonalizes the small RK
+stage matrix and applies shifted spatial inverses. The factory receives the
+current BlockState and context, then returns `solve(shift, complex_vector)` for
+`(I - shift*J_frozen)`. The application supplies sparse factors, a multigrid
+hierarchy or another spatial solve. A common Jacobian decouples stages exactly
+for linear systems; nonlinear stage Jacobians remain distinct in the actual
+Newton residual. Ill-conditioned eigenbases are refused. This helper uses Torch
+only and is a forward preconditioner; adjoint solves retain their existing path.
+
+[example:run shifted-spatial]: #
+```python
+import torch
+from warpSPHIntegrators import TensorState, tensor_rhs, getIntegrator, stage_shifted_preconditioner
+
+rates = torch.logspace(0, 3, 32, dtype=torch.float64)
+preconditioner = stage_shifted_preconditioner(
+    lambda state, context: lambda shift, vector: vector / (1 + shift*rates))
+result = getIntegrator('Radau IIA s=2')(
+    TensorState(torch.ones_like(rates)), .01, tensor_rhs(lambda t, y: -rates*y),
+    solver_opts={'matvec': 'jvp', 'tol': 1e-10, 'newton_tol': 1e-7,
+                 'preconditioner': preconditioner})
+assert result.step_status.tolerance_converged
+```
+
+The [spatial follow-up](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/spatial-followup-validation.md)
+compares direct sparse LU, ILU and shifted spatial solves on the unchanged
+reaction/diffusion gate. Its passing 1D result does not establish a generic
+unstructured SPH preconditioner or remove the wave 9 companion/source gates.
+
 ## Adaptive step control
 
 The [run API](runs) owns adaptive acceptance and rollback. For applications that

@@ -6,6 +6,14 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ## [Unreleased]
 
+### Added — spatial solver follow-up
+
+- Added a Torch-only stage transform with application-owned shifted spatial solves.
+  Sparse LU/ILU reference providers are benchmark-only, with optional SciPy.
+- The preferred shifted spatial ILU passes the unchanged Phase 6 reaction/diffusion
+  scale gate through N=1024. Higher-stage registrations still require companion
+  and source gates; no generic SPH or GPU solve claim is made.
+
 ### Changed — stiff startup and coupled scaling (Phase 6)
 
 - BDF3–5 default to order-matched L-stable implicit starters; the explicit DP5

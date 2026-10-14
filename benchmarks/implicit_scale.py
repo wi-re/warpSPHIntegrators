@@ -60,6 +60,11 @@ def case(args):
                 inverse=1/(1-context['stage_coefficient']*d)
             return v*inverse.reshape(-1)
         opts['preconditioner']=prec
+    factor_metrics={}
+    if args.mode in ("spatial_lu","spatial_ilu","shifted_lu","shifted_ilu"):
+        from spatial_preconditioners import spatial_preconditioner
+        diffusion=.2 if args.problem=="reaction" else .02*args.n*args.n
+        opts["preconditioner"]=spatial_preconditioner(diagonal,diffusion,args.mode,factor_metrics)
     counters=[];times=[];fails=0;work=[];solutions=[];residuals=[];newtons=[]
     # Initialize native thread pools before the measured baseline. Each case is
     # a fresh process; ru_maxrss is its actual high-water mark, not a Python proxy.
@@ -97,7 +102,7 @@ def case(args):
         median_rhs_calls=statistics.median(work),rhs_calls=work,krylov_iterations=counters,
         newton_map_evaluations=newtons,residuals=residuals,
         peak_rss_mib=peak,baseline_peak_rss_mib=baseline,additional_peak_rss_mib=max(0,peak-baseline),
-        final_solution=solutions[-1])
+        factor_metrics=factor_metrics,final_solution=solutions[-1])
 
 
 def main():
@@ -107,6 +112,7 @@ def main():
     parser.add_argument('--steps',type=int,default=3)
     parser.add_argument('--repeats',type=int,default=2)
     parser.add_argument('--dt',type=float,default=.05)
+    parser.add_argument('--spatial',action='store_true',help='Compare sparse LU/ILU and shifted spatial solves')
     parser.add_argument('--case',action='store_true')
     parser.add_argument('--scheme',default='radau3');parser.add_argument('--problem',default='reaction')
     parser.add_argument('--mode',default='block');parser.add_argument('--n',type=int,default=64)
@@ -124,6 +130,9 @@ def main():
     configs=[(s,m,w) for s in ('gauss2','radau2','gauss3','radau3')
              for m,w in (('none',False),('diagonal',False),('block',False),('block',True))]
     configs += [('sdirk2','none',False),('sdirk2','diagonal',False),('sdirk2','diagonal',True)]
+    if args.spatial:
+        configs=[(s,m,False) for s in ('gauss2','radau2','gauss3','radau3')
+                 for m in ('block','spatial_lu','spatial_ilu','shifted_lu','shifted_ilu')]
     results=[]
     for kind in ('reaction','diffusion'):
         for n in args.sizes:
@@ -141,16 +150,26 @@ def main():
                 (args.output_dir/'cases.json').write_text(json.dumps(results,indent=2)+'\n')
     gate=[]
     for record in results:
-        if record['scheme'] not in ('gauss3','radau3') or record['mode']!='block' or record['warm']:
+        if record['scheme'] not in ('gauss3','radau3') or record['mode'] not in (('spatial_lu','spatial_ilu','shifted_lu','shifted_ilu') if args.spatial else ('block',)) or record['warm']:
             continue
         base=next(r for r in results if r['scheme']==record['scheme'].replace('3','2') and r['n']==record['n']
-                  and r['problem']==record['problem'] and r['mode']=='block' and not r['warm'])
+                  and r['problem']==record['problem'] and r['mode']==record['mode'] and not r['warm'])
         ratio=record['median_seconds']/base['median_seconds'];work=record['median_rhs_calls']/base['median_rhs_calls']
         passed=(record['failures']==0 and max(record['krylov_iterations'])<=120 and
                 ratio<=3 and work<=3 and record['additional_peak_rss_mib']<=256 and base['failures']==0)
-        gate.append(dict(scheme=record['scheme'],n=record['n'],problem=record['problem'],passed=passed,
+        gate.append(dict(mode=record['mode'],scheme=record['scheme'],n=record['n'],problem=record['problem'],passed=passed,
                          time_ratio=ratio,work_ratio=work,failures=record['failures']))
-    passed=bool(gate) and all(r['passed'] for r in gate) and max(args.sizes)>=1024
+    if args.spatial:
+        for row in results:
+            reference=next(r for r in results if r['scheme']==row['scheme'] and r['n']==row['n'] and r['problem']==row['problem'] and r['mode']=='spatial_lu')
+            row['reference_error']=max(abs(a-b) for a,b in zip(row['final_solution'],reference['final_solution'])) if row['failures']==0 else None
+        for entry in gate:
+            row=next(r for r in results if r['scheme']==entry['scheme'] and r['n']==entry['n'] and r['problem']==entry['problem'] and r['mode']==entry['mode'])
+            entry['passed']=entry['passed'] and row['reference_error'] is not None and row['reference_error']<=1e-7
+    passed_by_mode={mode:all(r['passed'] for r in gate if r['mode']==mode) and max(args.sizes)>=1024
+                    for mode in {r['mode'] for r in gate}}
+    selected_mode='shifted_ilu' if args.spatial else 'block'
+    passed=bool(gate) and passed_by_mode.get(selected_mode,False)
     for row in results:
         row['failure_rate']=row['failures']/row['steps_attempted']
         values=row.pop('final_solution')
@@ -159,12 +178,12 @@ def main():
     report=dict(python=sys.version,torch=torch.__version__,platform=platform.platform(),
         cpu_model=next(line.split(':',1)[1].strip() for line in Path('/proc/cpuinfo').read_text().splitlines() if line.startswith('model name')),
         measurement_git_head=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
-        source_state='Phase 6 working tree, before implementation commits',device='cpu',dtype='float64',threads=1,
+        source_state='spatial follow-up working tree' if args.spatial else 'Phase 6 working tree, before implementation commits',device='cpu',dtype='float64',threads=1,
         sizes=args.sizes,dt=args.dt,steps=args.steps,repeats=args.repeats,
         memory_definition='fresh-process ru_maxrss, baseline after native thread-pool initialization; additional peak includes first-use AD/library allocation',
-        definition='all block/cold s=3 cases: zero tolerance failures, <=120 Krylov iterations per step, '
+        definition='all selected cold s=3 cases: zero tolerance failures, <=120 Krylov iterations per step, '
         '<=3x corresponding s=2 time and RHS work, <=256 MiB additional peak RSS, through N>=1024',
-        passed=passed,gate=gate,results=results)
+        selected_mode=selected_mode,passed_by_mode=passed_by_mode,passed=passed,gate=gate,results=results)
     (args.output_dir/'report.json').write_text(json.dumps(report,indent=2)+'\n')
     print(f'Wave 9 scale gate passed: {passed}')
 

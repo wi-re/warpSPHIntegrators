@@ -16,6 +16,7 @@ from warpSPHIntegrators import (
     StepHistory, SemilinearRHS, testing, get_reference_state,
     solve, Event, save_checkpoint, load_checkpoint,
     stage_block_preconditioner,
+    stage_shifted_preconditioner,
 )
 
 
@@ -64,6 +65,11 @@ block = getIntegrator('Radau IIA s=2')(TensorState(torch.ones_like(rates)),.01,
             tensor_rhs(lambda t,y:-rates*y),solver_opts={'matvec':'jvp',
             'tol':1e-10,'newton_tol':1e-7,'preconditioner':stage_block_preconditioner(-rates)})
 assert block.step_status.tolerance_converged
+shifted = getIntegrator('Radau IIA s=2')(TensorState(torch.ones_like(rates)),.01,
+            tensor_rhs(lambda t,y:-rates*y),solver_opts={'matvec':'jvp',
+            'tol':1e-10,'newton_tol':1e-7,'preconditioner':stage_shifted_preconditioner(
+                lambda state,context:lambda shift,v:v/(1+shift*rates))})
+assert shifted.step_status.tolerance_converged and torch.allclose(shifted.state.y,block.state.y,atol=1e-9)
 print(f'Installed wheel {package.__version__}: all modules/exports, py.typed, '
       f'{len(filter_schemes(state_kind="tensor"))} tensor drivers, advanced state protocol, '
       'adaptive sampling/events, portable restart, stiff bootstrap and stage preconditioning pass')
