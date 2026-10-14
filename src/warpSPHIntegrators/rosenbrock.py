@@ -198,6 +198,9 @@ def integrateROS3P(state, dt, f, *args, **kwargs) -> IntegrationResult:
     gmres_maxiter = kwargs.pop('gmres_maxiter', None)
     gmres_restart = kwargs.pop('gmres_restart', 30)
     history = kwargs.pop('history', None)
+    from .solvers import validate_solver_options
+    validate_solver_options({'ft_eps':ft_eps, 'gmres_tol':gmres_tol,
+                             'gmres_maxiter':gmres_maxiter, 'gmres_restart':gmres_restart})
     if w not in ('jvp', 'fd', 'linear'):
         raise ValueError(f"{name}: w= must be 'jvp', 'fd', or 'linear', got {w!r}")
     if f_t not in ('fd', 'none'):

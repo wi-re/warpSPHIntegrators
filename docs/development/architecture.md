@@ -1,6 +1,6 @@
 # Current architecture
 
-Status: 14 October 2026, after Phases 1–2. The runtime catalog contains 137
+Status: 14 October 2026, through Phase 4. The runtime catalog contains 137
 registered schemes in 11 families, plus three standalone parameterized pRRK
 drivers. [The generated catalog](../docs/catalog.md) owns current method counts
 and capability metadata. [The execution plan](../../REPOSITORY_PLAN.md) owns work
@@ -27,6 +27,12 @@ from the number of mathematical stages in a paper.
 `integration.py` registers the public `IntegrationScheme` tuples and lookup;
 `enums.py` supplies identifiers and family enums. `catalog.py` provides derived
 immutable metadata without changing the tuple's twelve-field contract.
+`filter_schemes` composes discovery criteria. `TensorState` / `tensor_rhs` adapt
+ordinary floating-point `(t, y)` callbacks, including splits, to the existing
+protocol without changing numerical drivers. `getPreferredIntegrator` returns
+conventional ordinary-ODE records; `getPreferredScheme` keeps its legacy raw
+callable choices. Structural metadata records second-order/separability/drift
+assumptions and retained-history length.
 Explicit/geometric, DIRK, coupled RK, multistep, IMEX, stabilized, Rosenbrock,
 exponential and Newmark methods use their respective drivers. `rhs.py` declares
 combined, split and semilinear capabilities. A KenCarp/ARS name registered in the

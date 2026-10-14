@@ -238,6 +238,11 @@ def gmres(matvec: Callable[[torch.Tensor], torch.Tensor], b: torch.Tensor,
     Returns ``(x, iterations)``; ``iterations`` counts total Arnoldi steps (one
     matvec each) across every restart cycle.
     """
+    from .solvers import validate_solver_options
+    if preconditioning not in ('left', 'right'):
+        raise ValueError(f"gmres preconditioning must be 'left' or 'right', got {preconditioning!r}")
+    validate_solver_options({'tol': tol, 'gmres_maxiter': maxiter, 'gmres_restart': restart,
+                             'preconditioner': preconditioner, 'preconditioning': preconditioning})
     if preconditioner is None:
         op = matvec
         rhs = b
@@ -523,6 +528,10 @@ class JFNKSolver:
                  preconditioner: Optional[Callable] = None,
                  preconditioning: str = 'right',
                  preconditioner_context: Optional[dict] = None):
+        from .solvers import validate_solver_options
+        validate_solver_options(locals())
+        if tol is None:
+            raise ValueError('JFNKSolver tol must be finite and positive')
         if matvec not in ('fd', 'jvp'):
             raise ValueError(f"JFNKSolver needs matvec in ('fd', 'jvp'), got {matvec!r}")
         if tol <= 0.0:
@@ -566,6 +575,10 @@ class JFNKSolver:
         self.preconditioner_context = preconditioner_context
 
     def _solve_core(self, step: Callable, y0, norm: Optional[Callable] = None, **opts) -> SolveResult:
+        from .solvers import validate_solver_options
+        validate_solver_options(opts)
+        if 'tol' in opts and opts['tol'] is None:
+            raise ValueError('JFNKSolver tol must be finite and positive')
         matvec_kind = opts.get('matvec', self.matvec)
         tol = opts.get('tol', self.tol)
         max_iterations = opts.get('max_iterations', self.max_iterations)

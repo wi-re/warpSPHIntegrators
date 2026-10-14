@@ -1,5 +1,6 @@
 from .util import verbosePrint
-from .catalog import SchemeMetadata
+from .catalog import SchemeMetadata, filter_schemes
+from .tensor import TensorState, tensor_rhs
 
 from .fields import *
 from .integration import *
@@ -89,7 +90,7 @@ from .enums import (
     SCHEME_FAMILY,
 )
 
-from .integration import (getPreferredScheme, getIntegrator, getIntegrationEnum, IntegrationSchemes)
+from .integration import (getPreferredScheme, getPreferredIntegrator, getIntegrator, getIntegrationEnum, IntegrationSchemes)
 from .reuse import (
     ReuseAnalysis,
     step_reuse_analysis,
@@ -104,6 +105,10 @@ __version__ = "0.6.1"
 
 __all__ = [
     "SchemeMetadata",
+    "filter_schemes",
+    "TensorState",
+    "tensor_rhs",
+    "getPreferredIntegrator",
     "verbosePrint",
     "BaseState",
     "BlockState",

@@ -307,6 +307,8 @@ def integrateETD2RK(state, dt, f, *args, **kwargs) -> IntegrationResult:
     reject_prior_step(name, priorStep)
     phi_dim = kwargs.pop('phi_dim', 30)
     phi_tol = kwargs.pop('phi_tol', 1e-10)
+    from .solvers import validate_solver_options
+    validate_solver_options({'phi_dim':phi_dim, 'phi_tol':phi_tol})
     history = kwargs.pop('history', None)
 
     resolved = resolve(f, scheme_name=name, need_linear=True)
@@ -522,6 +524,8 @@ def integrateEXPRB32(state, dt, f, *args, **kwargs) -> IntegrationResult:
     ft_eps = kwargs.pop('ft_eps', None)
     phi_dim = kwargs.pop('phi_dim', 30)
     phi_tol = kwargs.pop('phi_tol', 1e-8)
+    from .solvers import validate_solver_options
+    validate_solver_options({'phi_dim':phi_dim, 'phi_tol':phi_tol, 'ft_eps':ft_eps})
     history = kwargs.pop('history', None)
     if w not in ('jvp', 'fd'):
         raise ValueError(f"{name}: w= must be 'jvp' or 'fd', got {w!r}")

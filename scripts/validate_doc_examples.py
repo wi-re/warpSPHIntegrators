@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PAGES = ('README.md', 'docs/docs/index.md', 'docs/docs/quickstart.md',
          'docs/docs/api.md', 'docs/docs/solver.md',
          'docs/development/usage-reference.md')
+PAGES += ('docs/docs/tensor-ode.md',)
 FENCE = re.compile(r'^```python[^\n]*\n(.*?)^```[ \t]*$', re.M | re.S)
 ANNOTATION = re.compile(r'\[example:(run|skip|include) ([^\n]+?)\]: #\s*$')
 

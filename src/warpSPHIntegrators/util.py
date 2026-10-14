@@ -250,6 +250,8 @@ class IntegrationScheme(NamedTuple):
         return SCHEME_FAMILY[self.identifier]
 
     def __call__(self, state, dt, f, *args, **kwargs):
+        if getattr(state, '_tensor_adapter', False) and self.metadata.state_kind != 'tensor':
+            raise ValueError(f'{self.name} requires a position/velocity system, not TensorState')
         return self.function(state, dt, f, *args, **kwargs)
 
     def __str__(self):

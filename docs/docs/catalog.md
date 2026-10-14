@@ -22,212 +22,212 @@ Stability labels and reuse qualifications are explained in the family pages.
 
 [Equations and qualifications](families/explicit-rk).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options |
-|---|---:|---|---:|---:|---|---|---|
-| Forward Euler | 1 | 1 | — | — | — | refused | combined |
-| Midpoint | 2 | 2 | — | — | — | 2 | combined |
-| Heun's Method (2nd order) | 2 | 2 | — | — | — | 2 | combined |
-| Ralston's Method (2nd order) | 2 | 2 | — | — | — | 1 | combined |
-| RK3 | 3 | 3 | — | — | — | 2 | combined |
-| Heun's Method (3rd order) | 3 | 3 | — | — | — | 1 | combined |
-| Ralston's Method (3rd order) | 3 | 3 | — | — | — | 1 | combined |
-| Wray's Method (3rd order) | 3 | 3 | — | — | — | 1 | combined |
-| SSP RK3 | 3 | 3 | — | — | — | 1 | combined |
-| SSPRK(10,4) | 4 | 10 | — | — | — | 3 | combined |
-| SSPRK53 | 3 | 5 | — | — | — | 1 | combined |
-| SSPRK63 | 3 | 6 | — | — | — | 1 | combined |
-| SSPRK73 | 3 | 7 | — | — | — | 1 | combined |
-| SSPRK83 | 3 | 8 | — | — | — | 1 | combined |
-| SSPRK54 | 4 | 5 | — | — | — | 1 | combined |
-| KYKSSPRK42 | 2 | 4 | — | — | — | 1 | combined |
-| KYK2014DGSSPRK_3S2 | 2 | 3 | — | — | — | 1 | combined |
-| SSPRK43 | 3 | 4 | 2 | 3 | — | 1 | combined |
-| SSPRK432 | 3 | 4 | 2 | 3 | — | 1 | combined |
-| SSPRK932 | 3 | 9 | — | — | — | 1 | combined |
-| SSPRK53_2N1 | 3 | 5 | — | — | — | 1 | combined |
-| SSPRK53_2N2 | 3 | 5 | — | — | — | 1 | combined |
-| SSPRK53_H | 3 | 5 | — | — | — | 1 | combined |
-| RK4 | 4 | 4 | — | — | — | 3 | combined |
-| RK4 (alternative) | 4 | 4 | — | — | — | 2 | combined |
-| Nystrom 5th order | 5 | 6 | — | — | — | 1 | combined |
-| Bogacki-Shampine 3(2) | 3 | 4 | 2 | 3 | — | 3 (FSAL) | combined |
-| Dormand-Prince 5(4) | 5 | 7 | 4 | 5 | — | 5 (FSAL) | combined |
-| Cash-Karp 5(4) | 5 | 6 | 4 | 5 | — | 1 | combined |
-| Tsit5 5(4) | 5 | 7 | 4 | 5 | — | 5 (FSAL) | combined |
-| OwrenZen3 3(2) | 3 | 4 | 2 | 3 | — | 3 (FSAL) | combined |
-| OwrenZen4 4(3) | 4 | 6 | 3 | 4 | — | 4 (FSAL) | combined |
-| OwrenZen5 5(4) | 5 | 8 | 4 | 5 | — | 5 (FSAL) | combined |
-| BS5 5(4) | 5 | 8 | 4 | 5 | — | 5 (FSAL) | combined |
-| Stepanov5 5(4) | 5 | 7 | 4 | 5 | — | 5 (FSAL) | combined |
-| Alshina2 2(1) | 2 | 2 | 1 | 2 | — | 1 | combined |
-| Alshina3 | 3 | 3 | — | — | — | 1 | combined |
-| Alshina6 | 6 | 7 | — | — | — | 4 | combined |
-| MSRK5 | 5 | 9 | — | — | — | 5 (FSAL) | combined |
-| MSRK6 | 6 | 9 | — | — | — | 6 (FSAL) | combined |
-| SIR54 | 5 | 8 | — | — | — | 5 (FSAL) | combined |
-| Ralston4 | 4 | 4 | — | — | — | 2 | combined |
-| RKO65 | 5 | 6 | — | — | — | 5 | combined |
-| RKM | 3 | 6 | — | — | — | 1 | combined |
-| PSRK4p7q6 | 4 | 6 | — | — | — | 4 | combined |
-| PSRK3p6q5 | 3 | 5 | — | — | — | 3 | combined |
-| PSRK3p5q4 | 3 | 4 | — | — | — | 3 | combined |
-| Vern6 6(5) | 6 | 9 | 5 | 6 | — | 6 (FSAL) | combined |
-| Vern7 7(6) | 7 | 10 | 6 | 7 | — | refused | combined |
-| Vern8 8(7) | 8 | 13 | 7 | 8 | — | 5 | combined |
-| Vern9 9(8) | 9 | 16 | 8 | 9 | — | 6 | combined |
-| RKV76IIa 7(6) | 7 | 10 | 6 | 7 | — | refused | combined |
-| TanYam7 7(6) | 7 | 10 | 6 | 7 | — | refused | combined |
-| TsitPap8 8(7) | 8 | 13 | 7 | 8 | — | 5 | combined |
-| DP8 | 8 | 12 | — | — | — | 5 | combined |
-| Feagin10 | 10 | 17 | — | — | — | 6 | combined |
-| Feagin12 | 12 | 25 | — | — | — | 6 | combined |
-| Feagin14 | 14 | 35 | — | — | — | refused | combined |
-| EPEC | 2 | 2 | — | — | — | 2 | combined |
-| EPEC Modified | 2 | 2 | — | — | — | 2 | combined |
-| TVD RK3 | 3 | 3 | — | — | — | refused | combined |
-| TVD RK2 | 2 | 2 | — | — | — | refused | combined |
-| Explicit Euler | 1 | 1 | — | — | — | refused | combined |
+| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---:|---|---:|---:|---|---|---|---|
+| Forward Euler | 1 | 1 | — | — | — | refused | combined | tensor |
+| Midpoint | 2 | 2 | — | — | — | 2 | combined | tensor |
+| Heun's Method (2nd order) | 2 | 2 | — | — | — | 2 | combined | tensor |
+| Ralston's Method (2nd order) | 2 | 2 | — | — | — | 1 | combined | tensor |
+| RK3 | 3 | 3 | — | — | — | 2 | combined | tensor |
+| Heun's Method (3rd order) | 3 | 3 | — | — | — | 1 | combined | tensor |
+| Ralston's Method (3rd order) | 3 | 3 | — | — | — | 1 | combined | tensor |
+| Wray's Method (3rd order) | 3 | 3 | — | — | — | 1 | combined | tensor |
+| SSP RK3 | 3 | 3 | — | — | — | 1 | combined | tensor |
+| SSPRK(10,4) | 4 | 10 | — | — | — | 3 | combined | tensor |
+| SSPRK53 | 3 | 5 | — | — | — | 1 | combined | tensor |
+| SSPRK63 | 3 | 6 | — | — | — | 1 | combined | tensor |
+| SSPRK73 | 3 | 7 | — | — | — | 1 | combined | tensor |
+| SSPRK83 | 3 | 8 | — | — | — | 1 | combined | tensor |
+| SSPRK54 | 4 | 5 | — | — | — | 1 | combined | tensor |
+| KYKSSPRK42 | 2 | 4 | — | — | — | 1 | combined | tensor |
+| KYK2014DGSSPRK_3S2 | 2 | 3 | — | — | — | 1 | combined | tensor |
+| SSPRK43 | 3 | 4 | 2 | 3 | — | 1 | combined | tensor |
+| SSPRK432 | 3 | 4 | 2 | 3 | — | 1 | combined | tensor |
+| SSPRK932 | 3 | 9 | — | — | — | 1 | combined | tensor |
+| SSPRK53_2N1 | 3 | 5 | — | — | — | 1 | combined | tensor |
+| SSPRK53_2N2 | 3 | 5 | — | — | — | 1 | combined | tensor |
+| SSPRK53_H | 3 | 5 | — | — | — | 1 | combined | tensor |
+| RK4 | 4 | 4 | — | — | — | 3 | combined | tensor |
+| RK4 (alternative) | 4 | 4 | — | — | — | 2 | combined | tensor |
+| Nystrom 5th order | 5 | 6 | — | — | — | 1 | combined | tensor |
+| Bogacki-Shampine 3(2) | 3 | 4 | 2 | 3 | — | 3 (FSAL) | combined | tensor |
+| Dormand-Prince 5(4) | 5 | 7 | 4 | 5 | — | 5 (FSAL) | combined | tensor |
+| Cash-Karp 5(4) | 5 | 6 | 4 | 5 | — | 1 | combined | tensor |
+| Tsit5 5(4) | 5 | 7 | 4 | 5 | — | 5 (FSAL) | combined | tensor |
+| OwrenZen3 3(2) | 3 | 4 | 2 | 3 | — | 3 (FSAL) | combined | tensor |
+| OwrenZen4 4(3) | 4 | 6 | 3 | 4 | — | 4 (FSAL) | combined | tensor |
+| OwrenZen5 5(4) | 5 | 8 | 4 | 5 | — | 5 (FSAL) | combined | tensor |
+| BS5 5(4) | 5 | 8 | 4 | 5 | — | 5 (FSAL) | combined | tensor |
+| Stepanov5 5(4) | 5 | 7 | 4 | 5 | — | 5 (FSAL) | combined | tensor |
+| Alshina2 2(1) | 2 | 2 | 1 | 2 | — | 1 | combined | tensor |
+| Alshina3 | 3 | 3 | — | — | — | 1 | combined | tensor |
+| Alshina6 | 6 | 7 | — | — | — | 4 | combined | tensor |
+| MSRK5 | 5 | 9 | — | — | — | 5 (FSAL) | combined | tensor |
+| MSRK6 | 6 | 9 | — | — | — | 6 (FSAL) | combined | tensor |
+| SIR54 | 5 | 8 | — | — | — | 5 (FSAL) | combined | tensor |
+| Ralston4 | 4 | 4 | — | — | — | 2 | combined | tensor |
+| RKO65 | 5 | 6 | — | — | — | 5 | combined | tensor |
+| RKM | 3 | 6 | — | — | — | 1 | combined | tensor |
+| PSRK4p7q6 | 4 | 6 | — | — | — | 4 | combined | tensor |
+| PSRK3p6q5 | 3 | 5 | — | — | — | 3 | combined | tensor |
+| PSRK3p5q4 | 3 | 4 | — | — | — | 3 | combined | tensor |
+| Vern6 6(5) | 6 | 9 | 5 | 6 | — | 6 (FSAL) | combined | tensor |
+| Vern7 7(6) | 7 | 10 | 6 | 7 | — | refused | combined | tensor |
+| Vern8 8(7) | 8 | 13 | 7 | 8 | — | 5 | combined | tensor |
+| Vern9 9(8) | 9 | 16 | 8 | 9 | — | 6 | combined | tensor |
+| RKV76IIa 7(6) | 7 | 10 | 6 | 7 | — | refused | combined | tensor |
+| TanYam7 7(6) | 7 | 10 | 6 | 7 | — | refused | combined | tensor |
+| TsitPap8 8(7) | 8 | 13 | 7 | 8 | — | 5 | combined | tensor |
+| DP8 | 8 | 12 | — | — | — | 5 | combined | tensor |
+| Feagin10 | 10 | 17 | — | — | — | 6 | combined | tensor |
+| Feagin12 | 12 | 25 | — | — | — | 6 | combined | tensor |
+| Feagin14 | 14 | 35 | — | — | — | refused | combined | tensor |
+| EPEC | 2 | 2 | — | — | — | 2 | combined | tensor |
+| EPEC Modified | 2 | 2 | — | — | — | 2 | combined | tensor |
+| TVD RK3 | 3 | 3 | — | — | — | refused | combined | tensor |
+| TVD RK2 | 2 | 2 | — | — | — | refused | combined | tensor |
+| Explicit Euler | 1 | 1 | — | — | — | refused | combined | tensor |
 
 ## Symplectic — 6 schemes
 
 [Equations and qualifications](families/symplectic).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options |
-|---|---:|---|---:|---:|---|---|---|
-| Leap Frog | 2 | driver | — | — | — | 1 | combined |
-| Symplectic Euler | 2 | driver | — | — | — | 1 | combined |
-| Velocity Verlet | 2 | driver | — | — | — | 2 | combined |
-| PEFRL | 4 | driver | — | — | — | refused | combined |
-| VEFRL | 4 | driver | — | — | — | refused | combined |
-| Semi-Implicit Euler | 1 | 1 | — | — | — | refused | combined |
+| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---:|---|---:|---:|---|---|---|---|
+| Leap Frog | 2 | driver | — | — | — | 1 | combined | position/velocity; separability assumptions |
+| Symplectic Euler | 2 | driver | — | — | — | 1 | combined | position/velocity; separability assumptions |
+| Velocity Verlet | 2 | driver | — | — | — | 2 | combined | position/velocity; separability assumptions |
+| PEFRL | 4 | driver | — | — | — | refused | combined | position/velocity; separability assumptions |
+| VEFRL | 4 | driver | — | — | — | refused | combined | position/velocity; separability assumptions |
+| Semi-Implicit Euler | 1 | 1 | — | — | — | refused | combined | position/velocity |
 
 ## Relaxed Chebyshev — 3 schemes
 
 [Equations and qualifications](families/relaxed-chebyshev).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options |
-|---|---:|---|---:|---:|---|---|---|
-| RKC1 | 1 | variable | — | — | — | refused | combined; `lambda_max=` or `s=` |
-| RKC2 | 2 | variable | — | — | — | refused | combined; `lambda_max=` or `s=` |
-| RKL2 | 2 | variable | — | — | — | refused | combined; `lambda_max=` or `s=` |
+| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---:|---|---:|---:|---|---|---|---|
+| RKC1 | 1 | variable | — | — | — | refused | combined; `lambda_max=` or `s=` | tensor |
+| RKC2 | 2 | variable | — | — | — | refused | combined; `lambda_max=` or `s=` | tensor |
+| RKL2 | 2 | variable | — | — | — | refused | combined; `lambda_max=` or `s=` | tensor |
 
 ## Multistep explicit — 9 schemes
 
 [Equations and qualifications](families/multistep-explicit).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options |
-|---|---:|---|---:|---:|---|---|---|
-| Adams-Bashforth 2 | 2 | driver | — | — | — | refused | combined |
-| Adams-Bashforth 3 | 3 | driver | — | — | — | refused | combined |
-| Adams-Bashforth 4 | 4 | driver | — | — | — | refused | combined |
-| Adams-Bashforth 5 | 5 | driver | — | — | — | refused | combined |
-| Adams-Bashforth-Moulton 2 (PECE) | 2 | driver | — | — | — | refused | combined |
-| Adams-Bashforth-Moulton 3 (PECE) | 3 | driver | — | — | — | refused | combined |
-| Adams-Bashforth-Moulton 4 (PECE) | 4 | driver | — | — | — | refused | combined |
-| SSPRKMSVS32 | 2 | driver | — | — | — | refused | combined |
-| SSPRKMSVS43 | 3 | driver | — | — | — | refused | combined |
+| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---:|---|---:|---:|---|---|---|---|
+| Adams-Bashforth 2 | 2 | driver | — | — | — | refused | combined | tensor; 1 previous entries |
+| Adams-Bashforth 3 | 3 | driver | — | — | — | refused | combined | tensor; 2 previous entries |
+| Adams-Bashforth 4 | 4 | driver | — | — | — | refused | combined | tensor; 3 previous entries |
+| Adams-Bashforth 5 | 5 | driver | — | — | — | refused | combined | tensor; 4 previous entries |
+| Adams-Bashforth-Moulton 2 (PECE) | 2 | driver | — | — | — | refused | combined | tensor; 1 previous entries |
+| Adams-Bashforth-Moulton 3 (PECE) | 3 | driver | — | — | — | refused | combined | tensor; 2 previous entries |
+| Adams-Bashforth-Moulton 4 (PECE) | 4 | driver | — | — | — | refused | combined | tensor; 3 previous entries |
+| SSPRKMSVS32 | 2 | driver | — | — | — | refused | combined | tensor; 2 previous entries |
+| SSPRKMSVS43 | 3 | driver | — | — | — | refused | combined | tensor; 3 previous entries |
 
 ## DIRK — 36 schemes
 
 [Equations and qualifications](families/dirk).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options |
-|---|---:|---|---:|---:|---|---|---|
-| Backward Euler (implicit) | 1 | 1 | — | — | L | refused | combined |
-| Implicit Midpoint | 2 | 1 | — | — | A | refused | combined |
-| Trapezoidal (Crank-Nicolson) | 2 | 2 | — | — | A | 2 (FSAL) | combined |
-| SDIRK2 | 2 | 2 | — | — | L | refused | combined |
-| TR-BDF2 | 2 | 3 | 3 | 3 | L | 2 (FSAL) | combined |
-| ESDIRK3(2)4L[2]SA | 3 | 4 | 2 | 3 | L | 3 (FSAL) | combined |
-| ESDIRK4(3)6L[2]SA | 4 | 6 | 3 | 4 | L | 4 (FSAL) | combined |
-| Kvaerno3 | 3 | 4 | 2 | 3 | L | 3 (FSAL) | combined |
-| Kvaerno4 | 4 | 5 | 3 | 4 | A | 4 (FSAL) | combined |
-| Kvaerno5 | 5 | 7 | 4 | 5 | L | 5 (FSAL) | combined |
-| KenCarp3 | 3 | 4 | 2 | 3 | L | 3 (FSAL) | combined |
-| KenCarp4 | 4 | 6 | 3 | 4 | L | 4 (FSAL) | combined |
-| KenCarp47 | 4 | 7 | 3 | 4 | L | 4 (FSAL) | combined |
-| KenCarp5 | 5 | 8 | 4 | 5 | L | 5 (FSAL) | combined |
-| KenCarp58 | 5 | 8 | 4 | 5 | L | 5 (FSAL) | combined |
-| ESDIRK3(2)5L[2]SA | 3 | 5 | 2 | 3 | L | 3 (FSAL) | combined |
-| ESDIRK4(3)6L[2]SA2 | 4 | 6 | 3 | 4 | L | 4 (FSAL) | combined |
-| ESDIRK4(3)7L[2]SA | 4 | 7 | 3 | 4 | L | 4 (FSAL) | combined |
-| ESDIRK5(4)7L[2]SA2 | 5 | 7 | 4 | 5 | L | 5 (FSAL) | combined |
-| ESDIRK5(4)I8L[2]SA | 5 | 8 | 4 | 5 | L | 5 (FSAL) | combined |
-| ESDIRK6(5)9L[2]SA | 6 | 9 | 5 | 6 | L | 6 (FSAL) | combined |
-| SSPSDIRK2 | 2 | 2 | — | — | A | refused | combined |
-| ARS222 | 2 | 3 | — | — | L | 2 (FSAL) | combined |
-| ARS232 | 2 | 3 | — | — | L | 2 (FSAL) | combined |
-| ARS343 | 3 | 4 | — | — | L | 3 (FSAL) | combined |
-| ARS443 | 3 | 5 | — | — | L | 3 (FSAL) | combined |
-| BHR553 | 3 | 5 | — | — | L | 3 (FSAL) | combined |
-| Cash4 | 4 | 5 | 3 | 4 | L | refused | combined |
-| CFNLIRK3 | 3 | 4 | — | — | L | 3 (FSAL) | combined |
-| Hairer4 | 4 | 5 | 3 | 4 | L | refused | combined |
-| Hairer42 | 4 | 5 | 3 | 4 | L | refused | combined |
-| SFSDIRK4 | 4 | 4 | — | — | — | refused | combined |
-| SFSDIRK5 | 4 | 5 | — | — | — | refused | combined |
-| SFSDIRK6 | 4 | 6 | — | — | — | refused | combined |
-| SFSDIRK7 | 4 | 7 | — | — | — | refused | combined |
-| SFSDIRK8 | 4 | 8 | — | — | — | refused | combined |
+| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---:|---|---:|---:|---|---|---|---|
+| Backward Euler (implicit) | 1 | 1 | — | — | L | refused | combined | tensor |
+| Implicit Midpoint | 2 | 1 | — | — | A | refused | combined | tensor |
+| Trapezoidal (Crank-Nicolson) | 2 | 2 | — | — | A | 2 (FSAL) | combined | tensor |
+| SDIRK2 | 2 | 2 | — | — | L | refused | combined | tensor |
+| TR-BDF2 | 2 | 3 | 3 | 3 | L | 2 (FSAL) | combined | tensor |
+| ESDIRK3(2)4L[2]SA | 3 | 4 | 2 | 3 | L | 3 (FSAL) | combined | tensor |
+| ESDIRK4(3)6L[2]SA | 4 | 6 | 3 | 4 | L | 4 (FSAL) | combined | tensor |
+| Kvaerno3 | 3 | 4 | 2 | 3 | L | 3 (FSAL) | combined | tensor |
+| Kvaerno4 | 4 | 5 | 3 | 4 | A | 4 (FSAL) | combined | tensor |
+| Kvaerno5 | 5 | 7 | 4 | 5 | L | 5 (FSAL) | combined | tensor |
+| KenCarp3 | 3 | 4 | 2 | 3 | L | 3 (FSAL) | combined | tensor |
+| KenCarp4 | 4 | 6 | 3 | 4 | L | 4 (FSAL) | combined | tensor |
+| KenCarp47 | 4 | 7 | 3 | 4 | L | 4 (FSAL) | combined | tensor |
+| KenCarp5 | 5 | 8 | 4 | 5 | L | 5 (FSAL) | combined | tensor |
+| KenCarp58 | 5 | 8 | 4 | 5 | L | 5 (FSAL) | combined | tensor |
+| ESDIRK3(2)5L[2]SA | 3 | 5 | 2 | 3 | L | 3 (FSAL) | combined | tensor |
+| ESDIRK4(3)6L[2]SA2 | 4 | 6 | 3 | 4 | L | 4 (FSAL) | combined | tensor |
+| ESDIRK4(3)7L[2]SA | 4 | 7 | 3 | 4 | L | 4 (FSAL) | combined | tensor |
+| ESDIRK5(4)7L[2]SA2 | 5 | 7 | 4 | 5 | L | 5 (FSAL) | combined | tensor |
+| ESDIRK5(4)I8L[2]SA | 5 | 8 | 4 | 5 | L | 5 (FSAL) | combined | tensor |
+| ESDIRK6(5)9L[2]SA | 6 | 9 | 5 | 6 | L | 6 (FSAL) | combined | tensor |
+| SSPSDIRK2 | 2 | 2 | — | — | A | refused | combined | tensor |
+| ARS222 | 2 | 3 | — | — | L | 2 (FSAL) | combined | tensor |
+| ARS232 | 2 | 3 | — | — | L | 2 (FSAL) | combined | tensor |
+| ARS343 | 3 | 4 | — | — | L | 3 (FSAL) | combined | tensor |
+| ARS443 | 3 | 5 | — | — | L | 3 (FSAL) | combined | tensor |
+| BHR553 | 3 | 5 | — | — | L | 3 (FSAL) | combined | tensor |
+| Cash4 | 4 | 5 | 3 | 4 | L | refused | combined | tensor |
+| CFNLIRK3 | 3 | 4 | — | — | L | 3 (FSAL) | combined | tensor |
+| Hairer4 | 4 | 5 | 3 | 4 | L | refused | combined | tensor |
+| Hairer42 | 4 | 5 | 3 | 4 | L | refused | combined | tensor |
+| SFSDIRK4 | 4 | 4 | — | — | — | refused | combined | tensor |
+| SFSDIRK5 | 4 | 5 | — | — | — | refused | combined | tensor |
+| SFSDIRK6 | 4 | 6 | — | — | — | refused | combined | tensor |
+| SFSDIRK7 | 4 | 7 | — | — | — | refused | combined | tensor |
+| SFSDIRK8 | 4 | 8 | — | — | — | refused | combined | tensor |
 
 ## Coupled RK — 2 schemes
 
 [Equations and qualifications](families/coupled-rk).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options |
-|---|---:|---|---:|---:|---|---|---|
-| Gauss-Legendre 2 | 4 | 2 + 1 companion | 2 | 3 | A | refused | combined |
-| Radau IIA s=2 | 3 | 2 + 1 companion | 2 | 3 | L | refused | combined |
+| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---:|---|---:|---:|---|---|---|---|
+| Gauss-Legendre 2 | 4 | 2 + 1 companion | 2 | 3 | A | refused | combined | tensor |
+| Radau IIA s=2 | 3 | 2 + 1 companion | 2 | 3 | L | refused | combined | tensor |
 
 ## Multistep implicit — 8 schemes
 
 [Equations and qualifications](families/multistep-implicit).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options |
-|---|---:|---|---:|---:|---|---|---|
-| BDF1 | 1 | driver | — | — | L | refused | combined |
-| BDF2 | 2 | driver | — | — | A | refused | combined |
-| BDF3 | 3 | driver | — | — | A(alpha) | refused | combined |
-| BDF4 | 4 | driver | — | — | A(alpha) | refused | combined |
-| BDF5 | 5 | driver | — | — | A(alpha) | refused | combined |
-| Adams-Moulton 2 (implicit) | 2 | driver | — | — | A | refused | combined |
-| Adams-Moulton 3 (implicit) | 3 | driver | — | — | — | refused | combined |
-| Adams-Moulton 4 (implicit) | 4 | driver | — | — | — | refused | combined |
+| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---:|---|---:|---:|---|---|---|---|
+| BDF1 | 1 | driver | — | — | L | refused | combined | tensor; 1 previous entries |
+| BDF2 | 2 | driver | — | — | A | refused | combined | tensor; 1 previous entries |
+| BDF3 | 3 | driver | — | — | A(alpha) | refused | combined | tensor; 2 previous entries |
+| BDF4 | 4 | driver | — | — | A(alpha) | refused | combined | tensor; 3 previous entries |
+| BDF5 | 5 | driver | — | — | A(alpha) | refused | combined | tensor; 4 previous entries |
+| Adams-Moulton 2 (implicit) | 2 | driver | — | — | A | refused | combined | tensor; 1 previous entries |
+| Adams-Moulton 3 (implicit) | 3 | driver | — | — | — | refused | combined | tensor; 2 previous entries |
+| Adams-Moulton 4 (implicit) | 4 | driver | — | — | — | refused | combined | tensor; 3 previous entries |
 
 ## IMEX — 6 schemes
 
 [Equations and qualifications](families/imex).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options |
-|---|---:|---|---:|---:|---|---|---|
-| ARK3(2)4L[2]SA | 3 | 4 | 2 | 3 | L | refused | combined |
-| ARK4(3)6L[2]SA | 4 | 6 | 3 | 4 | L | refused | combined |
-| IMEX Euler | 1 | driver | — | — | A | refused | combined |
-| SBDF2 | 2 | driver | — | — | L | refused | combined |
-| SBDF3 | 3 | driver | — | — | A(alpha) | refused | combined |
-| CNAB2 | 2 | driver | — | — | A | refused | combined |
+| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---:|---|---:|---:|---|---|---|---|
+| ARK3(2)4L[2]SA | 3 | 4 | 2 | 3 | L | refused | combined | tensor |
+| ARK4(3)6L[2]SA | 4 | 6 | 3 | 4 | L | refused | combined | tensor |
+| IMEX Euler | 1 | driver | — | — | A | refused | combined | tensor |
+| SBDF2 | 2 | driver | — | — | L | refused | combined | tensor; 1 previous entries |
+| SBDF3 | 3 | driver | — | — | A(alpha) | refused | combined | tensor; 2 previous entries |
+| CNAB2 | 2 | driver | — | — | A | refused | combined | tensor; 1 previous entries |
 
 ## Linearly implicit — 1 schemes
 
 [Equations and qualifications](families/rosenbrock).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options |
-|---|---:|---|---:|---:|---|---|---|
-| ROS3P | 3 | 3 | 2 | 3 | A | refused | combined |
+| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---:|---|---:|---:|---|---|---|---|
+| ROS3P | 3 | 3 | 2 | 3 | A | refused | combined | tensor |
 
 ## Exponential — 2 schemes
 
 [Equations and qualifications](families/exponential).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options |
-|---|---:|---|---:|---:|---|---|---|
-| ETD2RK | 2 | 2 | — | — | L | refused | linear |
-| EXPRB32 | 3 | 2 | 2 | 3 | L | refused | combined |
+| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---:|---|---:|---:|---|---|---|---|
+| ETD2RK | 2 | 2 | — | — | L | refused | linear | tensor |
+| EXPRB32 | 3 | 2 | 2 | 3 | L | refused | combined | tensor |
 
 ## Newmark — 1 schemes
 
 [Equations and qualifications](families/newmark).
 
-| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options |
-|---|---:|---|---:|---:|---|---|---|
-| Newmark | 2 | driver | — | — | A | refused | combined |
+| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |
+|---|---:|---|---:|---:|---|---|---|---|
+| Newmark | 2 | driver | — | — | A | refused | combined | position/velocity |

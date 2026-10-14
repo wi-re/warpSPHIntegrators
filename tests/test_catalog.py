@@ -10,6 +10,48 @@ import pytest
 from warpSPHIntegrators import CAPABILITIES, IntegrationSchemes, getIntegrator, testing
 
 
+def test_catalog_filters_compose_and_preserve_registered_records():
+    from warpSPHIntegrators import filter_schemes, ExplicitRK
+    pairs = filter_schemes(family=ExplicitRK, min_order=5, has_error_estimate=True, supports_reuse=True)
+    assert getIntegrator('Dormand-Prince 5(4)') in pairs
+    assert all(s.family is ExplicitRK and s.order >= 5 and s.has_error_estimate and s.supports_reuse for s in pairs)
+    assert filter_schemes(dense_output=True) == (getIntegrator('Dormand-Prince 5(4)'),)
+    assert getIntegrator('ETD2RK') not in filter_schemes(available_capabilities=set())
+    assert getIntegrator('ETD2RK') in filter_schemes(available_capabilities={'linear'})
+    assert getIntegrator('BDF2') in filter_schemes(requires_history=True)
+    assert not filter_schemes(family='ExplicitRK', implicit=True)
+    assert getIntegrator('Velocity Verlet') in filter_schemes(requires_separable=True, supports_drift_fields=True)
+
+
+@pytest.mark.parametrize('criteria', [{'family':'typo'}, {'min_order':5,'max_order':2},
+                                     {'order':False}, {'state_kind':'unknown'},
+                                     {'available_capabilities':{'typo'}}, {'implicit':'yes'}])
+def test_catalog_invalid_criteria_fail_clearly(criteria):
+    from warpSPHIntegrators import filter_schemes
+    with pytest.raises(ValueError):
+        filter_schemes(**criteria)
+
+
+def test_selector_keeps_legacy_callables_and_offers_tensor_records():
+    from warpSPHIntegrators import getPreferredScheme, getPreferredIntegrator
+    from warpSPHIntegrators.integration import semiImplicitEuler
+    assert getPreferredScheme(1) is semiImplicitEuler
+    for order in range(1, 6):
+        s = getPreferredIntegrator(order)
+        assert s in IntegrationSchemes and s.order == order and s.metadata.state_kind == 'tensor'
+    assert getPreferredIntegrator(5) is getIntegrator('Dormand-Prince 5(4)')
+    with pytest.raises(ValueError):
+        getPreferredIntegrator(6)
+
+
+def test_structural_metadata_matches_existing_driver_contracts():
+    assert getIntegrator('Velocity Verlet').metadata.requires_separable
+    assert getIntegrator('Velocity Verlet').metadata.supports_drift_fields
+    assert getIntegrator('Newmark').metadata.state_kind == 'second_order'
+    assert not getIntegrator('RK4').metadata.supports_drift_fields
+    assert getIntegrator('BDF3').metadata.history_length == 2
+
+
 @pytest.mark.parametrize('s', IntegrationSchemes, ids=lambda s: s.name)
 def test_metadata_preserves_the_scheme_tuple_contract(s):
     assert len(s) == 12

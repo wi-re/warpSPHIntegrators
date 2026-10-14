@@ -11,6 +11,12 @@ warpSPHIntegrators import ...`); the complete list is `__all__` in
 annotations. Signatures show the load-bearing parameters; `...` marks the
 rest. The [Quick Start](quickstart) shows a full minimal example.
 
+## Tensor ODE adapter
+
+`TensorState(y0, t=0)` and `tensor_rhs(f, **parameters)` adapt ordinary `(t, y)`
+callbacks. Read `result.state.y`; splits, history, estimates and gradients use the
+existing drivers. See [the runnable tensor guide](tensor-ode).
+
 ## State and fields
 
 | Name | Signature (abridged) | Purpose |
@@ -87,6 +93,8 @@ The per-stage update descriptor passed to the system's apply methods.
 | `FAMILY_ENUMS` / `SCHEME_FAMILY` | The eleven per-family enums, and the scheme → family map |
 | `getIntegrator` | `getIntegrator(integrator)` — look up a scheme by `IntegrationSchemeType` or family-enum member |
 | `getIntegrationEnum` | `getIntegrationEnum(integrator)` — the reverse lookup |
+| `filter_schemes` | AND filters for family/order/estimates/dense output/reuse/state kind/history/separability/drift/RHS capabilities; returns catalog records |
+| `getPreferredIntegrator` | Conventional explicit order-1–5 tensor-ODE defaults as registered records |
 | `getPreferredScheme` | Legacy order-1–5 selector returning a raw function; use `getIntegrator` for a scheme record and its metadata |
 | `step_reuse_analysis` / `step_reuse_order` | `step_reuse_order(scheme) -> int | None` — order retained under first-stage reuse |
 | `supports_step_reuse` / `is_fsal` | `is_fsal(scheme) -> bool` — whether reuse is exact (FSAL) |

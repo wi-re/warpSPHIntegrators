@@ -219,6 +219,14 @@ def integrateRelaxedChebyshev(state, dt, f, family, *args, **kwargs):
     reject_prior_step(name, kwargs.pop('priorStep', None))
     s = kwargs.pop('s', None)
     lambda_max = kwargs.pop('lambda_max', None)
+    if s is not None:
+        from numbers import Integral
+        if isinstance(s, bool) or not isinstance(s, Integral) or s < 1:
+            raise ValueError(f'{name}: s must be a positive integer')
+    if lambda_max is not None:
+        import math
+        if not math.isfinite(float(lambda_max)) or lambda_max < 0:
+            raise ValueError(f'{name}: lambda_max must be finite and nonnegative')
     if s is None:
         if lambda_max is None:
             raise ValueError(

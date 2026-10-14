@@ -47,3 +47,10 @@ def test_included_example_drift_fails_validation(tmp_path):
     (tmp_path / 'guide.md').write_text('[example:include example.py]: #\n```python\nx = 2\n```\n')
     with pytest.raises(ValueError, match='differs from example.py'):
         VALIDATOR['validate_pages'](tmp_path, ('guide.md',))
+
+
+def test_complete_tensor_example_matches_exact_decay():
+    module = runpy.run_path(str(ROOT / 'examples/tensor_ode.py'))
+    result = module['run_example']()
+    assert result.state.t == pytest.approx(1.)
+    assert result.state.y.tolist() == pytest.approx([math.exp(-2), 2*math.exp(-2)], rel=1e-8)

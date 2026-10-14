@@ -29,6 +29,9 @@ from .util import (
 
 
 def _validate_newmark_params(beta: float, gamma: float) -> None:
+    import math
+    if not math.isfinite(beta) or not math.isfinite(gamma):
+        raise ValueError('Newmark beta and gamma must be finite')
     if beta < 0.0 or beta > 1.0:
         raise ValueError(f'Newmark beta must lie in [0, 1], got {beta!r}')
     if gamma < 0.0 or gamma > 1.0:

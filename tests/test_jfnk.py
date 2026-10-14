@@ -10,6 +10,19 @@ unaffected by this file existing.
 import math
 
 import pytest
+
+
+@pytest.mark.parametrize('options', [
+    {'matvec':'typo'}, {'tol':float('nan')}, {'gmres_tol':0}, {'gmres_restart':0},
+    {'max_iterations':1.5}, {'fd_eps':-1}, {'newton_stagnation_patience':0},
+    {'preconditioning':'typo'}, {'line_search_min_step':2}, {'line_search':'yes'},
+])
+def test_invalid_solver_overrides_fail_before_evaluating_rhs(options):
+    from warpSPHIntegrators import JFNKSolver, testing
+    def step(state):
+        pytest.fail('invalid options must fail before the stage map runs')
+    with pytest.raises(ValueError):
+        JFNKSolver().solve(step, testing.oscillator_problem().initial(), **options)
 import torch
 
 from warpSPHIntegrators import (

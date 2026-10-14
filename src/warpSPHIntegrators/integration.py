@@ -568,6 +568,11 @@ IntegrationSchemes[:] = [_with_reuse_guard(scheme) for scheme in IntegrationSche
 
 
 def getPreferredScheme(order):
+    """Legacy order-1–5 selector: preserves its original raw callable choices.
+
+    Some choices require a position/velocity system. For ordinary tensor ODEs,
+    use getPreferredIntegrator, which returns a catalog record, or filter_schemes.
+    """
     if order == 1:
         return semiImplicitEuler
     elif order == 2:
@@ -580,6 +585,20 @@ def getPreferredScheme(order):
         return Nystrom5th
     else:
         raise ValueError(f"No scheme for order {order}")
+
+
+def getPreferredIntegrator(order):
+    """Conventional explicit tensor-ODE defaults, as registered records.
+
+    Order 1–5 selects Forward Euler, Midpoint, SSP RK3, RK4, or DP5(4).
+    These are starting points, not stiffness/geometry-aware recommendations.
+    Use filter_schemes for other orders, capabilities or implicit methods.
+    """
+    names = {1: 'Forward Euler', 2: 'Midpoint', 3: 'SSP RK3',
+             4: 'RK4', 5: 'Dormand-Prince 5(4)'}
+    if type(order) is not int or order not in names:
+        raise ValueError('getPreferredIntegrator supports integer orders 1–5')
+    return getIntegrator(names[order])
 
 
 def getIntegrator(integrator):

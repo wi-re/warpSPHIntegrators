@@ -10,9 +10,45 @@ rewrite -- that pluggability, not any one solver, is the point of landing this n
 """
 
 from dataclasses import dataclass
+import math
+from numbers import Integral, Real
+from collections.abc import Mapping
 from typing import Any, Callable, NamedTuple, Optional, Protocol, TypedDict, runtime_checkable
 
 from .fields import flatten_integrated, unflatten_integrated
+
+
+def validate_solver_options(options):
+    """Validate known numerical controls; preserve extension keys for custom solvers.
+
+    Unknown keys retain their historical passthrough behavior. None is accepted
+    for optional tolerance/iteration overrides; a solver's required defaults
+    must still be supplied. This does not inspect arbitrary RHS kwargs.
+    """
+    for key in ('iterations', 'max_iterations', 'gmres_maxiter', 'gmres_restart', 'phi_dim',
+                'newton_stagnation_patience'):
+        value = options.get(key)
+        if key in options and value is None and key != 'gmres_maxiter':
+            raise ValueError(f'{key} must be a positive integer')
+        if value is not None and (isinstance(value, bool) or not isinstance(value, Integral) or value < 1):
+            raise ValueError(f'{key} must be a positive integer')
+    for key in ('tol', 'gmres_tol', 'fd_eps', 'ft_eps', 'phi_tol', 'newton_tol', 'relaxation',
+                'newton_stagnation_ratio', 'line_search_min_step'):
+        value = options.get(key)
+        if value is not None and (isinstance(value, bool) or not isinstance(value, Real)
+                                  or not math.isfinite(value) or value <= 0):
+            raise ValueError(f'{key} must be finite and positive')
+        if value is not None and key in ('relaxation', 'newton_stagnation_ratio', 'line_search_min_step') and value > 1:
+            raise ValueError(f'{key} must lie in (0, 1]')
+    for key, allowed in (('matvec', ('fd', 'jvp')), ('preconditioning', ('left', 'right'))):
+        if key in options and options[key] not in allowed:
+            raise ValueError(f'{key} must be one of {allowed}')
+    if 'line_search' in options and type(options['line_search']) is not bool:
+        raise ValueError('line_search must be a bool')
+    if options.get('preconditioner') is not None and not callable(options['preconditioner']):
+        raise ValueError('preconditioner must be callable or None')
+    if options.get('preconditioner_context') is not None and not isinstance(options['preconditioner_context'], Mapping):
+        raise ValueError('preconditioner_context must be a mapping or None')
 
 
 @dataclass(frozen=True)
@@ -32,8 +68,8 @@ class SolverOptions(TypedDict, total=False):
     """Typed view of the keyword options a solver's ``solve(step, y0, norm=None,
     **opts)`` accepts.
 
-    Typing-only: the solvers read ``opts`` with ``opts.get(...)`` and ignore
-    unknown keys, so a plain ``dict`` keeps working exactly as before -- this
+    The solvers validate known numerical controls and ignore unknown extension
+    keys. A plain ``dict`` keeps the same call convention -- this
     name exists so a caller can annotate ``opts: SolverOptions = {'tol': 1e-8,
     'line_search': True}`` and get key checking without changing the call
     convention. ``total=False`` because every option is optional and each solver
@@ -124,11 +160,13 @@ class FixedPointSolver:
     """
 
     def __init__(self, iterations: int = 2):
+        validate_solver_options({'iterations': iterations})
         if iterations < 1:
             raise ValueError(f'FixedPointSolver needs iterations >= 1, got {iterations}')
         self.iterations = iterations
 
     def solve(self, step, y0, norm=None, **opts) -> SolveResult:
+        validate_solver_options(opts)
         iterations = opts.get('iterations', self.iterations)
         tol = opts.get('tol')
         y = y0
@@ -169,6 +207,7 @@ class RelaxedFixedPointSolver(FixedPointSolver):
         self.relaxation = relaxation
 
     def solve(self, step, y0, norm=None, **opts) -> SolveResult:
+        validate_solver_options(opts)
         iterations = opts.get('iterations', self.iterations)
         relaxation = opts.get('relaxation', self.relaxation)
         tol = opts.get('tol')

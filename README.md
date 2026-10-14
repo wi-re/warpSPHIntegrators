@@ -25,89 +25,40 @@ and exponential methods. [The scheme catalog](docs/docs/catalog.md) and
 
 ## A complete example
 
-This float64 CPU example implements the state/update protocol, integrates a
-harmonic oscillator with RK4, and checks against the exact solution. It is also
-available as [a standalone script](examples/harmonic_oscillator.py).
+For a tensor ODE `dy/dt = f(t, y)`, use this complete float64 CPU example.
+It is also available as [a standalone script](examples/tensor_ode.py).
 
-[example:include examples/harmonic_oscillator.py]: #
+[example:include examples/tensor_ode.py]: #
 ```python
-"""Complete CPU example: python examples/harmonic_oscillator.py."""
+"""Ordinary tensor ODE: python examples/tensor_ode.py."""
 
-from dataclasses import dataclass
-
+import math
 import torch
-
-from warpSPHIntegrators import (
-    BaseIntegrationSystem, BaseState, ComponentUpdateSpec, PositionUpdateSpec,
-    constant, getIntegrator, get_reference_state, integrated, reference_state,
-    tagged, update_component, update_position,
-)
-
-
-@dataclass
-class OscillatorState(BaseState):
-    position: torch.Tensor = integrated('dx_dt', tags=('position',))
-    velocity: torch.Tensor = integrated('dv_dt', tags=('velocity',))
-    mass: torch.Tensor = constant()
-    spring_constant: torch.Tensor = constant()
-
-
-@dataclass
-class OscillatorUpdate:
-    dx_dt: torch.Tensor = tagged(tags=('position_derivative',))
-    dv_dt: torch.Tensor = tagged(tags=('velocity_derivative',))
-
-
-@dataclass
-class OscillatorSystem(BaseIntegrationSystem):
-    state: OscillatorState = reference_state()
-    t: float = 0.0
-
-    def initializeNewState(self, *args, **kwargs):
-        return OscillatorSystem(get_reference_state(self).initializeNewState(), self.t)
-
-    def apply_position_update(self, update, spec, **kwargs):
-        return update_position(self, update, spec, 'position', 'position_derivative',
-                               'velocity', 'velocity_derivative')
-
-    def apply_velocity_update(self, update, spec, **kwargs):
-        return update_component(self, update, spec, 'velocity', 'velocity_derivative')
-
-    def apply_state_update(self, update, spec, **kwargs):
-        position_spec = PositionUpdateSpec(derivative_dt=spec.derivative_dt, blend=spec.blend)
-        self.apply_position_update(update, position_spec, **kwargs)
-        self.apply_velocity_update(update, spec, **kwargs)
-        return self
-
-
-def rhs(system, dt, **kwargs):
-    state = get_reference_state(system)
-    return OscillatorUpdate(
-        dx_dt=state.velocity,
-        dv_dt=-(state.spring_constant / state.mass) * state.position,
-    ), None
+from warpSPHIntegrators import TensorState, tensor_rhs, filter_schemes, getPreferredIntegrator
 
 
 def run_example():
-    system = OscillatorSystem(OscillatorState(
-        position=torch.tensor([1.0], dtype=torch.float64),
-        velocity=torch.tensor([0.0], dtype=torch.float64),
-        mass=torch.tensor([1.0], dtype=torch.float64),
-        spring_constant=torch.tensor([4.0], dtype=torch.float64),
-    ))
-    scheme = getIntegrator('RK4')
+    # Scalar, vector or batched floating-point tensors use the same interface.
+    initial = torch.tensor([1., 2.], dtype=torch.float64)
+    state = TensorState(initial, t=0.)
+    scheme = getPreferredIntegrator(5)  # registered Dormand-Prince 5(4)
+    rhs = tensor_rhs(lambda t, y, rate: -rate*y, rate=2.)
     for _ in range(100):
-        result = scheme(system, dt=0.01, f=rhs)
-        system = result.state
+        result = scheme(state, .01, rhs)
+        state = result.state
+    assert torch.allclose(state.y, initial * math.exp(-2), rtol=1e-8, atol=1e-10)
     return result
 
 
 if __name__ == '__main__':
     result = run_example()
-    state = get_reference_state(result.state)
-    print(f't={result.state.t:.2f}, x={state.position.item():.6f}, '
-          f'v={state.velocity.item():.6f}, stages={len(result.stages)}')
+    pairs = filter_schemes(family='ExplicitRK', has_error_estimate=True, supports_reuse=True)
+    print(f't={result.state.t:.2f}, y={result.state.y.tolist()}, reusable pairs={len(pairs)}')
 ```
+
+[Tensor adapter and catalog filters](docs/docs/tensor-ode.md) cover ordinary ODEs.
+The [full protocol example](examples/harmonic_oscillator.py) covers tagged
+position/velocity states and custom SPH lifecycle behavior.
 
 ## Documentation and development
 

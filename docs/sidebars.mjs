@@ -3,6 +3,8 @@ const sidebars = {
   wiki: [
     'index',
     'quickstart',
+    'tensor-ode',
+    'options',
     'selection',
     'catalog',
     {

@@ -84,8 +84,8 @@ def catalog_markdown(data):
     for family in data['families']:
         lines += [f"## {family['label']} — {family['count']} schemes", '',
                   f"[Equations and qualifications](families/{family['page']}).", '',
-                  '| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options |',
-                  '|---|---:|---|---:|---:|---|---|---|']
+                  '| Scheme | Order | Stages | Companion order | Estimate q | Stability | Reuse order | Required RHS / options | State / history |',
+                  '|---|---:|---|---:|---:|---|---|---|---|']
         for s in data['schemes']:
             if s['family'] != family['name']:
                 continue
@@ -100,10 +100,15 @@ def catalog_markdown(data):
             reuse = str(s['reuse_order']) if s['reuse_order'] is not None else 'refused'
             if s['fsal']:
                 reuse += ' (FSAL)'
+            state = 'position/velocity' if s['state_kind'] == 'second_order' else 'tensor'
+            if s['requires_separable']:
+                state += '; separability assumptions'
+            if s['history_length']:
+                state += f"; {s['history_length']} previous entries"
             lines.append(f"| {s['name']} | {s['order']} | {stages} | "
                          f"{s['embedded_order'] if s['embedded_order'] is not None else '—'} | "
                          f"{s['estimate_order'] if s['estimate_order'] is not None else '—'} | "
-                         f"{s['stability'] or '—'} | {reuse} | {requirements} |")
+                         f"{s['stability'] or '—'} | {reuse} | {requirements} | {state} |")
         lines.append('')
     return '\n'.join(lines)
 
@@ -115,13 +120,14 @@ def artifacts(root=ROOT):
         Path('docs/docs/catalog.md'): catalog_markdown(data),
     }
     for page in ('README.md', 'docs/docs/index.md', 'docs/docs/selection.md',
-                 'docs/development/usage-reference.md'):
+                 'docs/development/usage-reference.md', 'docs/docs/tensor-ode.md'):
         text = (root / page).read_text()
-        text = region(text, 'summary', summary_text(data))
-        # Included source is displayed verbatim in both entry points.
-        if page in ('README.md', 'docs/docs/index.md'):
-            text = re.sub(r'(\[example:include examples/harmonic_oscillator.py\]: #\n```python\n).*?^```',
-                          lambda m: m[1] + (root / 'examples/harmonic_oscillator.py').read_text() + '```',
+        if '[catalog:summary:start]' in text:
+            text = region(text, 'summary', summary_text(data))
+        # Included examples are displayed verbatim.
+        if page in ('README.md', 'docs/docs/index.md', 'docs/docs/tensor-ode.md'):
+            text = re.sub(r'(\[example:include ([^\n]+)\]: #\n```python\n).*?^```',
+                          lambda m: m[1] + (root / m[2]).read_text() + '```',
                           text, flags=re.M | re.S)
         if page == 'docs/docs/index.md':
             text = re.sub(r'## The \d+ families',
@@ -131,7 +137,11 @@ def artifacts(root=ROOT):
                 rows.append(f"| {family['label']} | `{family['name']}` | {family['count']} | "
                             f"[{family['page']}](/docs/families/{family['page']}) |")
             text = region(text, 'families', '\n'.join(rows))
-        if page in ('README.md', 'docs/development/usage-reference.md'):
+        if page == 'docs/docs/tensor-ode.md':
+            count = sum(s['state_kind'] == 'tensor' for s in data['schemes'])
+            text = re.sub(r'supports the \d+ catalog records',
+                          f'supports the {count} catalog records', text)
+        if page in ('README.md', 'docs/development/usage-reference.md', 'docs/docs/tensor-ode.md'):
             n, e = data['summary']['scheme_count'], data['summary']['estimate_count']
             text = re.sub(r'\b\d+ registered schemes across \d+ families',
                           f"{n} registered schemes across {data['summary']['family_count']} families", text)
