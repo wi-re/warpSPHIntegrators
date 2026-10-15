@@ -228,6 +228,7 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
     from .parallel_dirk import ParallelDIRK
     from .linearized import Rosenbrock
     from .orthogonal import OrthogonalRK
+    from .exponential_rk import ExponentialRK
     from .ndf import NDF
     from .adaptive_adams import AdaptiveAdams
     from .adaptive_ndf import AdaptiveNDF
@@ -235,7 +236,7 @@ def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=No
     from .switching import AlgorithmSwitch
     from .function_map import FunctionMap
     from .expanded_rk import ExpandedRK
-    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme,GeneralizedAlpha,Collocation,VariableAdams,StabilizedRK,Nystrom,ImprovedNystrom,ParallelDIRK,Rosenbrock,OrthogonalRK,NDF,AdaptiveNDF,AdaptiveAdams,Extrapolation,AlgorithmSwitch,FunctionMap,ExpandedRK)) else getIntegrator(scheme)
+    scheme = scheme if isinstance(scheme, (IntegrationScheme,SplitScheme,GeneralizedAlpha,Collocation,VariableAdams,StabilizedRK,Nystrom,ImprovedNystrom,ParallelDIRK,Rosenbrock,OrthogonalRK,ExponentialRK,NDF,AdaptiveNDF,AdaptiveAdams,Extrapolation,AlgorithmSwitch,FunctionMap,ExpandedRK)) else getIntegrator(scheme)
     if restart is not None:
         if restart.scheme != scheme.identifier.name:
             raise ValueError('Checkpoint scheme does not match')

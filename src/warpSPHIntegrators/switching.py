@@ -41,6 +41,7 @@ class AlgorithmSwitch:
         from .parallel_dirk import ParallelDIRK
         from .linearized import Rosenbrock
         from .orthogonal import OrthogonalRK
+        from .exponential_rk import ExponentialRK
         from .stabilized import StabilizedRK
         from .ndf import NDF
         from .adaptive_adams import AdaptiveAdams
@@ -52,7 +53,7 @@ class AlgorithmSwitch:
         if not callable(self.selector):raise TypeError('selector must be callable')
         if not isinstance(self.policy_id,str) or not self.policy_id.strip():raise ValueError('nonempty policy_id required')
         if not isinstance(self.methods,(tuple,list)) or len(self.methods)<2:raise ValueError('at least two methods required')
-        selected=[];bound=(IntegrationScheme,Collocation,Extrapolation,Nystrom,ImprovedNystrom,ParallelDIRK,Rosenbrock,OrthogonalRK,StabilizedRK,
+        selected=[];bound=(IntegrationScheme,Collocation,Extrapolation,Nystrom,ImprovedNystrom,ParallelDIRK,Rosenbrock,OrthogonalRK,ExponentialRK,StabilizedRK,
             NDF,AdaptiveNDF,AdaptiveAdams,VariableAdams,GeneralizedAlpha,SplitScheme,ExpandedRK)
         for method in self.methods:
             method=method if isinstance(method,bound) else getIntegrator(method)

@@ -693,6 +693,7 @@ contracts allow it.
 | `ImprovedNystrom` | Improved Nyström orders 3 and 4 | Fixed-step velocity-independent mechanics; corrected startup and owned history reduce warm-step force calls |
 | `ParallelDIRK` | Parallel DIRK, four stages / order four | L-stable ordinary ODE map, executed serially; four nonlinear solves and no embedded estimate |
 | `Rosenbrock` | Rosenbrock 2(3), 3(2), and six-stage Rosenbrock-W order four | Full-JVP linear stages and complete Jacobian derivatives; corrected pair time term; distinct stability limits |
+| `ExponentialRK` | Fourteen qualified exponential RK configurations, orders 1–5 | Semilinear or full-Jacobian maps; bounded dense operator AD, matrix-free constant operators, explicit action budgets |
 | `OrthogonalRK` | ROCK2/4, stabilized explicit RK2, monotone Chebyshev RK2 | Larger negative-real stability intervals; qualified stage selection and exact passive-field preservation |
 | `NDF` / `AdaptiveNDF` | Fixed target 1–5 / accepted target-order selection | Implicit difference history with quasi-constant step policy; distinct from the full upstream controller |
 | `Extrapolation` | Euler 2–8; midpoint 2/4/6/8/10 | Fixed-target explicit extrapolation, adaptive timestep, full-state quantities |

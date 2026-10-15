@@ -144,7 +144,7 @@ measured. See [the Phase 7 record](docs/development/phase7-foundation-validation
 Validated: 6,993 passed, 609 skipped; installed-wheel, runnable examples, catalog,
 repository links and documentation-site gates pass.
 
-### Phase 8 Resume catalog expansion in reviewed batches
+### Phase 8 Resume catalog expansion in reviewed batches — candidate review complete
 
 Priority: after reliable gates and a concrete benefit. Size: varies by driver.
 
@@ -193,7 +193,7 @@ must be recorded rather than counted as an implemented method.
   proposals, owned mature-history transitions, field-tolerance normalization and
   portable controller state. Exact upstream QNDF retry/discontinuity policy remains
   distinct. [Backend evidence](docs/development/adaptive-ndf-validation.md).
-- [ ] Resolve the remaining wave-10 history/controller candidates: adaptive
+- [x] Resolve the remaining wave-10 history/controller candidates: adaptive
   Adams, Nordsieck/AN5/JVODE variants and source-specific QNDF policies. Record
   supported behavior, equivalences and justified dispositions individually;
   existing fixed-target factories do not complete these distinct controllers.
@@ -201,7 +201,7 @@ must be recorded rather than counted as an implemented method.
   target orders 3–5, with portable history, switching and consumer gates;
   [evidence](docs/development/adaptive-adams-validation.md). Full source VCABM
   startup/orders 1–12/FSAL and Nordsieck/AN5/JVODE remain separate work.
-- [ ] Resolve the remaining wave-11 stabilized, Rosenbrock and exponential
+- [x] Resolve the remaining wave-11 stabilized, Rosenbrock and exponential
   candidates, plus approximate-matrix-factorization operator contracts. These
   need recurrence/operator/solver and consumer gates, rather than only tableaus.
   Rosenbrock now supplies the corrected-time Rosenbrock23/32 pair and source
@@ -237,7 +237,7 @@ must be recorded rather than counted as an implemented method.
   force, quantity, lifecycle and gradient gates. [Driver validation](docs/development/generalized-alpha-validation.md).
   Further Rosenbrock additions need stage-driver
   compatibility and a measured advantage.
-- [ ] Advance wave 12/13 work through Phase 7 where contracts overlap. Design
+- [x] Advance wave 12/13 work through Phase 7 where contracts overlap. Design
   extrapolation and map semantics independently where they do not.
   Explicit Euler/midpoint extrapolation now has fixed-column source, order,
   quantity, gradient, adaptive and composition gates; [backend evidence](docs/development/extrapolation-validation.md).
@@ -250,14 +250,26 @@ must be recorded rather than counted as an implemented method.
   Implicit extrapolation and source-specific cache transfer retain their own contracts.
   Remaining implicit extrapolation, RKIP and IRKC candidates need their own
   frozen-operator/solver and known-consumer gates.
-- [ ] Keep waves 14–15 as prototypes until matrix/operator, multirate, and derivative
+- [x] Keep waves 14–15 as prototypes until matrix/operator, multirate, and derivative
   contracts and cost models are convincing.
 - [x] Screen all 60 wave-16 source methods and retain individual dispositions.
   ExpandedRK supplies 54 qualified main maps / 19 estimates outside registration;
   six source methods and one companion fail the binary64 gates. Canonical-map
   comparisons find no fixed-tableau duplicates; [source/consumer evidence](docs/development/expanded-rk-validation.md).
-- [ ] Consider a genuine low-storage execution path when allocation measurements
+- [x] Consider a genuine low-storage execution path when allocation measurements
   justify it; the qualified expanded maps retain full-stage storage.
+
+Final candidate review: ExponentialRK supplies fourteen qualified operator maps,
+with source/time-augmentation/AD/action-budget/consumer gates. Remaining source
+controllers have individual implemented/equivalent/prototype/excluded/deferred
+outcomes with explicit backend revisit conditions. Bounded Nordsieck, implicit
+extrapolation, RKIP, ETD2, AMF, matrix-ODE, multirate, Taylor and native two-register
+experiments now have known-behavior and cost/allocation evidence. Actual pinned
+IRKC fails the order-two gate and remains an audit specimen. This completes the
+reviewed expansion pass, **not every upstream controller port**. The deferred
+backend projects do not depend on frontend integration.
+[Exponential evidence](docs/development/exponential-validation.md) and
+[remaining decisions/prototypes](docs/development/backend-backlog-validation.md).
 
 Completion per batch: pinned coefficients, numerical property gates, gradient and
 adaptive coverage where applicable, complete user docs, disposition records, and a

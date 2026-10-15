@@ -335,3 +335,12 @@ contract and a package-specific accepted-order policy.
 The helpers are scheme-agnostic; constant-coefficient multistep schemes refuse
 adaptive stepping. VariableAdams uses its per-step estimator exponent and
 variable-history contract (see the [solver](solver) page).
+
+## Exponential operator maps
+
+`ExponentialRK('ETDRK4')` supplies a fourth-order semilinear method;
+`ExponentialRK('Exprb43')` supplies a fourth-order full-Jacobian method with an
+embedded estimate. Fourteen qualified configurations are described in the
+[exponential guide](families/exponential). Small dense actions retain full
+operator derivatives; larger constant operators use checked Arnoldi actions.
+`ExponentialQuadrature` stores operator-weighted increments for custom finalize.

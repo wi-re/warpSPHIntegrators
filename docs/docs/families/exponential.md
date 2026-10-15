@@ -119,3 +119,46 @@ step's Krylov-iteration count.
 
 **Tests:** `tests/test_exponential.py` (orders, linearity exactness, the
 non-autonomous $v_n$ term, the gradient re-attachment).
+
+## Higher-order exponential configurations
+
+`ExponentialRK` adds explicit configuration names without growing the fixed enum
+catalog. For a declared semilinear split, choose `LawsonEuler`, `NorsettEuler`,
+`ETDRK2`, `ETDRK3`, `ETDRK4` or `HochOst4`. For a full-Jacobian linearization,
+choose `Exp4`, `EPIRK4s3A`, `EPIRK4s3B`, `EPIRK5P1`, `EPIRK5P2`, `EXPRB53s3`,
+`Exprb32` or `Exprb43`. The latter two provide embedded estimates.
+
+[example:run exponential-configured]: #
+
+```python
+import math
+import torch
+from warpSPHIntegrators import ExponentialRK, TensorState, tensor_rhs, solve
+
+rhs = tensor_rhs(lambda t, y: -y + .1*y*y - .1*math.exp(-2*t))
+run = solve(ExponentialRK('Exprb43'),
+            TensorState(torch.ones(1, dtype=torch.float64)), 1., rhs, dt=.1)
+assert run.successful
+assert abs(run.state.y.item() - math.exp(-1)) < 1e-6
+```
+
+The time-dependent full-Jacobian path augments time before linearization. Dense
+actions up to `dense_limit=64` entries retain complete Jacobian/operator
+derivatives. Above that bound, constant operators use Arnoldi and transpose
+adjoints; tracked operator derivatives require an explicit larger dense bound.
+`phi_dim=60` limits work, while `phi_tol=1e-11` controls dimension-refinement
+agreement. An insufficient action budget fails the step. This numerical check
+does not certify arbitrary nonnormal spectra.
+
+Custom finalize must declare `exponential_compatible=True` and consume
+`ExponentialQuadrature`, whose increments are already operator weighted. These
+are affine tensor ODE methods; mass matrices and nonlinear projectors need a
+different contract. There is no FSAL reuse.
+
+On the known nonlinear reaction–diffusion demo at 1,024 entries and h=.1,
+ETDRK2/3/4 errors are 6.36e-4 / 4.51e-6 / 4.34e-8, with times
+.371/.741/.966 seconds on the measured CPU. The existing ETD2RK reaches the same
+second-order result faster; higher order is an accuracy option.
+[Measurements and qualifications](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/exponential-validation.md)
+include source failures: pinned EPIRK5s3 misses order five, so it is unavailable,
+and HochOst4 uses the qualified cached formula.

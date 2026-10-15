@@ -1,0 +1,251 @@
+{
+  "cases": [
+    {
+      "kind": "Taylor",
+      "n": 16,
+      "order": 3,
+      "rhs_calls": 96,
+      "seconds": 0.41144993202760816,
+      "error": 4.134214941553527e-06
+    },
+    {
+      "kind": "Taylor",
+      "n": 16,
+      "order": 4,
+      "rhs_calls": 160,
+      "seconds": 0.1394621143117547,
+      "error": 5.1784694643508544e-08
+    },
+    {
+      "kind": "Taylor",
+      "n": 1024,
+      "order": 3,
+      "rhs_calls": 96,
+      "seconds": 0.0355482529848814,
+      "error": 4.134214941553527e-06
+    },
+    {
+      "kind": "Taylor",
+      "n": 1024,
+      "order": 4,
+      "rhs_calls": 160,
+      "seconds": 0.1437234878540039,
+      "error": 5.1784694643508544e-08
+    },
+    {
+      "kind": "multirate",
+      "n": 16,
+      "ratio": 4,
+      "counts": {
+        "slow": 32,
+        "fast": 256
+      },
+      "seconds": 0.001895621418952942,
+      "error": 0.00011996522700941092
+    },
+    {
+      "kind": "all_micro",
+      "n": 16,
+      "ratio": 4,
+      "counts": {
+        "slow": 256,
+        "fast": 256
+      },
+      "seconds": 0.0032781478948891163,
+      "error": 1.0271333228395463e-09
+    },
+    {
+      "kind": "multirate",
+      "n": 16,
+      "ratio": 16,
+      "counts": {
+        "slow": 32,
+        "fast": 1024
+      },
+      "seconds": 0.005661895964294672,
+      "error": 0.00011996752787174492
+    },
+    {
+      "kind": "all_micro",
+      "n": 16,
+      "ratio": 16,
+      "counts": {
+        "slow": 1024,
+        "fast": 1024
+      },
+      "seconds": 0.012940101325511932,
+      "error": 3.949562898952763e-12
+    },
+    {
+      "kind": "multirate",
+      "n": 4096,
+      "ratio": 4,
+      "counts": {
+        "slow": 32,
+        "fast": 256
+      },
+      "seconds": 0.00330226868391037,
+      "error": 0.00011996522700941092
+    },
+    {
+      "kind": "all_micro",
+      "n": 4096,
+      "ratio": 4,
+      "counts": {
+        "slow": 256,
+        "fast": 256
+      },
+      "seconds": 0.00994236208498478,
+      "error": 1.0271333228395463e-09
+    },
+    {
+      "kind": "multirate",
+      "n": 4096,
+      "ratio": 16,
+      "counts": {
+        "slow": 32,
+        "fast": 1024
+      },
+      "seconds": 0.009813131298869848,
+      "error": 0.00011996752787174492
+    },
+    {
+      "kind": "all_micro",
+      "n": 4096,
+      "ratio": 16,
+      "counts": {
+        "slow": 1024,
+        "fast": 1024
+      },
+      "seconds": 0.039628567174077034,
+      "error": 3.949562898952763e-12
+    },
+    {
+      "kind": "implicit_extrapolation",
+      "base": "euler",
+      "order": 2,
+      "rhs_calls": 24,
+      "seconds": 0.006203128024935722,
+      "error": 0.0007872571988257193
+    },
+    {
+      "kind": "implicit_extrapolation",
+      "base": "euler",
+      "order": 4,
+      "rhs_calls": 104,
+      "seconds": 0.004445228260010481,
+      "error": 1.352649896535496e-07
+    },
+    {
+      "kind": "implicit_extrapolation",
+      "base": "euler",
+      "order": 6,
+      "rhs_calls": 472,
+      "seconds": 0.011735484935343266,
+      "error": 2.0949908474676704e-12
+    },
+    {
+      "kind": "implicit_extrapolation",
+      "base": "midpoint",
+      "order": 2,
+      "rhs_calls": 40,
+      "seconds": 0.003031941130757332,
+      "error": 0.0001021866349978362
+    },
+    {
+      "kind": "implicit_extrapolation",
+      "base": "midpoint",
+      "order": 4,
+      "rhs_calls": 96,
+      "seconds": 0.004318307153880596,
+      "error": 1.2293083662129334e-08
+    },
+    {
+      "kind": "implicit_extrapolation",
+      "base": "midpoint",
+      "order": 6,
+      "rhs_calls": 184,
+      "seconds": 0.006584759335964918,
+      "error": 7.210898544940392e-13
+    },
+    {
+      "kind": "allocation",
+      "n": 4096,
+      "mode": "full_stage",
+      "peak_tracked_cpu_bytes": 294912,
+      "result_norm": 57.42526028555999
+    },
+    {
+      "kind": "allocation",
+      "n": 4096,
+      "mode": "native_tensor",
+      "peak_tracked_cpu_bytes": 196608,
+      "result_norm": 57.42526028555999
+    },
+    {
+      "kind": "allocation",
+      "n": 262144,
+      "mode": "full_stage",
+      "peak_tracked_cpu_bytes": 18874368,
+      "result_norm": 459.40208228433505
+    },
+    {
+      "kind": "allocation",
+      "n": 262144,
+      "mode": "native_tensor",
+      "peak_tracked_cpu_bytes": 12582912,
+      "result_norm": 459.40208228433505
+    }
+  ],
+  "conditioning": [
+    {
+      "order": 3,
+      "monomial_condition": 13.912462459851328
+    },
+    {
+      "order": 4,
+      "monomial_condition": 154.45646028651424
+    },
+    {
+      "order": 5,
+      "monomial_condition": 2592.8860553342092
+    },
+    {
+      "order": 6,
+      "monomial_condition": 57688.70408643263
+    },
+    {
+      "order": 7,
+      "monomial_condition": 1597316.1589940586
+    },
+    {
+      "order": 8,
+      "monomial_condition": 52937734.975270145
+    },
+    {
+      "order": 9,
+      "monomial_condition": 2043725283.2790983
+    },
+    {
+      "order": 10,
+      "monomial_condition": 90077722429.55255
+    },
+    {
+      "order": 11,
+      "monomial_condition": 4462768125092.548
+    },
+    {
+      "order": 12,
+      "monomial_condition": 245548009066189.16
+    }
+  ],
+  "torch": "2.13.0+cu130",
+  "device": "cpu",
+  "dtype": "float64",
+  "threads": 1,
+  "qualification": "Tensor-only prototypes. Time includes AD dispatch and all per-step dense preparations. Profiler peak is live tracked CPU allocations, not process RSS/device reservation. Native tensor recurrence omits full-state stages/finalize/AD contracts; no production speed or universal memory ratio claim.",
+  "source_sha256": {
+    "benchmarks/backend_experiments.py": "9ddf85556b3b335aa1d344e5ca8ce13caf234fc9b80d12c228f0440fc0937c7b",
+    "src/warpSPHIntegrators/experiments/tensor.py": "1c31dfa1ba829df0b67a470c490e089f141c31687ac27bdaf34e4f755ad588b0"
+  }
+}

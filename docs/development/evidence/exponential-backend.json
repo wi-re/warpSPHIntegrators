@@ -1,0 +1,482 @@
+{
+  "device": "cpu",
+  "dtype": "float64",
+  "threads": 1,
+  "torch": "2.13.0+cu130",
+  "cases": [
+    {
+      "method": "ETDRK2",
+      "n": 16,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 0.007632042746990919,
+      "steps": 5,
+      "counts": {
+        "full": 20,
+        "linear": 100
+      },
+      "max_error": 0.0006364538862985158
+    },
+    {
+      "method": "ETDRK3",
+      "n": 16,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 0.009490008000284433,
+      "steps": 5,
+      "counts": {
+        "full": 20,
+        "linear": 100
+      },
+      "max_error": 4.510026240578391e-06
+    },
+    {
+      "method": "ETDRK4",
+      "n": 16,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 0.011043948121368885,
+      "steps": 5,
+      "counts": {
+        "full": 25,
+        "linear": 105
+      },
+      "max_error": 4.343292780983887e-08
+    },
+    {
+      "method": "HochOst4",
+      "n": 16,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 0.03758401656523347,
+      "steps": 5,
+      "counts": {
+        "full": 30,
+        "linear": 110
+      },
+      "max_error": 7.544533697778633e-08
+    },
+    {
+      "method": "Exprb32",
+      "n": 16,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 0.44506261497735977,
+      "steps": 5,
+      "counts": {
+        "full": 110,
+        "linear": 110
+      },
+      "max_error": 7.67987817384963e-06
+    },
+    {
+      "method": "Exprb43",
+      "n": 16,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 0.0694140950217843,
+      "steps": 5,
+      "counts": {
+        "full": 115,
+        "linear": 115
+      },
+      "max_error": 1.844066056522209e-07
+    },
+    {
+      "method": "EPIRK5P1",
+      "n": 16,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 0.06885434780269861,
+      "steps": 5,
+      "counts": {
+        "full": 115,
+        "linear": 115
+      },
+      "max_error": 4.07939693136683e-09
+    },
+    {
+      "method": "ETD2RK",
+      "n": 16,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 0.014849707018584013,
+      "steps": 5,
+      "counts": {
+        "full": 10,
+        "linear": 168
+      },
+      "max_error": 0.0006364538862985158
+    },
+    {
+      "method": "ETDRK2",
+      "n": 16,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 0.011610677000135183,
+      "steps": 10,
+      "counts": {
+        "full": 40,
+        "linear": 200
+      },
+      "max_error": 0.00016106264969129036
+    },
+    {
+      "method": "ETDRK3",
+      "n": 16,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 0.018324861768633127,
+      "steps": 10,
+      "counts": {
+        "full": 40,
+        "linear": 200
+      },
+      "max_error": 5.808472427482059e-07
+    },
+    {
+      "method": "ETDRK4",
+      "n": 16,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 0.021656448021531105,
+      "steps": 10,
+      "counts": {
+        "full": 50,
+        "linear": 210
+      },
+      "max_error": 2.8377659111455955e-09
+    },
+    {
+      "method": "HochOst4",
+      "n": 16,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 0.07424563681706786,
+      "steps": 10,
+      "counts": {
+        "full": 60,
+        "linear": 220
+      },
+      "max_error": 4.7805167602277265e-09
+    },
+    {
+      "method": "Exprb32",
+      "n": 16,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 0.12764484900981188,
+      "steps": 10,
+      "counts": {
+        "full": 220,
+        "linear": 220
+      },
+      "max_error": 9.931785075467658e-07
+    },
+    {
+      "method": "Exprb43",
+      "n": 16,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 0.19783966429531574,
+      "steps": 10,
+      "counts": {
+        "full": 230,
+        "linear": 230
+      },
+      "max_error": 1.1381988684888711e-08
+    },
+    {
+      "method": "EPIRK5P1",
+      "n": 16,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 0.13361085066571832,
+      "steps": 10,
+      "counts": {
+        "full": 230,
+        "linear": 230
+      },
+      "max_error": 1.23927423878456e-10
+    },
+    {
+      "method": "ETD2RK",
+      "n": 16,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 0.03515593474730849,
+      "steps": 10,
+      "counts": {
+        "full": 20,
+        "linear": 421
+      },
+      "max_error": 0.00016106264969140138
+    },
+    {
+      "method": "ETDRK2",
+      "n": 128,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 0.3210113332606852,
+      "steps": 5,
+      "counts": {
+        "full": 20,
+        "linear": 1225
+      },
+      "max_error": 0.000636446010898295
+    },
+    {
+      "method": "ETDRK3",
+      "n": 128,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 0.5592767000198364,
+      "steps": 5,
+      "counts": {
+        "full": 20,
+        "linear": 1225
+      },
+      "max_error": 4.5098879695171235e-06
+    },
+    {
+      "method": "ETDRK4",
+      "n": 128,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 0.7269501551054418,
+      "steps": 5,
+      "counts": {
+        "full": 25,
+        "linear": 1530
+      },
+      "max_error": 4.3430429697011164e-08
+    },
+    {
+      "method": "HochOst4",
+      "n": 128,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 1.6404351810924709,
+      "steps": 5,
+      "counts": {
+        "full": 30,
+        "linear": 1835
+      },
+      "max_error": 7.544279312377e-08
+    },
+    {
+      "method": "ETD2RK",
+      "n": 128,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 0.04273697407916188,
+      "steps": 5,
+      "counts": {
+        "full": 10,
+        "linear": 394
+      },
+      "max_error": 0.0006364460108986281
+    },
+    {
+      "method": "ETDRK2",
+      "n": 128,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 0.5525187291204929,
+      "steps": 10,
+      "counts": {
+        "full": 40,
+        "linear": 2450
+      },
+      "max_error": 0.00016106064103960094
+    },
+    {
+      "method": "ETDRK3",
+      "n": 128,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 1.0132644390687346,
+      "steps": 10,
+      "counts": {
+        "full": 40,
+        "linear": 2450
+      },
+      "max_error": 5.808294170073225e-07
+    },
+    {
+      "method": "ETDRK4",
+      "n": 128,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 1.3712679129093885,
+      "steps": 10,
+      "counts": {
+        "full": 50,
+        "linear": 3060
+      },
+      "max_error": 2.8376038185840002e-09
+    },
+    {
+      "method": "HochOst4",
+      "n": 128,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 3.20355121884495,
+      "steps": 10,
+      "counts": {
+        "full": 60,
+        "linear": 3670
+      },
+      "max_error": 4.780354778688434e-09
+    },
+    {
+      "method": "ETD2RK",
+      "n": 128,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 0.09138009464368224,
+      "steps": 10,
+      "counts": {
+        "full": 20,
+        "linear": 844
+      },
+      "max_error": 0.00016106064103948992
+    },
+    {
+      "method": "ETDRK2",
+      "n": 1024,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 0.3709824732504785,
+      "steps": 5,
+      "counts": {
+        "full": 20,
+        "linear": 1225
+      },
+      "max_error": 0.0006364458870309342
+    },
+    {
+      "method": "ETDRK3",
+      "n": 1024,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 0.7413905709981918,
+      "steps": 5,
+      "counts": {
+        "full": 20,
+        "linear": 1225
+      },
+      "max_error": 4.5098857837100326e-06
+    },
+    {
+      "method": "ETDRK4",
+      "n": 1024,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 0.9662187360227108,
+      "steps": 5,
+      "counts": {
+        "full": 25,
+        "linear": 1530
+      },
+      "max_error": 4.3430391394316814e-08
+    },
+    {
+      "method": "HochOst4",
+      "n": 1024,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 2.2716165990568697,
+      "steps": 5,
+      "counts": {
+        "full": 30,
+        "linear": 1835
+      },
+      "max_error": 7.544275315574112e-08
+    },
+    {
+      "method": "ETD2RK",
+      "n": 1024,
+      "dt": 0.1,
+      "successful": true,
+      "seconds": 0.06033734930679202,
+      "steps": 5,
+      "counts": {
+        "full": 10,
+        "linear": 450
+      },
+      "max_error": 0.0006364458866741085
+    },
+    {
+      "method": "ETDRK2",
+      "n": 1024,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 0.6835153410211205,
+      "steps": 10,
+      "counts": {
+        "full": 40,
+        "linear": 2450
+      },
+      "max_error": 0.00016106060944465206
+    },
+    {
+      "method": "ETDRK3",
+      "n": 1024,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 1.389596892055124,
+      "steps": 10,
+      "counts": {
+        "full": 40,
+        "linear": 2450
+      },
+      "max_error": 5.808291354547634e-07
+    },
+    {
+      "method": "ETDRK4",
+      "n": 1024,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 1.879320259205997,
+      "steps": 10,
+      "counts": {
+        "full": 50,
+        "linear": 3060
+      },
+      "max_error": 2.8376009320041362e-09
+    },
+    {
+      "method": "HochOst4",
+      "n": 1024,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 4.312894155737013,
+      "steps": 10,
+      "counts": {
+        "full": 60,
+        "linear": 3670
+      },
+      "max_error": 4.780351559041662e-09
+    },
+    {
+      "method": "ETD2RK",
+      "n": 1024,
+      "dt": 0.05,
+      "successful": true,
+      "seconds": 0.11122980015352368,
+      "steps": 10,
+      "counts": {
+        "full": 20,
+        "linear": 900
+      },
+      "max_error": 0.00016106060944376388
+    }
+  ],
+  "qualification": "Manufactured nonlinear time-dependent periodic reaction\u2013diffusion, exact semi-discrete exp(-t) reference. N=16 uses dense full derivatives; N>=128 uses constant-L matrix-free Arnoldi. Wall time includes first-use operator preparation and quadrature. Fixed h comparisons have unequal errors; no universal speed claim.",
+  "source_sha256": {
+    "benchmarks/exponential_backend.py": "329d2a435bedf092f34c64d7876738c26a989cb4d3b81fdb23a50874411c3bc6",
+    "src/warpSPHIntegrators/exponential_rk.py": "048e2b3d1fce11c1c3a74770fec940590ad4e74f32e7d5ad19f2938da353a52b",
+    "src/warpSPHIntegrators/_exponential_data.py": "93d0e6d4192e0de7f5def45b0e95b1efb558e761835ac59fb29b4df5f309d604"
+  }
+}

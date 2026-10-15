@@ -27,6 +27,7 @@ from warpSPHIntegrators import (
     ParallelDIRK,
     Rosenbrock,
     OrthogonalRK,
+    ExponentialRK,
 )
 
 
@@ -181,3 +182,9 @@ assert expanded_records[-1].result.estimate_order==5
 print(f'Installed wheel {package.__version__}: all modules/exports, py.typed, '
       f'{len(filter_schemes(state_kind="tensor"))} tensor drivers, advanced state protocol, '
       'adaptive sampling/events, portable restart, stiff bootstrap, stage preconditioning, physical splitting and generalized-alpha continuation pass')
+
+exponential=solve(ExponentialRK('Exprb43'),TensorState(torch.ones(1,dtype=torch.float64)),.5,
+    tensor_rhs(lambda t,y:-y+.2*y*y-.2*math.exp(-2*t)),dt=.125)
+assert exponential.successful and abs(exponential.state.y.item()-math.exp(-.5))<1e-6
+from warpSPHIntegrators.experiments import taylor_step
+assert abs(taylor_step(lambda t,y:-y,0.,torch.ones(1,dtype=torch.float64),.01,4).item()-math.exp(-.01))<1e-12

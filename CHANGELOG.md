@@ -6,6 +6,16 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ## [Unreleased]
 
+### Added
+
+- Added fourteen source-qualified exponential RK configurations with time
+  augmentation, bounded complete operator AD and checked matrix-free actions.
+- Audited remaining backend candidates and added bounded tensor prototypes for
+  Nordsieck, frozen-J extrapolation, interaction-picture/ETD2, AMF, matrix ODEs,
+  multirate, Taylor and native two-register stepping. Retained source order
+  failures and explicit future controller contracts.
+
+
 ### Fixed
 
 - Derive fixed RKC1/RKC2/RKL2 stage times from their recurrence, restoring

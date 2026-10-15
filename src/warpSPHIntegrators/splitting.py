@@ -264,7 +264,8 @@ def compose(parts,coefficients,*,order=1,name='Composition',conservative_options
     from .parallel_dirk import ParallelDIRK
     from .linearized import Rosenbrock
     from .orthogonal import OrthogonalRK
-    bound=(IntegrationScheme,LinearExponentialFlow,Nystrom,StabilizedRK,Collocation,Extrapolation,ExpandedRK,ParallelDIRK,Rosenbrock,OrthogonalRK)
+    from .exponential_rk import ExponentialRK
+    bound=(IntegrationScheme,LinearExponentialFlow,Nystrom,StabilizedRK,Collocation,Extrapolation,ExpandedRK,ParallelDIRK,Rosenbrock,OrthogonalRK,ExponentialRK)
     entries=tuple((part,method if isinstance(method,bound) else getIntegrator(method)) for part,method in parts)
     weights=tuple(float(c) for c in coefficients)
     if not entries or len(entries)!=len(weights) or any(not math.isfinite(c) for c in weights):raise ValueError('Matching finite parts/coefficients required')

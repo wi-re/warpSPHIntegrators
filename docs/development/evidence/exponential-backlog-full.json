@@ -1,0 +1,41 @@
+{
+  "started_utc": "2026-10-15T00:42:22.727317+00:00",
+  "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:36:31) [GCC 14.3.0]",
+  "torch": "2.13.0+cu130",
+  "numpy": "2.5.2",
+  "pytest": "9.1.1",
+  "device": "cpu",
+  "platform": "Linux-7.0.0-30-generic-x86_64-with-glibc2.39",
+  "package": "0.5.0",
+  "git_head": "4d0299c553b282acbd563decc8ad3489ff58add8",
+  "gate_sha256": "b56e47be160bab3802c70169dd9c60bd104be637eb09c041647d50abf9066462",
+  "workers_per_run": 8,
+  "parallel_shards": 1,
+  "numerical_threads_per_worker": 1,
+  "runs": [
+    {
+      "label": "full",
+      "expression": null,
+      "command": [
+        "/home/lu26029/miniconda3/envs/warp/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "-n",
+        "8",
+        "--dist=worksteal",
+        "--durations=20",
+        "--junitxml=/home/lu26029/dev/warpSPHIntegrators/.tmp/phase8/exponential-backlog-final/full.xml"
+      ],
+      "seconds": 329.771,
+      "exit_code": 0,
+      "log": "/home/lu26029/dev/warpSPHIntegrators/.tmp/phase8/exponential-backlog-final/full.txt",
+      "failures": [],
+      "tests_count": 9417,
+      "failures_count": 0,
+      "errors_count": 0,
+      "skipped_count": 639
+    }
+  ],
+  "seconds": 329.782
+}

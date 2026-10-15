@@ -424,11 +424,12 @@ controllers and internal threading remain distinct. [Evidence](../development/ex
   ImplicitDeuflhardExtrapolation, ImplicitEulerBarycentricExtrapolation,
   ImplicitEulerExtrapolation, ImplicitHairerWannerExtrapolation — Richardson/
   extrapolation tables over a base method; classical math, new driver.
-- RKIP (`OrdinaryDiffEqRKIP`): Krylov-implicit Rosenbrock-type (enumerate members
-  from source at implementation time).
+- RKIP (`OrdinaryDiffEqRKIP`): Runge–Kutta in the interaction picture, requiring
+  forward/backward exponential actions; the original Rosenbrock classification
+  was incorrect.
 - IRKC (`OrdinaryDiffEqStabilizedIRK`): stabilized implicit RK via Chebyshev
-  polynomials — needs a linear (Krylov) solver per stage; rides the frozen-operator
-  GMRES pattern from `rosenbrock.py`.
+  polynomials — performs nonlinear implicit split stages. The pinned constant-cache map fails
+  the retained order-two control and is excluded from production promotion.
 - FunctionMap (`OrdinaryDiffEqFunctionMap`): direct discrete state map, evaluated
   at t+dt in the inspected step body; scale_by_time adds dt*f to the old state.
   FunctionMap/StateMap now implements the explicit map contract with separate
@@ -513,3 +514,15 @@ See [source and consumer validation](../development/expanded-rk-validation.md).
 - **Memory:** the verified per-family catalog lives in project memory
   `ordinarydiffeq-full-catalog.md` (project memory dir), the SSPRK gap with exact
   SSP coefficients in `ordinarydiffeq-ssprk-gap.md`.
+
+## Final candidate outcomes
+
+The execution plan's Phase 8 candidate review is complete with explicitly bounded
+production backends and individually qualified source dispositions. It does not
+claim complete upstream controller equivalence. See the
+[exponential evidence](../development/exponential-validation.md) and
+[remaining backend decisions and prototypes](../development/backend-backlog-validation.md).
+The latter includes 35 individual source outcomes, exact Nordsieck primitive
+controls, an IRKC order counterexample, and operator/multirate/Taylor/storage
+experiments. Deferred controller/operator projects retain concrete revisit
+conditions and are independent of frontend availability.

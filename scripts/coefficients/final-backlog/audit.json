@@ -1,0 +1,409 @@
+{
+  "source_tree": "bae9b8e5f1d00e51c554648e5094e215164a19f8",
+  "candidates": [
+    {
+      "name": "VCABM",
+      "wave": 10,
+      "status": "deferred",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqAdamsBashforthMoulton/src/adams_bashforth_moulton_perform_step.jl": "41039bbc8207e7a30bdbced7583bcc8364c9567d7db6fb8f05f3fb615a225a31",
+        "lib/OrdinaryDiffEqAdamsBashforthMoulton/src/adams_bashforth_moulton_caches.jl": "5c23ba8657927c983e29b623ef37b6f2ee627e66f3f4674b3cf95330998693d7",
+        "lib/OrdinaryDiffEqAdamsBashforthMoulton/src/algorithms.jl": "7b45a51ac73c83d745840f3ebb53ccf178c3062996f82039aef79be2d5eeb8f1"
+      },
+      "reason": "Existing AdaptiveAdams implements owned order-3\u20135 PECE and source neighbor decisions. Full order-1\u201312 startup/FSAL/rejection policy is a distinct controller. Warm 1\u201312 polynomial operations are now prototyped; current monomial/cardinal reconstruction becomes ill-conditioned at high orders. Extending the integer range would make an unqualified order claim, especially with DP5 startup above order six.",
+      "revisit_condition": "Stable divided-difference/Nordsieck history with high-order startup, accepted/rejected transition oracle and measured equal-error benefit beyond the bounded backend."
+    },
+    {
+      "name": "QNDF",
+      "wave": 10,
+      "status": "deferred",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqBDF/src/bdf_perform_step.jl": "995f621aa580e3775b5a375df8fc3bdb0aa004c998edc2e9fdf2705a7206e00f",
+        "lib/OrdinaryDiffEqBDF/src/controllers.jl": "7fed00a97cea3064b441bf02b2d7caf41f11caa88aa5c90ea31c15215a7513ac",
+        "lib/OrdinaryDiffEqBDF/src/algorithms.jl": "9a9d2d0cf0b23894f9a9b7338e8a9010611a7eb8074906a6d970e751fb9cf16b"
+      },
+      "reason": "NDF/AdaptiveNDF already implement source coefficient/difference mathematics with explicit package retry and discontinuity resets. Upstream consecutive-failure counts, Newton refresh/mass-matrix policy and source cache mutations are not equivalent to those controllers. Keep their source names unavailable rather than implying exact policy equivalence.",
+      "revisit_condition": "A separate solver-cache invalidation/refresh protocol plus complete failure/retry/discontinuity trajectory oracle; no frontend dependency."
+    },
+    {
+      "name": "QNDF1",
+      "wave": 10,
+      "status": "deferred",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqBDF/src/bdf_perform_step.jl": "995f621aa580e3775b5a375df8fc3bdb0aa004c998edc2e9fdf2705a7206e00f",
+        "lib/OrdinaryDiffEqBDF/src/controllers.jl": "7fed00a97cea3064b441bf02b2d7caf41f11caa88aa5c90ea31c15215a7513ac",
+        "lib/OrdinaryDiffEqBDF/src/algorithms.jl": "9a9d2d0cf0b23894f9a9b7338e8a9010611a7eb8074906a6d970e751fb9cf16b"
+      },
+      "reason": "NDF/AdaptiveNDF already implement source coefficient/difference mathematics with explicit package retry and discontinuity resets. Upstream consecutive-failure counts, Newton refresh/mass-matrix policy and source cache mutations are not equivalent to those controllers. Keep their source names unavailable rather than implying exact policy equivalence.",
+      "revisit_condition": "A separate solver-cache invalidation/refresh protocol plus complete failure/retry/discontinuity trajectory oracle; no frontend dependency."
+    },
+    {
+      "name": "QNDF2",
+      "wave": 10,
+      "status": "deferred",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqBDF/src/bdf_perform_step.jl": "995f621aa580e3775b5a375df8fc3bdb0aa004c998edc2e9fdf2705a7206e00f",
+        "lib/OrdinaryDiffEqBDF/src/controllers.jl": "7fed00a97cea3064b441bf02b2d7caf41f11caa88aa5c90ea31c15215a7513ac",
+        "lib/OrdinaryDiffEqBDF/src/algorithms.jl": "9a9d2d0cf0b23894f9a9b7338e8a9010611a7eb8074906a6d970e751fb9cf16b"
+      },
+      "reason": "NDF/AdaptiveNDF already implement source coefficient/difference mathematics with explicit package retry and discontinuity resets. Upstream consecutive-failure counts, Newton refresh/mass-matrix policy and source cache mutations are not equivalent to those controllers. Keep their source names unavailable rather than implying exact policy equivalence.",
+      "revisit_condition": "A separate solver-cache invalidation/refresh protocol plus complete failure/retry/discontinuity trajectory oracle; no frontend dependency."
+    },
+    {
+      "name": "NordsieckBDF",
+      "wave": 10,
+      "status": "deferred",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqBDF/src/algorithms.jl": "9a9d2d0cf0b23894f9a9b7338e8a9010611a7eb8074906a6d970e751fb9cf16b",
+        "lib/OrdinaryDiffEqBDF/src/bdf_perform_step.jl": "995f621aa580e3775b5a375df8fc3bdb0aa004c998edc2e9fdf2705a7206e00f",
+        "lib/OrdinaryDiffEqBDF/src/controllers.jl": "7fed00a97cea3064b441bf02b2d7caf41f11caa88aa5c90ea31c15215a7513ac"
+      },
+      "reason": "The source exists and propagates accepted Nordsieck arrays, with nonlinear tolerance budget and Jacobian reuse tied to local error. Pascal/rescale representation is qualified; the tensor warm Adams prototype does not implement BDF or its source controller. A new production BDF alias would hide this distinction.",
+      "revisit_condition": "Native owned BDF corrector/history plus tolerance-budgeted Newton and cache-refresh control, benchmarked against AdaptiveNDF on stiff problems."
+    },
+    {
+      "name": "AN5",
+      "wave": 10,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqNordsieck/src/algorithms.jl": "33bd8ed35a63d997d43fff120e791c8a2a6c6cffe5ee55933a17f63a6fab2859",
+        "lib/OrdinaryDiffEqNordsieck/src/nordsieck_perform_step.jl": "c4f9a53e723e52238f2006ac3cb90b684faa80518f57f27f0e9004c4108027e6",
+        "lib/OrdinaryDiffEqNordsieck/src/nordsieck_utils.jl": "5e0eed81dd158e4a7a3a5294fab8844f8e62cd0c2308cd1aa4536b6c99384a94",
+        "lib/OrdinaryDiffEqNordsieck/src/controllers.jl": "60b1115b77ed85cdab4fe18753b1ee659a12e4734af805d64070cb23d7452fd3"
+      },
+      "reason": "Actual source coefficient/Pascal/rescale kernels are independently checked at orders 1\u201312; bounded warm corrector prototype has known polynomial/AD/order gates. Source AN5 uses Tsit5 interpolant startup and at most three functional iterations; JVODE adds mutable order/wait/rewind policy. Neither complete runtime is advertised. JVODE_BDF only adds BDF handling in order-change memory while sharing Adams coefficient preparation; do not label the warm Adams map a BDF port.",
+      "revisit_condition": "Owned startup/rewind/order state and independent full trajectories through failure and step changes; stiff BDF needs its own verified corrector."
+    },
+    {
+      "name": "JVODE",
+      "wave": 10,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqNordsieck/src/algorithms.jl": "33bd8ed35a63d997d43fff120e791c8a2a6c6cffe5ee55933a17f63a6fab2859",
+        "lib/OrdinaryDiffEqNordsieck/src/nordsieck_perform_step.jl": "c4f9a53e723e52238f2006ac3cb90b684faa80518f57f27f0e9004c4108027e6",
+        "lib/OrdinaryDiffEqNordsieck/src/nordsieck_utils.jl": "5e0eed81dd158e4a7a3a5294fab8844f8e62cd0c2308cd1aa4536b6c99384a94",
+        "lib/OrdinaryDiffEqNordsieck/src/controllers.jl": "60b1115b77ed85cdab4fe18753b1ee659a12e4734af805d64070cb23d7452fd3"
+      },
+      "reason": "Actual source coefficient/Pascal/rescale kernels are independently checked at orders 1\u201312; bounded warm corrector prototype has known polynomial/AD/order gates. Source AN5 uses Tsit5 interpolant startup and at most three functional iterations; JVODE adds mutable order/wait/rewind policy. Neither complete runtime is advertised. JVODE_BDF only adds BDF handling in order-change memory while sharing Adams coefficient preparation; do not label the warm Adams map a BDF port.",
+      "revisit_condition": "Owned startup/rewind/order state and independent full trajectories through failure and step changes; stiff BDF needs its own verified corrector."
+    },
+    {
+      "name": "JVODE_Adams",
+      "wave": 10,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqNordsieck/src/algorithms.jl": "33bd8ed35a63d997d43fff120e791c8a2a6c6cffe5ee55933a17f63a6fab2859",
+        "lib/OrdinaryDiffEqNordsieck/src/nordsieck_perform_step.jl": "c4f9a53e723e52238f2006ac3cb90b684faa80518f57f27f0e9004c4108027e6",
+        "lib/OrdinaryDiffEqNordsieck/src/nordsieck_utils.jl": "5e0eed81dd158e4a7a3a5294fab8844f8e62cd0c2308cd1aa4536b6c99384a94",
+        "lib/OrdinaryDiffEqNordsieck/src/controllers.jl": "60b1115b77ed85cdab4fe18753b1ee659a12e4734af805d64070cb23d7452fd3"
+      },
+      "reason": "Actual source coefficient/Pascal/rescale kernels are independently checked at orders 1\u201312; bounded warm corrector prototype has known polynomial/AD/order gates. Source AN5 uses Tsit5 interpolant startup and at most three functional iterations; JVODE adds mutable order/wait/rewind policy. Neither complete runtime is advertised. JVODE_BDF only adds BDF handling in order-change memory while sharing Adams coefficient preparation; do not label the warm Adams map a BDF port.",
+      "revisit_condition": "Owned startup/rewind/order state and independent full trajectories through failure and step changes; stiff BDF needs its own verified corrector."
+    },
+    {
+      "name": "JVODE_BDF",
+      "wave": 10,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqNordsieck/src/algorithms.jl": "33bd8ed35a63d997d43fff120e791c8a2a6c6cffe5ee55933a17f63a6fab2859",
+        "lib/OrdinaryDiffEqNordsieck/src/nordsieck_perform_step.jl": "c4f9a53e723e52238f2006ac3cb90b684faa80518f57f27f0e9004c4108027e6",
+        "lib/OrdinaryDiffEqNordsieck/src/nordsieck_utils.jl": "5e0eed81dd158e4a7a3a5294fab8844f8e62cd0c2308cd1aa4536b6c99384a94",
+        "lib/OrdinaryDiffEqNordsieck/src/controllers.jl": "60b1115b77ed85cdab4fe18753b1ee659a12e4734af805d64070cb23d7452fd3"
+      },
+      "reason": "Actual source coefficient/Pascal/rescale kernels are independently checked at orders 1\u201312; bounded warm corrector prototype has known polynomial/AD/order gates. Source AN5 uses Tsit5 interpolant startup and at most three functional iterations; JVODE adds mutable order/wait/rewind policy. Neither complete runtime is advertised. JVODE_BDF only adds BDF handling in order-change memory while sharing Adams coefficient preparation; do not label the warm Adams map a BDF port.",
+      "revisit_condition": "Owned startup/rewind/order state and independent full trajectories through failure and step changes; stiff BDF needs its own verified corrector."
+    },
+    {
+      "name": "AMF",
+      "wave": 11,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqAMF/src/amf.jl": "3a42b4407e196916361747500f8ee33fe83a1a0dc968eca856bce1a397dd7246",
+        "lib/OrdinaryDiffEqAMF/src/operators.jl": "dfab05138ff422abd2c2fa210d2636c6a5b01c715ffccf0b496dd98260135326",
+        "lib/OrdinaryDiffEqAMF/src/linsolve.jl": "5876efba7e99ce8df327d8dbb3a9b655f301321aaa70c5e3cd8e72cefda1c6d0"
+      },
+      "reason": "Approximate matrix factorization is an ordered product of split Jacobian factors, not Adams. The dense product prototype checks noncommuting order and O(shift\u00b2) difference from the exact Rosenbrock matrix. Replacing the exact solve can alter method order; existing exact-JVP Rosenbrock does not silently accept approximate factors.",
+      "revisit_condition": "Structured factor update/solve/transpose/gradient ownership, W-method order gates and measured benefit; generic RHS.linear alone is insufficient."
+    },
+    {
+      "name": "Tsit5DA",
+      "wave": 11,
+      "status": "excluded",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqRosenbrock/src/algorithms.jl": "c712ed73bda464ab8030e8a73fcfa6c0e4f701821f6cfb05bf5432ff5a081726",
+        "lib/OrdinaryDiffEqRosenbrock/src/rosenbrock_perform_step.jl": "d38cde356710d97529ae86fe45d6505ddd35b4b77d3b17d243321f712e0c9007"
+      },
+      "reason": "Hybrid explicit/linear-implicit DAE-aware tableau family with mass-matrix semantics. The ODE Tsitouras 5(4) method already exists; this is not another plain explicit tableau alias.",
+      "revisit_condition": "A separately requested mass-matrix/DAE problem and consistent initialization contract."
+    },
+    {
+      "name": "HybridExplicitImplicitRK",
+      "wave": 11,
+      "status": "excluded",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqRosenbrock/src/algorithms.jl": "c712ed73bda464ab8030e8a73fcfa6c0e4f701821f6cfb05bf5432ff5a081726",
+        "lib/OrdinaryDiffEqRosenbrock/src/rosenbrock_perform_step.jl": "d38cde356710d97529ae86fe45d6505ddd35b4b77d3b17d243321f712e0c9007"
+      },
+      "reason": "Hybrid explicit/linear-implicit DAE-aware tableau family with mass-matrix semantics. The ODE Tsitouras 5(4) method already exists; this is not another plain explicit tableau alias.",
+      "revisit_condition": "A separately requested mass-matrix/DAE problem and consistent initialization contract."
+    },
+    {
+      "name": "ImplicitEulerExtrapolation",
+      "wave": 13,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqExtrapolation/src/algorithms.jl": "ac3b50fb733f44deef014a2e8c675c9d917331775f7c250a2efd39ec5a6ff3c3",
+        "lib/OrdinaryDiffEqExtrapolation/src/extrapolation_perform_step.jl": "2ad258d5c431dd901c0f2a567c280afa079dbb5494ca846b09d0ff5c7be49336",
+        "lib/OrdinaryDiffEqExtrapolation/src/controllers.jl": "124c50d276f05872e59893fd4f24e284c2a07cc63846619bac889099f41e36ba"
+      },
+      "reason": "Dense frozen-Jacobian Euler/midpoint column prototypes now have nonlinear time order and complete AD gates at orders 2/4/6. They solve linear corrections, not nonlinear backward-Euler substeps. Production nonlinear/linear solve budgets, source divergence detector, adaptive order/work controls and full-state operator quadrature remain distinct.",
+      "revisit_condition": "Matrix-free checked linear stages and lifecycle/quadrature ownership, then equal-error spatial cost evidence; source controller names remain unavailable."
+    },
+    {
+      "name": "ImplicitEulerBarycentricExtrapolation",
+      "wave": 13,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqExtrapolation/src/algorithms.jl": "ac3b50fb733f44deef014a2e8c675c9d917331775f7c250a2efd39ec5a6ff3c3",
+        "lib/OrdinaryDiffEqExtrapolation/src/extrapolation_perform_step.jl": "2ad258d5c431dd901c0f2a567c280afa079dbb5494ca846b09d0ff5c7be49336",
+        "lib/OrdinaryDiffEqExtrapolation/src/controllers.jl": "124c50d276f05872e59893fd4f24e284c2a07cc63846619bac889099f41e36ba"
+      },
+      "reason": "Dense frozen-Jacobian Euler/midpoint column prototypes now have nonlinear time order and complete AD gates at orders 2/4/6. They solve linear corrections, not nonlinear backward-Euler substeps. Production nonlinear/linear solve budgets, source divergence detector, adaptive order/work controls and full-state operator quadrature remain distinct.",
+      "revisit_condition": "Matrix-free checked linear stages and lifecycle/quadrature ownership, then equal-error spatial cost evidence; source controller names remain unavailable."
+    },
+    {
+      "name": "ImplicitDeuflhardExtrapolation",
+      "wave": 13,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqExtrapolation/src/algorithms.jl": "ac3b50fb733f44deef014a2e8c675c9d917331775f7c250a2efd39ec5a6ff3c3",
+        "lib/OrdinaryDiffEqExtrapolation/src/extrapolation_perform_step.jl": "2ad258d5c431dd901c0f2a567c280afa079dbb5494ca846b09d0ff5c7be49336",
+        "lib/OrdinaryDiffEqExtrapolation/src/controllers.jl": "124c50d276f05872e59893fd4f24e284c2a07cc63846619bac889099f41e36ba"
+      },
+      "reason": "Dense frozen-Jacobian Euler/midpoint column prototypes now have nonlinear time order and complete AD gates at orders 2/4/6. They solve linear corrections, not nonlinear backward-Euler substeps. Production nonlinear/linear solve budgets, source divergence detector, adaptive order/work controls and full-state operator quadrature remain distinct.",
+      "revisit_condition": "Matrix-free checked linear stages and lifecycle/quadrature ownership, then equal-error spatial cost evidence; source controller names remain unavailable."
+    },
+    {
+      "name": "ImplicitHairerWannerExtrapolation",
+      "wave": 13,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqExtrapolation/src/algorithms.jl": "ac3b50fb733f44deef014a2e8c675c9d917331775f7c250a2efd39ec5a6ff3c3",
+        "lib/OrdinaryDiffEqExtrapolation/src/extrapolation_perform_step.jl": "2ad258d5c431dd901c0f2a567c280afa079dbb5494ca846b09d0ff5c7be49336",
+        "lib/OrdinaryDiffEqExtrapolation/src/controllers.jl": "124c50d276f05872e59893fd4f24e284c2a07cc63846619bac889099f41e36ba"
+      },
+      "reason": "Dense frozen-Jacobian Euler/midpoint column prototypes now have nonlinear time order and complete AD gates at orders 2/4/6. They solve linear corrections, not nonlinear backward-Euler substeps. Production nonlinear/linear solve budgets, source divergence detector, adaptive order/work controls and full-state operator quadrature remain distinct.",
+      "revisit_condition": "Matrix-free checked linear stages and lifecycle/quadrature ownership, then equal-error spatial cost evidence; source controller names remain unavailable."
+    },
+    {
+      "name": "RKIP",
+      "wave": 13,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqRKIP/src/algorithms.jl": "8a469c31b952a09dfe8699fa83425925d1978c493dfc3b36d317cc7c22471c7c",
+        "lib/OrdinaryDiffEqRKIP/src/rkip_perform_step.jl": "a594d547b519558e21251357abfa5a60c928ae3f14e08b7e04a831b090babd22",
+        "lib/OrdinaryDiffEqRKIP/src/rkip_cache.jl": "87bd0bac002625d8a7c59db10b91d4c3dee49e8cc46f73c10569865ee5c40256"
+      },
+      "reason": "Source is Runge\u2013Kutta in the interaction picture, not Krylov-implicit Rosenbrock. Dense RK4 coordinate prototype is order-four and exact on linear problems. exp(-c*h*L) can overflow for stiff negative diffusion, unlike forward-only ETDRK maps.",
+      "revisit_condition": "A reversible/skew-operator consumer and bounded forward/backward exponential action contract; source adaptive/tableau/cache handling then needs separate gates."
+    },
+    {
+      "name": "IRKC",
+      "wave": 13,
+      "status": "excluded",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqStabilizedIRK/src/algorithms.jl": "7612a8c12e07e721d73709162c67e39e11c4aafe18ef84dd148dafa7c08e44ba",
+        "lib/OrdinaryDiffEqStabilizedIRK/src/irkc_perform_step.jl": "f044ff135aaf2a27b6d5ba8eb50436af10b753c241fd2cd1405eb72d6c834c3c"
+      },
+      "reason": "Actual pinned constant-cache recurrence with independent dense nonlinear solves reproduces the tensor translation but converges near order one on the retained nonlinear/time split control at degrees 2/4/10. Source also comments out nonlinear-failure checks. Retain as an audit specimen, not a second-order production option.",
+      "revisit_condition": "Corrected source or separately derived recurrence with split nonlinear/time order, failure propagation and joint stability-region evidence."
+    },
+    {
+      "name": "CayleyEuler",
+      "wave": 14,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqLinear/src/algorithms.jl": "571864161780aee822eaa46df0520de4fbed83d44266880757300a2d93b9278f",
+        "lib/OrdinaryDiffEqLinear/src/linear_perform_step.jl": "ffcbde12f280ef63dddff89f79be9df59ae13464d80e75c9097fe4be893cfc58"
+      },
+      "reason": "Dense matrix-ODE contract probes exponential midpoint, commutator Magnus4 and norm-preserving Cayley midpoint on a rotating noncommuting system. CayleyEuler source may describe a different operator action; no source-name equivalence is inferred from these nearby constructions.",
+      "revisit_condition": "Explicit matrix versus matrix-free action/transpose/mass contracts and measured operator preparation costs."
+    },
+    {
+      "name": "LinearExponential",
+      "wave": 14,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqLinear/src/algorithms.jl": "571864161780aee822eaa46df0520de4fbed83d44266880757300a2d93b9278f",
+        "lib/OrdinaryDiffEqLinear/src/linear_perform_step.jl": "ffcbde12f280ef63dddff89f79be9df59ae13464d80e75c9097fe4be893cfc58"
+      },
+      "reason": "Dense matrix-ODE contract probes exponential midpoint, commutator Magnus4 and norm-preserving Cayley midpoint on a rotating noncommuting system. CayleyEuler source may describe a different operator action; no source-name equivalence is inferred from these nearby constructions.",
+      "revisit_condition": "Explicit matrix versus matrix-free action/transpose/mass contracts and measured operator preparation costs."
+    },
+    {
+      "name": "MagnusAdapt4",
+      "wave": 14,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqLinear/src/algorithms.jl": "571864161780aee822eaa46df0520de4fbed83d44266880757300a2d93b9278f",
+        "lib/OrdinaryDiffEqLinear/src/linear_perform_step.jl": "ffcbde12f280ef63dddff89f79be9df59ae13464d80e75c9097fe4be893cfc58"
+      },
+      "reason": "Dense matrix-ODE contract probes exponential midpoint, commutator Magnus4 and norm-preserving Cayley midpoint on a rotating noncommuting system. CayleyEuler source may describe a different operator action; no source-name equivalence is inferred from these nearby constructions.",
+      "revisit_condition": "Explicit matrix versus matrix-free action/transpose/mass contracts and measured operator preparation costs."
+    },
+    {
+      "name": "ExplicitTaylor",
+      "wave": 15,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqTaylorSeries/src/algorithms.jl": "8ff3271f0000abcd8d75dcfc36e3eba1de7d8fe0d07718be36d19855608b6bd1"
+      },
+      "reason": "Order-3/4 nested total-JVP prototype includes tensor time and full state/parameter gradients. Measured six/ten RHS invocations per step and nested AD overhead do not justify a production adaptive-order method. Warp custom derivatives need higher-order AD support.",
+      "revisit_condition": "Cost-competitive high-order derivative propagation on the actual RHS backend with explicit nested-AD compatibility."
+    },
+    {
+      "name": "ExplicitTaylor2",
+      "wave": 15,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqTaylorSeries/src/algorithms.jl": "8ff3271f0000abcd8d75dcfc36e3eba1de7d8fe0d07718be36d19855608b6bd1"
+      },
+      "reason": "Order-3/4 nested total-JVP prototype includes tensor time and full state/parameter gradients. Measured six/ten RHS invocations per step and nested AD overhead do not justify a production adaptive-order method. Warp custom derivatives need higher-order AD support.",
+      "revisit_condition": "Cost-competitive high-order derivative propagation on the actual RHS backend with explicit nested-AD compatibility."
+    },
+    {
+      "name": "ExplicitTaylorAdaptiveOrder",
+      "wave": 15,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqTaylorSeries/src/algorithms.jl": "8ff3271f0000abcd8d75dcfc36e3eba1de7d8fe0d07718be36d19855608b6bd1"
+      },
+      "reason": "Order-3/4 nested total-JVP prototype includes tensor time and full state/parameter gradients. Measured six/ten RHS invocations per step and nested AD overhead do not justify a production adaptive-order method. Warp custom derivatives need higher-order AD support.",
+      "revisit_condition": "Cost-competitive high-order derivative propagation on the actual RHS backend with explicit nested-AD compatibility."
+    },
+    {
+      "name": "MIS",
+      "wave": 14,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqMultirate/src/algorithms.jl": "c3dff9ccb312285a7865c9f852137649c15001d1d59f65fe70fa1e950a0687ec",
+        "lib/OrdinaryDiffEqMultirate/src/multirate_perform_step.jl": "bb00044e679aa8e6cb8a4926d55e33d5d39289fa9cb7ae4554c2d91422ba9a2c",
+        "lib/OrdinaryDiffEqMultirate/src/multirate_tableaus.jl": "cacabaffc582a08492fc22afa3bf65d154d80a2de41bd1eee422545b4d641862"
+      },
+      "reason": "Generic order-two slow-forcing/fast-RK4 tensor contract is tested on noncommuting time-dependent splits and measured on an FFT-slow/local-fast consumer. It uses two slow evaluations plus four per microstep fast calls. This is not a coefficient port of each named source algorithm; source slow/fast conventions and modified fast forcing remain separate.",
+      "revisit_condition": "An accepted macro/micro clock, interpolation and rollback contract plus equal-error cost win; individual source tableau/controller ports then need their own gates."
+    },
+    {
+      "name": "MRAB",
+      "wave": 14,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqMultirate/src/algorithms.jl": "c3dff9ccb312285a7865c9f852137649c15001d1d59f65fe70fa1e950a0687ec",
+        "lib/OrdinaryDiffEqMultirate/src/multirate_perform_step.jl": "bb00044e679aa8e6cb8a4926d55e33d5d39289fa9cb7ae4554c2d91422ba9a2c",
+        "lib/OrdinaryDiffEqMultirate/src/multirate_tableaus.jl": "cacabaffc582a08492fc22afa3bf65d154d80a2de41bd1eee422545b4d641862"
+      },
+      "reason": "Generic order-two slow-forcing/fast-RK4 tensor contract is tested on noncommuting time-dependent splits and measured on an FFT-slow/local-fast consumer. It uses two slow evaluations plus four per microstep fast calls. This is not a coefficient port of each named source algorithm; source slow/fast conventions and modified fast forcing remain separate.",
+      "revisit_condition": "An accepted macro/micro clock, interpolation and rollback contract plus equal-error cost win; individual source tableau/controller ports then need their own gates."
+    },
+    {
+      "name": "MREEF",
+      "wave": 14,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqMultirate/src/algorithms.jl": "c3dff9ccb312285a7865c9f852137649c15001d1d59f65fe70fa1e950a0687ec",
+        "lib/OrdinaryDiffEqMultirate/src/multirate_perform_step.jl": "bb00044e679aa8e6cb8a4926d55e33d5d39289fa9cb7ae4554c2d91422ba9a2c",
+        "lib/OrdinaryDiffEqMultirate/src/multirate_tableaus.jl": "cacabaffc582a08492fc22afa3bf65d154d80a2de41bd1eee422545b4d641862"
+      },
+      "reason": "Generic order-two slow-forcing/fast-RK4 tensor contract is tested on noncommuting time-dependent splits and measured on an FFT-slow/local-fast consumer. It uses two slow evaluations plus four per microstep fast calls. This is not a coefficient port of each named source algorithm; source slow/fast conventions and modified fast forcing remain separate.",
+      "revisit_condition": "An accepted macro/micro clock, interpolation and rollback contract plus equal-error cost win; individual source tableau/controller ports then need their own gates."
+    },
+    {
+      "name": "MRIGARKERK22a",
+      "wave": 14,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqMultirate/src/algorithms.jl": "c3dff9ccb312285a7865c9f852137649c15001d1d59f65fe70fa1e950a0687ec",
+        "lib/OrdinaryDiffEqMultirate/src/multirate_perform_step.jl": "bb00044e679aa8e6cb8a4926d55e33d5d39289fa9cb7ae4554c2d91422ba9a2c",
+        "lib/OrdinaryDiffEqMultirate/src/multirate_tableaus.jl": "cacabaffc582a08492fc22afa3bf65d154d80a2de41bd1eee422545b4d641862"
+      },
+      "reason": "Generic order-two slow-forcing/fast-RK4 tensor contract is tested on noncommuting time-dependent splits and measured on an FFT-slow/local-fast consumer. It uses two slow evaluations plus four per microstep fast calls. This is not a coefficient port of each named source algorithm; source slow/fast conventions and modified fast forcing remain separate.",
+      "revisit_condition": "An accepted macro/micro clock, interpolation and rollback contract plus equal-error cost win; individual source tableau/controller ports then need their own gates."
+    },
+    {
+      "name": "MRIGARKERK22b",
+      "wave": 14,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqMultirate/src/algorithms.jl": "c3dff9ccb312285a7865c9f852137649c15001d1d59f65fe70fa1e950a0687ec",
+        "lib/OrdinaryDiffEqMultirate/src/multirate_perform_step.jl": "bb00044e679aa8e6cb8a4926d55e33d5d39289fa9cb7ae4554c2d91422ba9a2c",
+        "lib/OrdinaryDiffEqMultirate/src/multirate_tableaus.jl": "cacabaffc582a08492fc22afa3bf65d154d80a2de41bd1eee422545b4d641862"
+      },
+      "reason": "Generic order-two slow-forcing/fast-RK4 tensor contract is tested on noncommuting time-dependent splits and measured on an FFT-slow/local-fast consumer. It uses two slow evaluations plus four per microstep fast calls. This is not a coefficient port of each named source algorithm; source slow/fast conventions and modified fast forcing remain separate.",
+      "revisit_condition": "An accepted macro/micro clock, interpolation and rollback contract plus equal-error cost win; individual source tableau/controller ports then need their own gates."
+    },
+    {
+      "name": "MRIGARKERK33a",
+      "wave": 14,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqMultirate/src/algorithms.jl": "c3dff9ccb312285a7865c9f852137649c15001d1d59f65fe70fa1e950a0687ec",
+        "lib/OrdinaryDiffEqMultirate/src/multirate_perform_step.jl": "bb00044e679aa8e6cb8a4926d55e33d5d39289fa9cb7ae4554c2d91422ba9a2c",
+        "lib/OrdinaryDiffEqMultirate/src/multirate_tableaus.jl": "cacabaffc582a08492fc22afa3bf65d154d80a2de41bd1eee422545b4d641862"
+      },
+      "reason": "Generic order-two slow-forcing/fast-RK4 tensor contract is tested on noncommuting time-dependent splits and measured on an FFT-slow/local-fast consumer. It uses two slow evaluations plus four per microstep fast calls. This is not a coefficient port of each named source algorithm; source slow/fast conventions and modified fast forcing remain separate.",
+      "revisit_condition": "An accepted macro/micro clock, interpolation and rollback contract plus equal-error cost win; individual source tableau/controller ports then need their own gates."
+    },
+    {
+      "name": "MRIGARKERK45a",
+      "wave": 14,
+      "status": "prototype",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqMultirate/src/algorithms.jl": "c3dff9ccb312285a7865c9f852137649c15001d1d59f65fe70fa1e950a0687ec",
+        "lib/OrdinaryDiffEqMultirate/src/multirate_perform_step.jl": "bb00044e679aa8e6cb8a4926d55e33d5d39289fa9cb7ae4554c2d91422ba9a2c",
+        "lib/OrdinaryDiffEqMultirate/src/multirate_tableaus.jl": "cacabaffc582a08492fc22afa3bf65d154d80a2de41bd1eee422545b4d641862"
+      },
+      "reason": "Generic order-two slow-forcing/fast-RK4 tensor contract is tested on noncommuting time-dependent splits and measured on an FFT-slow/local-fast consumer. It uses two slow evaluations plus four per microstep fast calls. This is not a coefficient port of each named source algorithm; source slow/fast conventions and modified fast forcing remain separate.",
+      "revisit_condition": "An accepted macro/micro clock, interpolation and rollback contract plus equal-error cost win; individual source tableau/controller ports then need their own gates."
+    },
+    {
+      "name": "MREIL",
+      "wave": 14,
+      "status": "deferred",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqMultirateImplicit/src/algorithms.jl": "6a4a1051e1a1dc3d3dfdaf6b6e98812067465e781e7ea3710bd120d4aa236205"
+      },
+      "reason": "The explicit multirate prototype establishes component call accounting but not coupled implicit macro/micro solves, rejection or adjoints. Existing IMEX handles shared clocks; pretending it supplies multirate implicit semantics would be incorrect.",
+      "revisit_condition": "Verified macro/micro solve, forcing interpolation, failed-substep rollback and gradient ownership following the explicit contract probe."
+    },
+    {
+      "name": "MRIGARKESDIRK34a",
+      "wave": 14,
+      "status": "deferred",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqMultirateImplicit/src/algorithms.jl": "6a4a1051e1a1dc3d3dfdaf6b6e98812067465e781e7ea3710bd120d4aa236205"
+      },
+      "reason": "The explicit multirate prototype establishes component call accounting but not coupled implicit macro/micro solves, rejection or adjoints. Existing IMEX handles shared clocks; pretending it supplies multirate implicit semantics would be incorrect.",
+      "revisit_condition": "Verified macro/micro solve, forcing interpolation, failed-substep rollback and gradient ownership following the explicit contract probe."
+    },
+    {
+      "name": "MRIGARKESDIRK46a",
+      "wave": 14,
+      "status": "deferred",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqMultirateImplicit/src/algorithms.jl": "6a4a1051e1a1dc3d3dfdaf6b6e98812067465e781e7ea3710bd120d4aa236205"
+      },
+      "reason": "The explicit multirate prototype establishes component call accounting but not coupled implicit macro/micro solves, rejection or adjoints. Existing IMEX handles shared clocks; pretending it supplies multirate implicit semantics would be incorrect.",
+      "revisit_condition": "Verified macro/micro solve, forcing interpolation, failed-substep rollback and gradient ownership following the explicit contract probe."
+    },
+    {
+      "name": "MRIGARKIRK21a",
+      "wave": 14,
+      "status": "deferred",
+      "source_sha256": {
+        "lib/OrdinaryDiffEqMultirateImplicit/src/algorithms.jl": "6a4a1051e1a1dc3d3dfdaf6b6e98812067465e781e7ea3710bd120d4aa236205"
+      },
+      "reason": "The explicit multirate prototype establishes component call accounting but not coupled implicit macro/micro solves, rejection or adjoints. Existing IMEX handles shared clocks; pretending it supplies multirate implicit semantics would be incorrect.",
+      "revisit_condition": "Verified macro/micro solve, forcing interpolation, failed-substep rollback and gradient ownership following the explicit contract probe."
+    }
+  ]
+}
