@@ -71,6 +71,7 @@ from .adaptive_adams import AdaptiveAdams, adams_order_choice
 from .improved_nystrom import ImprovedNystrom, ImprovedNystromWeights
 from .parallel_dirk import ParallelDIRK, parallel_dirk_tableau
 from .linearized import Rosenbrock, RosenbrockTableau, RosenbrockQuadrature, rosenbrock_tableau
+from .orthogonal import OrthogonalRK
 from .extrapolation import Extrapolation, ExtrapolationQuadrature, extrapolation_coefficients
 from .switching import AlgorithmSwitch
 from .function_map import FunctionMap,StateMap,MapTransition,tensor_map
@@ -129,6 +130,7 @@ __all__ = [
     "ImprovedNystrom", "ImprovedNystromWeights",
     "ParallelDIRK", "parallel_dirk_tableau",
     "Rosenbrock", "RosenbrockTableau", "RosenbrockQuadrature", "rosenbrock_tableau",
+    "OrthogonalRK",
     "NDF", "NDFQuadrature", "ndf_difference_transform",
     "AdaptiveNDF", "ndf_order_proposals",
     "Extrapolation", "ExtrapolationQuadrature", "extrapolation_coefficients",

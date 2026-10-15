@@ -208,7 +208,11 @@ must be recorded rather than counted as an implemented method.
   W6S4OS map through full-JVP linear stages, complete Jacobian derivatives,
   isolated lifecycle probes and measured nonlinear/stiff consumers;
   [validation](docs/development/linearized-validation.md). Individual stability
-  limits are retained. ROCK/SERK/RKMC, exponential and AMF work remains separate.
+  limits are retained. OrthogonalRK now supplies ROCK2/4, SERK2 and RKMC2 with
+  translated source kernels, guarded stage bounds, high-count instability
+  dispositions, nonlinear/lifecycle/gradient/adaptive gates and measured heat
+  consumers; [validation](docs/development/orthogonal-validation.md).
+  Exponential and AMF work remains separate.
 - [x] Resolve improved IRKN history and parallel DIRK candidates from wave 12
   with their startup, second-order state, solve and source qualifications.
   [The improved-IRKN source audit](docs/development/irkn-source-audit.md) now

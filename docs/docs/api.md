@@ -86,6 +86,14 @@ returns immutable recurrence weights and consistent stage times;
 Endpoint refresh costs one RHS beyond the recurrence's stage count. See
 [the contracts and executable example](families/relaxed-chebyshev).
 
+`OrthogonalRK(method='ROCK2', stages=10)` adds ROCK2/4, SERK2 and RKMC2.
+Alternatively pass `lambda_max=...` for stage selection against a supplied
+negative-real spectral bound. It executes pinned recurrences in increment
+coordinates, preserves passive fields exactly, and supplies embedded/Euler
+differences and ordinary stage weights. Qualified ROCK4 counts omit 133/152;
+ROCK4/SERK2 sizing is more conservative than the pinned source selector.
+See [the heat example, supported counts and measured tradeoffs](families/relaxed-chebyshev#rock-stabilized-explicit-rk-and-monotone-chebyshev-factories).
+
 ## Explicit Nyström mechanics
 
 `Nystrom(method='DPRKN6')` binds fourteen explicit RKN configurations, with

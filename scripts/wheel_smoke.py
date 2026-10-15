@@ -26,6 +26,7 @@ from warpSPHIntegrators import (
     ImprovedNystrom,
     ParallelDIRK,
     Rosenbrock,
+    OrthogonalRK,
 )
 
 
@@ -98,6 +99,9 @@ linearized=solve(Rosenbrock('Rosenbrock32'),TensorState(torch.ones(1,dtype=torch
     tensor_rhs(lambda t,y:-y+.2*y*y-.2*math.exp(-2*t)),dt=.125,adaptive=True,
     rtol=1e-7,atol=1e-9,solver_opts={'gmres_tol':1e-13})
 assert linearized.successful and abs(linearized.state.y.item()-math.exp(-.5))<2e-6
+orthogonal=solve(OrthogonalRK('ROCK4',lambda_max=100.),TensorState(torch.ones(1,dtype=torch.float64)),.5,
+    tensor_rhs(lambda t,y:-y),dt=.125)
+assert orthogonal.successful and abs(orthogonal.state.y.item()-math.exp(-.5))<1e-6
 alpha = solve(GeneralizedAlpha(.5),mechanics.initial(),.2,mechanics.rhs,dt=.01,
               solver_opts={'matvec':'jvp','tol':1e-12,'newton_tol':1e-7})
 continued = solve(GeneralizedAlpha(.5),None,.35,mechanics.rhs,restart=alpha.checkpoint,

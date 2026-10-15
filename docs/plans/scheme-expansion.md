@@ -352,6 +352,13 @@ source, stability, adaptive, ownership and consumer evidence is in
 original nonautonomous path is recorded separately. W6S4OS and Rosenbrock32 are
 not A-stable; a small stiff limit alone is not an L-stability certificate.
 
+OrthogonalRK now supplies ROCK2/4, SERK2 and RKMC2 through translated source
+recurrences, consistent clocks and owned stage quadratures. High-count source
+stability exceptions are retained individually; 1,103 supported configurations
+have numerical spectral screening. Known heat modes expose both force savings
+and unresolved-fast-mode damping limits; [evidence](../development/orthogonal-validation.md).
+The remaining wave-11 scope is exponential and approximate-factorization work.
+
 - `rkc.py` family: ROCK2, ROCK4 (Rodriguez regularized-Chebyshev), SERK2 (stabilized
   exponential RK 2), RKG1, RKG2, RKL1, RKMC2 (verify each method's construction from
   source — several are variants our driver does not currently parameterize).

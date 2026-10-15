@@ -135,6 +135,84 @@ Pinned source steps, nonautonomous order, polynomial identities, adaptive/restar
 lifecycle/gradient checks and known diffusion consumers are recorded in
 [the backend validation](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/stabilized-backend-validation.md).
 
+## ROCK, stabilized explicit RK and monotone Chebyshev factories
+
+`OrthogonalRK` adds four polynomial methods outside the fixed registrations.
+They are useful when diffusion forces a very small ordinary explicit timestep:
+extra inexpensive stages enlarge the negative-real stability interval, with
+no nonlinear or Krylov solve.
+
+| Selection | Order | Estimate exponent | Supported stages |
+|---|---:|---:|---|
+| `OrthogonalRK('ROCK2')` | 2 | 2 | source table, 3–200 |
+| `OrthogonalRK('ROCK4')` | 4 | 4 | source table, 5–142; 133 omitted |
+| `OrthogonalRK('SERK2')` | 2 | 2 | 10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 250 |
+| `OrthogonalRK('RKMC2')` | 2 | 2 | every integer 3–1000 |
+
+The default uses ten stages. `stages=...` rounds up to an available count.
+`lambda_max=...` instead binds a supplied bound on the magnitude of negative-real
+eigenvalues and chooses stages for each attempted step. An insufficient
+`max_stages` raises an error instead of silently accepting an unstable step.
+One physical endpoint refresh adds one RHS call: a step costs s+1 calls.
+SERK2 avoids the source's unused extra initial evaluation.
+
+[example:run orthogonal-heat]: #
+```python
+import math
+import torch
+from warpSPHIntegrators import OrthogonalRK, TensorState, tensor_rhs, solve
+
+n = 64
+nu = .001
+x = torch.arange(n, dtype=torch.float64) / n
+initial = 1 + .25*torch.cos(2*torch.pi*x)
+def heat(t, y):
+    return nu*n*n*(torch.roll(y, 1) + torch.roll(y, -1) - 2*y)
+
+method = OrthogonalRK('ROCK2', lambda_max=4*nu*n*n)
+result = solve(method, TensorState(initial), .1, tensor_rhs(heat), dt=.01)
+rate = 4*nu*n*n*math.sin(math.pi/n)**2
+exact = 1 + .25*math.exp(-rate*.1)*torch.cos(2*torch.pi*x)
+assert result.successful
+assert torch.max(torch.abs(result.state.y - exact)) < 1e-7
+assert abs(result.state.y.mean().item() - 1) < 1e-13
+```
+
+The method uses increments from the initial state so a field with an exactly
+zero derivative stays unchanged, even when source affine sums would round.
+Stage times follow their recurrence consistently. Coupled quantities, gradients,
+custom finalization with ordinary derivative weights, physical composition,
+adaptive runs and portable tensor continuation are supported. Saved stage rates
+and gradient graphs use storage per stage; this is not a low-storage backend.
+Fields advance as affine tensor ODE values; custom update projectors, constraints
+and mass-matrix solves are outside this contract.
+
+Spectral sizing is qualified on float64 negative-real linear problems. It uses
+the pinned selector with additional .95/.9 margins for ROCK4/SERK2. Source ROCK4
+counts 133 and 152 have unstable bands near z=-8 and are rejected. Dense-grid
+checks alone missed one such band; the table-driven configurations also undergo
+numerical polynomial critical-point checks. These are numerical interval checks,
+not nonlinear SSP/TVD, positivity or nonnormal-operator guarantees.
+
+On 4,096 periodic heat cells, ten steps of size .01 gave:
+
+| Method | Actual RHS calls | Max error | seconds |
+|---|---:|---:|---:|
+| ROCK2 | 310 | 5.41e-7 | .0229 |
+| ROCK4 | 490 | 2.79e-3 | .0339 |
+| SERK2 | 410 | 4.53e-7 | .0288 |
+| RKMC2 | 620 | 1.05e-7 | .0448 |
+| RKL2 | 380 | 2.26e-5 | .0298 |
+| RKG2 | 640 | 3.33e-7 | .0497 |
+| RK4, smaller stable step | 10,712 | 2.00e-15 | .987 |
+
+The initial field includes a highest-frequency mode whose exact solution decays
+rapidly. ROCK4 leaves more of it unresolved at this macro step despite its
+higher formal order: stability does not mean strong damping. ROCK2/SERK2 meet
+the tested 1e-6 target with substantially less work than stability-limited RK4;
+this is a known-problem comparison, not an equal-error or general speed ranking.
+See [source, stability and consumer evidence](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/orthogonal-validation.md).
+
 ## References for the fixed entries
 
 - Ruuth, *An analysis of a relaxed Chebyshev method*, J. Comput. Phys. 169 (2001) 162-175 — the RKC construction.

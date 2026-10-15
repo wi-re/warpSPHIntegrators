@@ -27,6 +27,11 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Added — Phase 8 backend expansion
 
+- ROCK2/4, SERK2 and RKMC2 factories with source-qualified increment recurrences,
+  exact passive fields, conservative stage selection, owned quantities and
+  adaptive/restart support. Source high-count stability exceptions are retained;
+  periodic heat measurements compare smoothing, accuracy and actual work.
+
 - Full-JVP Rosenbrock23/32 and W6S4OS factories with coupled quantity stages,
   complete Jacobian derivatives in implicit adjoints, isolated probes and
   component increment quadratures. The pair corrects a pinned third-stage time

@@ -6246,6 +6246,85 @@
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; actual constant-cache kernels and differentiation helper inspection",
       "evidence": "docs/development/linearized-validation.md",
       "intended_consumer": "Use the corrected full-JVP backend for time-dependent forces"
+    },
+    {
+      "name": "ROCK2 increment recurrence backend",
+      "status": "implemented",
+      "wave": 11,
+      "reason": "Actual pinned recurrence in translated coordinates, exact zero rates, qualified conservative stage selection and source-specific high-count exceptions",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; StabilizedRK 2.6.0 actual constructors, selectors and constant-cache kernels",
+      "implementation": "src/warpSPHIntegrators/orthogonal.py",
+      "tests": [
+        "tests/test_orthogonal.py"
+      ],
+      "evidence": "docs/development/orthogonal-validation.md",
+      "intended_consumer": "Normal negative-real diffusion-like spectra; known heat modes and coupled full-state stages with individual accuracy/damping limits"
+    },
+    {
+      "name": "ROCK4 increment recurrence backend",
+      "status": "implemented",
+      "wave": 11,
+      "reason": "Actual pinned recurrence in translated coordinates, exact zero rates, qualified conservative stage selection and source-specific high-count exceptions",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; StabilizedRK 2.6.0 actual constructors, selectors and constant-cache kernels",
+      "implementation": "src/warpSPHIntegrators/orthogonal.py",
+      "tests": [
+        "tests/test_orthogonal.py"
+      ],
+      "evidence": "docs/development/orthogonal-validation.md",
+      "intended_consumer": "Normal negative-real diffusion-like spectra; known heat modes and coupled full-state stages with individual accuracy/damping limits"
+    },
+    {
+      "name": "SERK2 increment recurrence backend",
+      "status": "implemented",
+      "wave": 11,
+      "reason": "Actual pinned recurrence in translated coordinates, exact zero rates, qualified conservative stage selection and source-specific high-count exceptions",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; StabilizedRK 2.6.0 actual constructors, selectors and constant-cache kernels",
+      "implementation": "src/warpSPHIntegrators/orthogonal.py",
+      "tests": [
+        "tests/test_orthogonal.py"
+      ],
+      "evidence": "docs/development/orthogonal-validation.md",
+      "intended_consumer": "Normal negative-real diffusion-like spectra; known heat modes and coupled full-state stages with individual accuracy/damping limits"
+    },
+    {
+      "name": "RKMC2 increment recurrence backend",
+      "status": "implemented",
+      "wave": 11,
+      "reason": "Actual pinned recurrence in translated coordinates, exact zero rates, qualified conservative stage selection and source-specific high-count exceptions",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; StabilizedRK 2.6.0 actual constructors, selectors and constant-cache kernels",
+      "implementation": "src/warpSPHIntegrators/orthogonal.py",
+      "tests": [
+        "tests/test_orthogonal.py"
+      ],
+      "evidence": "docs/development/orthogonal-validation.md",
+      "intended_consumer": "Normal negative-real diffusion-like spectra; known heat modes and coupled full-state stages with individual accuracy/damping limits"
+    },
+    {
+      "name": "ROCK4 pinned 133-stage configuration",
+      "status": "excluded",
+      "wave": 11,
+      "reason": "Actual source polynomial has an unstable interior band near z=-8; omitted from supported fixed/spectral configurations",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; StabilizedRK 2.6.0 actual fixed-stage kernel counterexample",
+      "evidence": "docs/development/orthogonal-validation.md",
+      "intended_consumer": "Other qualified ROCK4 counts remain supported up to 142"
+    },
+    {
+      "name": "ROCK4 pinned 152-stage configuration",
+      "status": "excluded",
+      "wave": 11,
+      "reason": "Actual source polynomial has an unstable interior band near z=-8; omitted from supported fixed/spectral configurations",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; StabilizedRK 2.6.0 actual fixed-stage kernel counterexample",
+      "evidence": "docs/development/orthogonal-validation.md",
+      "intended_consumer": "Other qualified ROCK4 counts remain supported up to 142"
+    },
+    {
+      "name": "SERK2 pinned nominal high-count spectral sizing",
+      "status": "excluded",
+      "wave": 11,
+      "reason": "Actual 150/250-stage source controls exceed unit amplification at nominal selector bounds; package .9 margin is qualified separately",
+      "source": "OrdinaryDiffEq 7.8.1 pinned tree; StabilizedRK 2.6.0 actual fixed-stage kernel counterexamples",
+      "evidence": "docs/development/orthogonal-validation.md",
+      "intended_consumer": "All eleven source stage counts remain supported with conservative package sizing"
     }
   ]
 }
