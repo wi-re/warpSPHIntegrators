@@ -54,10 +54,11 @@ only weakly damped (Meyer et al., 2014). The driver clamps ``s`` to the method's
 minimum (1 for RKC1, 3 for RKC2/RKL2) but does not force parity -- pick ``s`` (or
 a slightly larger ``lambda_max``) if you want odd.
 
-These schemes are explicit one-step methods: they do not implement first-stage
-reuse (``priorStep`` is rejected) and are intended for autonomous, parabolic
-right-hand sides. Stage times are set to ``t + dt * j / s`` as a reasonable
-intermediate time; for a non-autonomous right-hand side this is an approximation.
+These explicit one-step methods reject first-stage reuse. Recurrence-derived
+stage times preserve their order on non-autonomous problems. Their useful
+stability region still concerns diffusion-like negative-real spectra. Affine
+combinations are anchored at the initial state to preserve zero-rate fields;
+finalization receives the derived derivative weights without extra RHS calls.
 """
 
 import dataclasses
@@ -182,30 +183,42 @@ def stage_count(dt_lambda_max, family):
 
 
 def _reference_lincomb(template_ref, terms):
-    """``sum weight_i * ref_i`` over the integrated fields of a reference state.
+    """Affine combination around the initial reference, preserving zero rates.
 
     ``terms`` is ``[(ref_state, weight), ...]``. Returns ``{field_name: value}`` for
-    every integrated field of ``template_ref``. The linear combination of the three
-    prior stage states in the RKC/RKL recurrence is the one operation the standard
-    RK drivers never need (they only ever form ``Y_0 + dt * sum a_ij f_j``), so it
-    lives here once.
+    every integrated field of ``template_ref``. Weights sum to one, so computing
+    ``base + sum(weight * (value-base))`` preserves a passive field exactly.
     """
     out = {}
     for f in dataclasses.fields(template_ref):
         if field_behavior(f) != 'integrated':
             continue
         name = f.name
-        acc = None
+        base = getattr(template_ref, name)
+        acc = base
         for ref, weight in terms:
             if weight == 0.0:
                 continue
-            v = getattr(ref, name)
-            acc = weight * v if acc is None else acc + weight * v
-        if acc is None:
-            base = getattr(template_ref, name)
-            acc = base * 0.0
+            acc = acc + weight * (getattr(ref, name) - base)
         out[name] = acc
     return out
+
+
+def _recurrence_clock_weights(s, mtilde1, mu, nu, mtilde, gtilde):
+    """Consistent first-order stage nodes and final derivative quadrature."""
+    c = [0.0, mtilde1] + [0.0] * (s - 1)
+    for j in range(2, s + 1):
+        c[j] = mu[j]*c[j-1] + nu[j]*c[j-2] + mtilde[j] + gtilde[j]
+    adjoint = [0.0] * (s + 1)
+    adjoint[s] = 1.0
+    weights = [0.0] * s
+    for j in range(s, 1, -1):
+        weights[j-1] += adjoint[j]*mtilde[j]
+        weights[0] += adjoint[j]*gtilde[j]
+        adjoint[j-1] += adjoint[j]*mu[j]
+        adjoint[j-2] += adjoint[j]*nu[j]
+    weights[0] += adjoint[1]*mtilde1
+    return c, tuple(weights)
 
 
 def integrateRelaxedChebyshev(state, dt, f, family, *args, **kwargs):
@@ -235,6 +248,7 @@ def integrateRelaxedChebyshev(state, dt, f, family, *args, **kwargs):
         s = stage_count(abs(dt) * abs(lambda_max), family)
     s = max(int(s), _SMIN[family])
     mtilde1, mu, nu, mtilde, gtilde = _COEFFS[family](s)
+    c, weights = _recurrence_clock_weights(s, mtilde1, mu, nu, mtilde, gtilde)
 
     initializeSystem(state, dt, *args, **kwargs)
     with record_function(f"[Integration] {name}"):
@@ -249,7 +263,7 @@ def integrateRelaxedChebyshev(state, dt, f, family, *args, **kwargs):
 
         # Stage 1: Y_1 = Y_0 + mtilde_1 dt f_0.
         y1_sys = state.initializeNewState(*args, **kwargs)
-        y1_sys.t = float(state.t + dt / s)
+        y1_sys.t = float(state.t + dt * c[1])
         y1_sys = updateStateEuler(y1_sys, f0, mtilde1 * dt, copyState=False, **kwargs)
 
         last_eval_sys = y1_sys
@@ -267,7 +281,7 @@ def integrateRelaxedChebyshev(state, dt, f, family, *args, **kwargs):
             fprev = f1
             for j in range(2, s + 1):
                 yj_sys = state.initializeNewState(*args, **kwargs)
-                yj_sys.t = float(state.t + dt * j / s)
+                yj_sys.t = float(state.t + dt * c[j])
                 ref_j = get_reference_state(yj_sys)
                 combined = _reference_lincomb(
                     y0_ref,
@@ -295,9 +309,9 @@ def integrateRelaxedChebyshev(state, dt, f, family, *args, **kwargs):
         new_state = y_final_sys
         new_state.t = float(state.t + dt)
         stages = [StageResult(aux=r, update=k) for r, k in zip(rs, ks)]
-        finalizeSystem(new_state, state, dt, rs, ks, [],
+        finalizeSystem(new_state, state, dt, rs, ks, weights,
                        *args, lastStageSystem=last_eval_sys, **kwargs)
-        return IntegrationResult(state=new_state, stages=stages)
+        return IntegrationResult(state=new_state, stages=stages, quadrature=weights)
 
 
 def _make_scheme(family, name):

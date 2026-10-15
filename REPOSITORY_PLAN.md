@@ -212,6 +212,9 @@ must be recorded rather than counted as an implemented method.
   translated source kernels, guarded stage bounds, high-count instability
   dispositions, nonlinear/lifecycle/gradient/adaptive gates and measured heat
   consumers; [validation](docs/development/orthogonal-validation.md).
+  The fixed RKC1/RKC2/RKL2 paths now use consistent clocks, exact passive fields
+  and complete finalization weights, restoring RKC2/RKL2 time-dependent order
+  without extra RHS calls; [audit](docs/development/rkc-clock-validation.md).
   Exponential and AMF work remains separate.
 - [x] Resolve improved IRKN history and parallel DIRK candidates from wave 12
   with their startup, second-order state, solve and source qualifications.

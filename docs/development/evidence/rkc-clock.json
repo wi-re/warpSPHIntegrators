@@ -1,0 +1,200 @@
+{
+  "baseline_revision": "f6c0edf",
+  "baseline_source_sha256": "fb74319b3b52dd21964ff11704c455b1848176ec2796e72d03cfe40099f79817",
+  "current_source_sha256": "a1ca13ab8a5ccadb51471d97b0296679a1a97f4d64ef55d151af9e46dd560509",
+  "cases": [
+    {
+      "method": "RKC1",
+      "version": "before",
+      "problem": "time_force",
+      "steps": [
+        20,
+        40,
+        80
+      ],
+      "errors": [
+        0.008999999999999897,
+        0.004499999999999338,
+        0.0022499999999998632
+      ],
+      "order": 0.9999999999998754
+    },
+    {
+      "method": "RKC1",
+      "version": "before",
+      "problem": "nonlinear_forced",
+      "steps": [
+        20,
+        40,
+        80
+      ],
+      "errors": [
+        0.006219404605690204,
+        0.0030853335561662476,
+        0.0015366637614497858
+      ],
+      "order": 1.00562494554398
+    },
+    {
+      "method": "RKC1",
+      "version": "after",
+      "problem": "time_force",
+      "steps": [
+        20,
+        40,
+        80
+      ],
+      "errors": [
+        0.017000000000000126,
+        0.008499999999999397,
+        0.004249999999999865
+      ],
+      "order": 0.9999999999999435
+    },
+    {
+      "method": "RKC1",
+      "version": "after",
+      "problem": "nonlinear_forced",
+      "steps": [
+        20,
+        40,
+        80
+      ],
+      "errors": [
+        0.0070897129706393724,
+        0.003514529702246194,
+        0.0017497911150677892
+      ],
+      "order": 1.0061489399485997
+    },
+    {
+      "method": "RKC2",
+      "version": "before",
+      "problem": "time_force",
+      "steps": [
+        20,
+        40,
+        80
+      ],
+      "errors": [
+        0.023462133086697534,
+        0.011731066543348101,
+        0.0058655332716742725
+      ],
+      "order": 0.9999999999999454
+    },
+    {
+      "method": "RKC2",
+      "version": "before",
+      "problem": "nonlinear_forced",
+      "steps": [
+        20,
+        40,
+        80
+      ],
+      "errors": [
+        0.0026244643653957067,
+        0.0012766066072735227,
+        0.0006295040135517183
+      ],
+      "order": 1.0200265384856853
+    },
+    {
+      "method": "RKC2",
+      "version": "after",
+      "problem": "time_force",
+      "steps": [
+        20,
+        40,
+        80
+      ],
+      "errors": [
+        1.1102230246251565e-16,
+        5.551115123125783e-17,
+        4.996003610813204e-16
+      ],
+      "order": null
+    },
+    {
+      "method": "RKC2",
+      "version": "after",
+      "problem": "nonlinear_forced",
+      "steps": [
+        20,
+        40,
+        80
+      ],
+      "errors": [
+        8.065572361209972e-05,
+        1.9940965865439253e-05,
+        4.957653786719085e-06
+      ],
+      "order": 2.008005859406012
+    },
+    {
+      "method": "RKL2",
+      "version": "before",
+      "problem": "time_force",
+      "steps": [
+        20,
+        40,
+        80
+      ],
+      "errors": [
+        0.02415333333333436,
+        0.012076666666667402,
+        0.006038333333331258
+      ],
+      "order": 1.0000000000005838
+    },
+    {
+      "method": "RKL2",
+      "version": "before",
+      "problem": "nonlinear_forced",
+      "steps": [
+        20,
+        40,
+        80
+      ],
+      "errors": [
+        0.002687826879986366,
+        0.001310781657430593,
+        0.0006471975807360586
+      ],
+      "order": 1.0181492696117533
+    },
+    {
+      "method": "RKL2",
+      "version": "after",
+      "problem": "time_force",
+      "steps": [
+        20,
+        40,
+        80
+      ],
+      "errors": [
+        1.1102230246251565e-16,
+        1.1102230246251565e-16,
+        3.3306690738754696e-16
+      ],
+      "order": null
+    },
+    {
+      "method": "RKL2",
+      "version": "after",
+      "problem": "nonlinear_forced",
+      "steps": [
+        20,
+        40,
+        80
+      ],
+      "errors": [
+        7.454512509663669e-05,
+        1.84392101000852e-05,
+        4.58540422931808e-06
+      ],
+      "order": 2.0076560285730123
+    }
+  ],
+  "qualification": "Actual historical coefficient/driver functions with current shared state helpers; scalar forcing and nonlinear exact exp(-t) references. Null order when component errors reach the roundoff floor. No full historical environment or performance comparison."
+}

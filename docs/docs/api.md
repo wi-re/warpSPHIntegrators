@@ -79,6 +79,11 @@ limitations. W6S4OS has no estimator. See [method choice and contracts](families
 
 ## Stabilized recurrence factories
 
+The fixed `RKC1`, `RKC2` and `RKL2` records now use recurrence-consistent stage
+times and expose final derivative weights on `result.quadrature` and to custom
+finalize hooks. Their s-call cost is unchanged. RKC2/RKL2 retain order two on
+time-dependent problems; passive fields do not drift in the affine recurrence.
+
 `StabilizedRK('rkg2', stages=5)` or `StabilizedRK('rkl2', lambda_max=...)`
 binds RKL1/2 or RKG1/2 for fixed/adaptive runs. `stabilized_coefficients`
 returns immutable recurrence weights and consistent stage times;

@@ -8,6 +8,10 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Fixed
 
+- Derive fixed RKC1/RKC2/RKL2 stage times from their recurrence, restoring
+  nonautonomous order two for RKC2/RKL2. Anchor affine combinations to preserve
+  passive fields and supply finalization quadratures without extra RHS calls.
+
 - Declare SciPy in the test and developer extras so CI's `.[test]` install
   includes the independent pRRK convergence reference and spatial solver checks.
 

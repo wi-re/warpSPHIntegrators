@@ -3821,13 +3821,15 @@
         "constructor": "RKC1"
       },
       "coefficient_modifications": [
-        "No additional transformation recorded here; inspect source and numerical record"
+        "Recurrence coefficients and autonomous map unchanged; stage clocks now follow first-order recurrence consistency",
+        "Affine combinations anchored at the initial state preserve zero-rate fields; reverse-derived derivative weights supplied to finalization"
       ],
-      "evidence": "docs/research/integrators/notes-index.md",
+      "evidence": "docs/development/rkc-clock-validation.md",
       "tests": [
         "tests/test_convergence.py",
         "tests/test_tvd.py",
-        "tests/test_step_reuse.py"
+        "tests/test_step_reuse.py",
+        "tests/test_rkc.py"
       ],
       "intended_consumer": "diffusion-dominated ODEs with stage/spectral bound"
     },
@@ -3848,13 +3850,15 @@
         "constructor": "RKC2"
       },
       "coefficient_modifications": [
-        "No additional transformation recorded here; inspect source and numerical record"
+        "Recurrence coefficients and autonomous map unchanged; stage clocks now follow first-order recurrence consistency",
+        "Affine combinations anchored at the initial state preserve zero-rate fields; reverse-derived derivative weights supplied to finalization"
       ],
-      "evidence": "docs/research/integrators/notes-index.md",
+      "evidence": "docs/development/rkc-clock-validation.md",
       "tests": [
         "tests/test_convergence.py",
         "tests/test_tvd.py",
-        "tests/test_step_reuse.py"
+        "tests/test_step_reuse.py",
+        "tests/test_rkc.py"
       ],
       "intended_consumer": "diffusion-dominated ODEs with stage/spectral bound"
     },
@@ -3875,13 +3879,15 @@
         "constructor": "RKL2"
       },
       "coefficient_modifications": [
-        "No additional transformation recorded here; inspect source and numerical record"
+        "Recurrence coefficients and autonomous map unchanged; stage clocks now follow first-order recurrence consistency",
+        "Affine combinations anchored at the initial state preserve zero-rate fields; reverse-derived derivative weights supplied to finalization"
       ],
-      "evidence": "docs/research/integrators/notes-index.md",
+      "evidence": "docs/development/rkc-clock-validation.md",
       "tests": [
         "tests/test_convergence.py",
         "tests/test_tvd.py",
-        "tests/test_step_reuse.py"
+        "tests/test_step_reuse.py",
+        "tests/test_rkc.py"
       ],
       "intended_consumer": "diffusion-dominated ODEs with stage/spectral bound"
     },

@@ -30,6 +30,7 @@ from warpSPHIntegrators import (
     get_reference_state,
     stage_count,
     testing,
+    TensorState, tensor_rhs, solve,
 )
 
 #: (driver, family key, registered order) for each of the three schemes.
@@ -38,6 +39,60 @@ SCHEMES = [
     (RKC2, 'rkc2', 2),
     (RKL2, 'rkl2', 2),
 ]
+
+
+@pytest.mark.parametrize('scheme,family,order',SCHEMES)
+@pytest.mark.parametrize('s',[1,5,50])
+@pytest.mark.parametrize('h',[.125,-.125])
+def test_every_stage_clock_matches_constant_rate_trajectory(scheme,family,order,s,h):
+    calls=[]
+    def rhs(t,y):
+        calls.append((t,y.clone()));return torch.ones_like(y)
+    start=TensorState(torch.zeros(1,dtype=torch.float64),t=.75)
+    result=scheme(start,h,tensor_rhs(rhs),s=s)
+    for t,y in calls:assert y.item()==pytest.approx(t-.75,rel=0,abs=2e-14)
+    assert result.state.y.item()==pytest.approx(h,rel=0,abs=2e-14)
+    assert len(result.quadrature)==len(result.stages)==len(calls)
+
+
+@pytest.mark.parametrize('scheme',[RKC2,RKL2])
+def test_time_linear_force_is_exact_after_consistent_clock_fix(scheme):
+    for n in [20,40,80]:
+        state=TensorState(torch.zeros(1,dtype=torch.float64))
+        for _ in range(n):state=scheme(state,1/n,tensor_rhs(lambda t,y:torch.full_like(y,t)),s=5).state
+        assert abs(state.y.item()-.5)<2e-14
+
+
+@pytest.mark.parametrize('scheme',[RKC2,RKL2])
+def test_general_nonlinear_time_dependent_problem_retains_order_two(scheme):
+    errors=[]
+    for h in [.1,.05,.025]:
+        state=TensorState(torch.ones(1,dtype=torch.float64))
+        for _ in range(round(1/h)):
+            state=scheme(state,h,tensor_rhs(lambda t,y:-y+.2*y*y-.2*math.exp(-2*t)),s=5).state
+        errors.append(abs(state.y.item()-math.exp(-1)))
+    assert math.log(errors[-2]/errors[-1],2)>1.9,errors
+
+
+@pytest.mark.parametrize('scheme,family,order',SCHEMES)
+@pytest.mark.parametrize('dtype',[torch.float32,torch.float64])
+def test_passive_field_offsets_do_not_drift_in_affine_recurrence(scheme,family,order,dtype):
+    y=torch.tensor([1e8,1.,1e-8],dtype=dtype);state=TensorState(y)
+    for _ in range(10):state=scheme(state,.125,tensor_rhs(lambda t,y:torch.zeros_like(y)),s=50).state
+    assert torch.equal(state.y,y)
+
+
+@pytest.mark.parametrize('scheme,family,order',SCHEMES)
+def test_quantity_finalize_receives_complete_derivative_weights(scheme,family,order):
+    from test_orthogonal import RecurrenceSystem
+    from test_nystrom import system
+    start=RecurrenceSystem(system().state)
+    def rhs(current,dt,**kwargs):
+        s=current.state
+        return testing.ParticleUpdate(s.u,-s.x+.1*s.e,s.e+.2*s.x*s.u),None
+    result=solve({'rkc1':'RKC1','rkc2':'RKC2','rkl2':'RKL2'}[family],start,.25,rhs,dt=.0625,s=5)
+    assert result.successful and result.state.finalized==result.state.initialized==4
+    assert start.finalized==start.initialized==0
 
 
 def _K(family, s):

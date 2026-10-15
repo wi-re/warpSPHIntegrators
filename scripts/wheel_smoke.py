@@ -102,6 +102,9 @@ assert linearized.successful and abs(linearized.state.y.item()-math.exp(-.5))<2e
 orthogonal=solve(OrthogonalRK('ROCK4',lambda_max=100.),TensorState(torch.ones(1,dtype=torch.float64)),.5,
     tensor_rhs(lambda t,y:-y),dt=.125)
 assert orthogonal.successful and abs(orthogonal.state.y.item()-math.exp(-.5))<1e-6
+timed_rkc=solve('RKC2',TensorState(torch.zeros(1,dtype=torch.float64)),.5,
+    tensor_rhs(lambda t,y:torch.full_like(y,t)),dt=.125,s=5)
+assert timed_rkc.successful and abs(timed_rkc.state.y.item()-.125)<1e-14
 alpha = solve(GeneralizedAlpha(.5),mechanics.initial(),.2,mechanics.rhs,dt=.01,
               solver_opts={'matvec':'jvp','tol':1e-12,'newton_tol':1e-7})
 continued = solve(GeneralizedAlpha(.5),None,.35,mechanics.rhs,restart=alpha.checkpoint,

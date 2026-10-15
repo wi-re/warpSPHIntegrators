@@ -65,8 +65,30 @@ damped (Meyer et al., 2014). The driver clamps $s$ to the method's minimum
 (1 for RKC1, 3 for RKC2/RKL2) but does not force parity.
 
 These schemes are explicit one-step methods: `priorStep` is rejected; stage
-times are set to $t + \mathrm{dt}\, j/s$ as a reasonable intermediate time (an
-approximation for non-autonomous RHS).
+times now follow the recurrence's first-order consistency relation. Starting
+with c0=0 and c1=mtilde1, each node is
+`c[j]=mu[j]*c[j-1]+nu[j]*c[j-2]+mtilde[j]+gtilde[j]`.
+This preserves RKC2/RKL2 order on time-dependent problems; the old equally
+spaced approximation reduced them to order one on even `y'=t`.
+
+[example:run fixed-rkc-time-force]: #
+```python
+import torch
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
+
+result = solve('RKC2', TensorState(torch.zeros(1, dtype=torch.float64)), 1.,
+               tensor_rhs(lambda t, y: torch.full_like(y, t)), dt=.05, s=5)
+assert result.successful
+assert abs(result.state.y.item() - .5) < 1e-14
+```
+
+The three fixed methods also anchor affine combinations at the initial state
+so zero-rate fields remain unchanged. `result.quadrature` and the finalize
+hook receive the derived derivative weights, paired with the s physical RHS
+stages. This enables quantity reconstruction without extra evaluations.
+Copied fields still come from the last evaluated stage; the parameterized
+factories below additionally refresh the physical endpoint.
+See [the before/after audit](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/rkc-clock-validation.md).
 
 ## Why not an implicit method? (measured)
 
