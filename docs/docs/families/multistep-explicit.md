@@ -4,8 +4,10 @@ sidebar_label: Multistep (explicit)
 
 # Explicit linear multistep — Adams-Bashforth, PECE & SSPRKMSVS (`MultistepExplicit`) — 10 schemes
 
-The explicit linear multistep family, driven by `multistep.py` (the Adams
-family) and `ssprkmsvs.py` (Shu's SSP multistep, below):
+Adams methods reuse accepted derivatives to reduce the number of new force evaluations. They need a trustworthy recent history and are intended for nonstiff equations. Startup, changing step sizes and discontinuities are part of their behavior, not free exceptions to the advertised order.
+
+The explicit linear multistep family, driven by `drivers.history.adams` (the Adams
+family) and `drivers.history.ssp` (Shu's SSP multistep, below):
 
 $$
 y^{n+1} = y^n + \mathrm{dt}\, \sum_{j=0}^{p-1} \beta_j\, f^{n-j},
@@ -28,7 +30,8 @@ pinned source's divided-difference helpers on constant and irregular histories.
 ```python
 import math
 import torch
-from warpSPHIntegrators import VariableAdams, TensorState, tensor_rhs, solve
+from warpSPHIntegrators.schemes import VariableAdams
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
 
 method = VariableAdams(4, 'abm')
 result = solve(method, TensorState(torch.ones(1, dtype=torch.float64)), 1.,
@@ -68,7 +71,8 @@ one step. Direct calls and fixed-step runs keep their current target order.
 ```python
 import math
 import torch
-from warpSPHIntegrators import AdaptiveAdams, TensorState, tensor_rhs, solve
+from warpSPHIntegrators.schemes import AdaptiveAdams
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
 
 records = []
 method = AdaptiveAdams(max_order=5)
@@ -146,12 +150,11 @@ So ABM costs **2 evaluations per step** after startup: current and predicted
 endpoint. Its explicit correction avoids the nonlinear solve of
 [implicit Adams-Moulton](multistep-implicit) and has conditional stability. The pairing of the
 order-$p$ AB predictor with the order-$p$ AM corrector is what makes the PECE
-scheme order $p$ (NOTES.md §3.6).
+scheme order $p$ (see the numerical record).
 
 ## SSP multistep (SSPRKMSVS32 / SSPRKMSVS43)
 
-Shu's strong-stability-preserving multistep methods (`ssprkmsvs.py`, NOTES.md
-§3.23), wave 3 of the scheme expansion. Unlike the Adams methods, the
+Shu's strong-stability-preserving multistep methods (`drivers.history.ssp`, the numerical record). Unlike the Adams methods, the
 steady-state step is a **convex combination of forward-Euler substeps across
 past states**, so the `StepHistory` carries a state snapshot plus the
 step-start derivative (the same `HistoryEntry.state` mechanism BDF uses):
@@ -172,21 +175,20 @@ The tight SSP bounds ($C = 1/2$, $1/3$) are a *structural* property of the
 steady-state convex combination. The measured per-step TVD sweep records
 $1.5$ for both — the shared Dormand-Prince cold-start limit (the sweep does
 not thread history, so the driver re-runs its starter every step), the same
-cap the whole multistep family carries (NOTES.md §3.23).
+cap the whole multistep family carries (see the numerical record).
 
 ## History and cold start
 
-The schemes carry derivative history in a `StepHistory` (NOTES.md S2): a cold
+The schemes carry derivative history in a `StepHistory` (see the numerical record): a cold
 call (fewer than $p-1$ entries) runs **Dormand-Prince 5(4)** for that step and
 records the history — a high-order, order-faithful startup, so the run is never
-silently wrong, just at the starter's cost until the history fills (NOTES.md
-§3.7). `priorStep` reuse is not the mechanism here — the history *is* the
+silently wrong, just at the starter's cost until the history fills (see the numerical record). `priorStep` reuse is not the mechanism here — the history *is* the
 reuse: each step's stored $f^{n}$ is exactly what the next step's formula
 needs.
 
 The measured cold-start TV jump ($+1.333\times10^{-2}\cdot\mathrm{TV}_0$, gone
 after five steps) is shared by every self-starting multistep scheme and is not
-a property of the step map (NOTES.md §3.11).
+a property of the step map (see the numerical record).
 
 ## Stability and TVD
 
@@ -194,7 +196,7 @@ Zero-stable, with bounded real-axis stability regions that shrink with order
 (AB2: $[-1, 0]$; AB3: $\approx[-0.54, 0]$; AB4: $\approx[-0.32, 0]$;
 AB5: $\approx[-0.17, 0]$) — nothing here is A-stable. Per-step TVD measured to
 CFL 1.5 (tested to CFL 5), shared by the whole multistep family, explicit and
-implicit (NOTES.md §3.11).
+implicit (see the numerical record).
 
 ## When to use
 
@@ -219,3 +221,5 @@ implicit (NOTES.md §3.11).
 **Tests:** `tests/test_multistep.py` (orders, the startup, the PECE cost
 accounting, the SSPRKMSVS one-evaluation steady state and fixed-step contract,
 stability).
+
+[The numerical record](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/research/integrators/notes-index.md) retains derivations, source pins and measured property gates.

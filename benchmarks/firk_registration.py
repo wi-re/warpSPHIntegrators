@@ -5,7 +5,7 @@ import math
 from pathlib import Path
 import time
 import torch
-from warpSPHIntegrators import TensorState,tensor_rhs,getIntegrator
+from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme
 
 
 def main():
@@ -25,7 +25,7 @@ def main():
                 rhs=tensor_rhs(f);iterations=0;start=time.perf_counter()
                 end=2. if problem=='oscillator' else .4
                 for _ in range(round(end/h)):
-                    result=getIntegrator(name)(state,h,rhs,solver_opts=dict(matvec='jvp',tol=1e-13,newton_tol=1e-9))
+                    result=get_scheme(name)(state,h,rhs,solver_opts=dict(matvec='jvp',tol=1e-13,newton_tol=1e-9))
                     if not result.step_status.tolerance_converged:raise RuntimeError(f'{name} {problem} did not converge')
                     iterations+=sum(d.gmres_iterations for d in result.solver_diagnostics)/3 if name in ('Gauss-Legendre 3','Radau IIA s=3') else sum(d.gmres_iterations for d in result.solver_diagnostics)/2
                     state=result.state

@@ -1,0 +1,49 @@
+{
+  "device": "cpu",
+  "dtype": "torch.float64",
+  "cuda_available": false,
+  "imports": [
+    {
+      "module": "warpSPH.configurations.simulationConfig",
+      "file": "/home/lu26029/dev/warpSPH/src/warpSPH/configurations/simulationConfig.py"
+    },
+    {
+      "module": "warpSPH.systems.baseState",
+      "file": "/home/lu26029/dev/warpSPH/src/warpSPH/systems/baseState.py"
+    },
+    {
+      "module": "warpSPH.systems.compSPH",
+      "file": "/home/lu26029/dev/warpSPH/src/warpSPH/systems/compSPH.py"
+    },
+    {
+      "module": "warpSPH.systems.weaklyCompressible",
+      "file": "/home/lu26029/dev/warpSPH/src/warpSPH/systems/weaklyCompressible.py"
+    },
+    {
+      "module": "warpSPH.systems.incompressible",
+      "file": "/home/lu26029/dev/warpSPH/src/warpSPH/systems/incompressible.py"
+    },
+    {
+      "module": "warpSPH.systems.artificialCompressible",
+      "file": "/home/lu26029/dev/warpSPH/src/warpSPH/systems/artificialCompressible.py"
+    },
+    {
+      "module": "warpSPH.runner.runner",
+      "file": "/home/lu26029/dev/warpSPH/src/warpSPH/runner/runner.py"
+    },
+    {
+      "module": "warpSPH.io.export",
+      "file": "/home/lu26029/dev/warpSPH/src/warpSPH/io/export.py"
+    }
+  ],
+  "checks": [
+    "actual configuration build and serialized enum roundtrip",
+    "actual BaseSystem typed updates, finalize and in-memory restart on oscillator",
+    "actual BaseSystem deferred tensor clock hook on CPU"
+  ],
+  "python_files": 56,
+  "notebooks": 26,
+  "validated_import_bindings": 30,
+  "qualification": "Actual local CPU consumer imports/configuration/state/finalize/restart/clock. Integrator import edges are checked in Python and parseable notebook cells; research notebooks are not executed. No CUDA graph, GPU physics, PESPH or frontend feature integration claim.",
+  "seconds": 16.141267763916403
+}

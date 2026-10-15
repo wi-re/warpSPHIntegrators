@@ -18,31 +18,26 @@ import pytest
     {'preconditioning':'typo'}, {'line_search_min_step':2}, {'line_search':'yes'},
 ])
 def test_invalid_solver_overrides_fail_before_evaluating_rhs(options):
-    from warpSPHIntegrators import JFNKSolver, testing
+    from warpSPHIntegrators.solvers import JFNKSolver
+    import warpSPHIntegrators.testing as testing
     def step(state):
         pytest.fail('invalid options must fail before the stage map runs')
     with pytest.raises(ValueError):
         JFNKSolver().solve(step, testing.oscillator_problem().initial(), **options)
 import torch
 
-from warpSPHIntegrators import (
-    FixedPointSolver,
-    JFNKSolver,
-    get_reference_state,
-    getIntegrator,
-    gmres,
-    testing,
-)
-from warpSPHIntegrators.dirk import DIRK, getDIRKTableau
-from warpSPHIntegrators.fields import (
-    flatten_integrated,
-    integrated_field_names,
-    unflatten_integrated,
-)
-from warpSPHIntegrators.jfnk import fd_matvec, jvp_matvec
+from warpSPHIntegrators.solvers import FixedPointSolver, JFNKSolver, gmres
+from warpSPHIntegrators.state import get_reference_state
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.drivers.implicit.dirk import DIRK
+from warpSPHIntegrators.schemes.coefficients.implicit import getDIRKTableau
+from warpSPHIntegrators.state import flatten_integrated, integrated_field_names, unflatten_integrated
+from warpSPHIntegrators.solvers import fd_matvec, jvp_matvec
 from warpSPHIntegrators.solvers import SolveResult
 from warpSPHIntegrators.testing import ParticleState, ParticleSystem
-from warpSPHIntegrators.util import updateStateEuler, updateStep
+from warpSPHIntegrators.state import updateStateEuler
+from warpSPHIntegrators.state.lifecycle import updateStep
 
 
 # --------------------------------------------------------------------------- #

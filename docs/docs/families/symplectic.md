@@ -4,6 +4,8 @@ sidebar_label: Symplectic
 
 # Symplectic / geometric position-velocity methods (`Symplectic`) — 6 schemes
 
+Use these methods when long-time mechanical behavior matters. Preserving phase-space geometry can keep energy error bounded without preserving the exact energy at every step. The force assumptions below matter: a method suitable for separable undamped mechanics need not keep its order with velocity-dependent drag.
+
 Integrators for the **second-order-ODE form** $x'' = f(t, x, v)$ written as the
 position/velocity first-order system. They split each step into *drift*
 (position) and *kick* (velocity) substeps. For a **separable** Hamiltonian —
@@ -14,7 +16,7 @@ oscillation around the true energy.
 :::note
 The separability caveat is load-bearing and measured, not folklore: with a
 **velocity-dependent** force Leap Frog, Velocity Verlet, PEFRL and VEFRL drop to
-first order (NOTES.md, "Still open"). The second-order Symplectic Euler variant
+first order (see the numerical record). The second-order Symplectic Euler variant
 retains order two on the tested damped problems; the order-one member is unaffected.
 :::
 
@@ -136,3 +138,5 @@ and solve assumptions — see [coupled-rk](coupled-rk).
 **Tests:** `tests/test_hamiltonian.py` (symplecticity, area defects, energy
 drift classification), `tests/test_convergence.py` (orders, including the
 velocity-dependent-force order drop).
+
+[The numerical record](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/research/integrators/notes-index.md) retains derivations, source pins and measured property gates.

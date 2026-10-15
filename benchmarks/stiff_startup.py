@@ -13,11 +13,12 @@ import sys
 import time
 
 import torch
-from warpSPHIntegrators import TensorState,tensor_rhs,getIntegrator,StepHistory
+from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme
+from warpSPHIntegrators.state import StepHistory
 
 
 def trajectory(name,h,rate,mode,end,frequency=4.):
-    method=getIntegrator(name);needed=method.metadata.history_length
+    method=get_scheme(name);needed=method.metadata.history_length
     state=TensorState(torch.ones(1,dtype=torch.float64));history=StepHistory(needed)
     f=tensor_rhs(lambda t,y:-rate*(y-math.sin(frequency*t))+frequency*math.cos(frequency*t))
     options=dict(matvec='jvp',tol=1e-12,newton_tol=1e-10)
@@ -26,7 +27,7 @@ def trajectory(name,h,rate,mode,end,frequency=4.):
         nonlocal work
         work+=1;return f(system,dt,**kwargs)
     for i in range(round(end/h)):
-        scheme=getIntegrator('BDF1') if mode=='BE-control' and i<needed else method
+        scheme=get_scheme('BDF1') if mode=='BE-control' and i<needed else method
         result=scheme(state,h,counted,history=history,
                       startup='explicit' if mode=='explicit' else 'implicit',solver_opts=options)
         failures+=int(not result.step_status.successful);floors+=int(result.step_status.precision_floor)

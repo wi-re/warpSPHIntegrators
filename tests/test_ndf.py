@@ -8,10 +8,15 @@ import pytest
 import torch
 from dataclasses import dataclass
 
-from warpSPHIntegrators import (NDF,ndf_difference_transform,TensorState,tensor_rhs,StepHistory,
-    HistoryEntry,solve,save_checkpoint,load_checkpoint)
-from warpSPHIntegrators import (NDFQuadrature,BaseState,integrated,copied,constant,reference_state,
-    testing,JFNKSolver,SolveResult)
+from warpSPHIntegrators.schemes import NDF
+from warpSPHIntegrators.schemes.coefficients.ndf import ndf_difference_transform
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
+from warpSPHIntegrators.state import StepHistory, HistoryEntry
+from warpSPHIntegrators.runtime import save_checkpoint, load_checkpoint
+from warpSPHIntegrators.schemes.families.ndf import NDFQuadrature
+from warpSPHIntegrators.state import BaseState, integrated, copied, constant, reference_state
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.solvers import JFNKSolver, SolveResult
 
 SOURCE=json.loads((Path(__file__).parents[1]/'scripts/coefficients/wave10/ndf.json').read_text())
 OPTIONS=dict(matvec='jvp',tol=1e-15,newton_tol=1e-10)
@@ -149,7 +154,7 @@ def test_warm_defect_exponent_on_exact_polynomial_history(order):
 
 
 def test_fifth_order_constant_step_main_weights_are_bdf5():
-    from warpSPHIntegrators.bdf import getBDFCoefficients
+    from warpSPHIntegrators.drivers.history.bdf import getBDFCoefficients
     p=5;method=NDF(p);h=np.cumsum(1/np.arange(1,p+1))
     weights=[float(i==0)+sum((1-method.beta*h[j-1])*(-1)**i*math.comb(j,i)
         for j in range(max(1,i),p+1)) for i in range(p+1)]
@@ -160,7 +165,7 @@ def test_fifth_order_constant_step_main_weights_are_bdf5():
 
 @pytest.mark.parametrize('order',[1,2,3,4,5])
 def test_fixed_step_characteristic_roots_include_negative_real_decay(order):
-    from warpSPHIntegrators.bdf import getBDFCoefficients
+    from warpSPHIntegrators.drivers.history.bdf import getBDFCoefficients
     weights,beta=getBDFCoefficients(order)
     rho=np.r_[1/beta,-np.asarray(weights)/beta,0.]
     harmonic=sum(1/j for j in range(1,order+1))
@@ -254,7 +259,7 @@ def test_invalid_histories_state_edits_ratio_and_uid_changes_restart_before_use(
     method=NDF(2);rhs=tensor_rhs(force)
     first=solve(method,TensorState(torch.ones(1,dtype=torch.float64)),.3,rhs,dt=.025,solver_opts=OPTIONS)
     for mode in ['state','ratio','explicit','foreign','nonfinite']:
-        from warpSPHIntegrators import snapshot_state
+        from warpSPHIntegrators.runtime import snapshot_state
         current=snapshot_state(first.state);history=snapshot_state(first.history);h=.025;options={}
         if mode=='state':current.state.y=current.y+1
         if mode=='ratio':h=.2

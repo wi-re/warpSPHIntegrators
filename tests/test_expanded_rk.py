@@ -8,8 +8,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 import torch
-from warpSPHIntegrators import (ExpandedRK,expanded_rk_methods,expanded_rk_tableau,TensorState,
-    tensor_rhs,solve,Strang,ConservativeDissipativeRHS,AlgorithmSwitch,save_checkpoint,load_checkpoint)
+from warpSPHIntegrators.schemes import ExpandedRK
+from warpSPHIntegrators.schemes.coefficients.expanded import expanded_rk_methods, expanded_rk_tableau
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
+from warpSPHIntegrators.wrappers import Strang, ConservativeDissipativeRHS, AlgorithmSwitch
+from warpSPHIntegrators.runtime import save_checkpoint, load_checkpoint
 
 ROOT=Path(__file__).parents[1]
 SOURCE=json.loads((ROOT/'scripts/coefficients/wave16/oracle.json').read_text())
@@ -135,7 +138,7 @@ def test_generated_package_and_screen_records_are_current():
 
 def test_full_state_lifecycle_stage_weights_stage_indices_and_rerun_protocol():
     from test_ndf import System,system
-    from warpSPHIntegrators import testing
+    import warpSPHIntegrators.testing as testing
     @dataclass
     class Consumer(System):
         rerun_seen: bool=False

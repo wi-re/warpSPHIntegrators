@@ -7,9 +7,14 @@ from dataclasses import dataclass, field
 import pytest
 import torch
 
-from warpSPHIntegrators import Rosenbrock, TensorState, tensor_rhs, solve, rosenbrock_tableau
-from warpSPHIntegrators import (RosenbrockQuadrature, flatten_integrated, save_checkpoint,
-    load_checkpoint, testing, AlgorithmSwitch, Strang)
+from warpSPHIntegrators.schemes import Rosenbrock
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
+from warpSPHIntegrators.schemes.coefficients.rosenbrock import rosenbrock_tableau
+from warpSPHIntegrators.schemes.families.linearized import RosenbrockQuadrature
+from warpSPHIntegrators.state import flatten_integrated
+from warpSPHIntegrators.runtime import save_checkpoint, load_checkpoint
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.wrappers import AlgorithmSwitch, Strang
 from test_nystrom import System, system
 
 SOURCE=json.loads((Path(__file__).parents[1]/'scripts/coefficients/wave11/rosenbrock.json').read_text())

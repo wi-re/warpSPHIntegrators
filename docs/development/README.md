@@ -36,3 +36,5 @@ new links should target the maintained directories directly.
 [Adaptive Adams accepted-order control and known-consumer validation](adaptive-adams-validation.md).
 
 [Improved Nyström source-path failures and corrected-history controls](irkn-source-audit.md).
+
+[0.7 package/API migration, consumer checks and user documentation validation](package-refactor-validation.md).

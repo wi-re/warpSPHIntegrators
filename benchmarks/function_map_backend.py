@@ -7,7 +7,9 @@ import platform
 import sys
 import time
 import torch
-from warpSPHIntegrators import FunctionMap,tensor_map,TensorState,tensor_rhs,solve,getIntegrator
+from warpSPHIntegrators.schemes import FunctionMap
+from warpSPHIntegrators.adapters import tensor_map
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -18,7 +20,7 @@ def measurements():
         omega=torch.linspace(.1,10,n,dtype=torch.float64);gamma=torch.linspace(.1,1,n,dtype=torch.float64)
         initial=torch.stack((torch.ones_like(omega),torch.zeros_like(omega),torch.zeros_like(omega)))
         exact=torch.stack((torch.exp(-gamma)*torch.cos(omega),-torch.exp(-gamma)*torch.sin(omega),.5*(1-torch.exp(-2*gamma))))
-        for method in (FunctionMap(),getIntegrator('RK4'),getIntegrator('dormandPrince')):
+        for method in (FunctionMap(),get_scheme('RK4'),get_scheme('dormandPrince')):
             for h in (.2,.1,.05):
                 calls=0
                 def mapping(t,y,dt):
@@ -54,8 +56,8 @@ def measurements():
     return dict(device='cpu',dtype='float64',threads=1,python=sys.version,torch=torch.__version__,platform=platform.platform(),
         cases=rows,affine_recurrences=recurrences,qualification='Analytic damped planar rotation with generated heat and exact affine discrete recurrences. Map calls return complete states and cost more than a derivative evaluation; entry counts alone are not speed comparisons. The analytic map is exact for this understood model, not a generic exact ODE solver. No adaptive/error/order claim for direct maps.',
         source_sha256={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (
-            ROOT/'src/warpSPHIntegrators/function_map.py',ROOT/'src/warpSPHIntegrators/run.py',
-            ROOT/'src/warpSPHIntegrators/specs.py',Path(__file__).resolve())})
+            ROOT/'src/warpSPHIntegrators/schemes/families/function_map.py',ROOT/'src/warpSPHIntegrators/runtime/run.py',
+            ROOT/'src/warpSPHIntegrators/state/specs.py',Path(__file__).resolve())})
 
 
 if __name__=='__main__':

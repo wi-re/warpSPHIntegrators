@@ -12,7 +12,7 @@ from pathlib import Path
 import re
 import sys
 
-from warpSPHIntegrators import FAMILY_ENUMS, IntegrationSchemes
+from warpSPHIntegrators.schemes import FAMILY_ENUMS, IntegrationSchemes
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,7 +33,7 @@ FAMILY_PAGES = {
 # Documentation labels, keyed by the stable public enum spelling. Author names
 # and constructions follow the cited family pages and coefficient source notes.
 # Keep legacy lookup names in snapshot()['schemes'][...]['name']; a friendly
-# label is presentation, not a new getIntegrator string alias.
+# label is presentation, not a new get_scheme string alias.
 FRIENDLY_NAMES = {
     'rungeKutta2': 'Explicit midpoint (Runge–Kutta 2)',
     'rungeKutta3': 'Classical Runge–Kutta 3',
@@ -189,8 +189,8 @@ def catalog_markdown(data):
              'are optional; KenCarp/ARS DIRKs supply their pure implicit tableaus.',
              'Stability labels and reuse qualifications are explained in the family pages.', '',
              'Friendly names spell out authors and method constructions. The enum column',
-             'gives the exact family member accepted by `getIntegrator`, for example',
-             '`getIntegrator(ExplicitRK.tsit5)` for Tsitouras 5(4). Family members share',
+             'gives the exact family member accepted by `get_scheme`, for example',
+             '`get_scheme(ExplicitRK.tsit5)` for Tsitouras 5(4). Family members share',
              'their values with `IntegrationSchemeType`. Existing lookup strings keep',
              'their original spelling; these documentation labels do not add string aliases.', '']
     for family in data['families']:
@@ -277,14 +277,14 @@ def artifacts(root=ROOT):
         Path('docs/docs/catalog.md'): catalog_markdown(data),
     }
     for page in ('README.md', 'docs/docs/index.md', 'docs/docs/selection.md',
-                 'docs/development/usage-reference.md', 'docs/docs/tensor-ode.md'):
+                 'docs/development/usage-reference.md', 'docs/docs/tensor-ode.md', 'docs/docs/quickstart.md'):
         text = (root / page).read_text()
         if '[catalog:summary:start]' in text:
             text = region(text, 'summary', summary_text(data))
         if page == 'README.md' and '[catalog:schemes:start]' in text:
             text = region(text, 'schemes', readme_catalog(data))
         # Included examples are displayed verbatim.
-        if page in ('README.md', 'docs/docs/index.md', 'docs/docs/tensor-ode.md'):
+        if page in ('README.md', 'docs/docs/index.md', 'docs/docs/tensor-ode.md', 'docs/docs/quickstart.md'):
             text = re.sub(r'(\[example:include ([^\n]+)\]: #\n```python\n).*?^```',
                           lambda m: m[1] + (root / m[2]).read_text() + '```',
                           text, flags=re.M | re.S)

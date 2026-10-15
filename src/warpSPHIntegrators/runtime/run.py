@@ -1,0 +1,386 @@
+"""Transactional fixed/adaptive run orchestration over registered single steps.
+
+State-owned buffers are isolated. External effects require explicit transaction
+hooks; callbacks/events must otherwise treat inputs as read-only. No solver,
+coefficient, or existing single-step acceptance semantics are replaced here.
+"""
+
+from warpSPHIntegrators.state.ownership import StepStatus, assess_step, snapshot_state, _finite_integrated
+
+from dataclasses import dataclass, replace
+
+
+import math
+from numbers import Real
+from collections.abc import Mapping
+from typing import Any
+
+
+import torch
+
+from warpSPHIntegrators.runtime.adaptive import propose_dt, dormand_prince_dense_output
+from warpSPHIntegrators.state.fields import _maybe_reference_state, integrated_field_names
+from warpSPHIntegrators.state.history import StepHistory
+from warpSPHIntegrators.schemes.registry import get_scheme
+from warpSPHIntegrators.state.specs import IntegrationResult
+
+
+@dataclass(frozen=True)
+class RunSample:
+    t: float
+    state: Any
+
+
+@dataclass(frozen=True)
+class StepRecord:
+    dt: float
+    result: IntegrationResult
+    status: StepStatus
+    error_norm: float | None
+
+
+@dataclass(frozen=True)
+class RunCheckpoint:
+    scheme: str
+    state: Any
+    history: StepHistory
+    prior_step: Any
+    last_dt: float | None
+    next_dt: float
+    configuration: dict
+
+
+@dataclass(frozen=True)
+class RunResult:
+    state: Any
+    history: StepHistory
+    prior_step: Any
+    last_dt: float | None
+    next_dt: float
+    accepted_steps: int
+    rejected_steps: int
+    attempts: int
+    samples: tuple
+    events: tuple
+    termination: str
+    checkpoint: RunCheckpoint
+
+    @property
+    def successful(self):
+        return self.termination in ('finished', 'event', 'callback')
+
+
+class RunError(RuntimeError):
+    def __init__(self, result):
+        self.result = result
+        super().__init__(f'Run stopped at t={result.state.t}: {result.termination}')
+
+
+def _positive(name, value, *, zero=False):
+    if isinstance(value, bool) or not isinstance(value, Real) or not math.isfinite(value) or value < 0 or (not zero and value == 0):
+        raise ValueError(f'{name} must be finite and {"nonnegative" if zero else "positive"}')
+    return float(value)
+
+
+def _tolerances(value, names, name, default):
+    if isinstance(value, Mapping):
+        if not set(value) <= set(names):
+            raise ValueError(f'Unknown {name} fields: {set(value)-set(names)}')
+        return {field: _positive(name, value.get(field, default), zero=True) for field in names}
+    return {field: _positive(name, value, zero=True) for field in names}
+
+
+def _error_norm(result, previous, rtol, atol):
+    error = _maybe_reference_state(result.error)
+    new = _maybe_reference_state(result.state)
+    old = _maybe_reference_state(previous)
+    total, count = 0., 0
+    for name in integrated_field_names(result.state):
+        value = getattr(error, name)
+        scale = atol[name] + rtol[name] * torch.maximum(getattr(old, name).abs(), getattr(new, name).abs())
+        weighted = torch.where(scale > 0, value/scale, torch.where(value == 0, 0., float('inf')))
+        total += float(weighted.detach().square().sum())
+        count += weighted.numel()
+    return math.sqrt(total/count) if count else 0.
+
+
+def solve(scheme, state, t_end, f, *, dt=None, adaptive=None, rtol=None, atol=None,
+          dt_min=None, dt_max=None, max_steps=100000, max_attempts=200000,
+          max_rejections=1000, history=None, reuse=None, allow_stagnation=None,
+          sample_times=(), save_steps=False, callback=None, transaction=None,
+          snapshot=snapshot_state, restart=None, events=(), raise_on_failure=True,
+          rhs_args=(), **step_options):
+    """Integrate to t_end, committing only accepted state/history/side effects.
+
+    The callback receives an isolated StepRecord after commit; False stops cleanly.
+    External transactions implement begin(state), commit(token, result), rollback(token).
+    Without those hooks, RHS/lifecycle effects must stay inside the owned state.
+    Sampling never changes the numerical grid: off-grid samples require DP5 dense
+    output. Events/checkpoints extend this contract through the helpers below.
+    """
+    scheme = get_scheme(scheme)
+    if restart is not None:
+        if restart.scheme != scheme.identifier.name:
+            raise ValueError('Checkpoint scheme does not match')
+        if state is not None:
+            raise ValueError('Pass state=None when restarting')
+        state = restart.state
+        adaptive = restart.configuration['adaptive'] if adaptive is None else adaptive
+        if adaptive != restart.configuration['adaptive']:
+            raise ValueError('Checkpoint stepping mode does not match')
+        dt = restart.next_dt if dt is None else dt
+        rtol = restart.configuration['rtol'] if rtol is None else rtol
+        atol = restart.configuration['atol'] if atol is None else atol
+        history = restart.history if history is None else history
+        dt_min = restart.configuration['dt_min'] if dt_min is None else dt_min
+        dt_max = restart.configuration['dt_max'] if dt_max is None else dt_max
+        reuse = restart.configuration['reuse'] if reuse is None else reuse
+        allow_stagnation = restart.configuration['allow_stagnation'] if allow_stagnation is None else allow_stagnation
+    adaptive = False if adaptive is None else adaptive
+    reuse = True if reuse is None else reuse
+    allow_stagnation = False if allow_stagnation is None else allow_stagnation
+    for name,value in (('adaptive',adaptive),('reuse',reuse),('allow_stagnation',allow_stagnation),('save_steps',save_steps),('raise_on_failure',raise_on_failure)):
+        if type(value) is not bool:
+            raise ValueError(f'{name} must be a bool')
+    t0 = float(state.t); end = float(t_end)
+    if not math.isfinite(t0) or not math.isfinite(end):
+        raise ValueError('Run times must be finite')
+    direction = 1 if end >= t0 else -1
+    step_size = _positive('dt', dt if dt is not None else 1. if t0 == end else float('nan'))
+    minimum = _positive('dt_min', 1e-14 if dt_min is None else dt_min)
+    maximum = _positive('dt_max', dt_max if dt_max is not None else max(step_size, abs(end-t0)))
+    if maximum < minimum:
+        raise ValueError('dt_max must be >= dt_min')
+    for name,value in (('max_steps',max_steps),('max_attempts',max_attempts),('max_rejections',max_rejections)):
+        if type(value) is not int or value < 1:
+            raise ValueError(f'{name} must be a positive integer')
+    if adaptive and (not scheme.metadata.has_error_estimate or
+                     scheme.metadata.history_length and scheme.metadata.history_requires_constant_dt):
+        raise ValueError('Adaptive runs require an estimate-emitting scheme with variable-step history support')
+    if 'priorStep' in step_options:
+        raise ValueError('The runner owns priorStep; use a checkpoint to resume reuse')
+    current = snapshot(state)
+    names = integrated_field_names(current)
+    if not names:
+        raise ValueError('Runner requires integrated tensor fields')
+    rel = _tolerances(1e-3 if rtol is None else rtol, names, 'rtol', 1e-3)
+    absolute = _tolerances(1e-6 if atol is None else atol, names, 'atol', 1e-6)
+    if any(rel[name] == absolute[name] == 0 for name in names):
+        raise ValueError('Each field needs a positive absolute or relative tolerance')
+    history = snapshot(history) if history is not None else StepHistory(maxlen=max(1,scheme.metadata.history_length))
+    if history.maxlen < scheme.metadata.history_length:
+        raise ValueError('History capacity is too small for the chosen method')
+    prior = snapshot(restart.prior_step) if restart is not None else None
+    last_dt = restart.last_dt if restart is not None else None
+    nominal = restart.configuration['nominal_dt'] if restart is not None and not adaptive else step_size
+    configuration = dict(adaptive=adaptive, rtol=rel, atol=absolute, nominal_dt=nominal,
+                         dt_min=minimum, dt_max=maximum, reuse=reuse, allow_stagnation=allow_stagnation)
+    accepted = rejected = attempts = 0
+    samples = []; hits = []
+    requested = tuple(float(t) for t in sample_times)
+    if any(not math.isfinite(t) or direction*(t-t0) < 0 or direction*(end-t) < 0 for t in requested):
+        raise ValueError('sample_times must be finite and within the run interval')
+    if any(direction*(b-a) <= 0 for a,b in zip(requested,requested[1:])):
+        raise ValueError('sample_times must be strictly ordered in the run direction')
+    if not scheme.metadata.dense_output:
+        for t in requested:
+            if t in (t0,end):
+                continue
+            if adaptive or not math.isclose((t-t0)/ (direction*nominal), round((t-t0)/(direction*nominal)), rel_tol=0, abs_tol=1e-10):
+                raise ValueError('Off-grid sampling requires Dormand-Prince dense output')
+    events = tuple(events)
+    if any(not isinstance(event, Event) for event in events):
+        raise TypeError('events must contain Event objects')
+    if events and not scheme.metadata.dense_output:
+        raise ValueError('Event localization requires Dormand-Prince dense output')
+    if transaction is not None and not all(callable(getattr(transaction, key, None)) for key in ('begin','commit','rollback')):
+        raise TypeError('transaction needs begin, commit and rollback hooks')
+    def finish(reason):
+        saved = snapshot(current)
+        cp = RunCheckpoint(scheme.identifier.name, snapshot(current), snapshot(history),
+                           snapshot(prior), last_dt, step_size, snapshot(configuration))
+        result = RunResult(saved, snapshot(history), snapshot(prior), last_dt, step_size,
+                           accepted, rejected, attempts, tuple(samples), tuple(hits), reason, cp)
+        if not result.successful and raise_on_failure:
+            raise RunError(result)
+        return result
+    def sample(t, value):
+        if not samples or samples[-1].t != t:
+            samples.append(RunSample(t, snapshot(value)))
+    if not _finite_integrated(current):
+        return finish('nonfinite_input')
+    sample(t0,current)
+    index = int(bool(requested) and requested[0] == t0)
+    event_values = [_event_value(event,current,snapshot) for event in events]
+    if restart is None:
+        for i,(event,value) in enumerate(zip(events,event_values)):
+            if value == 0:
+                hits.append(EventHit(i,event.name,t0,snapshot(current)))
+                if event.terminal:
+                    return finish('event')
+    while direction*(end-float(current.t)) > 0:
+        if accepted >= max_steps:
+            return finish('max_steps')
+        if attempts >= max_attempts:
+            return finish('max_attempts')
+        if rejected >= max_rejections:
+            return finish('max_rejections')
+        remaining = abs(end-float(current.t))
+        h = min(step_size, maximum, remaining)
+        # Repeated additions can leave a roundoff-sized remainder after the
+        # intended last step. Even a near-zero extra step advances algorithmic
+        # memory. Bound accumulated time rounding when clipping to the endpoint.
+        time_roundoff = 4*(accepted+1)*max(math.ulp(t0),math.ulp(end))
+        if math.isclose(h,remaining,rel_tol=0,abs_tol=time_roundoff):
+            h = remaining
+        if (h < minimum and remaining > minimum) or float(current.t)+direction*h == float(current.t):
+            return finish('min_dt')
+        signed_h = direction*h
+        trial = snapshot(current)
+        trial_history = snapshot(history)
+        same_dt = last_dt is not None and math.isclose(last_dt,signed_h,rel_tol=1e-12,abs_tol=0)
+        if (scheme.metadata.history_requires_constant_dt and trial_history.latest is not None
+                and not math.isclose(trial_history.latest.dt,signed_h,rel_tol=1e-12,abs_tol=0)):
+            trial_history = StepHistory(history.maxlen)  # reset BEFORE the formula consumes history
+        options = dict(step_options, history=trial_history)
+        if reuse and scheme.fsal and same_dt and prior is not None:
+            options['priorStep'] = snapshot(prior)
+        token = transaction.begin(snapshot(current)) if transaction is not None else None
+        active = transaction is not None
+        attempts += 1
+        try:
+            result = scheme(trial, signed_h, f, *rhs_args, **options)
+            estimate_order = scheme.metadata.estimate_order if result.estimate_order is None else result.estimate_order
+            if adaptive and (type(estimate_order) is not int or estimate_order<1):
+                raise ValueError('Estimate order must be a positive integer')
+            status = assess_step(result)
+            if status.finite and not math.isclose(float(result.state.t), float(current.t)+signed_h,rel_tol=0,abs_tol=4*math.ulp(float(current.t)+signed_h)):
+                raise ValueError('Step returned an incorrect final time')
+            error = (_error_norm(result,current,rel,absolute) if adaptive and status.successful else None)
+            acceptable = status.successful and (allow_stagnation or not status.precision_floor)
+            acceptable = acceptable and (not adaptive or (math.isfinite(error if error is not None else float('inf')) and error <= 1))
+            if not acceptable:
+                if transaction is not None:
+                    transaction.rollback(token)
+                    active = False
+                rejected += 1
+                if not adaptive:
+                    return finish(status.termination if status.termination != 'completed' else 'step_failure')
+                new_size = propose_dt(error,h,estimate_order) if error is not None and math.isfinite(error) else h*.2
+                step_size = min(h*.9,new_size)
+                continue
+            end_values = [_event_value(event,result.state,snapshot) for event in events]
+            located = _locate_events(events,event_values,end_values,snapshot(current),result,signed_h,options,rhs_args,snapshot)
+            terminal = next((hit for hit in located if events[hit.index].terminal),None)
+            if terminal is not None and abs(terminal.t-float(result.state.t)) > events[terminal.index].time_tol:
+                if transaction is not None:
+                    transaction.rollback(token)
+                    active = False
+                rejected += 1
+                step_size = abs(terminal.t-float(current.t))
+                continue  # recompute the truncated step, including its lifecycle and history
+            next_size=min(maximum,propose_dt(error,h,estimate_order)) if adaptive else nominal
+            if adaptive and (hasattr(scheme,'adapt_step') or hasattr(scheme,'next_step_size')):
+                if hasattr(scheme,'adapt_step'):
+                    next_size=scheme.adapt_step(result,h,next_size,error_norm=error,
+                        norm_estimate=lambda estimate:_error_norm(replace(result,error=estimate),current,rel,absolute))
+                else:next_size=scheme.next_step_size(result,h,next_size)
+                if isinstance(next_size,bool) or not isinstance(next_size,Real) or not math.isfinite(next_size) or next_size<=0:
+                    raise ValueError('Method next_step_size must return a positive finite number')
+                next_size=min(maximum,next_size)
+            if adaptive and hasattr(scheme,'max_step_ratio'):
+                next_size=min(next_size,h*scheme.max_step_ratio)
+            if transaction is not None:
+                transaction.commit(token,snapshot(result))
+                active = False
+        except BaseException:
+            if active:
+                transaction.rollback(token)
+            raise
+        previous = current
+        current = result.state
+        if h == remaining:
+            current.t = end  # avoid accumulating representation drift at the requested endpoint
+        history = result.history if result.history is not None else trial_history
+        prior = result.stages[-1] if result.stages else None
+        last_dt = signed_h
+        accepted += 1
+        hits.extend(located)
+        event_values = end_values
+        while index < len(requested) and (direction*(requested[index]-float(current.t)) <= 0 or
+                                        math.isclose(requested[index],float(current.t),rel_tol=0,abs_tol=4*math.ulp(float(current.t)))):
+            t = requested[index]
+            value = snapshot(current) if math.isclose(t,float(current.t),rel_tol=0,abs_tol=4*math.ulp(float(current.t))) else dormand_prince_dense_output(
+                snapshot(previous), result.stages, signed_h, (t-float(previous.t))/signed_h,
+                *rhs_args, **options)
+            value.t = t
+            sample(t,value); index += 1
+        if save_steps:
+            sample(float(current.t),current)
+        step_size=next_size
+        if callback is not None and callback(snapshot(StepRecord(signed_h,result,status,error))) is False:
+            sample(float(current.t),current)
+            return finish('callback')
+        if terminal is not None:
+            sample(float(current.t),current)
+            return finish('event')
+    sample(end,current)
+    return finish('finished')
+
+
+@dataclass(frozen=True)
+class Event:
+    function: Any
+    name: str = 'event'
+    terminal: bool = False
+    direction: int = 0
+    time_tol: float = 1e-10
+
+    def __post_init__(self):
+        if not callable(self.function) or type(self.terminal) is not bool or self.direction not in (-1,0,1):
+            raise ValueError('Event needs a callable, bool terminal and direction -1/0/1')
+        _positive('event time_tol',self.time_tol)
+
+
+@dataclass(frozen=True)
+class EventHit:
+    index: int
+    name: str
+    t: float
+    state: Any
+
+
+def _event_value(event,state,snapshot):
+    value = float(event.function(float(state.t),snapshot(state)))
+    if not math.isfinite(value):
+        raise ValueError('Event values must be finite scalars')
+    return value
+
+
+def _locate_events(events, old, new, state, result, dt, options, args, snapshot):
+    hits = []
+    for i,(event,left,right) in enumerate(zip(events,old,new)):
+        if left == 0 or left*right > 0:
+            continue
+        change = (right-left) * (1 if dt > 0 else -1)
+        if event.direction and change*event.direction <= 0:
+            continue
+        lo,hi = 0.,1.
+        if right == 0:
+            lo = hi = 1.
+        for _ in range(80):
+            if abs(dt)*(hi-lo) <= event.time_tol:
+                break
+            mid = (lo+hi)/2
+            sampled = dormand_prince_dense_output(snapshot(state),result.stages,dt,mid,*args,**options)
+            value = _event_value(event,sampled,snapshot)
+            if value == 0:
+                lo = hi = mid; break
+            if left*value <= 0:
+                hi = mid
+            else:
+                lo = mid; left = value
+        theta = (lo+hi)/2
+        sampled = dormand_prince_dense_output(snapshot(state),result.stages,dt,theta,*args,**options)
+        hits.append(EventHit(i,event.name,float(sampled.t),snapshot(sampled)))
+    return sorted(hits,key=lambda hit:(hit.t-float(state.t))/dt)

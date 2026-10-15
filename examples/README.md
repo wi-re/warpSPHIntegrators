@@ -2,6 +2,8 @@
 
 Install the package from the checkout root with `python -m pip install -e '.[examples]'`.
 This supplies matplotlib, tqdm and Jupyter in addition to the numerical package.
+The examples use the 0.7 enum/lookup API and focused state/solver imports.
+Begin with decay or the damped oscillator before trying the downstream wave notebook.
 
 - [Damped oscillator](damped_oscillator.py): analytic displacement/velocity, generated heat, adaptive integration and a total-energy check; reproduced on the repository front page.
 - [Operator splitting](operator_splitting.py): declared physical parts and Strang with an exact linear flow.

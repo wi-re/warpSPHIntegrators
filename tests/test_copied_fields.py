@@ -15,20 +15,8 @@ from dataclasses import dataclass
 import pytest
 import torch
 
-from warpSPHIntegrators import (
-    BaseIntegrationSystem,
-    BaseState,
-    ComponentUpdateSpec,
-    PositionUpdateSpec,
-    constant,
-    copied,
-    ephemeral,
-    get_reference_state,
-    integrated,
-    reference_state,
-    tagged,
-)
-from warpSPHIntegrators.fields import update_component, update_position
+from warpSPHIntegrators.state import BaseIntegrationSystem, BaseState, ComponentUpdateSpec, PositionUpdateSpec, constant, copied, ephemeral, get_reference_state, integrated, reference_state, tagged
+from warpSPHIntegrators.state.fields import update_component, update_position
 
 
 @dataclass

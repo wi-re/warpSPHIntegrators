@@ -11,8 +11,11 @@ scheme to `solve` or call it directly. The 137 existing registrations are intact
 
 import math
 import torch
-from warpSPHIntegrators import (ConservativeDissipativeRHS, SemilinearRHS,
-    TensorState, tensor_rhs, Strang, LinearExponentialFlow, solve)
+from warpSPHIntegrators.wrappers import (
+    ConservativeDissipativeRHS, Strang, LinearExponentialFlow,
+)
+from warpSPHIntegrators.adapters import SemilinearRHS
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
 
 
 def run_example():
@@ -136,10 +139,9 @@ benchmark changes lifecycle boundaries and is not an automatic runner optimizati
 callbacks, synchronized samples and non-exact/variable-step flows need a separate
 representation and ownership design.
 
-The user-selected validation target for Phase 7 is the toy oscillator/PDE consumer;
-PESPH is a later application integration. Production entropy/compatible-energy
-SPH, large sparse exponential flows and general RKN catalog additions need their
-own contracts and baselines. Existing geometric one-step schemes already fit the
-composition interface; no wave 12/13 catalog expansion is claimed. See the
-[Phase 7 validation record](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/phase7-foundation-validation.md)
-for measurements and the remaining application work.
+The known oscillator and PDE examples qualify the composition behavior without
+requiring a new physics model. Entropy/compatible-energy SPH and large sparse
+exponential flows still need application-specific checks. Nyström and the other
+one-step configurations fit only where their state, force and quadrature
+contracts match the physical subflow. The [validation record](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/phase7-foundation-validation.md)
+keeps the measurements and application limits.

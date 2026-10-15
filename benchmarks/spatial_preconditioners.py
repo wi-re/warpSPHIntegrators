@@ -7,7 +7,7 @@ import numpy as np
 import scipy.sparse as sparse
 from scipy.sparse.linalg import splu,spilu
 import torch
-from warpSPHIntegrators import stage_shifted_preconditioner, stage_schur_preconditioner
+from warpSPHIntegrators.solvers import stage_shifted_preconditioner, stage_schur_preconditioner
 
 
 def spatial_preconditioner(diagonal,diffusion,mode,metrics=None):

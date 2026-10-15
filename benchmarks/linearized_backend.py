@@ -6,7 +6,8 @@ from pathlib import Path
 import time
 
 import torch
-from warpSPHIntegrators import Rosenbrock, TensorState, tensor_rhs, solve, getIntegrator
+from warpSPHIntegrators.schemes import Rosenbrock
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
 
 
 def measurements():
@@ -15,7 +16,7 @@ def measurements():
         for stiff in (False,True):
             rates=torch.logspace(0,4 if stiff else .5,n,dtype=torch.float64)
             for method in [*[Rosenbrock(m) for m in ['Rosenbrock23','Rosenbrock32','RosenbrockW6S4OS']],
-                           getIntegrator('ESDIRK4(3)6L[2]SA')]:
+                           get_scheme('ESDIRK4(3)6L[2]SA')]:
                 for h in (.125,.0625):
                     calls=0;iterations=0;diagnostic_rhs=0
                     def force(t,y):
@@ -41,8 +42,8 @@ def measurements():
     return dict(device='cpu',dtype='float64',threads=1,torch=torch.__version__,cases=rows,
         qualification='Known independent rates 1–sqrt(10) or 1–10000; fixed steps and horizon. Shifted diagonal preconditioner for every method. Actual RHS counts include isolated JVP/time probes and endpoint refresh; diagnostics counted separately. A successful stage solve is not proof of stability or accuracy: Rosenbrock32 can amplify the stiff modes. No equal-error or native-Warp speed claim.',
         source_sha256={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in [
-            root/'src/warpSPHIntegrators/linearized.py',root/'src/warpSPHIntegrators/_rosenbrock_data.py',
-            root/'src/warpSPHIntegrators/jfnk.py',Path(__file__).resolve()]})
+            root/'src/warpSPHIntegrators/schemes/families/linearized.py',root/'src/warpSPHIntegrators/schemes/coefficients/rosenbrock_data.py',
+            root/'src/warpSPHIntegrators/solvers/krylov.py',Path(__file__).resolve()]})
 
 
 if __name__=='__main__':

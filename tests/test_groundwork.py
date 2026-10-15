@@ -11,22 +11,12 @@ from dataclasses import dataclass
 import pytest
 import torch
 
-from warpSPHIntegrators import (
-    BaseState,
-    FixedPointSolver,
-    RelaxedFixedPointSolver,
-    HistoryEntry,
-    IntegrationScheme,
-    StepHistory,
-    constant,
-    get_reference_state,
-    getIntegrator,
-    integrated,
-    state_difference,
-    state_norm,
-    testing,
-)
-from warpSPHIntegrators.integration import IntegrationSchemes
+from warpSPHIntegrators.state import BaseState, HistoryEntry, StepHistory, constant, get_reference_state, integrated, state_difference, state_norm
+from warpSPHIntegrators.solvers import FixedPointSolver, RelaxedFixedPointSolver
+from warpSPHIntegrators.schemes import IntegrationScheme
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.schemes import IntegrationSchemes
 
 
 @dataclass
@@ -116,7 +106,7 @@ def test_step_history_respects_maxlen():
 
 
 def test_step_history_as_prior_step_round_trips_through_unpack():
-    from warpSPHIntegrators import unpack_prior_step
+    from warpSPHIntegrators.state.lifecycle import unpack_prior_step
 
     h = StepHistory(maxlen=1).pushed(HistoryEntry(t=0.0, dt=0.1, update='k', aux='r'))
     k, r = unpack_prior_step(h.as_prior_step())
@@ -162,7 +152,7 @@ def test_history_alone_does_not_enable_reuse():
     integration._with_reuse_guard gives an explicit priorStep=. Fixed by keeping the
     two channels independent: history= only ever affects IntegrationResult.history.
     """
-    scheme = getIntegrator('RK4')  # not FSAL: reuse would perturb the trajectory
+    scheme = get_scheme('RK4')  # not FSAL: reuse would perturb the trajectory
     prob = testing.PROBLEMS['oscillator']()
 
     plain = prob.initial()
@@ -186,7 +176,7 @@ def test_history_as_prior_step_reproduces_manual_priorstep_reuse():
     bookkeeping) and priorStep=history.as_prior_step() (to opt in), explicitly, the
     same way integration._with_reuse_guard already expects to see priorStep.
     """
-    scheme = getIntegrator('Bogacki-Shampine 3(2)')  # FSAL: reuse is lossless
+    scheme = get_scheme('Bogacki-Shampine 3(2)')  # FSAL: reuse is lossless
     prob = testing.PROBLEMS['oscillator']()
 
     via_prior = prob.initial()
@@ -217,7 +207,7 @@ def test_history_kwarg_is_inert_for_schemes_that_do_not_use_it(scheme):
 
 def test_testing_run_threads_history_without_changing_the_trajectory():
     """`history=True` in the test harness must not perturb a scheme that ignores it."""
-    scheme = getIntegrator('RK4')
+    scheme = get_scheme('RK4')
     prob = testing.PROBLEMS['oscillator']()
     plain = testing.run(scheme, prob, dt=0.1, T=0.5)
     with_history = testing.run(scheme, prob, dt=0.1, T=0.5, history=True)

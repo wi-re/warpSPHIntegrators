@@ -16,7 +16,9 @@ the package does not supply an automatic stiffness estimator.
 ```python
 import math
 import torch
-from warpSPHIntegrators import AlgorithmSwitch, NDF, TensorState, tensor_rhs, solve
+from warpSPHIntegrators.wrappers import AlgorithmSwitch
+from warpSPHIntegrators.schemes import NDF
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
 
 def rate(t):
     return 1 + 999 * math.sin(math.pi * t)**2

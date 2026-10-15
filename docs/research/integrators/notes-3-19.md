@@ -10,7 +10,7 @@ schemes: a BDF2 / BDF3 / trapezoidal *implicit* backbone for the stiff part, the
 smooth part *extrapolated explicitly* to the endpoint from its own previous
 endpoint values.
 
-**The methods** (`src/warpSPHIntegrators/imexmultistep.py`, registered as
+**The methods** (`src/warpSPHIntegrators/drivers/history/imex.py`, registered as
 `SBDF2`, `SBDF3`, `CNAB2`):
 
 | scheme | implicit backbone (stiff part) | explicit extrapolation (smooth part) | order |

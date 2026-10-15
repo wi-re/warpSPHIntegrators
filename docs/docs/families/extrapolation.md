@@ -4,6 +4,8 @@ sidebar_label: Extrapolation
 
 # Explicit extrapolation backends
 
+Extrapolation combines several coarse/fine integrations to cancel leading errors. It can reach high order with a simple base method, but the extra columns cost RHS work and retain full stages here. The production factory below uses explicit Euler or midpoint columns.
+
 `Extrapolation(base='midpoint', order=4)` binds a fixed target order outside the
 142-method catalog. It advances independent subdivision columns and combines
 their endpoint increments. Euler supports orders 2–8 with Romberg subdivisions
@@ -15,7 +17,8 @@ Both order-two main maps equal explicit midpoint, with an Euler comparison.
 ```python
 import math
 import torch
-from warpSPHIntegrators import Extrapolation, TensorState, tensor_rhs, solve
+from warpSPHIntegrators.schemes import Extrapolation
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
 
 records = []
 result = solve(Extrapolation('midpoint', 6),
@@ -51,7 +54,7 @@ stage can occur in several columns. Finalize must preserve integrated values,
 time and particle IDs. Stage times follow the actual subdivision grids and the
 RHS/lifecycle receives the outer dt. Initial state and stage buffers are owned.
 
-The factory works in Phase 7 physical compositions. Inner lifecycle hooks are
+The factory works in physical flow compositions. Inner lifecycle hooks are
 suppressed and the outer hook can inspect each substep's quadrature. This does
 not confer symplecticity or conservation on the extrapolated method.
 Tensor continuation uses the normal portable checkpoint path without history.

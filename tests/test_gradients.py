@@ -21,10 +21,13 @@ import math
 import pytest
 import torch
 
-from warpSPHIntegrators import JFNKSolver, get_reference_state, getIntegrator, testing
-from warpSPHIntegrators.history import StepHistory
-from warpSPHIntegrators.integration import IntegrationSchemes
-from warpSPHIntegrators.enums import DIRK as DIRKFamily
+from warpSPHIntegrators.solvers import JFNKSolver
+from warpSPHIntegrators.state import get_reference_state
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.state import StepHistory
+from warpSPHIntegrators.schemes import IntegrationSchemes
+from warpSPHIntegrators.schemes import DIRK as DIRKFamily
 from warpSPHIntegrators.testing import ParticleState, ParticleSystem, ParticleUpdate
 
 
@@ -49,7 +52,7 @@ def _oscillator_at(x0_value=1.0, requires_grad=True):
 
 def _integrate(scheme_name, steps, *, x0_value=1.0, requires_grad=True, solver=None):
     """Run `steps` steps of `scheme_name` and return (final x, the x0 leaf)."""
-    scheme = getIntegrator(scheme_name)
+    scheme = get_scheme(scheme_name)
     problem = testing.oscillator_problem(k=K)
     x0, system = _oscillator_at(x0_value, requires_grad)
     history = StepHistory(maxlen=8)
@@ -147,7 +150,7 @@ def test_gradient_flows_through_every_implicit_scheme(name, steps):
 @pytest.mark.parametrize('name', EXPLICIT_SCHEMES)
 def test_gradient_still_flows_through_explicit_schemes(name):
     """Explicit schemes were never broken; nothing in the fix may change that."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     steps = max(3, s.steps + 3) if s.startup_order is not None else 3
     grad = _dx_dx0(name, steps)
     assert grad == pytest.approx(_exact_sensitivity(steps), abs=0.02)
@@ -224,7 +227,7 @@ def test_gradient_is_correct_for_a_nonlinear_problem():
         ref = get_reference_state(system)
         x = (ref.x.detach() * scale).requires_grad_(requires_grad)
         ref.x = x
-        scheme = getIntegrator('Backward Euler (implicit)')
+        scheme = get_scheme('Backward Euler (implicit)')
         for _ in range(3):
             system = scheme.function(system, 0.01, problem.rhs).state
         return get_reference_state(system).x.sum(), x
@@ -267,7 +270,7 @@ def test_solve_leaves_diagnostics_untouched_on_the_differentiable_path():
     must report the same number either way.
     """
     problem = testing.oscillator_problem(k=K)
-    scheme = getIntegrator('TR-BDF2')
+    scheme = get_scheme('TR-BDF2')
 
     def diagnostics(requires_grad):
         _, system = _oscillator_at(requires_grad=requires_grad)
@@ -281,7 +284,7 @@ def test_solve_leaves_diagnostics_untouched_on_the_differentiable_path():
 def test_detached_input_returns_the_plain_solver_result():
     """No grad anywhere means the old code path, including the returned state object."""
     problem = testing.oscillator_problem(k=K)
-    scheme = getIntegrator('Backward Euler (implicit)')
+    scheme = get_scheme('Backward Euler (implicit)')
     _, system = _oscillator_at(requires_grad=False)
     with torch.no_grad():
         result = scheme.function(system, DT, problem.rhs)

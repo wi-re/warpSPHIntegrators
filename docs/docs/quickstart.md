@@ -1,234 +1,196 @@
----
-sidebar_position: 1
-title: Quick Start
----
+# Quick start
 
-A minimal but complete integration: define a state, define the update
-structure, implement the integration system protocol, define the
-right-hand side, and pick a scheme. This page mirrors the
-[Quick Start in the README](https://github.com/wi-re/warpSPHIntegrators#quick-start)
-(keep the two in sync when either changes).
+Start with a tensor ODE if your equations fit f(t,y). Use a custom state/system
+when a simulation needs positions, velocities, auxiliary quantities and stage
+hooks to move together. Both paths use the same scheme selection and run control.
 
-For one complete copyable script, use the [overview](/docs) or
-[harmonic_oscillator.py](https://github.com/wi-re/warpSPHIntegrators/blob/main/examples/harmonic_oscillator.py).
-It requires only the installed package and its Torch/NumPy dependencies.
+From a checkout, install with `python -m pip install -e .`. Contributors can use
+`python -m pip install -e '.[test]'` for the test dependencies.
 
+## Solve a known equation
 
-## 1. Define Your State
+The equation y'=-y has the exact solution y(t)=y(0)*exp(-t). It is a useful first
+check because numerical error, time and the expected decay are all explicit.
 
-Create a state class that inherits from `BaseState` and annotate fields with their integration behavior:
-
-[example:run quickstart]: #
+[example:run quickstart-decay]: #
 ```python
-from dataclasses import dataclass
+import math
 import torch
-from warpSPHIntegrators import BaseState, integrated, constant
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
+from warpSPHIntegrators.schemes import ExplicitRK
+
+initial = TensorState(torch.tensor([1., 2.], dtype=torch.float64))
+rhs = tensor_rhs(lambda t, y: -y)
+run = solve(ExplicitRK.tsit5, initial, 1., rhs, dt=.1,
+            adaptive=True, rtol=1e-7, atol=1e-9)
+assert run.successful
+assert torch.allclose(run.state.y, initial.y*math.exp(-1), rtol=1e-6)
+assert initial.t == 0.  # solve owns the accepted/trial states
+```
+
+`ExplicitRK.tsit5` selects **Tsitouras 5(4)**. The main solution has order five;
+a fourth-order comparison estimates local error so the runner can adjust the
+step. An enum is an unambiguous configuration key. The catalog also accepts its
+exact stored lookup names; friendly display labels are not additional aliases.
+
+Use `float64` while checking a new problem against a known solution. Smaller
+steps eventually encounter floating-point or solver accuracy limits; they do
+not improve the result indefinitely.
+
+## Take a step yourself
+
+[example:run quickstart-step]: #
+```python
+from warpSPHIntegrators import get_scheme, TensorState, tensor_rhs
+from warpSPHIntegrators.schemes import ExplicitRK
+import torch
+
+method = get_scheme(ExplicitRK.rungeKutta4)  # classical Runge–Kutta 4
+state = TensorState(torch.ones(1, dtype=torch.float64))
+step = method(state, .01, tensor_rhs(lambda t, y: -y))
+assert step.step_status.successful
+assert step.state.t == .01
+```
+
+A step returns `IntegrationResult(state, stages, ...)`. Each `StageResult`
+pairs the physical update with optional auxiliary data. Some methods also
+return an error estimate and accepted-history candidate. In a manual loop, keep
+`step.state` and thread `step.history` into the next call for history methods.
+The [run API](runs) handles acceptance, rejection and history for complete
+trajectories; direct stepping leaves those decisions to the caller.
+
+## Connect a complete simulation state
+
+The state protocol distinguishes fields by what should happen at a stage:
+
+| Field declaration | Behavior |
+|---|---|
+| `integrated(update_key, ...)` | Advance using a declared derivative, including every integrated quantity |
+| `constant(...)` | Carry a physical/configuration value without integrating it |
+| `copied(...)` | Refresh a value calculated at a physical stage, such as a density estimate |
+| `reference_state(...)` | Identify the state inside a larger system |
+| `tagged(...)` | Give fields physical roles used by typed component-update helpers |
+
+A system supplies new-stage construction and typed update operations. Its RHS
+receives `(system, dt, ...)` and returns an update, optionally followed by
+auxiliary values. Hooks can prepare stage data, process RHS results and finalize
+the accepted step. The integrator owns the stage clock.
+
+This complete oscillator example shows those pieces without a particle-neighbor
+backend. The exact solution has position cos(2t) and velocity -2sin(2t).
+
+[example:include examples/harmonic_oscillator.py]: #
+```python
+"""Complete CPU example: python examples/harmonic_oscillator.py."""
+
+from dataclasses import dataclass
+
+import torch
+
+from warpSPHIntegrators.state import (
+    BaseIntegrationSystem, BaseState, ComponentUpdateSpec, PositionUpdateSpec,
+    constant, get_reference_state, integrated, reference_state, tagged,
+)
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.state.fields import update_component, update_position
+
 
 @dataclass
-class MyState(BaseState):
-    # Fields that evolve over time
+class OscillatorState(BaseState):
     position: torch.Tensor = integrated('dx_dt', tags=('position',))
     velocity: torch.Tensor = integrated('dv_dt', tags=('velocity',))
-    
-    # Constant parameters (don't change during integration)
-    mass: torch.Tensor = constant(tags=('mass',))
-    spring_constant: torch.Tensor = constant(tags=('spring_constant',))
-```
+    mass: torch.Tensor = constant()
+    spring_constant: torch.Tensor = constant()
 
-**Field Behavior Options:**
-
-| Behavior | `initializeNewState()` | End of step | For |
-|---|---|---|---|
-| `integrated('dfield', ...)` | cloned | advanced by the scheme | position, velocity, energy |
-| `constant(...)` | cloned | unchanged | mass, material parameters |
-| `copied(...)` | nulled | **taken from the last stage** | quantities recomputed per stage: summation density, pressure, smoothing length |
-| `ephemeral(...)` | nulled | stays null | stage-local scratch, neighbour lists |
-| `custom(...)` | nulled | your responsibility | anything the generic paths must not touch |
-
-A field with no behavior declared is treated as `constant`. That is the conservative
-default: it survives both `clone()` and `initializeNewState()`, so a forgotten decorator
-cannot silently turn a tensor into `None` halfway through a step.
-
-**Field value types.** Cloning is dispatched on the value's type, not hard-coded to
-`torch.Tensor`. Out of the box: torch tensors, `wp.array` (detected without importing
-warp), and lists / tuples / dicts recursed into. Immutable scalars are shared, which is
-safe. Anything else is shared **by reference** and warns once — that would mean every
-stage writing into the same object — so register a handler for it:
-
-[example:skip Provide your own mylib.Buffer implementation]: #
-```python
-from warpSPHIntegrators import register_clone_handler
-
-register_clone_handler(
-    'mylib.Buffer',
-    matches=lambda v: isinstance(v, mylib.Buffer),
-    clone=lambda v, detach: v.copy(),
-    to_device=lambda v, device: v.to(device),   # optional, drives BaseState.to()
-)
-```
-
-## 2. Define Your Update Structure
-
-Create a dataclass that holds all derivatives and auxiliary values:
-
-[example:run quickstart]: #
-```python
-from dataclasses import dataclass
-from warpSPHIntegrators import tagged
 
 @dataclass
-class MyUpdate:
+class OscillatorUpdate:
     dx_dt: torch.Tensor = tagged(tags=('position_derivative',))
     dv_dt: torch.Tensor = tagged(tags=('velocity_derivative',))
-```
 
-## 3. Implement the Integration System Protocol
-
-Create an `IntegrationSystem` that knows how to apply updates to your state:
-
-[example:run quickstart]: #
-```python
-from warpSPHIntegrators import (
-    BaseIntegrationSystem, PositionUpdateSpec, ComponentUpdateSpec,
-    reference_state, get_reference_state, update_position, update_component,
-)
-from dataclasses import dataclass
 
 @dataclass
-class MySystem(BaseIntegrationSystem):
-    state: MyState = reference_state(tags=('my_state',))
-    t: float = 0.0  # Current time
-    
+class OscillatorSystem(BaseIntegrationSystem):
+    state: OscillatorState = reference_state()
+    t: float = 0.0
+
     def initializeNewState(self, *args, **kwargs):
-        """Create a fresh state copy for the next integration step."""
-        current_state = get_reference_state(self)
-        return MySystem(
-            state=current_state.initializeNewState(),
-            t=self.t
-        )
-    
-    def apply_position_update(self, update: MyUpdate, spec: PositionUpdateSpec, **kwargs):
-        """Apply a position update using velocity (semi-implicit or explicit)."""
-        # Implementation handles velocity drift and derivative steps
-        return update_position(self, update, spec, 
-                             'position', 'position_derivative',
-                             'velocity', 'velocity_derivative')
-    
-    def apply_velocity_update(self, update: MyUpdate, spec: ComponentUpdateSpec, **kwargs):
-        """Apply a velocity update."""
+        return OscillatorSystem(get_reference_state(self).initializeNewState(), self.t)
+
+    def apply_position_update(self, update, spec, **kwargs):
+        return update_position(self, update, spec, 'position', 'position_derivative',
+                               'velocity', 'velocity_derivative')
+
+    def apply_velocity_update(self, update, spec, **kwargs):
         return update_component(self, update, spec, 'velocity', 'velocity_derivative')
-    
-    def apply_state_update(self, update: MyUpdate, spec: ComponentUpdateSpec, **kwargs):
-        """Apply all state updates in sequence."""
-        # Note: DO NOT advance self.t here. Time is managed by the integrator.
+
+    def apply_state_update(self, update, spec, **kwargs):
         position_spec = PositionUpdateSpec(derivative_dt=spec.derivative_dt, blend=spec.blend)
         self.apply_position_update(update, position_spec, **kwargs)
         self.apply_velocity_update(update, spec, **kwargs)
         return self
-```
 
-**Protocol Methods:**
-- `initializeNewState()` — Create a fresh state for the next step
-- `apply_position_update()` — Position update (often semi-implicit with velocity)
-- `apply_velocity_update()` — Velocity update
-- `apply_quantity_update()` — Other field updates
-- `apply_state_update()` — General state update (calls the above in sequence)
 
-## 4. Define Your Right-Hand Side (RHS) Function
-
-The RHS function receives the current system and returns an update structure plus optional auxiliary values:
-
-[example:run quickstart]: #
-```python
-def my_rhs(system: MySystem, dt: float, verbose: bool = False) -> tuple:
-    """
-    Compute derivatives and auxiliary values.
-    
-    Returns:
-        (update: MyUpdate, aux: tuple)
-    """
+def rhs(system, dt, **kwargs):
     state = get_reference_state(system)
-    
-    # Compute derivatives
-    dx_dt = state.velocity
-    dv_dt = -(state.spring_constant / state.mass) * state.position
-    
-    # Auxiliary values (optional, for logging/analysis)
-    kinetic_energy = 0.5 * state.mass * state.velocity**2
-    potential_energy = 0.5 * state.spring_constant * state.position**2
-    
-    return (
-        MyUpdate(dx_dt=dx_dt, dv_dt=dv_dt),
-        (kinetic_energy, potential_energy)
-    )
+    return OscillatorUpdate(
+        dx_dt=state.velocity,
+        dv_dt=-(state.spring_constant / state.mass) * state.position,
+    ), None
+
+
+def run_example():
+    system = OscillatorSystem(OscillatorState(
+        position=torch.tensor([1.0], dtype=torch.float64),
+        velocity=torch.tensor([0.0], dtype=torch.float64),
+        mass=torch.tensor([1.0], dtype=torch.float64),
+        spring_constant=torch.tensor([4.0], dtype=torch.float64),
+    ))
+    scheme = get_scheme('RK4')
+    for _ in range(100):
+        result = scheme(system, dt=0.01, f=rhs)
+        system = result.state
+    return result
+
+
+if __name__ == '__main__':
+    result = run_example()
+    state = get_reference_state(result.state)
+    print(f't={result.state.t:.2f}, x={state.position.item():.6f}, '
+          f'v={state.velocity.item():.6f}, stages={len(result.stages)}')
 ```
 
-This plain callable is all most schemes need. Split methods take a
-**structured RHS** instead: `IMEXRHS(explicit=, implicit=)` for the additive
-split `f = f_E + f_I` (IMEX Euler, ARK3/ARK4, SBDF2/3, CNAB2), or `SemilinearRHS(linear=,
-nonlinear=)` for the semilinear split `f = L·y + N`. Both remain callable as
-the combined `f`, so a scheme that only needs the full right-hand side treats
-the split as fully implicit; a scheme that needs a split the RHS does not
-declare fails before the solve with an error naming the missing capability.
-See [NOTES.md §3.12](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/research/integrators/notes-index.md#312-phase-14-the-structured-rhs-interface--done-2026-09-10).
+The example's `update_position` and `update_component` helpers use field tags,
+so additional quantities do not need one scheme-specific code path each.
+A custom finalizer must understand the selected family's quadrature. Ordinary RK
+uses scalar derivative weights; Nyström and exponential families can carry
+separate component or operator-weighted increments. Keep finalization compatible
+with the family's contract rather than treating all weights as interchangeable.
 
-## 5. Choose an Integration Scheme and Integrate
+## Add implicit solves when the equations need them
 
-[example:run quickstart]: #
+Stiff equations can require tiny explicit steps for stability even when the
+visible solution varies slowly. ESDIRK and Radau methods solve stage equations;
+JFNK uses Newton corrections and matrix-free GMRES linear solves.
+
+[example:run quickstart-implicit]: #
 ```python
-from warpSPHIntegrators import getIntegrator, IntegrationSchemeType
+import torch
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
+from warpSPHIntegrators.schemes import DIRK
 
-# Create initial system
-initial_state = MyState(
-    position=torch.tensor([1.0]),
-    velocity=torch.tensor([0.0]),
-    mass=torch.tensor([1.0]),
-    spring_constant=torch.tensor([5.0])
-)
-system = MySystem(state=initial_state, t=0.0)
-
-# Get an integrator
-integrator = getIntegrator(IntegrationSchemeType.rungeKutta4)
-
-# Integrate one step
-dt = 0.01
-result = integrator.function(
-    system,
-    dt=dt,
-    f=my_rhs,
-    verbose=False
-)
-
-# Access results
-next_system = result.state  # IntegrationResult.state
-last_stage = result.stages[-1]  # Last StageResult
-aux_values = last_stage.aux  # Auxiliary output from RHS
-rhs = my_rhs  # Used by the examples below
-n_steps = 6
+run = solve(DIRK.esdirk324l2sa, TensorState(torch.ones(1, dtype=torch.float64)),
+            .5, tensor_rhs(lambda t, y: -10*y), dt=.05,
+            solver_opts={'matvec': 'jvp', 'tol': 1e-12, 'newton_tol': 1e-9})
+assert run.successful
+assert torch.isfinite(run.state.y).all()
 ```
 
-## Return Type: `IntegrationResult`
+Inspect convergence before interpreting cost or accuracy. A fixed Picard
+iteration budget can diverge on a stiff problem even when the underlying
+implicit method is stable. The [solver guide](solver) explains the diagnostics,
+JVP/finite-difference choices and preconditioners.
 
-All integrator functions return an `IntegrationResult` frozen dataclass:
-
-[example:run quickstart]: #
-```python
-from warpSPHIntegrators import IntegrationResult, StageResult
-
-result: IntegrationResult = integrator(system, dt=0.01, f=my_rhs)
-
-# Fields:
-result.state        # The new system state after integration
-result.stages       # List[StageResult] — all intermediate stages
-
-# Each stage:
-stage: StageResult = result.stages[-1]
-stage.aux           # Auxiliary values returned from RHS
-stage.update        # The k-value (derivative) used at this stage
-```
-
-`result.error`, `result.history` and `result.solver_diagnostics` hold optional
-estimate, history and solve information. There is no `result.rhs_evaluations`;
-solver work is recorded in each diagnostic.
-
-This replaces the older tuple return format and provides a clear, self-documenting API.
+Next, use [method selection](selection) to choose the right family, [runs](runs)
+for tolerances/events/restart, and [options](options) for the exact step controls.
+The [API reference](api) lists the focused imports for custom systems and backends.

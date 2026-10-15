@@ -121,7 +121,8 @@ def test_amf_noncommuting_product_and_approximation_order():
 
 
 def test_native_two_register_map_matches_expansion_and_rejects_ad():
-    from warpSPHIntegrators import ExpandedRK,TensorState,tensor_rhs
+    from warpSPHIntegrators.schemes import ExpandedRK
+    from warpSPHIntegrators import TensorState, tensor_rhs
     y=torch.linspace(.1,1.,16,dtype=D);f=lambda t,y:-y-.1*y*y+.2*t
     reference=ExpandedRK()(TensorState(y),.1,tensor_rhs(f))
     with torch.no_grad():value=low_storage_ck54_step(f,0.,y,.1)

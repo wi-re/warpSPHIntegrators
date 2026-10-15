@@ -12,14 +12,16 @@ This complete float64 CPU example is also saved in `examples/tensor_ode.py`.
 
 import math
 import torch
-from warpSPHIntegrators import TensorState, tensor_rhs, filter_schemes, getPreferredIntegrator
+from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme
+from warpSPHIntegrators.schemes import filter_schemes
+from warpSPHIntegrators.schemes import ExplicitRK
 
 
 def run_example():
     # Scalar, vector or batched floating-point tensors use the same interface.
     initial = torch.tensor([1., 2.], dtype=torch.float64)
     state = TensorState(initial, t=0.)
-    scheme = getPreferredIntegrator(5)  # registered Dormand-Prince 5(4)
+    scheme = get_scheme(ExplicitRK.dormandPrince)  # registered Dormand-Prince 5(4)
     rhs = tensor_rhs(lambda t, y, rate: -rate*y, rate=2.)
     for _ in range(100):
         result = scheme(state, .01, rhs)
@@ -48,7 +50,7 @@ with AND; no matches returns an empty tuple, and invalid criteria raise ValueErr
 
 [example:run selection]: #
 ```python
-from warpSPHIntegrators import filter_schemes
+from warpSPHIntegrators.schemes import filter_schemes
 
 pairs = filter_schemes(family='ExplicitRK', min_order=5,
                        has_error_estimate=True, supports_reuse=True,
@@ -78,11 +80,12 @@ their declared capabilities remain intact. For example, a linear stiff mode:
 ```python
 import math
 import torch
-from warpSPHIntegrators import TensorState, tensor_rhs, SemilinearRHS, getIntegrator
+from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme, get_scheme
+from warpSPHIntegrators.adapters import SemilinearRHS
 
 state = TensorState(torch.ones(2, dtype=torch.float64))
 rhs = tensor_rhs(SemilinearRHS(linear=lambda t, y: -10*y))
-result = getIntegrator('ETD2RK')(state, .1, rhs)
+result = get_scheme('ETD2RK')(state, .1, rhs)
 assert torch.allclose(result.state.y, torch.full_like(state.y, math.exp(-1)))
 ```
 
@@ -99,13 +102,11 @@ their existing gradient qualifications still apply, including incomplete
 differentiation through parameter-dependent frozen operators. Use [the run API](runs) for fixed/adaptive trajectories, acceptance, sampling,
 events and restart checkpoints.
 
-## Selecting a conventional default
+## Choose an explicit method identity
 
-`getPreferredIntegrator(order)` returns catalog records for orders 1–5:
-Forward Euler, Midpoint, SSP RK3, RK4 and Dormand-Prince 5(4). These are explicit
-starting points for ordinary ODEs. Stiffness/geometry-aware selection uses the
-catalog and family guidance. `getPreferredScheme` preserves its historical raw
-callable choices, some of which require position/velocity fields; it is retained
-for existing callers and is not the ordinary tensor-ODE selector.
+Use `get_scheme(ExplicitRK.dormandPrince)` for Dormand–Prince 5(4), or
+`ExplicitRK.tsit5` for Tsitouras 5(4). Use `filter_schemes` for requirements such
+as order, estimates or state kind. An order alone does not identify a suitable
+method: stiffness, force structure, stability and solve cost also matter.
 
-See [step and solver options](options) for the common call surface.
+See [method selection](selection) and [step/solver options](options).

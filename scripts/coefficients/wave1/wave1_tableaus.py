@@ -29,8 +29,8 @@ import numpy as np
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / 'src'))
 
-from warpSPHIntegrators.butcher import butcherTableau  # noqa: E402
-from warpSPHIntegrators import tvd_analysis  # noqa: E402
+from warpSPHIntegrators.schemes.coefficients.tableau import ButcherTableau as butcherTableau  # noqa: E402
+import warpSPHIntegrators.analysis.tvd as tvd_analysis  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Coefficients, verbatim from ssprk_caches.jl (al* = alpha, be* = beta).

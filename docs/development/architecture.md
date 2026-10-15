@@ -1,69 +1,100 @@
 # Current architecture
 
-Status: 14 October 2026, through Phase 4. The runtime catalog contains 137
-registered schemes in 11 families, plus three standalone parameterized pRRK
-drivers. [The generated catalog](../docs/catalog.md) owns current method counts
-and capability metadata. [The execution plan](../../REPOSITORY_PLAN.md) owns work
-statuses; [numerical records](../research/integrators/notes-index.md) explain the
-measurements and coefficient decisions.
+Status: 15 October 2026, after the Phase 8 candidate review and 0.7 package/API
+migration. The [generated catalog](../docs/catalog.md) owns fixed method counts
+and capability metadata. Parameterized configurations extend that catalog;
+experimental tensor prototypes have separate, bounded contracts. The
+[execution plan](../../REPOSITORY_PLAN.md) owns work status and the
+[refactor validation](package-refactor-validation.md) records preserved numerical,
+storage and consumer behavior.
+
+## Package ownership
+
+| Package | Responsibility | Dependency boundary |
+|---|---|---|
+| `state` | Field behaviors, typed updates, lifecycle, clocks, ownership, history and shared result/stepping contracts | Independent of method registration and run orchestration |
+| `schemes` | Enums, metadata, discovery, registry and family configuration | Binds definitions to numerical drivers |
+| `schemes.coefficients` | Pure coefficient construction and pinned data | Does not select or execute methods |
+| `schemes.definitions` | Immutable generic explicit, DIRK, coupled and additive definitions | Owns read-only coefficients and delegates execution |
+| `drivers` | Numerical stepping by RK, history, mechanics, stabilized, exponential, extrapolation and map families | Consumes low-level contracts, definitions and solvers without importing the registry/runtime |
+| `solvers` | Nonlinear iteration, Krylov actions, preconditioners, matrix functions and implicit adjoints | Independent of concrete method registration |
+| `runtime` | Fixed/adaptive run control, accepted/rejected history, outputs/events and portable checkpoints | Uses the structural stepping/control contracts |
+| `wrappers` | Physical composition and algorithm switching | Delegates child steps and owns wrapper history/acceptance |
+| `adapters` | Tensor ODE, split/semilinear RHS and complete-state-map callbacks | Connects user data/callables to the state contracts |
+| `analysis` | Stability, reuse, TVD and geometric inspection | Optional analysis rather than driver dispatch |
+| `experiments` | Source-audited tensor prototypes | Outside registered scheme lookup and full-state solve |
+
+The root exports exactly `get_scheme`, `solve`, `TensorState` and `tensor_rhs`.
+Use enums and the canonical lookup for fixed methods, and explicit factories in
+`schemes` for configurations such as collocation stages or generalized-alpha
+damping. Raw per-method functions, preferred-method aliases and old flat modules
+are removed. The small `enums` bridge preserves stored enum pickles; it does not
+restore the old import facade. See the [migration guide](../docs/migration.md).
 
 ## State, updates and lifecycle
 
-The package advances user-owned systems through field tags and update operations.
-`fields.py` defines dataclass behaviors (`integrated`, `constant`, `copied`,
-`ephemeral`, `custom`), cloning and integrated-field flattening. `specs.py` defines
-typed blends, component/position updates, stage results and the frozen
-`IntegrationResult` dataclass. `protocol.py` and `util.py` dispatch typed updates
-or legacy system methods and invoke initialize/preprocess/postprocess/finalize
-hooks. The integrator does not own particle storage or neighbor-list policy.
+The package advances application systems through tagged fields and update
+operations. `state.fields` owns dataclass field behaviors (`integrated`,
+`constant`, `copied`, `ephemeral`, `custom`), cloning and integrated-field
+flattening. `state.specs` describes blends, component/position updates and stage
+results. `state.protocol` and `state.lifecycle` dispatch typed updates or legacy
+system methods and invoke initialize/preprocess/postprocess/finalize hooks.
+Particle storage, neighbor lists and particle masking belong to the application.
 
-Drivers build stage states through these operations, set stage times and combine
-derivatives. `reuse.py` analyzes first-stage reuse; callers pass `priorStep` only
-when its metadata supports the intended order. Derivative-stage counts can differ
-from the number of mathematical stages in a paper.
+Drivers build isolated stage states, set stage times and combine derivatives or
+method-specific increments. All integrated quantities participate in the declared
+state map. Finalizers must respect scalar, component or operator quadratures
+rather than assume every family has ordinary RK weights. Analysis metadata gates
+first-stage reuse; derivative-stage counts can differ from a paper's mathematical
+stage count. Nonlinear/Jacobian probes follow the owned-state contract.
 
-## Numerical drivers and discovery
+## Definitions, execution and run control
 
-`integration.py` registers the public `IntegrationScheme` tuples and lookup;
-`enums.py` supplies identifiers and family enums. `catalog.py` provides derived
-immutable metadata without changing the tuple's twelve-field contract.
-`filter_schemes` composes discovery criteria. `TensorState` / `tensor_rhs` adapt
-ordinary floating-point `(t, y)` callbacks, including splits, to the existing
-protocol without changing numerical drivers. `getPreferredIntegrator` returns
-conventional ordinary-ODE records; `getPreferredScheme` keeps its legacy raw
-callable choices. Structural metadata records second-order/separability/drift
-assumptions and retained-history length.
-Explicit/geometric, DIRK, coupled RK, multistep, IMEX, stabilized, Rosenbrock,
-exponential and Newmark methods use their respective drivers. `rhs.py` declares
-combined, split and semilinear capabilities. A KenCarp/ARS name registered in the
-DIRK family represents its implicit tableau, not an upstream additive pair.
+Frozen RK definition records own read-only coefficient arrays and retain callable
+identity equality/hash semantics. The registry binds those records and assigns
+metadata. Parameterized configurations validate their inputs and delegate their
+numerical maps to family drivers. Pure builders and execution helpers have
+separate modules; execution is not attached to raw function exports.
 
-`solvers.py` and `jfnk.py` provide fixed-point and matrix-free Newton/GMRES solves,
+`state.Stepper` and optional accepted-control protocols let custom methods run,
+switch and compose without joining a concrete factory whitelist. Optional
+capabilities still have explicit gates: physical subflows reject unsupported
+history, negative dissipative steps remain guarded, and family-specific RHS and
+force assumptions remain part of selection.
+
+The runtime owns accepted/trial transitions, rollback, error control, output and
+events. Drivers own method-specific numerical history candidates. A failed or
+rejected trial does not silently become accepted memory. Portable checkpoints
+store tensor/primitive state and scheme identifiers; callers resupply functions
+and external solver/application resources. Single-step callers can keep their
+own loops. External side effects require application transaction hooks.
+
+The solver packages provide fixed-point and matrix-free Newton/GMRES iteration,
 FD/JVP products, preconditioning, diagnostics and implicit differentiation.
-`history.py` stores fixed-step history and restarts it when the timestep changes.
-`adaptive.py` supplies error norms, step proposals and DP5 dense output. `run.py`
-owns optional transactional fixed/adaptive orchestration, outputs and events;
-`checkpoint.py` persists tensor-only restarts. Single-step callers can keep their
-own loop. External side effects require application transaction hooks.
+Nonlinear convergence, physical RHS evaluations and linear matvec counts are
+separate measurements. Full-JVP and exponential operator derivatives have their
+own documented size/action limits; differentiability is a family contract.
 
-## Current boundaries
+## Numerical and backend limits
 
-Numerical stepping is PyTorch based. Warp array clone dispatch and Warp-backed
-downstream RHS operations do not establish a native Warp integrator backend.
-Buffer pools, graph capture and gradient ownership remain future design work.
-The unused `fluid_only` option was removed after checking this package and the
-local warpSPH / warpSPHCore checkouts. Particle masking remains the user's
-system/RHS responsibility; integrated fields do not imply particle selection.
-Velocity-dependent forces violate the assumptions of several geometric methods;
-the measured order loss is retained as a regression control. BDF3–5 now use order-matched implicit starters; the explicit comparison mode and
-AM/IMEX multistep startups retain their old stiffness qualifications.
+Numerical stepping is PyTorch based. Warp array cloning and downstream Warp RHS
+operations do not establish a native Warp integrator backend. Storage pooling,
+CUDA graph capture and native gradient ownership remain Phase 9 work. The
+consumer migration checks real CPU configuration, state, restart and deferred
+clock paths; CUDA hardware was unavailable.
+
+The unused `fluid_only` option remains removed following the consumer audit.
+Velocity-dependent forces still violate several geometric methods' assumptions;
+order-loss controls remain tests. BDF/NDF/Adams startup and adaptive order
+contracts differ by configuration. Deferred upstream controller ports and source
+order failures retain explicit dispositions in the candidate-review records.
 
 ## Repository layout
 
-`docs/docs` contains the user-facing site; `docs/plans` contains specialist designs
-and method dispositions; `docs/development` contains contributor and validation
-records. Dated numerical evidence lives in `docs/research/integrators`, and
-cross-repository SPH experiments in `docs/research/downstream`. Standalone examples
-and notebooks live in `examples`; performance/gallery drivers in `benchmarks`;
-maintenance and coefficient utilities in `scripts`; durable plots in `docs/assets`.
-Import package paths under `src/warpSPHIntegrators` remain stable.
+`docs/docs` contains user documentation; `docs/plans` contains specialist designs
+and method dispositions; `docs/development` contains architecture and validation.
+Dated numerical evidence lives in `docs/research/integrators`, and downstream SPH
+experiments in `docs/research/downstream`. Examples/notebooks live in `examples`,
+measurement drivers in `benchmarks`, coefficient/maintenance tools in `scripts`
+and durable plots in `docs/assets`. Public package boundaries and import examples
+are documented in the [API reference](../docs/api.md).

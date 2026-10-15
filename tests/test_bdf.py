@@ -2,10 +2,11 @@ import math
 
 import pytest
 
-from warpSPHIntegrators import getIntegrator, testing
-from warpSPHIntegrators.history import StepHistory
-from warpSPHIntegrators.bdf import getBDFCoefficients
-from warpSPHIntegrators.stability import bdf_characteristic_roots, bdf_is_stable
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.state import StepHistory
+from warpSPHIntegrators.drivers.history.bdf import getBDFCoefficients
+from warpSPHIntegrators.analysis.stability import bdf_characteristic_roots, bdf_is_stable
 
 
 # The order runs solve each BDF step with the exact (autograd) Jacobian and a tight
@@ -31,7 +32,7 @@ def _run(scheme, problem, dt, T, solver_opts=None):
 ])
 @pytest.mark.parametrize('problem_name', ['oscillator', 'forced', 'damped', 'kepler'])
 def test_bdf_reaches_its_claimed_order_with_threaded_history(name, expected_order, problem_name):
-    scheme = getIntegrator(name)
+    scheme = get_scheme(name)
     problem = testing.PROBLEMS[problem_name]()
     dts = testing.default_step_sizes(0.1, 5)
     errors = []
@@ -92,7 +93,7 @@ def test_bdf4_history_reset_on_dt_change_stays_correct():
     own guard) and the scheme falls back to the Dormand-Prince starter until the
     snapshots rebuild: no crash, no stale-snapshot mixing, still near the analytic
     solution."""
-    scheme = getIntegrator('BDF4')
+    scheme = get_scheme('BDF4')
     problem = testing.PROBLEMS['oscillator']()
     system = problem.initial()
     history = StepHistory(maxlen=max(1, scheme.steps))
@@ -107,7 +108,7 @@ def test_bdf4_history_reset_on_dt_change_stays_correct():
 
 
 def test_bdf2_without_history_uses_a_safe_high_order_startup():
-    scheme = getIntegrator('BDF2')
+    scheme = get_scheme('BDF2')
     problem = testing.PROBLEMS['oscillator']()
     result = scheme(problem.initial(), dt=0.1, f=problem.rhs)
     assert result.history is not None
@@ -115,7 +116,7 @@ def test_bdf2_without_history_uses_a_safe_high_order_startup():
 
 
 def test_bdf2_history_contains_the_previous_state_snapshot():
-    scheme = getIntegrator('BDF2')
+    scheme = get_scheme('BDF2')
     problem = testing.PROBLEMS['oscillator']()
     first = scheme(problem.initial(), dt=0.1, f=problem.rhs, history=StepHistory(maxlen=1))
     assert first.history.latest.state is not None

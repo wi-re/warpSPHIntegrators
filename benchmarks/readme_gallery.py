@@ -18,8 +18,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from warpSPHIntegrators import TensorState, tensor_rhs, getIntegrator, solve
-from warpSPHIntegrators.stability import rk_stability_function
+from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme, solve
+from warpSPHIntegrators.analysis.stability import rk_stability_function
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT/'docs/assets'
@@ -36,7 +36,7 @@ def oscillator():
     axes[1,0].plot(times, .5*(reference[:,0]**2+reference[:,1]**2), 'k--', label='Exact mechanical')
     axes[1,0].plot(times, reference[:,2], color='black', ls=':', label='Exact heat')
     for name in ('Forward Euler', "Heun's Method (2nd order)", 'RK4', 'Dormand-Prince 5(4)', 'TR-BDF2'):
-        method=getIntegrator(name);calls=0;gmres=0
+        method=get_scheme(name);calls=0;gmres=0
         def force(t,y):
             nonlocal calls
             calls+=1
@@ -80,10 +80,10 @@ def stability():
     fig,axes=plt.subplots(2,3,figsize=(11,7.2),layout='constrained')
     names=['Forward Euler','RK4','Dormand-Prince 5(4)','Backward Euler (implicit)','Implicit Midpoint','Radau IIA s=3']
     for ax,name in zip(axes.flat,names):
-        method=getIntegrator(name);f=method.function
+        method=get_scheme(name);f=method.function
         tableau=getattr(f,'butcherTableau',getattr(f,'dirkTableau',None))
         if tableau is None:
-            from warpSPHIntegrators import Collocation
+            from warpSPHIntegrators.schemes import Collocation
             tableau=Collocation('radau',stages=3).tableau
         a=np.asarray(tableau.a);b=np.asarray(tableau.b[0] if isinstance(tableau.b,tuple) else tableau.b);s=len(b)
         # Batched solves reproduce the package's scalar stability function.

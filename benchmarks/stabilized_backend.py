@@ -13,7 +13,8 @@ import sys
 import time
 
 import torch
-from warpSPHIntegrators import StabilizedRK,TensorState,tensor_rhs,solve
+from warpSPHIntegrators.schemes import StabilizedRK
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
 
 ROOT=Path(__file__).resolve().parents[1]
 FAMILIES=('rkl1','rkl2','rkg1','rkg2')
@@ -77,7 +78,7 @@ def measurements():
             max_error_order1=.02,max_error_order2=.001,all_passed=all(r['gate_passed'] for r in scale)),
         qualification='Fresh-process diffusion RSS subtracts pre-run high-water RSS. Euler comparison counts stability-limited steps, not equal-accuracy work. Supplied negative-real spectral bound; no nonnormal/complex-spectrum guarantee. Euler differences control local error; source norm/s filtering and FSAL are not reproduced. Stored stages/autograd graphs are not a low-storage execution path.',
         source_sha256={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (
-            ROOT/'src/warpSPHIntegrators/stabilized.py',Path(__file__).resolve())})
+            ROOT/'src/warpSPHIntegrators/schemes/families/stabilized.py',Path(__file__).resolve())})
 
 
 if __name__=='__main__':

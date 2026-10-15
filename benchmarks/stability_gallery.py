@@ -18,9 +18,9 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
-from warpSPHIntegrators.stability import bdf_is_stable, imex_stability_function, rk_is_stable
-from warpSPHIntegrators.integration import IntegrationSchemes
-from warpSPHIntegrators.ark import getARKTableau
+from warpSPHIntegrators.analysis.stability import bdf_is_stable, imex_stability_function, rk_is_stable
+from warpSPHIntegrators.schemes import IntegrationSchemes
+from warpSPHIntegrators.schemes.coefficients.additive import getARKTableau
 
 
 def _imex_euler_stability(z_explicit: complex, z_implicit: complex) -> complex:

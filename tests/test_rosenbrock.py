@@ -34,16 +34,11 @@ import pytest
 import torch
 
 from conftest import ORDER_TOLERANCE
-from warpSPHIntegrators import (
-    ROS3P,
-    SemilinearRHS,
-    StageResult,
-    getIntegrator,
-    flatten_integrated,
-    get_reference_state,
-    unflatten_integrated,
-)
-from warpSPHIntegrators import testing
+from warpSPHIntegrators.drivers.implicit.rosenbrock import integrateROS3P as ROS3P
+from warpSPHIntegrators.adapters import SemilinearRHS
+from warpSPHIntegrators.state import StageResult, flatten_integrated, get_reference_state, unflatten_integrated
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
 
 #: The canonical semi-discrete viscous-Burgers accuracy/cost setting (NOTES S3.12).
 T_BURGERS = 0.4
@@ -235,7 +230,7 @@ def test_w_linear_is_order_3_on_a_linear_problem(w):
     is designed for."""
     prob = _linear_diffusion_problem(n=32, nu=0.01)
     T = 0.4
-    ref = get_reference_state(testing.run(getIntegrator('RK4'), prob, dt=2e-3, T=T)).x
+    ref = get_reference_state(testing.run(get_scheme('RK4'), prob, dt=2e-3, T=T)).x
     dts = [0.04, 0.02, 0.01]
     errors = []
     for dt in dts:

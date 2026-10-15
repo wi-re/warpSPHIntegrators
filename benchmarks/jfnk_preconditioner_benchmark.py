@@ -26,7 +26,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import torch
 
-from warpSPHIntegrators import JFNKSolver, get_reference_state
+from warpSPHIntegrators.solvers import JFNKSolver
+from warpSPHIntegrators.state import get_reference_state
 from warpSPHIntegrators.testing import ParticleState, ParticleSystem
 
 DTYPE = torch.float64

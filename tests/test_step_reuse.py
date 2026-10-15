@@ -15,9 +15,11 @@ import warnings
 import pytest
 import numpy as np
 
-from warpSPHIntegrators import (JFNKSolver, getIntegrator, is_fsal, step_reuse_order,
-                                supports_step_reuse, testing)
-from warpSPHIntegrators.reuse import step_reuse_analysis
+from warpSPHIntegrators.solvers import JFNKSolver
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.analysis import is_fsal, step_reuse_order, supports_step_reuse
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.analysis import step_reuse_analysis
 
 from conftest import ORDER_TOLERANCE, dts_for, order_of, problem
 
@@ -58,7 +60,7 @@ FSAL_SCHEMES += [
 
 @pytest.mark.parametrize('name', FSAL_SCHEMES)
 def test_fsal_tableaus_have_matching_endpoint_and_explicit_first_stage(name):
-    s = getIntegrator(name)
+    s = get_scheme(name)
     fn = s.function
     tab = getattr(fn, 'dirkTableau', None)
     if tab is None:
@@ -146,7 +148,7 @@ def test_reuse_prediction_is_not_pessimistic(scheme, problem_name, step_sizes):
 @pytest.mark.parametrize('problem_name', ['oscillator', 'forced'])
 def test_fsal_reuse_is_free(name, problem_name, step_sizes):
     """An FSAL pair must lose neither order nor accuracy when reuse is switched on."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     assert is_fsal(s), f'{name} should be detected as FSAL from its tableau'
     assert supports_step_reuse(s)
 
@@ -196,7 +198,7 @@ def test_single_stage_schemes_refuse_reuse():
     two-step method it degenerates into has no stability region on the imaginary axis.
     The library must refuse rather than report an order.
     """
-    s = getIntegrator('Forward Euler')
+    s = get_scheme('Forward Euler')
     assert s.reuse_order is None
     assert not supports_step_reuse(s)
     assert 'stability' in step_reuse_analysis(s).reason
@@ -210,7 +212,7 @@ def test_single_stage_schemes_refuse_reuse():
                                   'Semi-Implicit Euler', 'Explicit Euler'])
 def test_schemes_without_reuse_warn_and_ignore(name, step_sizes):
     """These four used to leak `priorStep` into the user's right-hand side (NOTES 2.9)."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     assert s.reuse_order is None
 
     prob = problem('oscillator')
@@ -238,7 +240,7 @@ def test_prior_step_does_not_leak_into_the_rhs(name):
         assert 'priorStep' not in kwargs, f'{name} leaked priorStep into the RHS'
         return prob.rhs(system, dt)
 
-    s = getIntegrator(name)
+    s = get_scheme(name)
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', RuntimeWarning)
         s(prob.initial(), dt=0.05, f=strict_rhs, priorStep=('bogus', 'prior'))
@@ -247,9 +249,9 @@ def test_prior_step_does_not_leak_into_the_rhs(name):
 
 def test_degrading_reuse_warns_once():
     """The warning names the order actually achieved, and does not repeat per step."""
-    from warpSPHIntegrators import integration
+    import warpSPHIntegrators.schemes.model as integration
 
-    s = getIntegrator('SSP RK3')
+    s = get_scheme('SSP RK3')
     assert s.reuse_order == 1 and s.order == 3
     integration._warned_reuse.discard(s.name)
 
@@ -271,9 +273,9 @@ def test_degrading_reuse_warns_once():
 
 def test_lossless_reuse_does_not_warn():
     """Midpoint keeps its order under reuse, so opting in must be silent."""
-    from warpSPHIntegrators import integration
+    import warpSPHIntegrators.schemes.model as integration
 
-    s = getIntegrator('Midpoint')
+    s = get_scheme('Midpoint')
     assert s.supports_reuse
     integration._warned_reuse.discard(s.name)
 

@@ -16,8 +16,11 @@ import pytest
 import torch
 
 from conftest import EXACT_ON_LINEAR_PROBLEMS, NEEDS_SEMILINEAR_RHS, NEEDS_STAGE_COUNT
-from warpSPHIntegrators import JFNKSolver, getIntegrator, get_reference_state, testing
-from warpSPHIntegrators.integration import IntegrationSchemes
+from warpSPHIntegrators.solvers import JFNKSolver
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.state import get_reference_state
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.schemes import IntegrationSchemes
 
 #: Short and long horizons over the same problem. The long one is 8x the short one,
 #: so a scheme with secular drift shows a ratio near 8 and a symplectic one near 1.
@@ -105,7 +108,7 @@ def test_bounded_energy_schemes_are_exactly_the_expected_set():
 @pytest.mark.parametrize('name', ['Leap Frog', 'Velocity Verlet', 'PEFRL', 'VEFRL'])
 def test_energy_band_narrows_with_the_step_size(name):
     """The bound a symplectic scheme respects is O(dt^p), not just "some constant"."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     problem = testing.PROBLEMS['oscillator']()
     coarse = testing.max_energy_drift(s, problem, 0.1, T_SHORT)
     fine = testing.max_energy_drift(s, problem, 0.05, T_SHORT)
@@ -219,7 +222,7 @@ def test_high_order_area_defect_grows_with_the_step(name):
     below the 1e-7 floor at h = 1, must re-emerge at larger steps (a truly
     area-preserving map would stay at roundoff). Measured at h = 2.5:
     +1.97e-05 / -3.74e-04 / -9.76e-05 / -5.07e-04 / +7.97e-02."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     defect_h1 = abs(float(torch.linalg.det(_phase_jacobian(s, prob, dt=0.5))) - 1.0)
     assert defect_h1 < 1e-7, (
@@ -235,7 +238,7 @@ def test_high_order_area_defect_grows_with_the_step(name):
 def test_strict_jfnk_restores_linear_symplecticity(name):
     solver = JFNKSolver(tol=1e-12, gmres_tol=1e-12, newton_tol=1e-12, fd_eps=1e-6)
     determinant = float(torch.linalg.det(_phase_jacobian(
-        getIntegrator(name), testing.PROBLEMS['oscillator'](), solver=solver)))
+        get_scheme(name), testing.PROBLEMS['oscillator'](), solver=solver)))
     assert abs(determinant - 1.0) < 1e-7
 
 
@@ -270,5 +273,5 @@ def _kepler_symplectic_defect(scheme, dt=0.1, epsilon=1e-6):
 
 @pytest.mark.parametrize('name', sorted(NONLINEARLY_SYMPLECTIC))
 def test_symplectic_schemes_preserve_the_kepler_symplectic_form(name):
-    defect = _kepler_symplectic_defect(getIntegrator(name))
+    defect = _kepler_symplectic_defect(get_scheme(name))
     assert defect < 2e-6, f'{name}: ||D Phi^T Omega D Phi - Omega||_inf={defect:.3e}'

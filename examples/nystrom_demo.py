@@ -7,7 +7,10 @@ Velocity-independent methods require --damping 0 (passive heat).
 import argparse
 import math
 import torch
-from warpSPHIntegrators import Nystrom,testing,solve,ConservativeDissipativeRHS
+from warpSPHIntegrators.schemes import Nystrom
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators import solve
+from warpSPHIntegrators.wrappers import ConservativeDissipativeRHS
 
 
 def problem(n=1,damping=.4):

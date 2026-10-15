@@ -2,7 +2,8 @@
 
 import math
 import torch
-from warpSPHIntegrators import TensorState, tensor_rhs, solve, Event
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
+from warpSPHIntegrators.runtime import Event
 
 
 def run_example():

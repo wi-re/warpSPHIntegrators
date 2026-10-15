@@ -17,11 +17,16 @@ import pytest
 import torch
 
 from conftest import dts_for
-from warpSPHIntegrators import (FixedPointSolver, get_reference_state, getIntegrator,
-                                is_fsal, step_reuse_order, supports_step_reuse, testing)
-from warpSPHIntegrators.dirk import DIRK, _dirk_reuses_first_stage, getDIRKTableau
-from warpSPHIntegrators import JFNKSolver
-from warpSPHIntegrators.stability import rk_stability_function
+from warpSPHIntegrators.solvers import FixedPointSolver
+from warpSPHIntegrators.state import get_reference_state
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.analysis import is_fsal, step_reuse_order, supports_step_reuse
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.drivers.implicit.dirk import DIRK
+from warpSPHIntegrators.drivers.implicit.dirk import _dirk_reuses_first_stage
+from warpSPHIntegrators.schemes.coefficients.implicit import getDIRKTableau
+from warpSPHIntegrators.solvers import JFNKSolver
+from warpSPHIntegrators.analysis.stability import rk_stability_function
 
 DIRK_SCHEMES = [
     'Backward Euler (implicit)', 'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)',
@@ -69,13 +74,13 @@ def test_sspsdirk2_is_symplectic_midpoint_composition():
     for z in [-100.0, -1.0, 1j, -2.0 + 3j]:
         assert rk_stability_function(tab, z) == pytest.approx(((1 + z/4) / (1 - z/4))**2)
     assert rk_stability_function(tab, -1e8) == pytest.approx(1.0, abs=2e-7)
-    assert not getIntegrator('SSPSDIRK2').dissipation
+    assert not get_scheme('SSPSDIRK2').dissipation
 
 
 @pytest.mark.parametrize('name', ['ESDIRK4(3)7L[2]SA', 'ESDIRK6(5)9L[2]SA', 'SFSDIRK6'])
 def test_strict_solve_recovers_kepler_order_on_standard_grid(name):
     """Distinguish stage-solver noise from tableau defects without loosening order."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     solver = JFNKSolver(tol=1e-14, gmres_tol=1e-14, newton_tol=1e-14, fd_eps=1e-6)
 
     def step(state, dt, f, **kwargs):
@@ -91,7 +96,7 @@ def test_strict_solve_recovers_kepler_order_on_standard_grid(name):
 def semilinear_reference():
     """A nonlinear semilinear vector problem; the reference is step-refined."""
     prob = testing.viscous_burgers_problem(n=16, nu=0.1)
-    rk4 = getIntegrator('RK4')
+    rk4 = get_scheme('RK4')
     coarse = get_reference_state(testing.run(rk4, prob, 0.0005, T=0.1)).x
     fine = get_reference_state(testing.run(rk4, prob, 0.00025, T=0.1)).x
     assert torch.max(torch.abs(coarse - fine)) < 1e-9
@@ -106,7 +111,7 @@ def test_dirk_converges_on_semilinear_burgers(name, semilinear_reference):
     their stronger stiff-step limitations are pinned by the stability tests.
     """
     prob, reference = semilinear_reference
-    s = getIntegrator(name)
+    s = get_scheme(name)
     errors = []
     for dt in [0.02, 0.01]:
         state = prob.initial()
@@ -123,7 +128,7 @@ def test_dirk_converges_on_semilinear_burgers(name, semilinear_reference):
 
 
 def test_newmark_reaches_second_order_on_the_oscillator():
-    s = getIntegrator('Newmark')
+    s = get_scheme('Newmark')
     prob = testing.PROBLEMS['oscillator']()
     dts = testing.default_step_sizes(0.1, 5)
     order, errors = testing.convergence(s, prob, dts, T=2.0)
@@ -141,7 +146,7 @@ def test_newmark_reaches_second_order_on_the_oscillator():
 def test_newmark_rejects_invalid_beta_or_gamma(kwargs):
     prob = testing.PROBLEMS['oscillator']()
     with pytest.raises(ValueError, match='beta|gamma'):
-        getIntegrator('Newmark')(prob.initial(), dt=0.1, f=prob.rhs, **kwargs)
+        get_scheme('Newmark')(prob.initial(), dt=0.1, f=prob.rhs, **kwargs)
 
 
 # --------------------------------------------------------------------------- #
@@ -223,7 +228,7 @@ def test_esdirk_like_tableaus_have_an_explicit_first_stage(name):
 @pytest.mark.parametrize('name', DIRK_SCHEMES)
 @pytest.mark.parametrize('problem_name', ['oscillator', 'forced', 'damped'])
 def test_dirk_scheme_reaches_its_claimed_order(name, problem_name):
-    s = getIntegrator(name)
+    s = get_scheme(name)
     # ESDIRK6(5)9L[2]SA's standard-grid errors sit at the roundoff floor on
     # oscillator/forced (NOTES.md 3.28); dts_for gives it the coarser grid.
     dts = dts_for(name, problem_name, testing.default_step_sizes(0.1, 5))
@@ -361,7 +366,7 @@ def test_dirk_defaults_to_jfnk_on_a_stiff_backward_euler_stage():
 @pytest.mark.parametrize('name', DIRK_NO_REUSE_SCHEMES)
 def test_dirk_rejects_prior_step_with_a_warning(name):
     """Implicit first stage (SDIRK2) or single-stage (BE / midpoint): no reuse."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     first = s(prob.initial(), dt=0.1, f=prob.rhs)
     with pytest.warns(RuntimeWarning, match='does not support first-stage reuse'):
@@ -371,7 +376,7 @@ def test_dirk_rejects_prior_step_with_a_warning(name):
 @pytest.mark.parametrize('name', DIRK_REUSE_SCHEMES)
 def test_dirk_accepts_prior_step_without_a_warning(name):
     """Stiffly accurate + explicit first stage: reuse is lossless, so no warning."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     first = s(prob.initial(), dt=0.1, f=prob.rhs)
     with warnings.catch_warnings():
@@ -383,7 +388,7 @@ def test_dirk_accepts_prior_step_without_a_warning(name):
 def test_dirk_reuse_preserves_the_measured_order(name, step_sizes):
     """The reuse gate: order with reuse must equal the scheme's order, not drop."""
     from conftest import ORDER_TOLERANCE, order_of
-    s = getIntegrator(name)
+    s = get_scheme(name)
     assert step_reuse_order(s) == s.order
     assert supports_step_reuse(s) and is_fsal(s)
     for problem_name in ['oscillator', 'forced']:
@@ -408,7 +413,7 @@ def test_dirk_reuse_saves_an_explicit_evaluation_per_step(name):
     on the implicit stages varies by a few from step to step (NOTES.md 3.28 measured
     per-step savings of -7 to +3 for KenCarp47), so the total is a band, not a count.
     """
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
 
     def count(reuse):
@@ -449,7 +454,7 @@ def test_dirk_stiffly_accurate_metadata_matches_the_tableau(name):
     ignored -- a silent divergence. This test is what makes the metadata a real consumer
     rather than an unverified flag.
     """
-    s = getIntegrator(name)
+    s = get_scheme(name)
     # The tableau the scheme actually carries (same object the driver decides reuse
     # from), not a re-lookup by enum name -- the enum names are lowercase and are not
     # `getDIRKTableau`'s keys.
@@ -471,9 +476,9 @@ def test_dirk_stiffly_accurate_metadata_matches_the_tableau(name):
 @pytest.mark.parametrize('name', DIRK_SCHEMES)
 def test_dirk_history_is_bookkeeping_only(name):
     """Same guarantee as the RK path: history= must not silently enable reuse."""
-    from warpSPHIntegrators import StepHistory
+    from warpSPHIntegrators.state import StepHistory
 
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     plain = s(prob.initial(), dt=0.1, f=prob.rhs).state
     with_history = s(prob.initial(), dt=0.1, f=prob.rhs, history=StepHistory(maxlen=2)).state
@@ -482,7 +487,7 @@ def test_dirk_history_is_bookkeeping_only(name):
 
 @pytest.mark.parametrize('name', DIRK_SCHEMES)
 def test_dirk_scheme_does_not_mutate_the_caller_state(name):
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     system = prob.initial()
     before_x = system.state.x.clone()

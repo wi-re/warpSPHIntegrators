@@ -4,31 +4,15 @@ The canonical enum does not tell a user which entry is an explicit
 scheme and which is an implicit one, so the library also ships one enum per
 driver family (enums.FAMILY_ENUMS). These tests pin the contract those views
 must keep: exhaustive and disjoint over the pinned family sizes, same name and value
-as the canonical members, `getIntegrator` accepting every lookup form, and
+as the canonical members, `get_scheme` accepting every lookup form, and
 `IntegrationScheme.family` reporting the right class.
 """
 
 import pytest
 
-from warpSPHIntegrators import (
-    CoupledRK,
-    DIRK,
-    Exponential,
-    ExplicitRK,
-    FAMILY_ENUMS,
-    IMEX,
-    IntegrationSchemeType,
-    LinearlyImplicit,
-    MultistepExplicit,
-    MultistepImplicit,
-    Newmark,
-    RelaxedChebyshev,
-    SCHEME_FAMILY,
-    Symplectic,
-    getIntegrator,
-    getIntegrationEnum,
-)
-from warpSPHIntegrators.integration import IntegrationSchemes
+from warpSPHIntegrators.schemes import CoupledRK, DIRK, Exponential, ExplicitRK, FAMILY_ENUMS, IMEX, IntegrationSchemeType, LinearlyImplicit, MultistepExplicit, MultistepImplicit, Newmark, RelaxedChebyshev, SCHEME_FAMILY, Symplectic
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.schemes import IntegrationSchemes
 
 # The member count per family, in FAMILY_ENUMS order. A count change means a
 # scheme moved families or a new one was registered -- both worth a look.
@@ -86,18 +70,18 @@ def test_getintegrator_accepts_all_lookup_forms():
     for family in FAMILY_ENUMS:
         for member in family:
             scheme = by_value[member.value]
-            assert getIntegrator(scheme.name) is scheme
-            assert getIntegrator(scheme.identifier) is scheme
-            assert getIntegrator(scheme.identifier.name) is scheme
-            assert getIntegrator(member) is scheme
-            assert getIntegrationEnum(member) is scheme.identifier
+            assert get_scheme(scheme.name) is scheme
+            assert get_scheme(scheme.identifier) is scheme
+            assert get_scheme(scheme.identifier.name) is scheme
+            assert get_scheme(member) is scheme
+            assert get_scheme(member).identifier is scheme.identifier
 
 
 def test_unknown_integrator_reports_close_matches():
     with pytest.raises(ValueError, match="Did you mean"):
-        getIntegrator('RK5')
+        get_scheme('RK5')
     with pytest.raises(ValueError) as excinfo:
-        getIntegrator(42)
+        get_scheme(42)
     # 42 is not an Enum, so no name suggestion is possible.
     assert "Did you mean" not in str(excinfo.value)
 
@@ -141,4 +125,4 @@ def test_family_membership_spot_checks():
         ('SFSDIRK8', DIRK),
     ]
     for name, family in expectations:
-        assert getIntegrator(name).family is family, name
+        assert get_scheme(name).family is family, name

@@ -4,8 +4,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 import torch
-from warpSPHIntegrators import (TensorState,BlockState,tensor_rhs,getIntegrator,
-    stage_shifted_preconditioner)
+from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme
+from warpSPHIntegrators.state import BlockState
+from warpSPHIntegrators.solvers import stage_shifted_preconditioner
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'benchmarks'))
 from collocation_prototypes import prototype_scheme,prototype_tableau
 

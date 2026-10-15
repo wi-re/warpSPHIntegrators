@@ -9,6 +9,7 @@ runtime; project imports must still come entirely from the venv's installed whee
 import argparse
 import json
 import os
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -41,13 +42,23 @@ def main():
                    PIP_CACHE_DIR=str(work / 'pip-cache'))
         def run(command, cwd=work):
             subprocess.run(command, cwd=cwd, env=env, check=True)
+        # Build from a clean source staging tree. Setuptools' persistent build/lib
+        # can otherwise retain deleted flat modules after a package refactor.
+        staged=work/'source';staged.mkdir()
+        shutil.copytree(ROOT/'src',staged/'src',ignore=shutil.ignore_patterns('__pycache__','*.egg-info'))
+        for name in ('pyproject.toml','README.md'):
+            shutil.copyfile(ROOT/name,staged/name)
+        for license_file in ROOT.glob('LICEN[CS]E*'):
+            if license_file.is_file():shutil.copyfile(license_file,staged/license_file.name)
         run([sys.executable, '-m', 'build', '--wheel', '--no-isolation',
-             '--outdir', str(work / 'dist'), str(ROOT)])
+             '--outdir', str(work / 'dist'), str(staged)])
         wheel, = (work / 'dist').glob('*.whl')
         with zipfile.ZipFile(wheel) as archive:
             names = archive.namelist()
             assert 'warpSPHIntegrators/py.typed' in names
-            assert 'warpSPHIntegrators/tensor.py' in names
+            assert 'warpSPHIntegrators/adapters/tensor.py' in names
+            expected={str(p.relative_to(ROOT/'src')) for p in (ROOT/'src/warpSPHIntegrators').rglob('*.py')}
+            assert {n for n in names if n.endswith('.py')}==expected, 'Wheel contains missing or stale Python modules'
             assert not any('__pycache__' in n or n.endswith('.pyc') for n in names)
         target = work / 'venv'
         venv.EnvBuilder(with_pip=True, system_site_packages=args.reuse_dependencies).create(target)

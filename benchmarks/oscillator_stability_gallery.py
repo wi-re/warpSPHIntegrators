@@ -22,7 +22,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
-from warpSPHIntegrators.stability import oscillator_spectral_radius
+from warpSPHIntegrators.analysis.stability import oscillator_spectral_radius
 
 
 def _damped_rho_grid(method: str, h_omega: np.ndarray, zeta: np.ndarray) -> np.ndarray:

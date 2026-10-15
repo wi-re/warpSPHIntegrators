@@ -22,8 +22,9 @@ import sys
 import time
 
 import torch
-from warpSPHIntegrators import (TensorState,tensor_rhs,getIntegrator,
-    stage_block_preconditioner,flatten_integrated)
+from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme
+from warpSPHIntegrators.solvers import stage_block_preconditioner
+from warpSPHIntegrators.state import flatten_integrated
 from collocation_prototypes import prototype_scheme
 
 
@@ -46,7 +47,7 @@ def case(args):
     initial,rhs,diagonal=problem(args.n,args.problem)
     names={'gauss2':'Gauss-Legendre 2','radau2':'Radau IIA s=2','sdirk2':'SDIRK2',
            'gauss3':'Gauss-Legendre 3','radau3':'Radau IIA s=3'}
-    scheme=prototype_scheme(args.scheme) if args.scheme.endswith('3') and not getattr(args,'registered',False) else getIntegrator(names[args.scheme])
+    scheme=prototype_scheme(args.scheme) if args.scheme.endswith('3') and not getattr(args,'registered',False) else get_scheme(names[args.scheme])
     stages=3 if args.scheme.endswith('3') else 2
     opts=dict(matvec='jvp',tol=1e-10,newton_tol=1e-6,gmres_maxiter=120,gmres_restart=30,max_iterations=6)
     if args.mode=='block':

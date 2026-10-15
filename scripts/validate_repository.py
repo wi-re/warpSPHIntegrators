@@ -8,6 +8,7 @@ Site routes are resolved to docs/docs; Docusaurus validates rendering separately
 import ast
 import argparse
 import hashlib
+import importlib
 import json
 from pathlib import Path
 import re
@@ -118,7 +119,7 @@ def validate(root=ROOT):
                     if fragment not in valid and not re.fullmatch(r'L\d+(?:-L\d+)?', fragment):
                         errors.append(f'{path.relative_to(root)}: missing anchor {link}')
 
-    from warpSPHIntegrators import IntegrationSchemes
+    from warpSPHIntegrators.schemes import IntegrationSchemes
     ledger = json.loads((root / 'docs/plans/method-dispositions.json').read_text())
     registered = ledger['registered_methods']
     names = [entry['identifier'] for entry in registered]
@@ -134,6 +135,29 @@ def validate(root=ROOT):
         for relative in [entry['implementation']['file'], entry['evidence'], *entry['tests']]:
             if not (root / relative).is_file():
                 errors.append(f'{entry["name"]}: missing ledger evidence {relative}')
+
+    for entry in registered:
+        relative=Path(entry['implementation']['file'])
+        if relative.parts[:2] == ('src','warpSPHIntegrators'):
+            module='.'.join(relative.with_suffix('').parts[1:])
+            if not hasattr(importlib.import_module(module),entry['implementation']['constructor']):
+                errors.append(f"{entry['name']}: implementation constructor does not resolve")
+
+    # Import-only inspection catches stale advanced paths in benchmarks,
+    # coefficient tools and conditional test branches without executing them.
+    bindings=0
+    for directory in ('src','tests','scripts','examples','benchmarks'):
+        for path in (root/directory).rglob('*.py'):
+            if '__pycache__' in path.parts:continue
+            for node in ast.walk(ast.parse(path.read_text())):
+                if isinstance(node,ast.ImportFrom) and node.module and node.module.startswith('warpSPHIntegrators'):
+                    try:
+                        module=importlib.import_module(node.module)
+                        for alias in node.names:
+                            if alias.name!='*':getattr(module,alias.name);bindings+=1
+                    except (ImportError,AttributeError) as exc:
+                        errors.append(f'{path.relative_to(root)}: {exc}')
+    print(f'{bindings} integrator import bindings checked')
 
     coefficient_root = root / 'scripts/coefficients'
     manifest = json.loads((coefficient_root / 'promotion-manifest.json').read_text())

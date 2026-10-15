@@ -10,7 +10,9 @@ import sys
 import time
 import numpy as np
 import torch
-from warpSPHIntegrators import ExpandedRK,expanded_rk_methods,TensorState,tensor_rhs,solve,getIntegrator,filter_schemes
+from warpSPHIntegrators.schemes import ExpandedRK, filter_schemes
+from warpSPHIntegrators.schemes.coefficients.expanded import expanded_rk_methods
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
 
 ROOT=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('expanded_generator',ROOT/'scripts/coefficients/wave16/generate.py')
@@ -48,7 +50,7 @@ def equivalence_screen(methods):
 
 def measurements():
     qualified=[ExpandedRK(name) for name in expanded_rk_methods()]
-    methods=[*qualified,getIntegrator('RK4'),getIntegrator('dormandPrince')]
+    methods=[*qualified,get_scheme('RK4'),get_scheme('dormandPrince')]
     fixed=[];adaptive=[]
     for n in (64,4096):
         rates=torch.linspace(.1,10,n,dtype=torch.float64)
@@ -81,8 +83,8 @@ def measurements():
         cases=fixed,adaptive=adaptive,equivalence_screen=equivalence_screen(qualified),
         qualification='Analytic nonlinear manufactured reaction and damped planar rotations with generated heat. Source-expanded full-stage RK with owned state; no low-storage, source FSAL/controller or SSP/conservation claim. Entry counts include physical endpoint/retries. Same grids/tolerances are not equal-accuracy speed claims; high-order fine results can reach roundoff.',
         source_sha256={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (
-            ROOT/'src/warpSPHIntegrators/expanded_rk.py',ROOT/'src/warpSPHIntegrators/_expanded_rk_data.py',
-            ROOT/'src/warpSPHIntegrators/butcher.py',ROOT/'src/warpSPHIntegrators/run.py',Path(__file__).resolve())})
+            ROOT/'src/warpSPHIntegrators/schemes/families/expanded_rk.py',ROOT/'src/warpSPHIntegrators/schemes/coefficients/expanded_data.py',
+            ROOT/'src/warpSPHIntegrators/schemes/definitions/explicit.py',ROOT/'src/warpSPHIntegrators/runtime/run.py',Path(__file__).resolve())})
 
 
 if __name__=='__main__':

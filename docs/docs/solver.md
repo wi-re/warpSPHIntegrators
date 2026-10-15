@@ -10,29 +10,28 @@ error estimates turn into step-size proposals.
 
 ## The `NonlinearSolver` protocol
 
-Every stage equation in this library is written as a fixed-point problem
+The nonlinear stages in DIRK, coupled RK, Newmark and implicit multistep methods is written as a fixed-point problem
 
 $$
 Y = G(Y), \qquad G(Y) = \text{base} + \text{(diagonal term evaluated at } Y\text{)},
 $$
 
 and closed by a `NonlinearSolver.solve(step_fn, y0, norm, **opts) -> SolveResult`
-(`solvers.py` / `jfnk.py`). Three implementations:
+from `warpSPHIntegrators.solvers`. Three implementations:
 
 | Solver | Behaviour | Use when |
 |---|---|---|
-| `FixedPointSolver(iterations=2)` | Exactly `iterations` Picard iterates, no convergence check. | Non-stiff problems where a fixed depth is known to be accurate; the only choice that stays CUDA-graph-capturable. |
+| `FixedPointSolver(iterations=2)` | Exactly `iterations` Picard iterates, no convergence check. | Non-stiff problems where a fixed depth is known to be accurate; fixed-depth solves can suit graph capture when the state and RHS backend also support it. |
 | `RelaxedFixedPointSolver(relaxation=0.5, iterations=2)` | Picard with under-relaxation and optional early exit. | Mildly stiff problems, cheaper than Newton. |
 | `JFNKSolver(...)` | Inexact Newton (outer loop) + GMRES (inner linear solve), matrix-free. | Default for DIRK, coupled RK, Newmark and implicit multistep/IMEX stages. ROS3P instead uses a frozen-operator linear solve. |
 
 `SolveResult` carries the converged iterate and a `SolveDiagnostics` entry
 (residual, `gmres_iterations`, `rhs_evaluations`, `termination`
-`'tolerance'`/`'stagnation'`, `line_search_backtracks`). The Phase 1
-**work-unit invariant** holds for every step:
-
-$$
-\text{total step evaluations} \;=\; \texttt{rhs\_evaluations} + \texttt{gmres\_iterations}.
-$$
+`'tolerance'`/`'stagnation'`, `line_search_backtracks`). Count outer map/RHS
+calls, Jacobian actions and physical stage work separately: exact JVP, finite-
+difference and frozen-operator drivers do not share one universal RHS-cost
+formula. The benchmark's counted callback calls and wall time give the practical
+cost alongside solver diagnostics.
 
 ## JFNK (`JFNKSolver`)
 
@@ -50,7 +49,7 @@ $Y - G(Y)$, applied **matrix-free** by one of two matvecs:
 Convergence has two independent exits:
 
 - `norm(Y, G(Y)) < newton_tol` (defaults to `tol`, the GMRES tolerance, when not
-  given). Callers with a differently-scaled `norm` — e.g. `dirk.py`'s
+  given). Callers with a differently-scaled `norm` — e.g. the DIRK driver's
   Hairer-Wanner weighted-RMS, whose own convention is "< 1 means converged" —
   can pass `newton_tol` explicitly. DIRK currently leaves the solver's
   threshold unchanged unless `solver_opts` overrides it.
@@ -59,7 +58,9 @@ Convergence has two independent exits:
   the immediately preceding value for `newton_stagnation_patience` (2)
   consecutive iterations, the plateau *is* the solve's floor (it is
   resolution-dependent: ~1.5e-4 at 16K particles, ~2.3e-3 at 1M) and the
-  iterate is reported converged with `termination='stagnation'`.
+  low-level solve reports `termination='stagnation'`. This is a precision-floor
+  exit, not proof that the requested tolerance was met. `solve` rejects it by
+  default unless `allow_stagnation=True` is deliberately selected.
 
 Options: `max_iterations` (Newton-correction budget, 20; the `step` call count
 is budget + 1), `gmres_tol`/`gmres_maxiter`/`gmres_restart` (forwarded to
@@ -77,11 +78,11 @@ breakdown).
 and a small Hessenberg system, with Givens rotations for the least-squares
 solve. It applies the system operator through matvecs and reports the
 `gmres_iterations` count. It supports **left and right
-preconditioning** (Phase 2, NOTES.md §3.4):
+preconditioning** :
 
 [example:skip Provide my_preconditioner and the step dt]: #
 ```python
-from warpSPHIntegrators import JFNKSolver
+from warpSPHIntegrators.solvers import JFNKSolver
 
 solver = JFNKSolver(
     preconditioner=my_preconditioner,   # callable: (v, state, context) -> vector
@@ -97,7 +98,7 @@ solve) and `diagonal_preconditioner` (mass/diagonal scaling). The hook is a
 problem context. Measured on the advection benchmark, diagonal preconditioning
 helps only weakly (condition number 5.06 on the 256-DOF block system) — the
 block system's spectrum is a two-dimensional annulus, not a diagonal-dominant
-cluster (NOTES.md §3.18).
+cluster (see the numerical record).
 
 ## Stage-aware preconditioning and warm guesses
 
@@ -112,12 +113,13 @@ transpose solve. For example:
 [example:run stage-preconditioner]: #
 ```python
 import torch
-from warpSPHIntegrators import TensorState, tensor_rhs, getIntegrator, stage_block_preconditioner
+from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme
+from warpSPHIntegrators.solvers import stage_block_preconditioner
 
 rates = torch.logspace(0, 3, 64, dtype=torch.float64)
 state = TensorState(torch.ones_like(rates))
 rhs = tensor_rhs(lambda t, y: -rates*y)
-result = getIntegrator('Radau IIA s=2')(state, .01, rhs, solver_opts={
+result = get_scheme('Radau IIA s=2')(state, .01, rhs, solver_opts={
     'matvec': 'jvp', 'tol': 1e-10, 'newton_tol': 1e-7,
     'preconditioner': stage_block_preconditioner(-rates),
 })
@@ -128,12 +130,12 @@ DIRK supplies `dt`, `stage_index`, `stage_time` and
 `stage_coefficient=dt*a_ii`. Driver-owned context keys override application keys.
 An implicit-first DIRK can accept `warmStart=previous.stages[0]`; coupled RK
 accepts the full previous stage list. These are guesses, never derivative reuse.
-They remain opt-in: Phase 6's measured transients show no consistent gain, and a
+They remain opt-in: the measured transient cases show no consistent gain, and a
 warm guess can cost more than a cold solve. The local stage-block approximation
 passes reaction cases but fails the original diffusion scale gate. Shifted spatial
 solves subsequently qualified fixed s=3 registrations, and real Schur spatial
 preconditioning supports the parameterized stages 2–9 backend. See the
-[Phase 6 evidence](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/phase6-validation.md)
+[scale evidence](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/phase6-validation.md)
 and [higher-stage qualification](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/higher-collocation-validation.md).
 
 ## Spatial solves for coupled stages
@@ -150,12 +152,13 @@ only and is a forward preconditioner; adjoint solves retain their existing path.
 [example:run shifted-spatial]: #
 ```python
 import torch
-from warpSPHIntegrators import TensorState, tensor_rhs, getIntegrator, stage_shifted_preconditioner
+from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme
+from warpSPHIntegrators.solvers import stage_shifted_preconditioner
 
 rates = torch.logspace(0, 3, 32, dtype=torch.float64)
 preconditioner = stage_shifted_preconditioner(
     lambda state, context: lambda shift, vector: vector / (1 + shift*rates))
-result = getIntegrator('Radau IIA s=2')(
+result = get_scheme('Radau IIA s=2')(
     TensorState(torch.ones_like(rates)), .01, tensor_rhs(lambda t, y: -rates*y),
     solver_opts={'matvec': 'jvp', 'tol': 1e-10, 'newton_tol': 1e-7,
                  'preconditioner': preconditioner})
@@ -165,12 +168,12 @@ assert result.step_status.tolerance_converged
 The [spatial follow-up](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/spatial-followup-validation.md)
 compares direct sparse LU, ILU and shifted spatial solves on the unchanged
 reaction/diffusion gate. Its passing 1D result does not establish a generic
-unstructured SPH preconditioner or remove the wave 9 companion/source gates.
+unstructured SPH preconditioner or remove the method-specific companion/source gates.
 
 ## Adaptive step control
 
 The [run API](runs) owns adaptive acceptance and rollback. For applications that
-keep their own stepping loop, `adaptive.py` also exposes the original helpers:
+keep their own stepping loop, `warpSPHIntegrators.runtime` exposes these helpers:
 
 - `estimate_error_norm(result, rtol=1e-3, atol=1e-6)` measures the
   weighted RMS of `result.error`, scaled against `result.state`. A value of
@@ -194,10 +197,12 @@ commit, or retain a caller-owned loop with these helpers.
 
 [example:run adaptive]: #
 ```python
-from warpSPHIntegrators import estimate_error_norm, getIntegrator, propose_dt, testing
+from warpSPHIntegrators.runtime import estimate_error_norm, propose_dt
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
 
 problem = testing.oscillator_problem()
-scheme = getIntegrator('Gauss-Legendre 2')
+scheme = get_scheme('Gauss-Legendre 2')
 initial = problem.initial()
 dt = 0.1
 result = scheme(initial, dt=dt, f=problem.rhs)
@@ -216,8 +221,8 @@ The nonlinear-solver overhead is benchmarked, not assumed:
 `benchmarks/jfnk_preconditioner_benchmark.py` and the `examples/integrations/jfnk_wave_equation.ipynb` notebook
 measure GMRES iterations vs. the frozen-operator condition number for the wave
 equation, and `benchmarks/blockrk_benchmark.py` the block-solve cost for the
-coupled pair. The practical rule of thumb (NOTES.md §3.4): for a problem whose
+coupled pair. In those measured problems, for a problem whose
 stage-operator spectrum is clustered, JFNK at the default tolerances costs
 3-6 `step` evaluations per stage; for a spread (annular) spectrum, the inner
 Krylov may need no-restart GMRES on the full system (`gmres_restart` ≥
-system size) rather than a cheap restart (NOTES.md §3.18).
+system size) rather than a cheap restart (see the numerical record).

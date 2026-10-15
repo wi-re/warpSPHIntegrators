@@ -19,8 +19,8 @@ are optional; KenCarp/ARS DIRKs supply their pure implicit tableaus.
 Stability labels and reuse qualifications are explained in the family pages.
 
 Friendly names spell out authors and method constructions. The enum column
-gives the exact family member accepted by `getIntegrator`, for example
-`getIntegrator(ExplicitRK.tsit5)` for Tsitouras 5(4). Family members share
+gives the exact family member accepted by `get_scheme`, for example
+`get_scheme(ExplicitRK.tsit5)` for Tsitouras 5(4). Family members share
 their values with `IntegrationSchemeType`. Existing lookup strings keep
 their original spelling; these documentation labels do not add string aliases.
 

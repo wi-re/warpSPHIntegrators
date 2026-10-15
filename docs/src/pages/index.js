@@ -5,14 +5,14 @@ import catalog from '@site/src/data/catalog.json';
 
 export default () => (
   <Layout
-    title="warpSPHIntegrators — scheme wiki"
+    title="warpSPHIntegrators — methods and examples"
     description={`Differentiable ODE integrators for PyTorch: ${catalog.summary.scheme_count} schemes across ${catalog.summary.family_count} families, matrix-free implicit machinery, end-to-end autograd.`}
   >
     <header className="hero hero--primary">
       <div className="container text--center">
         <h1>
           warpSPHIntegrators
-          <span className="heroSubtitle">scheme wiki</span>
+          <span className="heroSubtitle">Methods, examples and practical guidance</span>
         </h1>
         <p className="heroTagline">
           Differentiable ODE integrators for PyTorch — {catalog.summary.scheme_count} schemes across {catalog.summary.family_count} families,
@@ -23,17 +23,17 @@ export default () => (
           <div className="col">
             <Link
               className="button button--primary button--lg"
-              to="docs/families/explicit-rk"
+              to="docs/quickstart"
             >
-              Browse the wiki →
+              Run your first example →
             </Link>
           </div>
           <div className="col">
             <Link
               className="button button--secondary button--lg"
-              to="https://github.com/wi-re/warpSPHIntegrators"
+              to="docs/selection"
             >
-              GitHub
+              Choose a method
             </Link>
           </div>
         </div>
@@ -44,19 +44,19 @@ export default () => (
       <div className="container pad-top--lg pad-bottom--lg">
         <div className="row">
           <FeatureCard title={`${catalog.summary.scheme_count} schemes, ${catalog.summary.family_count} families`}>
-            Equations and Butcher tableaus with source citations and documented
-            corrections, stability, and per-step cost — with the
-            test files that pin every measured claim.
+            Start with decay and a damped oscillator, then compare accuracy,
+            stability and measured work. Friendly method names appear alongside
+            their exact enum values and coefficient references.
           </FeatureCard>
-          <FeatureCard title="Matrix-free implicit machinery">
-            JFNK + GMRES with exact-JVP matvecs, left/right
-            preconditioning, and the work-unit invariant that makes solver
-            overhead benchmarkable.
+          <FeatureCard title="Solving stiff problems">
+            Implicit methods solve stage equations. Jacobian-free Newton–Krylov
+            (JFNK) uses Jacobian actions rather than a stored matrix; diagnostics
+            report nonlinear convergence, RHS work and Krylov iterations.
           </FeatureCard>
-          <FeatureCard title="Differentiable end-to-end">
-            Nonlinear implicit stages use implicit-function-theorem
-            re-attachment, with dedicated gradient checks for the frozen
-            linear and exponential operators.
+          <FeatureCard title="Gradients and custom systems">
+            Begin with a tensor ODE or use the state protocol for coupled fields
+            and stage-dependent quantities. Each family documents its gradient,
+            operator and history assumptions, with runnable examples.
           </FeatureCard>
         </div>
       </div>

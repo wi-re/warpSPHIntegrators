@@ -7,7 +7,8 @@ from pathlib import Path
 import time
 
 import torch
-from warpSPHIntegrators import Collocation, TensorState, tensor_rhs
+from warpSPHIntegrators.schemes import Collocation
+from warpSPHIntegrators import TensorState, tensor_rhs
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -44,7 +45,7 @@ def measurements():
                     measured_order=measured,qualification='Observational strict-solve accuracy/work run. Precision-floor steps are recorded; no order fit for affected/floored pairs. Coarse grids may be preasymptotic.',results=results))
     return dict(device='cpu',dtype='float64',threads=1,rows=rows,
         source_sha256={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in
-                      (ROOT/'src/warpSPHIntegrators/collocation.py',Path(__file__).resolve())})
+                      (ROOT/'src/warpSPHIntegrators/schemes/families/collocation.py',Path(__file__).resolve())})
 
 
 if __name__=='__main__':

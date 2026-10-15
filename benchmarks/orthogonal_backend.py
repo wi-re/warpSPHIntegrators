@@ -7,7 +7,8 @@ from pathlib import Path
 import time
 
 import torch
-from warpSPHIntegrators import OrthogonalRK, StabilizedRK, TensorState, tensor_rhs, solve, getIntegrator
+from warpSPHIntegrators.schemes import OrthogonalRK, StabilizedRK
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
 
 
 def measurements():
@@ -25,7 +26,7 @@ def measurements():
                 configurations.append((OrthogonalRK(name,lambda_max=rho),requested,requested))
             for name in ['rkl2','rkg2']:
                 configurations.append((StabilizedRK(name,lambda_max=rho),requested,requested))
-        configurations.append((getIntegrator('RK4'),min(.01,.9*2.785/rho),.01))
+        configurations.append((get_scheme('RK4'),min(.01,.9*2.785/rho),.01))
         for method,h,requested in configurations:
             calls=0
             def force(t,y):
@@ -45,8 +46,8 @@ def measurements():
     return dict(device='cpu',dtype='float64',threads=1,torch=torch.__version__,cases=rows,
         qualification='Symmetric negative-real periodic Laplacian, Fourier constant/slow/mid/Nyquist modes, exact semi-discrete reference. Includes stage selection and first-use coefficient preparation. RK4 chooses a smaller spectrally stable dt when needed; comparisons are not equal-error. No nonlinear SSP/TVD or SPH conservation claim.',
         source_sha256={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in [
-            root/'src/warpSPHIntegrators/orthogonal.py',root/'src/warpSPHIntegrators/_orthogonal_program.py',
-            root/'src/warpSPHIntegrators/_orthogonal_data.py',Path(__file__).resolve()]})
+            root/'src/warpSPHIntegrators/schemes/families/orthogonal.py',root/'src/warpSPHIntegrators/schemes/coefficients/orthogonal.py',
+            root/'src/warpSPHIntegrators/schemes/coefficients/orthogonal_data.py',Path(__file__).resolve()]})
 
 
 if __name__=='__main__':

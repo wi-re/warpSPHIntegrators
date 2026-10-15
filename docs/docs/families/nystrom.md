@@ -4,6 +4,8 @@ sidebar_label: Nyström mechanics
 
 # Generalized Runge–Kutta–Nyström backends
 
+Runge–Kutta–Nyström methods exploit x′=v and v′=a(t,x,v). Some configurations require velocity-independent acceleration; others support drag and coupled quantities. Choose the force structure first, then compare order and force-call cost on a known oscillator.
+
 `Nystrom(method)` supplies explicit second-order ODE methods outside the fixed
 catalog. The system declares matching floating position/velocity fields with
 `q'=v` and returns explicit acceleration. Fields are assembled through their
@@ -42,7 +44,10 @@ FineRKN5 advances the coupled mechanical and first-order thermal quantities.
 ```python
 import math
 import torch
-from warpSPHIntegrators import Nystrom, NystromWeights, testing, solve
+from warpSPHIntegrators.schemes import Nystrom
+from warpSPHIntegrators.schemes.families.nystrom import NystromWeights
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators import solve
 
 initial = testing.ParticleSystem(testing.ParticleState(
     x=torch.ones(1, dtype=torch.float64), u=torch.zeros(1, dtype=torch.float64),
@@ -119,7 +124,9 @@ symplectic method when long-time mechanical energy behavior is the priority.
 [example:run improved-nystrom]: #
 ```python
 import math
-from warpSPHIntegrators import ImprovedNystrom, testing, solve
+from warpSPHIntegrators.schemes import ImprovedNystrom
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators import solve
 
 problem = testing.oscillator_problem()
 method = ImprovedNystrom(4, structure='declared')

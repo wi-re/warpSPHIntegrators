@@ -30,8 +30,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'src'))
 
-from warpSPHIntegrators import testing, tvd_analysis
-from warpSPHIntegrators.integration import IntegrationSchemes
+import warpSPHIntegrators.testing as testing, tvd_analysis
+from warpSPHIntegrators.schemes import IntegrationSchemes
 
 
 def main():

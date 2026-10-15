@@ -4,6 +4,8 @@ sidebar_label: Explicit RK
 
 # Explicit Runge-Kutta (`ExplicitRK`) — 63 schemes
 
+For a smooth nonstiff problem, classical Runge–Kutta 4 is a useful fixed-step baseline. Choose Dormand–Prince or Tsitouras 5(4) for adaptive steps, and an SSP method when a spatial forward-Euler stability property must be preserved. More stages can improve accuracy or stability at extra RHS cost.
+
 One-step explicit RK on the generic Butcher tableau, driven by the single
 `butcher.RungeKuttaB` path: a stage $k_i = f(t^n + c_i\,\mathrm{dt},
 y^n + \mathrm{dt}\,\sum_{j<i} a_{ij} k_j)$, then
@@ -14,7 +16,7 @@ solve, no matrix — this is the family for non-stiff dynamics.
 Tableaus are stored as `butcherTableau` NamedTuples (`.a`, `.b`, `.c`); embedded
 pairs store `.b` as a tuple `(b_main, b_embedded)` and the step returns the pair
 difference as `IntegrationResult.error` for step-size control (see
-[solver](../solver)). Every tableau below is the one in `butcher.py`,
+[solver](../solver)). Every tableau below is the one in `schemes.coefficients.explicit`,
 transcribed exactly.
 
 ## Order 1
@@ -45,7 +47,7 @@ The three two-stage order-2 tableaus below share the stability function
 $R(z) = 1 + z + z^2/2$ (real-axis interval $[-2, 0]$); they differ only in
 node placement.
 
-### Midpoint (`RungeKutta2`)
+### Midpoint (`ExplicitRK.rungeKutta2`)
 
 $$
 \begin{array}{c|cc}
@@ -98,9 +100,9 @@ DG-context values of the paper, and the library's upwind-model measurements
 | KYKSSPRK42 | 4 | 2.2838 (ODE publishes 2.459 = the final-map-only CFL) | $[-4.954, 0]$ |
 | KYK2014DGSSPRK_3S2 | 3 | 1.8939 (ODE publishes 0.8417, the paper's DG-context value) | $[-4.267, 0]$ |
 
-Full tableaus in `butcher.py`; not FSAL.
+Full tableaus in `schemes.coefficients.explicit`; not FSAL.
 
-### Alshina 2(1) (`Alshina2`)
+### Alshina 2(1) (`ExplicitRK.arushina2`)
 
 Order 2 / embedded 1, 2 stages (Alshina, Zaks & Kalitkin, *Computational
 Mathematics and Mathematical Physics* 48.3 (2008) 395-405; coefficients as
@@ -115,9 +117,9 @@ $[-2, 0]$; not FSAL ($c_2 = 2/3$).
 All three-stage order-3 tableaus share the stability function
 $R(z) = 1 + z + z^2/2 + z^3/6$ (real axis $[-2, 0]$); the stage-3 map, which
 separates them at the stage level, is what the TVD classification measures
-(NOTES.md §3.11).
+(see the numerical record).
 
-### Classical RK3 (`RungeKutta3`)
+### Classical RK3 (`ExplicitRK.rungeKutta3`)
 
 $$
 \begin{array}{c|ccc}
@@ -200,7 +202,7 @@ published `ssp_coefficient` agrees with the measured $r$ to within 6.3e-4:
 | SSPRK73 | 7 | 4.2879 (beyond the landscape scan cap; the table below reports 4) | $[-8.888, 0]$ |
 | SSPRK83 | 8 | 5.1071 (beyond the landscape scan cap; the table below reports 4) | $[-10.986, 0]$ |
 
-Full tableaus in `butcher.py`; not FSAL. SSPRK73's coefficients inherit a
+Full tableaus in `schemes.coefficients.explicit`; not FSAL. SSPRK73's coefficients inherit a
 1e-6 slack: ODE stores alpha73/alpha76 at 6 digits.
 
 ### SSPRK43 and SSPRK432 (the 3(2) pairs)
@@ -250,9 +252,9 @@ real-axis interval $[-13.290, 0]$; not FSAL ($c_9 = 5/6$). Registered
 $k = f(u_6, t + dt)$, sets $\tilde u = (u_0 + 6u_6 + 6\,\mathrm{dt}\, k)/7$, and
 uses $\tilde u - u^{n+1}$ as the error — but that estimate is
 $(5/7)\,\mathrm{dt}\,u'(t) + O(\mathrm{dt}^2)$ (the coefficients $1/7, 6/7, 6/7$
-do not sum to 1; measured scaling 1.058, NOTES.md §3.22), $O(\mathrm{dt})$
+do not sum to 1; measured scaling 1.058, the numerical record), $O(\mathrm{dt})$
 instead of the $O(\mathrm{dt}^3)$ a 3(2) pair must have. ODE's own docstring
-says "Consider using `SSPRK43` instead". Full tableau in `butcher.py`.
+says "Consider using `SSPRK43` instead". Full tableau in `schemes.coefficients.explicit`.
 
 ### SSPRK53_2N1, SSPRK53_2N2 and SSPRK53_H (Higueras–Roldán low-storage variants)
 
@@ -260,14 +262,13 @@ Higueras & Roldán's new third-order low-storage SSP methods (Higueras &
 Roldán, *New third order low-storage SSP explicit Runge–Kutta methods*,
 arXiv:1809.04807; coefficients as stored by OrdinaryDiffEq v7.8.1). All three
 are 5-stage order 3, written in ODE's Shu–Osher α/β form with 1–2 working
-temporaries (vs 2 for SSPRK53). **Screened before registration** (NOTES.md
-§3.25): all three are algebraically *distinct* one-step maps from SSPRK53 —
+temporaries (vs 2 for SSPRK53). **Screened before registration** (see the numerical record): all three are algebraically *distinct* one-step maps from SSPRK53 —
 different stages and a different final b-row, with the one-step map differing
 by $O(\mathrm{dt}^4) \approx 1.5\times 10^{-4}$–$4.6\times 10^{-3}$ per unit
 dt⁴, not $\sim 10^{-16}$ — so they are their own methods, not storage
 rearrangements of it. ODE's storage saving does not apply to this driver,
 which builds each stage state fresh from the a-row. Full tableaus in
-`butcher.py`; not FSAL.
+`schemes.coefficients.explicit`; not FSAL.
 
 | Method | Stages | SSP $r$ (measured) | Real axis |
 |---|---|---|---|
@@ -281,7 +282,7 @@ shares SSPRK53's first two nodes $c_1, c_2$ but has distinct later stages).
 SSPRK53_2N1's stage 3 sits at $c_3 = 1.0053 > 1$ (evaluated just past the
 step end, as ODE does).
 
-### OwrenZen 3(2) and the wave-6 order-3 workhorses
+### Owren–Zennaro 3(2) and the other third-order methods
 
 | Method | Stages | Embedded | SSP $r$ (measured) | Real axis | FSAL |
 |---|---|---|---|---|---|
@@ -296,18 +297,18 @@ Zennaro, *SIAM J. Sci. Stat. Comput.* 13.6 (1992) 1488-1501) with a free
 order-3 interpolant. **Alshina3** is the 3rd-order member of Alshina, Zaks &
 Kalitkin's optimal 1st–6th order family; registered **fixed-step only**:
 ODE's stored $\tilde b$ sums to $5/9 \ne 1$, so ODE's own estimate is not a
-valid companion (NOTES.md §3.26). **RKM** is the Mead–Renaut method designed
+valid companion (see the numerical record). **RKM** is the Mead–Renaut method designed
 for good stability on pseudospectral discretizations of hyperbolic PDEs
 (Mead & Renaut, *J. Comput. Phys.* 152.1 (1999) 404-419); the registered
 order is the measured 3. **PSRK3p6q5 / PSRK3p5q4** are Aubry–Chartier
 pseudo-symplectic order-3 methods (Aubry & Chartier, *BIT* 38 (1998) 439-461;
 Capuano et al., *J. Comput. Phys.* 328 (2017) 86-94) with improved
 energy-conservation properties; $r = 0$ (not convex-combination steps).
-Full tableaus in `butcher.py`.
+Full tableaus in `schemes.coefficients.explicit`.
 
 ## Order 4
 
-### Classical RK4 (`RungeKutta4`)
+### Classical RK4 (`ExplicitRK.rungeKutta4`)
 
 $$
 \begin{array}{c|cccc}
@@ -323,7 +324,7 @@ $$
 $R(z)$ = the 4th-degree Taylor polynomial; real-axis stability interval
 $[-2.785, 0]$; SSP coefficient $r = 2/3$, per-step TVD measured to CFL 1.25.
 
-### RK4 (3/8 rule, `RungeKutta4alt`)
+### RK4 (3/8 rule, `ExplicitRK.rungeKutta4alt`)
 
 $$
 \begin{array}{c|cccc}
@@ -345,20 +346,20 @@ Ruuth's 5-stage order-4 SSP method (Ruuth, *Mathematics of Computation*
 Measured: SSP coefficient $r = 1.7693$ (ODE publishes the paper's 1.508,
 which the library's all-stage upwind-model measurement does not reproduce;
 the final map alone is convex to 1.8611) and real-axis interval
-$[-5.331, 0]$; not FSAL. The full tableau is in `butcher.py`.
+$[-5.331, 0]$; not FSAL. The full tableau is in `schemes.coefficients.explicit`.
 
-### SSPRK(10,4) (`SSPRK104`)
+### SSPRK(10,4) (`ExplicitRK.ssprk104`)
 
 Shu's 10-stage order-4 SSP method (Shu, *J. Comput. Phys.* 169 (2001) 208-228,
 Sec. 4.2) — the highest-order SSP scheme in the registry, added because the
 SSP barrier for explicit RK bites exactly at order 4 (5+ stages required).
 Measured: exact SSP coefficient $r = 6.0$ (stage 2's constant coefficient
 $1 - \mu/6$ is the binding constraint) and real-axis interval
-$[-13.916, 0]$. The tableau is the 5+5 cascade in `butcher.py`
+$[-13.916, 0]$. The tableau is the 5+5 cascade in `schemes.coefficients.explicit`
 (`getButcherTableau('SSPRK104')`); the final row is
 $b = (1/10)\,\mathbf{1}$, $c = (0, 1/6, 1/3, 1/2, 2/3, 1/3, 1/2, 2/3, 5/6, 1)$.
 
-### OwrenZen 4(3), Ralston 4 and PSRK4p7q6
+### Owren–Zennaro 4(3), Ralston 4 and PSRK4p7q6
 
 | Method | Stages | Embedded | SSP $r$ (measured) | Real axis | FSAL |
 |---|---|---|---|---|---|
@@ -371,22 +372,22 @@ Zennaro 1992, the same paper as OwrenZen3). **Ralston4** is Ralston's
 4-stage minimum-truncation-error order-4 method (Ralston, *Mathematics of
 Computation* 16.80 (1962) 431-437). **PSRK4p7q6** is the 6-stage
 pseudo-symplectic order-4 method (Aubry & Chartier 1998; Capuano et al.
-2017) — the largest real-axis interval of the whole wave 6, $[-11.41, 0]$,
-at the cost of $r = 0$. Full tableaus in `butcher.py`.
+2017) — the largest real-axis interval of this additional lower-order set, $[-11.41, 0]$,
+at the cost of $r = 0$. Full tableaus in `schemes.coefficients.explicit`.
 
 ## Order 5 and the embedded pairs
 
-### Nystrom 5th (`Nystrom5th`)
+### Nystrom 5th (`ExplicitRK.nystrom5th`)
 
 The 6-stage 5th-order Runge-Kutta-Nystrom scheme for the position/velocity
 form, $b = (23/192,\, 0,\, 125/192,\, 0,\, -27/64,\, 125/192)$,
-$c = (0, 1/3, 2/5, 1, 2/3, 4/5)$ (the full $a$ matrix in `butcher.py`); six
+$c = (0, 1/3, 2/5, 1, 2/3, 4/5)$ (the full $a$ matrix in `schemes.coefficients.explicit`); six
 force evaluations per step, one per stage. The fifth-order reference method;
 notoriously ill-scaled coefficients (its SSP coefficient is exactly $r = 0$ —
 not a convex-combination step at *any* CFL — yet it is per-step TVD up to
-CFL 1.5, NOTES.md §3.11).
+CFL 1.5, the numerical record).
 
-### Bogacki-Shampine 3(2) (`BogackiShampine`)
+### Bogacki-Shampine 3(2) (`ExplicitRK.bogackiShampine`)
 
 Order 3 / embedded 2, 4 stages, **FSAL** (last stage $= f(t^{n+1}, y^{n+1})$):
 $y^{n+1} \leftarrow b = (2/9, 1/3, 4/9, 0)$,
@@ -394,28 +395,28 @@ $\hat b = (7/24, 1/4, 1/3, 1/8)$,
 $a$-rows $(0), (1/2, 0), (0, 3/4), (2/9, 1/3, 4/9)$, $c = (0, 1/2, 3/4, 1)$.
 scipy's RK23. 3 effective evaluations per step under `priorStep` reuse.
 
-### Cash-Karp 5(4) (`CashKarp`)
+### Cash-Karp 5(4) (`ExplicitRK.cashKarp`)
 
 Order 5 / embedded 4, 6 stages, **not FSAL** ($c_6 = 7/8$):
 $b = (37/378, 0, 250/621, 125/594, 0, 512/1771)$,
 $\hat b = (2825/27648, 0, 18575/48384, 13525/55296, 277/14336, 1/4)$,
-$c = (0, 1/5, 3/10, 3/5, 1, 7/8)$; the full $a$ matrix in `butcher.py`.
+$c = (0, 1/5, 3/10, 3/5, 1, 7/8)$; the full $a$ matrix in `schemes.coefficients.explicit`.
 A well-conditioned 6-stage alternative when Dormand-Prince is more than
 needed.
 
-### Dormand-Prince 5(4) (`DormandPrince`)
+### Dormand-Prince 5(4) (`ExplicitRK.dormandPrince`)
 
 Order 5 / embedded 4, 7 stages, **FSAL**: $b = (35/384, 0, 500/1113, 125/192,
 -2187/6784, 11/84, 0)$,
 $\hat b = (5179/57600, 0, 7571/16695, 393/640, -92097/339200, 187/2100, 1/40)$,
-$c = (0, 1/5, 3/10, 4/5, 8/9, 1, 1)$; the full $a$ matrix in `butcher.py`.
+$c = (0, 1/5, 3/10, 4/5, 8/9, 1, 1)$; the full $a$ matrix in `schemes.coefficients.explicit`.
 scipy's RK45 / MATLAB's ode45. 6 effective evaluations per step under reuse.
 Like Nystrom, $r = 0$ exactly (the stage-5/6 circulant entries are genuinely
-negative for all $\mu > 0$; NOTES.md §3.11), yet per-step TVD to CFL 1.5.
+negative for all $\mu > 0$; the numerical record), yet per-step TVD to CFL 1.5.
 This is also the **cold-start scheme** the multistep families bootstrap from
-(NOTES.md §3.7).
+(see the numerical record).
 
-### Tsit5 5(4) and the wave-6 order-5 methods
+### Tsitouras 5(4) (`ExplicitRK.tsit5`) and the other fifth-order methods
 
 | Method | Stages | Embedded | SSP $r$ (measured) | Real axis | FSAL |
 |---|---|---|---|---|---|
@@ -446,7 +447,7 @@ This is also the **cold-start scheme** the multistep families bootstrap from
   epidemic models (Math. Methods Appl. Sci. 44 (2020) 5210-5216); FSAL
   (last row $= b$). Registered **fixed-step only**: ODE's stored
   $\tilde b$ sums to 7.854, not 1, so ODE's own estimate is not a valid
-  companion (NOTES.md §3.26).
+  companion (see the numerical record).
 - **RKO65** — Tsitouras' Runge–Kutta–Oliver 6-stage 5th-order "starting
   integration" method (Tsitouras, *Applied Mathematics and Computation*
   354 (2019) 353-364). Its first stage is **free**: $c_1 = 2/3$ with a zero
@@ -457,7 +458,7 @@ This is also the **cold-start scheme** the multistep families bootstrap from
   $2..s$ as usual but not for row 1 (structural, pinned by the residual),
   and reuse is **lossless** — see the First-stage reuse section.
 
-Full tableaus in `butcher.py`.
+Full tableaus in `schemes.coefficients.explicit`.
 
 ## Order 6
 
@@ -471,11 +472,11 @@ Full tableaus in `butcher.py`.
 **Alshina6** is the 6th-order member of Alshina, Zaks & Kalitkin's optimal
 family (2008). **MSRK6** is Stepanov's 9-stage order-6 method
 (arXiv:2202.08443, Table 4): 8 working stages + the FSAL stage. Full
-tableaus in `butcher.py`.
+tableaus in `schemes.coefficients.explicit`.
 
-## Order 7 and up (wave 7)
+## Orders seven and above
 
-The eleven high-order tableaus of wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13):
+The high-order tableaus below cover Verner, Tanaka–Yamashita, Tsitouras–Papakostas, Dormand–Prince and Feagin constructions:
 Verner's optimal pairs, the two 10-stage order-7 methods, the Tsitouras–
 Papakostas 8(7) pair, Hairer's DP8, and Feagin's symmetric methods up to
 order 14. The registry's highest-order one-step explicit methods are now
@@ -530,7 +531,7 @@ order 14. The registry's highest-order one-step explicit methods are now
 
 Cross-checked against the actual ODE v7.8.1 solver on a real (nonlinear,
 non-autonomous) problem: $\max|\Delta y|$ at $T = 2$ is
-$\le 8.9\times 10^{-16}$ for every member of the wave (NOTES.md §3.27).
+$\le 8.9\times 10^{-16}$ for every method in this set (see the numerical record).
 
 ## First-stage reuse
 
@@ -542,12 +543,11 @@ MSRK5 / MSRK6 / SIR54, and the wave-7 **Vern6** — and, one case beyond FSAL,
 for RKO65: with $b_1 = 0$
 its stale k0 reaches the update only through the stage equations, and the
 one-stage paths carry the common coefficient $(b^\top a)_1 = 0$ as well, so
-`reuse.step_reuse_analysis` reports a lossless order 5 for it (NOTES.md
-§3.26). For every other tableau reuse costs order (the analysis reports the
+`reuse.step_reuse_analysis` reports a lossless order 5 for it (see the numerical record). For every other tableau reuse costs order (the analysis reports the
 exact reuse order per scheme; pinned in `tests/test_step_reuse.py`);
 single-stage tableaus (Forward Euler) refuse it outright, since the reuse
 would be the lagged two-step map with no imaginary-axis stability region.
-Wave 7 adds a second refusal class (NOTES.md §3.27): the multi-stage
+High-order methods include another reuse restriction (see the numerical record): the multi-stage
 **Vern7**, **RKV76IIa**, **TanYam7** and **Feagin14** refuse reuse outright,
 because their reuse-modified recurrence — a three-dimensional two-step map in
 the state $(y^{n-1}, y^n, k_s^{n-1})$ — has no stability interval on the
@@ -560,7 +560,7 @@ mechanisms — see their pages.
 ## SSP / TVD landscape (measured)
 
 The registry-wide classification from `benchmarks/tvd_classifier.py`
-(NOTES.md §3.11; $n = 64$, step IC, CFL grid to 5):
+(see the numerical record):
 
 | Scheme | SSP coefficient $r$ (convex-combination CFL) | Measured per-step TVD CFL |
 |---|---|---|
@@ -574,8 +574,8 @@ The registry-wide classification from `benchmarks/tvd_classifier.py`
 | SSPRK53 / SSPRK63 / SSPRK73 / SSPRK83 / SSPRK54 / KYKSSPRK42 / KYK2014DGSSPRK_3S2 | 2.651 / 3.518 / 4 / 4 / 1.769 / 2.284 / 1.894 (SSPRK73/83 at the scan cap; exact 4.2879 / 5.1071) | 2 / 3 / 3 / 5 / 2 / 2 / 1.5 |
 | SSPRK43 / SSPRK432 / SSPRK932 | 2.0 / 2.0 / 4 (scan cap; exact 6.0) | 2 / 2 / 5 (SSPRK932 unconditional) |
 | SSPRK53_2N1 / SSPRK53_2N2 / SSPRK53_H | 2.181 / 2.149 / 2.651 | 2 / 2 / 2 |
-| Tsit5 5(4) / OwrenZen3 3(2) / OwrenZen4 4(3) / OwrenZen5 5(4) / BS5 5(4) / Stepanov5 5(4) / Alshina2 2(1) / Alshina3 / Alshina6 / MSRK5 / MSRK6 / SIR54 / Ralston4 / RKO65 / RKM / PSRK4p7q6 / PSRK3p6q5 / PSRK3p5q4 (wave 6) | 0 / 0.7813 / 0.6444 / 0 / 0.5237 / 0 / 1 / 1 / 0 / 0.3226 / 0.1009 / 0 / 0.7209 / 0 / 0.7531 / 0 / 0 / 0 | 1.5 / 1 / 1.25 / 1.5 / 1.5 / 1.5 / 1 / 1 / 1.25 / 2 / 2 / 1.5 / 1.25 / 2 / 1.5 / 2 / 1.5 / 1.25 |
-| Vern6 6(5) / Vern7 7(6) / TanYam7 7(6) / RKV76IIa 7(6) / Vern8 8(7) / TsitPap8 8(7) / DP8 / Vern9 9(8) / Feagin10 / Feagin12 / Feagin14 (wave 7) | 0.0877 / 0.0514 / 0 / 0 / 0.1615 / 0.1804 / 0.2371 / 0.1272 / 0 / 0 / 0 | 2 / 2 / 2 / 2 / 2 / 2 / 3 / 2 / 1 / 1.25 / 0.75 |
+| Tsit5 5(4) / OwrenZen3 3(2) / OwrenZen4 4(3) / OwrenZen5 5(4) / BS5 5(4) / Stepanov5 5(4) / Alshina2 2(1) / Alshina3 / Alshina6 / MSRK5 / MSRK6 / SIR54 / Ralston4 / RKO65 / RKM / PSRK4p7q6 / PSRK3p6q5 / PSRK3p5q4 (additional lower-order methods) | 0 / 0.7813 / 0.6444 / 0 / 0.5237 / 0 / 1 / 1 / 0 / 0.3226 / 0.1009 / 0 / 0.7209 / 0 / 0.7531 / 0 / 0 / 0 | 1.5 / 1 / 1.25 / 1.5 / 1.5 / 1.5 / 1 / 1 / 1.25 / 2 / 2 / 1.5 / 1.25 / 2 / 1.5 / 2 / 1.5 / 1.25 |
+| Vern6 6(5) / Vern7 7(6) / TanYam7 7(6) / RKV76IIa 7(6) / Vern8 8(7) / TsitPap8 8(7) / DP8 / Vern9 9(8) / Feagin10 / Feagin12 / Feagin14 (high-order methods) | 0.0877 / 0.0514 / 0 / 0 / 0.1615 / 0.1804 / 0.2371 / 0.1272 / 0 / 0 / 0 | 2 / 2 / 2 / 2 / 2 / 2 / 3 / 2 / 1 / 1.25 / 0.75 |
 
 TVD is strictly broader than SSP: RK4 is per-step TVD past where its internal
 stages leave the convex hull, and Nystrom/Dormand-Prince are TVD to CFL 1.5
@@ -583,7 +583,7 @@ despite $r = 0$. The stage-level separation is what distinguishes RK3 from TVD
 RK3 (RK3's stage-3 map $1 + \zeta + \zeta^2$ has a negative circulant entry at
 CFL 1; TVD RK3's stage rows stay non-negative).
 
-## Parametric-relaxation pRRK (`prrk.py`) — not registered
+## Parametric-relaxation Heun and SSP methods (pRRK)
 
 pRRK22 / pRRK33 / pRRK54 (Liu, Burchard, Kuzmin & Shang 2023) are
 *parametric-relaxation* variants of Heun / SSP RK3 / SSPRK54. A free
@@ -591,16 +591,22 @@ relaxation parameter $\kappa$ trades the SSP (TVD) constant for a much larger
 negative-real-axis stability interval. They are **not registered** in
 `IntegrationSchemes` (see below) and are exposed as standalone drivers:
 
+[example:run relaxation]: #
 ```python
-from warpSPHIntegrators import pRRK33
-result = pRRK33(system, dt, rhs, kappa=1.0)
+import torch
+from warpSPHIntegrators import TensorState, tensor_rhs
+from warpSPHIntegrators.drivers.explicit.relaxation import pRRK33
+
+state = TensorState(torch.ones(1, dtype=torch.float64))
+result = pRRK33(state, .1, tensor_rhs(lambda t, y: -y), kappa=1.0)
+assert result.step_status.successful
 ```
 
 **Why not registered:** the relaxation parameter is $z = \kappa \Delta t$, so
 the Butcher tableau $(a, b, c)$ depends on *both* $\kappa$ and $\Delta t$ —
 it is not a fixed tableau, and at $\kappa = 0$ the methods duplicate
 already-registered schemes. There is no single fixed order or identifier to
-register, so they live alongside the registry (NOTES.md §3.24).
+register, so they live alongside the registry (see the numerical record).
 
 **Behaviour (measured, `tests/test_prrk.py`):**
 - $\kappa = 0$ reduces *exactly* to the base method (Heun / SSP RK3 /
@@ -645,3 +651,5 @@ register, so they live alongside the registry (NOTES.md §3.24).
 (reuse orders), `tests/test_tvd.py` (the table above),
 `tests/test_embedded.py` (embedded-pair rates), `tests/test_hamiltonian.py`
 (energy drift on the oscillator).
+
+[The numerical record](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/research/integrators/notes-index.md) retains derivations, source pins and measured property gates.

@@ -5,10 +5,12 @@ import math
 import pytest
 import torch
 
-from warpSPHIntegrators import StepHistory, getIntegrator, get_reference_state, testing
-from warpSPHIntegrators.stability import bdf_is_stable, oscillator_is_stable, oscillator_spectral_radius, rk_is_stable, rk_stability_function
-from warpSPHIntegrators.integration import IntegrationSchemes
-from warpSPHIntegrators.enums import DIRK
+from warpSPHIntegrators.state import StepHistory, get_reference_state
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.analysis.stability import bdf_is_stable, oscillator_is_stable, oscillator_spectral_radius, rk_is_stable, rk_stability_function
+from warpSPHIntegrators.schemes import IntegrationSchemes
+from warpSPHIntegrators.schemes import DIRK
 
 
 STATE_SPACE_IMPLICIT = [
@@ -62,7 +64,7 @@ def _stiff_relaxation_rhs(rate):
 
 @pytest.mark.parametrize('scheme_name', STATE_SPACE_IMPLICIT)
 def test_implicit_state_space_schemes_remain_bounded_on_nonlinear_stiff_relaxation(scheme_name):
-    scheme = getIntegrator(scheme_name)
+    scheme = get_scheme(scheme_name)
     system = testing.PROBLEMS['oscillator']().initial()
     history = StepHistory(maxlen=1)
     for _ in range(10):
@@ -80,7 +82,7 @@ def test_higher_order_bdf_with_threaded_history_tracks_stiff_relaxation(scheme_n
     BDF3-5 now have implicit starters; the rate-100 bootstrap/order regression
     is in test_stiff_startup.py. Actual IMEX splits retain their DP5 starter.
     """
-    scheme = getIntegrator(scheme_name)
+    scheme = get_scheme(scheme_name)
     system = testing.PROBLEMS['oscillator']().initial()
     history = StepHistory(maxlen=max(1, scheme.steps))
     for _ in range(10):
@@ -100,7 +102,7 @@ def test_cnab2_with_threaded_history_tracks_stiff_relaxation():
     step (~1e3 amplification at z = -10) that the trapezoidal rule's mild
     real-axis damping (|R(-10)| = 2/3) cannot undo in nine more steps.
     Measured |x - tanh(1)| = 6e-5 at rate=10."""
-    scheme = getIntegrator('CNAB2')
+    scheme = get_scheme('CNAB2')
     system = testing.PROBLEMS['oscillator']().initial()
     history = StepHistory(maxlen=1)
     for _ in range(10):
@@ -135,7 +137,7 @@ def test_every_tableau_is_consistent_at_the_dahlquist_origin():
 ])
 @pytest.mark.parametrize('z', [-10.0, -10.0 + 4.0j, -0.25 + 3.0j])
 def test_a_stable_dirk_schemes_contain_known_left_half_plane_points(name, z):
-    scheme = getIntegrator(name)
+    scheme = get_scheme(name)
     assert rk_is_stable(scheme.function.dirkTableau, z), f'{name} rejected z={z}'
 
 
@@ -160,7 +162,7 @@ def test_l_stable_dirk_schemes_damp_the_negative_real_axis(name):
     pair sits at 2.65e-2 (order 3) and 7.57e-2 (order 4). All show the L-stable
     decay ~ C/|z|, far under the 0.1 bound below, so the bound pins the class,
     not one tableau's exact constant."""
-    tab = getIntegrator(name).function.dirkTableau
+    tab = get_scheme(name).function.dirkTableau
     r = abs(rk_stability_function(tab, -100.0))
     assert r < 0.1, f'{name}: |R(-100)| = {r:.4f}, expected strong L-stable damping'
 
@@ -176,7 +178,7 @@ def test_l_stable_dirk_schemes_with_large_damping_constants(name):
     2.6e-2/2.2e-2/1.5e-2) and |R(-1e6)| < 1e-4 (measured 2.8e-5/2.4e-5/1.6e-5).
     A fine left-half-plane grid (NOTES.md 3.28) found no |R| > 1 for any of
     the three, so the classification stays 'L' despite the large constant."""
-    tab = getIntegrator(name).function.dirkTableau
+    tab = get_scheme(name).function.dirkTableau
     r100 = abs(rk_stability_function(tab, -100.0))
     r1000 = abs(rk_stability_function(tab, -1000.0))
     r1e6 = abs(rk_stability_function(tab, -1e6))
@@ -193,7 +195,7 @@ def test_a_stable_but_not_l_dirk_schemes_approach_unit_magnitude(name):
     the negative real axis (|R(-100)| = 49/51 ~= 0.961 by the (1+z/2)/(1-z/2)
     closed form for both), i.e. they bound the solution but do not damp it.
     This is what separates the two rows of the stability='L' flag."""
-    tab = getIntegrator(name).function.dirkTableau
+    tab = get_scheme(name).function.dirkTableau
     r = abs(rk_stability_function(tab, -100.0))
     assert r > 0.9, f'{name}: |R(-100)| = {r:.4f}, expected approach to 1 (A-stable, not L)'
 
@@ -210,7 +212,7 @@ def test_a_stable_not_l_dirk_schemes_damp_sub_l(name):
     nonzero A-stable asymptote |R(inf)| = 0.7175 while SSPSDIRK2 settles at
     |R(inf)| ~= 1 (R(inf) = -1), so neither decays ~ C/|z| like the L-stable
     row: both sit strictly between the two tests above."""
-    tab = getIntegrator(name).function.dirkTableau
+    tab = get_scheme(name).function.dirkTableau
     r = abs(rk_stability_function(tab, -100.0))
     assert 0.1 < r < 0.9, (
         f'{name}: |R(-100)| = {r:.4f}, expected sub-L damping (strictly between '
@@ -224,7 +226,7 @@ def test_a_stable_bdf_schemes_contain_known_left_half_plane_points(order, z):
 
 
 def test_explicit_euler_stability_boundary_is_detected():
-    tableau = getIntegrator('Forward Euler').function.butcherTableau
+    tableau = get_scheme('Forward Euler').function.butcherTableau
     assert rk_is_stable(tableau, -1.0)
     assert not rk_is_stable(tableau, -2.1)
 

@@ -4,11 +4,12 @@ from dataclasses import dataclass
 
 import torch
 
-from warpSPHIntegrators import (
+from warpSPHIntegrators.state import (
     BaseIntegrationSystem, BaseState, ComponentUpdateSpec, PositionUpdateSpec,
-    constant, getIntegrator, get_reference_state, integrated, reference_state,
-    tagged, update_component, update_position,
+    constant, get_reference_state, integrated, reference_state, tagged,
 )
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.state.fields import update_component, update_position
 
 
 @dataclass
@@ -62,7 +63,7 @@ def run_example():
         mass=torch.tensor([1.0], dtype=torch.float64),
         spring_constant=torch.tensor([4.0], dtype=torch.float64),
     ))
-    scheme = getIntegrator('RK4')
+    scheme = get_scheme('RK4')
     for _ in range(100):
         result = scheme(system, dt=0.01, f=rhs)
         system = result.state

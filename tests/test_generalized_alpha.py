@@ -8,10 +8,12 @@ import sys
 import pytest
 import torch
 
-from warpSPHIntegrators import (GeneralizedAlpha, StepHistory, SolveResult, SolveDiagnostics,
-                               get_reference_state, solve, snapshot_state, BaseState,
-                               integrated, constant, copied, reference_state)
-from warpSPHIntegrators import testing
+from warpSPHIntegrators.schemes import GeneralizedAlpha
+from warpSPHIntegrators.state import StepHistory, get_reference_state, BaseState, integrated, constant, copied, reference_state
+from warpSPHIntegrators.solvers import SolveResult, SolveDiagnostics
+from warpSPHIntegrators import solve
+from warpSPHIntegrators.runtime import snapshot_state
+import warpSPHIntegrators.testing as testing
 
 spec=importlib.util.spec_from_file_location('alpha_demo',Path(__file__).resolve().parents[1]/'examples/structural_modes.py')
 demo=importlib.util.module_from_spec(spec);sys.modules[spec.name]=demo;spec.loader.exec_module(demo)
@@ -243,7 +245,7 @@ def test_nonfinite_endpoint_rhs_does_not_finalize_or_commit_memory():
 
 
 def test_default_solver_and_fixed_depth_solver_work_with_acceleration_memory():
-    from warpSPHIntegrators import FixedPointSolver
+    from warpSPHIntegrators.solvers import FixedPointSolver
     for options in ({},dict(solver=FixedPointSolver(),solver_opts={'iterations':8})):
         result=GeneralizedAlpha()(system(),.01,rhs,**options)
         assert result.step_status.successful and result.history.latest is not None

@@ -4,6 +4,8 @@ sidebar_label: Expanded RK
 
 # Source-expanded Runge–Kutta
 
+These are familiar low-storage-source Runge–Kutta constructions, executed through the full-stage engine. The method name describes its source construction, not a memory-saving promise in this backend. Choose a qualified map for its numerical properties and measure allocation separately.
+
 `ExpandedRK(method)` executes 54 qualified main maps from a pinned low-storage
 source family as ordinary full-stage Runge–Kutta. Orders range from two to five;
 19 configurations expose a checked comparison estimate for adaptive timesteps.
@@ -13,7 +15,9 @@ The factory stays outside the fixed 142-scheme registry.
 ```python
 import math
 import torch
-from warpSPHIntegrators import ExpandedRK, expanded_rk_methods, TensorState, tensor_rhs, solve
+from warpSPHIntegrators.schemes import ExpandedRK
+from warpSPHIntegrators.schemes.coefficients.expanded import expanded_rk_methods
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
 
 assert len(expanded_rk_methods()) == 54
 scheme = ExpandedRK('RDPK3Sp510')

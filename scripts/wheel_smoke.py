@@ -11,24 +11,19 @@ import tempfile
 
 import torch
 import warpSPHIntegrators as package
-from warpSPHIntegrators import (
-    TensorState, tensor_rhs, getIntegrator, getPreferredIntegrator, filter_schemes,
-    StepHistory, SemilinearRHS, testing, get_reference_state,
-    solve, Event, save_checkpoint, load_checkpoint,
-    stage_block_preconditioner,
-    stage_shifted_preconditioner,
-    ConservativeDissipativeRHS, Strang, Yoshida4, LinearExponentialFlow,
-    GeneralizedAlpha, Collocation, VariableAdams, StabilizedRK, Nystrom, NystromWeights, NDF, AdaptiveNDF, AdaptiveAdams,
-    Extrapolation, ExtrapolationQuadrature,
-    AlgorithmSwitch,
-    FunctionMap,tensor_map,MapTransition,
-    ExpandedRK,expanded_rk_methods,
-    ImprovedNystrom,
-    ParallelDIRK,
-    Rosenbrock,
-    OrthogonalRK,
-    ExponentialRK,
-)
+from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme, solve
+from warpSPHIntegrators.schemes import ExplicitRK
+from warpSPHIntegrators.schemes import filter_schemes, GeneralizedAlpha, Collocation, VariableAdams, StabilizedRK, Nystrom, NDF, AdaptiveNDF, AdaptiveAdams, Extrapolation, FunctionMap, ExpandedRK, ImprovedNystrom, ParallelDIRK, Rosenbrock, OrthogonalRK, ExponentialRK
+from warpSPHIntegrators.state import StepHistory, get_reference_state
+from warpSPHIntegrators.adapters import SemilinearRHS, tensor_map
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.runtime import Event, save_checkpoint, load_checkpoint
+from warpSPHIntegrators.solvers import stage_block_preconditioner, stage_shifted_preconditioner
+from warpSPHIntegrators.wrappers import ConservativeDissipativeRHS, Strang, Yoshida4, LinearExponentialFlow, AlgorithmSwitch
+from warpSPHIntegrators.schemes.families.nystrom import NystromWeights
+from warpSPHIntegrators.schemes.families.extrapolation import ExtrapolationQuadrature
+from warpSPHIntegrators.schemes.families.function_map import MapTransition
+from warpSPHIntegrators.schemes.coefficients.expanded import expanded_rk_methods
 
 
 prefix = Path(sys.prefix).resolve()
@@ -41,7 +36,7 @@ for module in pkgutil.walk_packages(package.__path__, package.__name__ + '.'):
 assert all(hasattr(package, name) for name in package.__all__)
 expected = json.loads(Path(sys.argv[2]).read_text())
 assert {s.identifier.name for s in filter_schemes()} == {s['identifier'] for s in expected['schemes']}
-assert getPreferredIntegrator(4) is getIntegrator('RK4')
+assert get_scheme(ExplicitRK.rungeKutta4) is get_scheme('RK4')
 y = torch.tensor([1., 2.], dtype=torch.float64)
 for scheme in filter_schemes(state_kind='tensor'):
     state = TensorState(y)
@@ -54,7 +49,7 @@ for scheme in filter_schemes(state_kind='tensor'):
     assert torch.allclose(state.y, y * math.exp(-.006), atol=2e-5, rtol=2e-5), scheme.name
 # Keep the advanced protocol consumer in the installed-package gate too.
 problem = testing.oscillator_problem()
-result = getIntegrator('RK4')(problem.initial(), .01, problem.rhs)
+result = get_scheme('RK4')(problem.initial(), .01, problem.rhs)
 assert torch.isfinite(get_reference_state(result.state).x).all()
 # The installed runner, dense/event path and portable restart must work together.
 rhs = tensor_rhs(lambda t, y: -y)
@@ -72,11 +67,11 @@ stiff = solve('BDF5',TensorState(torch.ones(1,dtype=torch.float64)),1.,
               solver_opts={'matvec':'jvp','tol':1e-12,'newton_tol':1e-9})
 assert stiff.successful and abs(stiff.state.y.item()) < .001
 rates = torch.logspace(0,4,32,dtype=torch.float64)
-block = getIntegrator('Radau IIA s=2')(TensorState(torch.ones_like(rates)),.01,
+block = get_scheme('Radau IIA s=2')(TensorState(torch.ones_like(rates)),.01,
             tensor_rhs(lambda t,y:-rates*y),solver_opts={'matvec':'jvp',
             'tol':1e-10,'newton_tol':1e-7,'preconditioner':stage_block_preconditioner(-rates)})
 assert block.step_status.tolerance_converged
-shifted = getIntegrator('Radau IIA s=2')(TensorState(torch.ones_like(rates)),.01,
+shifted = get_scheme('Radau IIA s=2')(TensorState(torch.ones_like(rates)),.01,
             tensor_rhs(lambda t,y:-rates*y),solver_opts={'matvec':'jvp',
             'tol':1e-10,'newton_tol':1e-7,'preconditioner':stage_shifted_preconditioner(
                 lambda state,context:lambda shift,v:v/(1+shift*rates))})

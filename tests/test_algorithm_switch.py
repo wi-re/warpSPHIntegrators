@@ -2,8 +2,11 @@
 import math
 import pytest
 import torch
-from warpSPHIntegrators import (AlgorithmSwitch,NDF,AdaptiveNDF,VariableAdams,Extrapolation,
-    TensorState,tensor_rhs,solve,getIntegrator,StepHistory,save_checkpoint,load_checkpoint,snapshot_state)
+from warpSPHIntegrators.wrappers import AlgorithmSwitch
+from warpSPHIntegrators.schemes import NDF, AdaptiveNDF, VariableAdams, Extrapolation
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
+from warpSPHIntegrators.state import StepHistory
+from warpSPHIntegrators.runtime import save_checkpoint, load_checkpoint, snapshot_state
 
 OPTIONS=dict(matvec='jvp',tol=1e-15,newton_tol=1e-10)
 
@@ -70,7 +73,7 @@ def test_constant_history_invalidates_before_changed_step_and_failed_switch_keep
     rhs=tensor_rhs(lambda t,y:-y)
     run=solve(switch,TensorState(torch.ones(1,dtype=torch.float64)),.3,rhs,dt=.025,solver_opts=OPTIONS)
     changed=switch(run.state,.04,rhs,history=run.history,solver_opts=OPTIONS)
-    cold=getIntegrator('BDF3')(run.state,.04,rhs,solver_opts=OPTIONS)
+    cold=get_scheme('BDF3')(run.state,.04,rhs,solver_opts=OPTIONS)
     assert torch.equal(changed.state.y,cold.state.y)
     initial=snapshot_state(run.state);initial.t=.4
     before=snapshot_state(run.history)

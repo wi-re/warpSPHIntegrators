@@ -7,8 +7,11 @@ from pathlib import Path
 import pytest
 import torch
 
-from warpSPHIntegrators import ImprovedNystrom, ImprovedNystromWeights, solve, AlgorithmSwitch, Nystrom
-from warpSPHIntegrators.history import StepHistory
+from warpSPHIntegrators.schemes import ImprovedNystrom, Nystrom
+from warpSPHIntegrators.schemes.families.improved_nystrom import ImprovedNystromWeights
+from warpSPHIntegrators import solve
+from warpSPHIntegrators.wrappers import AlgorithmSwitch
+from warpSPHIntegrators.state import StepHistory
 from test_nystrom import initial, manufactured, Fields, System, system
 
 SOURCE=json.loads((Path(__file__).parents[1]/'scripts/coefficients/wave12/irkn_audit.json').read_text())
@@ -16,7 +19,7 @@ CORRECTED=Path(__file__).parents[1]/'scripts/coefficients/wave12/irkn_corrected.
 
 
 def force(problem='autonomous',parameter=1.,calls=None):
-    from warpSPHIntegrators import testing
+    import warpSPHIntegrators.testing as testing
     def rhs(state,dt,**kwargs):
         s=state.state
         if calls is not None:calls.append((state.t,s.x.clone()))
@@ -47,7 +50,7 @@ def test_nonlinear_time_dependent_full_trajectory_order(order):
 
 @pytest.mark.parametrize('order',[3,4])
 def test_nonlinear_corrected_source_trajectory_at_every_accepted_step(order):
-    from warpSPHIntegrators import testing
+    import warpSPHIntegrators.testing as testing
     source=json.loads(CORRECTED.read_text())
     def rhs(state,dt,**kwargs):
         s=state.state;target=math.exp(.7*state.t)
@@ -80,7 +83,7 @@ def test_cached_trajectory_gradients_match_finite_difference(order):
 @pytest.mark.parametrize('order',[3,4])
 @pytest.mark.parametrize('change',['dt','value','time','uid','layout','dtype','parameter','foreign'])
 def test_invalid_history_restarts_before_consumption(order,change):
-    from warpSPHIntegrators.run import snapshot_state
+    from warpSPHIntegrators.runtime import snapshot_state
     method=ImprovedNystrom(order,'declared');rhs=force()
     state=system();state=__import__('warpSPHIntegrators').testing.ParticleSystem(state.state)
     result=method(state,.05,rhs);next_state=snapshot_state(result.state);h=.05;history=result.history;kwargs={}
@@ -161,7 +164,7 @@ def test_switch_owns_child_history_and_cold_starts_transitions(order):
 
 
 def test_structure_guards_and_custom_finalize_opt_in():
-    from warpSPHIntegrators import testing
+    import warpSPHIntegrators.testing as testing
     def rhs(state,dt,**kwargs):
         s=state.state;return testing.ParticleUpdate(s.u,-s.x-.1*s.u.detach(),torch.zeros_like(s.e)),None
     with pytest.raises(ValueError,match='independent acceleration'):ImprovedNystrom()(initial(),.1,rhs)

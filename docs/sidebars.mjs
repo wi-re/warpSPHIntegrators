@@ -34,6 +34,7 @@ const sidebars = {
     },
     'solver',
     'api',
+    'migration',
     'development',
   ],
 };

@@ -13,7 +13,7 @@ import sys
 import time
 
 import torch
-from warpSPHIntegrators import Collocation
+from warpSPHIntegrators.schemes import Collocation
 from implicit_scale import problem
 from spatial_preconditioners import spatial_preconditioner
 
@@ -83,7 +83,7 @@ def main():
         qualification='Concrete backend stencil assembly and SciPy benchmark-only real Schur / shifted ILU; no frontend dependency. Stage count is parameterized; source coefficients verified for every supported count.',
         passed=all(r['passed'] for r in records),cases=records,
         source_sha256={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in
-                      (ROOT/'src/warpSPHIntegrators/collocation.py',Path(__file__).resolve())})
+                      (ROOT/'src/warpSPHIntegrators/schemes/families/collocation.py',Path(__file__).resolve())})
     (args.output_dir/'report.json').write_text(json.dumps(report,indent=2)+'\n')
     if not report['passed']:raise SystemExit('Higher-stage backend scale gate failed; inspect report')
 

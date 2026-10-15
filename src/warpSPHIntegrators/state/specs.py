@@ -1,0 +1,145 @@
+from dataclasses import dataclass, field
+from typing import Any, List, Optional, Union, NamedTuple
+
+
+StepSize = Union[float, List[float]]
+
+
+@dataclass(frozen=True)
+class StateBlend:
+    self_scale: Optional[float] = None
+    reference_state: Optional[Any] = None
+    reference_weight: Optional[float] = None
+
+    def __post_init__(self):
+        if (self.reference_state is None) != (self.reference_weight is None):
+            raise ValueError(
+                "StateBlend requires reference_state and reference_weight together; got "
+                f"reference_state={'set' if self.reference_state is not None else 'None'}, "
+                f"reference_weight={self.reference_weight!r}. A reference state without a "
+                "weight fails much later, inside update_component, as None * tensor."
+            )
+
+
+@dataclass(frozen=True)
+class ComponentUpdateSpec:
+    derivative_dt: StepSize
+    blend: StateBlend = field(default_factory=StateBlend)
+
+
+@dataclass(frozen=True)
+class PositionUpdateSpec:
+    derivative_dt: StepSize
+    current_velocity_dt: Optional[float] = None
+    update_velocity_dt: Optional[float] = None
+    blend: StateBlend = field(default_factory=StateBlend)
+
+    def __post_init__(self):
+        if self.current_velocity_dt is not None and self.update_velocity_dt is not None:
+            raise ValueError(
+                "PositionUpdateSpec cannot combine current_velocity_dt and update_velocity_dt in compatibility mode"
+            )
+        if self.current_velocity_dt is not None and self.derivative_dt != 0.0:
+            raise ValueError(
+                f"PositionUpdateSpec with current_velocity_dt (semi-implicit mode) requires derivative_dt=0.0, "
+                f"but got {self.derivative_dt}. Use semi_implicit_position_step(dt) to construct this spec."
+            )
+
+
+class StageResult(NamedTuple):
+    """Result from a single RK stage: paired auxiliary value and update/derivative."""
+    aux: Any = None
+    update: Any = None
+
+
+@dataclass(frozen=True)
+class StepEvaluation:
+    update: Any
+    aux: Any = None
+
+
+# The IMEX right-hand-side split now lives in ``rhs.py``: ``IMEXRHS`` is a thin
+# constructor returning a structured ``RHS`` (NOTES S3.12, Phase 14), not a
+# standalone NamedTuple. A plain callable remains a fully implicit RHS.
+
+
+@dataclass(frozen=True)
+class IntegrationResult:
+    """Result from a full integration step.
+
+    Attributes:
+        state: The final integrated state after the step.
+        stages: List of StageResult, one per RK stage. Each contains the auxiliary
+                return value (aux) and the k-value (update) from that stage.
+                Access the last stage with stages[-1] to get (aux, k) for priorStep.
+        error:  Optional local error/difference estimate. Integrated fields contain
+                an estimate, not another trajectory state. It can come from a
+                lower-/same-order comparison or a method-specific defect. Its
+                exponent comes from estimate_order or the scheme metadata.
+        history: Accepted history/memory, when supplied or owned by a history-
+                dependent driver. Feed it back as `history=` on the next step;
+                the run API owns this threading automatically.
+    """
+    state: Any
+    stages: List[StageResult] = field(default_factory=list)
+    error: Optional[Any] = None
+    history: Optional[Any] = None
+    #: One diagnostics object per nonlinear stage, or one for a single-stage method.
+    solver_diagnostics: Optional[Any] = None
+    #: A startup/variable-order driver can emit an estimate with a different
+    #: exponent than its steady scheme metadata. None uses the scheme default.
+    estimate_order: Optional[int] = None
+    #: Optional component quadrature metadata for drivers with different position,
+    #: velocity and quantity weights (e.g. NystromWeights). Paired with stages.
+    quadrature: Optional[Any] = None
+    #: Optional non-ODE transition record (e.g. MapTransition). A complete map
+    #: is distinct from derivative/quadrature weights over stages.
+    transition: Optional[Any] = None
+
+    @property
+    def step_status(self):
+        """Finite-state and solver outcome without conflating stagnation with tolerance."""
+        from warpSPHIntegrators.state.ownership import assess_step
+        return assess_step(self)
+
+
+def blend_state(
+    *,
+    self_scale: Optional[float] = None,
+    reference_state: Optional[Any] = None,
+    reference_weight: Optional[float] = None,
+) -> StateBlend:
+    return StateBlend(
+        self_scale=self_scale,
+        reference_state=reference_state,
+        reference_weight=reference_weight,
+    )
+
+
+def explicit_step(dt: StepSize, *, blend: Optional[StateBlend] = None) -> ComponentUpdateSpec:
+    return ComponentUpdateSpec(derivative_dt=dt, blend=blend or StateBlend())
+
+
+def semi_implicit_position_step(
+    dt: float,
+    *,
+    blend: Optional[StateBlend] = None,
+) -> PositionUpdateSpec:
+    return PositionUpdateSpec(
+        derivative_dt=0.0,
+        current_velocity_dt=dt,
+        blend=blend or StateBlend(),
+    )
+
+
+def verlet_position_step(
+    derivative_dt: StepSize,
+    *,
+    update_velocity_dt: float,
+    blend: Optional[StateBlend] = None,
+) -> PositionUpdateSpec:
+    return PositionUpdateSpec(
+        derivative_dt=derivative_dt,
+        update_velocity_dt=update_velocity_dt,
+        blend=blend or StateBlend(),
+    )

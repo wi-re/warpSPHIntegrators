@@ -19,9 +19,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
-from warpSPHIntegrators import getIntegrator
-from warpSPHIntegrators.fields import BaseState, constant, get_reference_state, integrated, reference_state, tagged, update_component, update_position
-from warpSPHIntegrators.integration import BaseIntegrationSystem, ComponentUpdateSpec, PositionUpdateSpec
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.state import BaseState, constant, get_reference_state, integrated, reference_state, tagged
+from warpSPHIntegrators.state.fields import update_component, update_position
+from warpSPHIntegrators.state import BaseIntegrationSystem, ComponentUpdateSpec, PositionUpdateSpec
 
 
 m = 1.0
@@ -123,7 +124,7 @@ def system_value(system, tag):
 
 
 def run_integrator(initial_system, integration_scheme_name, dt, time_limit):
-    integrator = getIntegrator(integration_scheme_name)
+    integrator = get_scheme(integration_scheme_name)
     num_steps = int(time_limit / dt)
     initial_state = get_reference_state(initial_system)
     kinetic_energy = torch.tensor([initial_state.m * initial_state.u**2 / 2])

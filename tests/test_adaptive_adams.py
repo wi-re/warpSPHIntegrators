@@ -5,9 +5,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 import torch
-from warpSPHIntegrators import (AdaptiveAdams,VariableAdams,TensorState,tensor_rhs,solve,
-    save_checkpoint,load_checkpoint,StepHistory,snapshot_state,adams_order_choice)
-from warpSPHIntegrators.adaptive_adams import _defect_weights,_upper_weights
+from warpSPHIntegrators.schemes import AdaptiveAdams, VariableAdams
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
+from warpSPHIntegrators.runtime import save_checkpoint, load_checkpoint, snapshot_state
+from warpSPHIntegrators.state import StepHistory
+from warpSPHIntegrators.schemes.families.adaptive_adams import adams_order_choice
+from warpSPHIntegrators.schemes.coefficients.adams_control import _defect_weights, _upper_weights
 SOURCE=json.loads((Path(__file__).parents[1]/'scripts/coefficients/wave10/adaptive_adams.json').read_text())
 
 @pytest.mark.parametrize('record',SOURCE['choices'])
@@ -117,7 +120,7 @@ def test_changed_trajectory_restarts_before_using_history(change):
 def test_full_state_quantities_gradients_and_owned_hooks():
  from dataclasses import dataclass
  from test_variable_adams import CacheFields,CacheSystem
- from warpSPHIntegrators import testing
+ import warpSPHIntegrators.testing as testing
  @dataclass
  class Consumer(CacheSystem):
   initialized:int=0
@@ -171,7 +174,7 @@ def test_lower_order_decision_and_order_hold_policy():
 
 
 def test_algorithm_switch_delegates_accepted_order_policy():
- from warpSPHIntegrators import AlgorithmSwitch
+ from warpSPHIntegrators.wrappers import AlgorithmSwitch
  method=AlgorithmSwitch((AdaptiveAdams(),'Dormand-Prince 5(4)'),lambda s,p:0,'adams')
  result=solve(method,TensorState(torch.ones(1,dtype=torch.float64)),4.,tensor_rhs(lambda t,y:-y),
   dt=.01,adaptive=True,rtol=1e-8,atol=1e-10)
@@ -186,7 +189,7 @@ def test_history_capacity_type_foreign_and_prior_step_guards():
  method=AdaptiveAdams();state=TensorState(torch.ones(1,dtype=torch.float64));rhs=tensor_rhs(lambda t,y:-y)
  with pytest.raises(ValueError,match='capacity'):method(state,.1,rhs,history=StepHistory(1))
  with pytest.raises(TypeError):method(state,.1,rhs,history={})
- from warpSPHIntegrators import StageResult
+ from warpSPHIntegrators.state import StageResult
  with pytest.warns(RuntimeWarning):method(state,.1,rhs,priorStep=StageResult())
  foreign=VariableAdams(3)(state,.1,rhs,history=StepHistory(5))
  result=method(foreign.state,.1,rhs,history=foreign.history)

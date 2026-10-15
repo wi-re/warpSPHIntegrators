@@ -7,13 +7,15 @@ import platform
 import time
 
 import torch
-from warpSPHIntegrators import ImprovedNystrom, Nystrom, getIntegrator, solve, testing
+from warpSPHIntegrators.schemes import ImprovedNystrom, Nystrom
+from warpSPHIntegrators import get_scheme, solve
+import warpSPHIntegrators.testing as testing
 
 
 def measurements():
     rows=[]
     methods=[ImprovedNystrom(p,'declared') for p in (3,4)]+[
-        Nystrom('Nystrom4VelocityIndependent','declared'),getIntegrator('RK4'),getIntegrator('dormandPrince')]
+        Nystrom('Nystrom4VelocityIndependent','declared'),get_scheme('RK4'),get_scheme('dormandPrince')]
     for n in (64,4096):
         omega=torch.linspace(.5,3,n,dtype=torch.float64)
         def exact(t):

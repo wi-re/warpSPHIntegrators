@@ -183,7 +183,7 @@ def low_storage_ck54_step(f,t,y,h):
     """
     _check(y,h)
     if torch.is_grad_enabled():raise ValueError('Low-storage experiment requires torch.no_grad()')
-    from ..expanded_rk import expanded_rk_tableau
+    from warpSPHIntegrators.schemes.coefficients.expanded import expanded_rk_tableau
     tab=expanded_rk_tableau('CarpenterKennedy2N54')
     a=np.asarray(tab.A if hasattr(tab,'A') else tab.a);b=np.asarray(tab.b);s=len(b)-1
     rows=list(a[:s])+[b];beta=[];alpha=[];previous=None
@@ -245,7 +245,7 @@ def exponential_adams2_step(L,nonlinear,t,y,h,previous_nonlinear=None):
     requires discarding history. Full-state ownership/controller is not provided.
     """
     _check(y,h,dense=True)
-    from ..exponential_rk import operator_function
+    from warpSPHIntegrators.solvers.matrix_functions import operator_function
     current=nonlinear(t,y);cache={};Z=h*L
     value=operator_function(['phi',0,1.],Z,cache)@y+h*(operator_function(['phi',1,1.],Z,cache)@current)
     if previous_nonlinear is not None:value=value+h*(operator_function(['phi',2,1.],Z,cache)@(current-previous_nonlinear))

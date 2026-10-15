@@ -31,9 +31,10 @@ import argparse
 import math
 import warnings
 
-from warpSPHIntegrators import getIntegrator, testing
-from warpSPHIntegrators.integration import IntegrationSchemes
-from warpSPHIntegrators.reuse import step_reuse_analysis
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.schemes import IntegrationSchemes
+from warpSPHIntegrators.analysis import step_reuse_analysis
 
 
 def study(scheme, problem, dts, T, quiet=False):
@@ -167,7 +168,7 @@ def main():
                   f'{(f"{o_on:.2f}" if o_on else "n/a"):>8}{pred:>11}   {note}')
         return
 
-    scheme = getIntegrator(args.scheme)
+    scheme = get_scheme(args.scheme)
     _, _, _, rows = study(scheme, problem, dts, args.T)
     if args.plot:
         plot(rows, scheme, problem, args.plot)

@@ -74,16 +74,12 @@ import pytest
 import torch
 
 from conftest import ORDER_TOLERANCE
-from warpSPHIntegrators import (
-    ETD2RK,
-    EXPRB32,
-    SemilinearRHS,
-    StageResult,
-    getIntegrator,
-    get_reference_state,
-)
-from warpSPHIntegrators import testing
-from warpSPHIntegrators.rhs import resolve
+from warpSPHIntegrators.drivers.exponential.legacy import integrateETD2RK as ETD2RK, integrateEXPRB32 as EXPRB32
+from warpSPHIntegrators.adapters import SemilinearRHS
+from warpSPHIntegrators.state import StageResult, get_reference_state
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.adapters import resolve
 
 #: The canonical semi-discrete viscous-Burgers accuracy/cost setting (NOTES S3.12).
 T_BURGERS = 0.4
@@ -273,7 +269,7 @@ def test_exact_on_a_purely_linear_problem():
     integrated *exactly*, not just stably."""
     prob = _linear_diffusion_problem(n=32, nu=0.01)
     T = 0.4
-    ref = get_reference_state(testing.run(getIntegrator('RK4'), prob, dt=2e-3, T=T)).x
+    ref = get_reference_state(testing.run(get_scheme('RK4'), prob, dt=2e-3, T=T)).x
     # A coarse step (h = 0.1, only 4 steps) would give an O(h^2) ~ 1e-2 error for
     # a merely second-order method; the Krylov-tolerance error is ~1e-10, so the
     # method is essentially exact here.
@@ -448,7 +444,7 @@ def test_exprb32_exact_on_a_purely_linear_problem():
     tolerance -- far below any ``O(h^3)`` order error."""
     prob = _linear_diffusion_problem(n=32, nu=0.01)
     T = 0.4
-    ref = get_reference_state(testing.run(getIntegrator('RK4'), prob, dt=2e-3, T=T)).x
+    ref = get_reference_state(testing.run(get_scheme('RK4'), prob, dt=2e-3, T=T)).x
     # A coarse step (h = 0.1, only 4 steps) would give an O(h^3) ~ 1e-3 error
     # for a merely third-order method; the Krylov-tolerance error is ~1e-10.
     system = prob.initial()

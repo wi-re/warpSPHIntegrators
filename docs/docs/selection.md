@@ -47,8 +47,8 @@ the full registry reference.
 | High order, moderate stiffness | **BDF3–BDF5** | The A(α) cone shrinks with order (BDF3: 86.03°, BDF5: 51.84°) — stiff *oscillatory* modes outside the cone are not damped. Order-matched implicit starters remove the old explicit cold-start ceiling; stiffness-dependent accuracy and the steady-state cone still apply |
 | Strong damping, low order fine | **BDF1/BDF2**, **TR-BDF2**, **SDIRK2** | L-stable; BDF2 is the one-step-history workhorse |
 | Parabolic, but no solves allowed | **RKC2** / **RKL2** | Chebyshev/Legendre super-timestepping: stage count $s$ grows like $\sqrt{dt\cdot\lvert\lambda_{max}\rvert}$, so a huge $dt$ costs many *cheap* stages. Built for real (negative) eigenvalues — not oscillatory. Measured fewer total RHS evaluations than BE/BDF2/TR-BDF2 on the diffusion benchmark |
-| Stiff, Jacobian–vector products available | **ROS3P** | Order-3 Rosenbrock-W: A-stable (not L), linearly implicit — one JVP per stage, no nonlinear solve; built-in order-2 estimator |
-| Semilinear $f = Ly + N$ | **ETD2RK** / **EXPRB32** | Integrate the linear part *exactly* (matrix exponential + $\phi$-functions). EXPRB32 (order 3) freezes the full Jacobian $J_n$; on a linear autonomous problem the step is then the exact exponential flow |
+| Stiff, Jacobian–vector products available | **Rosenbrock 2(3) or ROS3P** | Rosenbrock 2(3) is A/L-stable and supports full Jacobian derivatives; legacy ROS3P is order three, A-stable (not L), linearly implicit — one linear solve per stage, potentially many JVPs in GMRES; built-in order-2 estimator |
+| Semilinear $f = Ly + N$ | **ExponentialRK('ETDRK4')** / **ExponentialRK('Exprb43')** | Integrate the linear part *exactly* (matrix exponential + $\phi$-functions). Exprb43 freezes the full Jacobian $J_n$ and augments time; its dense operator-AD limit and large-action budget are explicit; on a linear autonomous problem the step is then the exact exponential flow |
 | Additive fast + stiff split | **ARK3(2)4L[2]SA** / **ARK4(3)6L[2]SA** | Order 3/4 additive pairs (Kennedy–Carpenter): explicit half + stiffly-accurate implicit half, L-stable implicit part, embedded pairs. Pass an `IMEXRHS` |
 | Same split, one solve per step | **SBDF2 / SBDF3 / CNAB2** | IMEX linear multistep: BDF2/BDF3/trapezoidal backbone, explicit part extrapolated. **The explicit half caps $dt$** — real-axis boundaries 4/3, 20/21, 1, so a convective explicit part needs $dt\cdot\max\lvert\lambda_E\rvert \lesssim 0.5$ (below the ARK pairs' allowance) |
 | Mildly stiff, one solve per step | **Adams-Moulton 2–4 (implicit)** | JFNK-corrected AM: AM2 (trapezoidal) is A-stable, AM3/4 only have a bounded region. Iterated correction beats same-order PECE by an order of magnitude on a stiff nonlinear relaxation |
@@ -83,7 +83,7 @@ regions. The KenCarp/ARS names here provide the implicit half only.
 
 ## When in doubt
 
-`getPreferredScheme(order)` returns a sensible default for a given order;
+`get_scheme` selects an explicit enum identity;
 otherwise: **RK4** for the non-stiff branch, **ESDIRK3(2)4L[2]SA** for the
 stiff one, and let the embedded-pair error estimate (plus the adaptive
 helpers on the [API page](api)) tell you whether the step size is the right

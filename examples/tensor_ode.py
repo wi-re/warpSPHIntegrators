@@ -2,14 +2,16 @@
 
 import math
 import torch
-from warpSPHIntegrators import TensorState, tensor_rhs, filter_schemes, getPreferredIntegrator
+from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme
+from warpSPHIntegrators.schemes import filter_schemes
+from warpSPHIntegrators.schemes import ExplicitRK
 
 
 def run_example():
     # Scalar, vector or batched floating-point tensors use the same interface.
     initial = torch.tensor([1., 2.], dtype=torch.float64)
     state = TensorState(initial, t=0.)
-    scheme = getPreferredIntegrator(5)  # registered Dormand-Prince 5(4)
+    scheme = get_scheme(ExplicitRK.dormandPrince)  # registered Dormand-Prince 5(4)
     rhs = tensor_rhs(lambda t, y, rate: -rate*y, rate=2.)
     for _ in range(100):
         result = scheme(state, .01, rhs)

@@ -25,28 +25,19 @@ import math
 import pytest
 import torch
 
-from warpSPHIntegrators import (
-    BlockState,
-    JFNKSolver,
-    StepHistory,
-    flatten_integrated,
-    getIntegrator,
-    get_reference_state,
-    integrated_field_names,
-    state_difference,
-    state_norm,
-    testing,
-    unflatten_integrated,
-)
-from warpSPHIntegrators.enums import IntegrationSchemeType
-from warpSPHIntegrators.fields import replace_integrated_fields
-from warpSPHIntegrators.fullyimplicit import getBlockTableau
-from warpSPHIntegrators.jfnk import fd_matvec, jvp_matvec
-from warpSPHIntegrators.reuse import (is_fsal, step_reuse_analysis,
-                                      step_reuse_order, supports_step_reuse)
-from warpSPHIntegrators.stability import rk_stability_function
+from warpSPHIntegrators.state import BlockState, StepHistory, flatten_integrated, get_reference_state, integrated_field_names, state_difference, state_norm, unflatten_integrated
+from warpSPHIntegrators.solvers import JFNKSolver
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.schemes import IntegrationSchemeType
+from warpSPHIntegrators.state import replace_integrated_fields
+from warpSPHIntegrators.schemes.coefficients.coupled import getBlockTableau
+from warpSPHIntegrators.solvers import fd_matvec, jvp_matvec
+from warpSPHIntegrators.analysis import is_fsal, step_reuse_analysis, step_reuse_order, supports_step_reuse
+from warpSPHIntegrators.analysis.stability import rk_stability_function
 from warpSPHIntegrators.testing import ParticleState, ParticleSystem
-from warpSPHIntegrators.util import updateStateEuler, updateStep
+from warpSPHIntegrators.state import updateStateEuler
+from warpSPHIntegrators.state.lifecycle import updateStep
 
 # --------------------------------------------------------------------------- #
 # The BlockState bridges                                                      #
@@ -149,7 +140,7 @@ def test_block_schemes_are_registered_with_their_metadata():
     for name, expected_order, expected_stability, expected_identifier in (
             ('Gauss-Legendre 2', 4, 'A', IntegrationSchemeType.gaussLegendre2),
             ('Radau IIA s=2', 3, 'L', IntegrationSchemeType.radauIia2)):
-        scheme = getIntegrator(name)
+        scheme = get_scheme(name)
         assert scheme.identifier == expected_identifier
         assert scheme.order == expected_order
         assert scheme.stability == expected_stability
@@ -239,7 +230,7 @@ def test_radau_iia_tableau_properties():
 
 
 def _rk(scheme_name, z):
-    scheme = getIntegrator(scheme_name)
+    scheme = get_scheme(scheme_name)
     return complex(rk_stability_function(scheme.function.blockTableau, z))
 
 
@@ -296,7 +287,7 @@ def test_gauss_legendre_stability_function():
 def test_driver_order_on_nonlinear_problems(name, order, problem):
     """The order is a property of the full solve (the fixed point of the
     coupled system), not of the tableau alone."""
-    scheme = getIntegrator(name)
+    scheme = get_scheme(name)
     prob = testing.PROBLEMS[problem]()
     dts = testing.default_step_sizes(0.1, 5)
     measured, _ = testing.convergence(scheme, prob, dts, 1.0)
@@ -322,7 +313,7 @@ def test_companion_estimate_converges_at_rate_three(name, problem):
     tableaus (the 2-stage-only order-2 pair is degenerate -- b itself -- so
     the estimate quadratures the null stage too), so main-minus-companion is
     O(h^3): the q = 3 the adaptive controller is told."""
-    scheme = getIntegrator(name)
+    scheme = get_scheme(name)
     prob = testing.PROBLEMS[problem]()
     dts = [0.1, 0.05, 0.025, 0.0125]
     T = 0.5
@@ -338,7 +329,7 @@ def test_stages_carry_per_stage_updates_and_aux():
     update as `update` and the raw f-evaluation as `aux` -- the shape the
     warmStart contract and the history hooks expect."""
     for name in ('Gauss-Legendre 2', 'Radau IIA s=2'):
-        scheme = getIntegrator(name)
+        scheme = get_scheme(name)
         problem = testing.oscillator_problem()
         result = scheme(problem.initial(), dt=0.05, f=problem.rhs)
         assert len(result.stages) == 2
@@ -351,7 +342,7 @@ def test_warm_start_changes_the_guess_not_the_answer():
     block Euler) must converge to the same fixed point as the cold start --
     a guess, nothing more."""
     for name in ('Gauss-Legendre 2', 'Radau IIA s=2'):
-        scheme = getIntegrator(name)
+        scheme = get_scheme(name)
         problem = testing.oscillator_problem()
         r1 = scheme(problem.initial(), dt=0.05, f=problem.rhs)
         warm = scheme(r1.state, dt=0.05, f=problem.rhs, warmStart=r1.stages)
@@ -366,7 +357,7 @@ def test_warm_start_changes_the_guess_not_the_answer():
 
 def test_warm_start_length_mismatch_is_an_error():
     for name in ('Gauss-Legendre 2', 'Radau IIA s=2'):
-        scheme = getIntegrator(name)
+        scheme = get_scheme(name)
         problem = testing.oscillator_problem()
         first = scheme(problem.initial(), dt=0.05, f=problem.rhs)
         with pytest.raises(ValueError, match='warmStart'):
@@ -375,7 +366,7 @@ def test_warm_start_length_mismatch_is_an_error():
 
 def test_prior_step_is_rejected_like_the_dirk_schemes():
     for name in ('Gauss-Legendre 2', 'Radau IIA s=2'):
-        scheme = getIntegrator(name)
+        scheme = get_scheme(name)
         problem = testing.oscillator_problem()
         first = scheme(problem.initial(), dt=0.05, f=problem.rhs)
         with pytest.warns(RuntimeWarning, match='does not support first-stage reuse'):
@@ -387,7 +378,7 @@ def test_history_is_bookkeeping_only():
     """Like the DIRK family: history= is threaded through for the hooks but
     never changes the answer (the block driver has no multistep cold start)."""
     for name in ('Gauss-Legendre 2', 'Radau IIA s=2'):
-        scheme = getIntegrator(name)
+        scheme = get_scheme(name)
         problem = testing.oscillator_problem()
         plain = scheme(problem.initial(), dt=0.05, f=problem.rhs)
         with_result = scheme(problem.initial(), dt=0.05, f=problem.rhs,
@@ -463,7 +454,7 @@ def test_jvp_matvec_matches_the_hand_computed_dense_jacobian():
     k = 4.0
     dt = 0.05
     for name in ('Gauss-Legendre 2', 'Radau IIA s=2'):
-        tableau = getIntegrator(name).function.blockTableau
+        tableau = get_scheme(name).function.blockTableau
         problem = testing.oscillator_problem(k=k)
         step_fn = _block_step_fn(problem, dt, tableau)
         y0 = _initial_block(problem, dt, tableau)
@@ -488,7 +479,7 @@ def test_jvp_matvec_matches_the_hand_computed_dense_jacobian():
 
 def test_jvp_and_fd_matvecs_agree_on_the_block_system():
     for name in ('Gauss-Legendre 2', 'Radau IIA s=2'):
-        tableau = getIntegrator(name).function.blockTableau
+        tableau = get_scheme(name).function.blockTableau
         problem = testing.oscillator_problem()
         dt = 0.05
         step_fn = _block_step_fn(problem, dt, tableau)
@@ -507,7 +498,7 @@ def test_jvp_solver_and_fd_solver_agree_end_to_end():
     """The block solve is one JFNK system; its answer must not depend on
     which matvec supplied the Jacobian-vector products."""
     for name in ('Gauss-Legendre 2', 'Radau IIA s=2'):
-        scheme = getIntegrator(name)
+        scheme = get_scheme(name)
         problem = testing.oscillator_problem()
         r_jvp = scheme(problem.initial(), dt=0.05, f=problem.rhs,
                        solver=JFNKSolver(matvec='jvp'))
@@ -548,7 +539,7 @@ def test_scale_gate_at_256_dof(name, bound):
     converges in ~256 matvecs (residual ~1e-10), so that is what the gate
     uses; a 'stagnation' exit on this system is a failed solve, not a floor.
     """
-    scheme = getIntegrator(name)
+    scheme = get_scheme(name)
     prob = testing.PROBLEMS['advection'](n=256, ic='step')
     h = 1.0 / 256
     dt = 100.0 * h  # CFL = 100
@@ -572,7 +563,7 @@ def test_reuse_analysis_says_the_block_has_no_reusable_stage():
     """A coupled tableau has no independent first stage to splice: the
     reuse machinery must say 'none' (with the warmStart pointer), not guess."""
     for name in ('Gauss-Legendre 2', 'Radau IIA s=2'):
-        scheme = getIntegrator(name)
+        scheme = get_scheme(name)
         analysis = step_reuse_analysis(scheme)
         assert analysis.order is None
         assert not analysis.fsal
@@ -588,7 +579,7 @@ def test_diagnostic_reports_one_scaled_block_solve():
     RHS count is a multiple of the stage count (2), one map evaluation being
     2 f-evaluations."""
     for name in ('Gauss-Legendre 2', 'Radau IIA s=2'):
-        scheme = getIntegrator(name)
+        scheme = get_scheme(name)
         problem = testing.oscillator_problem()
         result = scheme(problem.initial(), dt=0.05, f=problem.rhs,
                         solver=JFNKSolver(matvec='jvp'))

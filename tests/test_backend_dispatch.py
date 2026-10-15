@@ -17,24 +17,9 @@ from dataclasses import dataclass
 import pytest
 import torch
 
-from warpSPHIntegrators import (
-    BaseIntegrationSystem,
-    BaseState,
-    ComponentUpdateSpec,
-    PositionUpdateSpec,
-    clone_value,
-    constant,
-    empty_value,
-    ephemeral,
-    get_reference_state,
-    integrated,
-    move_value,
-    reference_state,
-    register_clone_handler,
-    tagged,
-    testing,
-)
-from warpSPHIntegrators import fields as F
+from warpSPHIntegrators.state import BaseIntegrationSystem, BaseState, ComponentUpdateSpec, PositionUpdateSpec, clone_value, constant, empty_value, ephemeral, get_reference_state, integrated, move_value, reference_state, register_clone_handler, tagged
+import warpSPHIntegrators.testing as testing
+import warpSPHIntegrators.state.fields as F
 
 try:
     import warp as wp
@@ -337,10 +322,10 @@ def test_final_state_owns_its_buffer(scheme):
 @pytest.mark.parametrize('name', ['RK4', 'Midpoint', 'SSP RK3', 'Dormand-Prince 5(4)'])
 def test_runge_kutta_stages_each_start_from_the_initial_state(name):
     """For a Butcher tableau every stage buffer is built from y^n, so writes never stack."""
-    from warpSPHIntegrators import getIntegrator
+    from warpSPHIntegrators import get_scheme
 
     system = _buffer_system()
-    result = getIntegrator(name)(system, dt=0.05, f=_buffer_rhs)
+    result = get_scheme(name)(system, dt=0.05, f=_buffer_rhs)
     final = get_reference_state(result.state).buffers[0].item()
     assert final <= 1.0, (
         f'{name}: the final buffer accumulated {final:.0f} stage writes; each stage should '
@@ -350,9 +335,9 @@ def test_runge_kutta_stages_each_start_from_the_initial_state(name):
 
 def test_container_state_still_integrates_correctly():
     """The dispatch must not disturb the numerics."""
-    from warpSPHIntegrators import getIntegrator
+    from warpSPHIntegrators import get_scheme
 
-    s = getIntegrator('RK4')
+    s = get_scheme('RK4')
     order, _ = testing.convergence(s, testing.PROBLEMS['oscillator'](),
                                    testing.default_step_sizes(), 2.0)
     assert order >= 4 - 0.15

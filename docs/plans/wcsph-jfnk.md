@@ -80,8 +80,8 @@ already be closer to plugged into this library than expected:
   That is a real regression oracle to check a generic JFNK-through-DIRK path against,
   not a toy with no ground truth.
 - It currently bypasses this library's registry entirely — a hand-rolled Python loop
-  calling `implicitBackwardEulerStep` directly, not `getIntegrator(...)`. Wiring it
-  through `getIntegrator('Backward Euler (implicit)')` is itself part of the payoff:
+  calling `implicitBackwardEulerStep` directly, not `get_scheme(...)`. Wiring it
+  through `get_scheme('Backward Euler (implicit)')` is itself part of the payoff:
   it proves the generic DIRK driver reaches the same answer as a problem-specific,
   hand-eliminated solve.
 
@@ -217,7 +217,7 @@ one is part of this phase, not a prerequisite blocking it.)
 Steps:
 1. Split `deltaSPH_step`'s RHS so the acoustic subsystem (continuity + EOS + pressure
    force, Phase C) can be solved implicitly via a DIRK scheme
-   (`getIntegrator('Backward Euler (implicit)')` first, matching Phase A's proven
+   (`get_scheme('Backward Euler (implicit)')` first, matching Phase A's proven
    pattern, before trying a higher-order tableau) with `solver=JFNKSolver()`, while
    whatever stays explicit (viscosity if `MIN_STABLE_ALPHA`'s floor turns out to still
    apply, anything Phase C left out) continues on its current path. This is a real

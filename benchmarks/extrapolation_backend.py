@@ -7,14 +7,15 @@ import platform
 import sys
 import time
 import torch
-from warpSPHIntegrators import Extrapolation,TensorState,tensor_rhs,solve,getIntegrator
+from warpSPHIntegrators.schemes import Extrapolation
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
 
 ROOT=Path(__file__).resolve().parents[1]
 
 
 def measurements():
     methods=[Extrapolation('euler',p) for p in (4,6,8)]+[Extrapolation('midpoint',p) for p in (4,6,8,10)]
-    methods+=[getIntegrator('RK4'),getIntegrator('dormandPrince')]
+    methods+=[get_scheme('RK4'),get_scheme('dormandPrince')]
     rows=[];adaptive=[]
     for n in (64,4096):
         rates=torch.linspace(.1,10,n,dtype=torch.float64)
@@ -41,7 +42,7 @@ def measurements():
     return dict(device='cpu',dtype='float64',threads=1,python=sys.version,torch=torch.__version__,platform=platform.platform(),
         cases=rows,adaptive=adaptive,qualification='Analytic nonlinear manufactured reaction and real planar rotation vectors. Finite horizon, fixed target orders and serial columns. RHS counts include refresh/retries. No internal parallelism, low-storage, symplecticity or universal work advantage; high-order fine grids can reach floating-point floors. Compare actual errors, not tolerances alone.',
         source_sha256={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (
-            ROOT/'src/warpSPHIntegrators/extrapolation.py',ROOT/'src/warpSPHIntegrators/run.py',Path(__file__).resolve())})
+            ROOT/'src/warpSPHIntegrators/schemes/families/extrapolation.py',ROOT/'src/warpSPHIntegrators/runtime/run.py',Path(__file__).resolve())})
 
 
 if __name__=='__main__':

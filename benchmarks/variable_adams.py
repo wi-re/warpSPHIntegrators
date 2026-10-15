@@ -7,7 +7,9 @@ from pathlib import Path
 import time
 
 import torch
-from warpSPHIntegrators import VariableAdams, TensorState, tensor_rhs, getIntegrator, StepHistory, solve
+from warpSPHIntegrators.schemes import VariableAdams
+from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme, solve
+from warpSPHIntegrators.state import StepHistory
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -15,7 +17,7 @@ ROOT=Path(__file__).resolve().parents[1]
 def measurements():
     rows=[]
     methods=[VariableAdams(p,kind) for p in (3,4,5) for kind in ('ab','abm')]
-    methods+=[getIntegrator('ab5'),getIntegrator('abm5'),getIntegrator('dormandPrince')]
+    methods+=[get_scheme('ab5'),get_scheme('abm5'),get_scheme('dormandPrince')]
     for n in (64,16384):
         rates=torch.linspace(.1,5.,n,dtype=torch.float64)
         for alternating in (False,True):
@@ -57,7 +59,7 @@ def measurements():
     return dict(device='cpu',dtype='float64',threads=1,vector_cases=rows,adaptive_cases=adaptive,
         qualification='Tolerance controls a local difference estimate, not a guaranteed global error. Fixed-coefficient Adams deliberately restart on alternating h. Variable AB/ABM re-evaluate the start and corrected endpoint, costing 2/3 RHS calls after startup.',
         source_sha256={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in
-            (ROOT/'src/warpSPHIntegrators/variable_adams.py',ROOT/'src/warpSPHIntegrators/run.py',Path(__file__).resolve())})
+            (ROOT/'src/warpSPHIntegrators/schemes/families/variable_adams.py',ROOT/'src/warpSPHIntegrators/runtime/run.py',Path(__file__).resolve())})
 
 
 if __name__=='__main__':

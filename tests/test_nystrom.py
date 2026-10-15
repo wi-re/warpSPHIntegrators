@@ -8,8 +8,13 @@ import pytest
 import torch
 from dataclasses import dataclass
 
-from warpSPHIntegrators import (Nystrom,nystrom_tableau,NystromWeights,testing,solve,
-    BaseState,integrated,copied,constant,reference_state,Strang,StabilizedRK,Collocation)
+from warpSPHIntegrators.schemes import Nystrom, StabilizedRK, Collocation
+from warpSPHIntegrators.schemes.coefficients.nystrom import nystrom_tableau
+from warpSPHIntegrators.schemes.families.nystrom import NystromWeights
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators import solve
+from warpSPHIntegrators.state import BaseState, integrated, copied, constant, reference_state
+from warpSPHIntegrators.wrappers import Strang
 
 SOURCE=json.loads((Path(__file__).parents[1]/'scripts/coefficients/wave12/nystrom.json').read_text())
 METHODS=[name for name in SOURCE['tableaus'] if name!='RKN4']
@@ -258,7 +263,7 @@ def test_custom_finalize_requires_component_weight_support():
 
 
 def test_detached_velocity_dependence_cannot_pass_a_zero_jvp_probe():
-    from warpSPHIntegrators import classify_separable
+    from warpSPHIntegrators.wrappers import classify_separable
     def rhs(state,dt,**kwargs):
         s=state.state
         return testing.ParticleUpdate(s.u,-s.x-.2*s.u.detach(),torch.zeros_like(s.e)),None

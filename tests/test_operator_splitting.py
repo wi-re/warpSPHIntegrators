@@ -3,10 +3,13 @@ from dataclasses import dataclass,field
 import math
 import pytest
 import torch
-from warpSPHIntegrators import (ConservativeDissipativeRHS,SemilinearRHS,RHS,
-    TensorState,tensor_rhs,Strang,LieTrotter,compose,LinearExponentialFlow,solve,
-    classify_separable,check_contracts,getIntegrator,get_reference_state,SolveResult,
-    BaseIntegrationSystem,testing,RunError)
+from warpSPHIntegrators.wrappers import ConservativeDissipativeRHS, Strang, LieTrotter, compose, LinearExponentialFlow, classify_separable
+from warpSPHIntegrators.adapters import SemilinearRHS, RHS, check_contracts
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
+from warpSPHIntegrators.state import get_reference_state, BaseIntegrationSystem
+from warpSPHIntegrators.solvers import SolveResult
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.runtime import RunError
 
 OPTS=dict(matvec='jvp',tol=1e-12,newton_tol=1e-9)
 
@@ -155,7 +158,7 @@ def test_second_order_subflow_need_not_be_symmetric_for_strang_order_two():
 
 
 def test_precision_floor_opt_in_finishes_every_subflow_before_acceptance():
-    from warpSPHIntegrators import SolveDiagnostics
+    from warpSPHIntegrators.solvers import SolveDiagnostics
     class Floor:
         def solve(self,step,y0,norm=None,**opts):
             return SolveResult(step(y0),True,1,SolveDiagnostics(termination='stagnation'))
@@ -192,7 +195,7 @@ def test_nested_time_dependent_part_is_rejected_by_autonomous_composition():
 
 
 def test_gated_yoshida4_reaches_fourth_order_on_the_known_damped_oscillator():
-    from warpSPHIntegrators import Yoshida4
+    from warpSPHIntegrators.wrappers import Yoshida4
     matrix=torch.diag(torch.tensor([0.,-.5,0.],dtype=torch.float64))
     method=Yoshida4('Velocity Verlet',LinearExponentialFlow(matrix))
     errors=[error(method,h) for h in (.2,.1,.05)]
@@ -207,7 +210,7 @@ def test_gated_yoshida4_reaches_fourth_order_on_the_known_damped_oscillator():
 
 
 def test_high_order_anti_diffusion_and_nonsymmetric_subflow_guards():
-    from warpSPHIntegrators import Yoshida4
+    from warpSPHIntegrators.wrappers import Yoshida4
     with pytest.raises(ValueError,match='symmetric'):
         Yoshida4('Midpoint',LinearExponentialFlow(torch.tensor([[-1.]],dtype=torch.float64)))
     with pytest.raises(ValueError,match='static exact'):

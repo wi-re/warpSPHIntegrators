@@ -4,8 +4,10 @@ sidebar_label: Relaxed Chebyshev
 
 # Relaxed Chebyshev / Lobatto super-timestepping (`RelaxedChebyshev`) — 3 schemes
 
+Stabilized explicit methods spend extra inexpensive stages to take larger steps on diffusion-like equations. They target negative-real spectra. Stability alone does not ensure accurate damping of every fast mode, and a supplied spectral bound must cover the operator being stepped.
+
 Stabilised **explicit** methods for stiff *parabolic* (diffusive) right-hand
-sides, driven by `rkc.py`. A step takes $s$ cheap, matrix-free right-hand-side
+sides, driven by `drivers.stabilized.chebyshev`. A step takes $s$ cheap, matrix-free right-hand-side
 evaluations and buys a real-axis stability interval that grows like $O(s^2)$ —
 so the step size can be set by the physics (the nonlinear convective scale),
 not by the stiffest diffusive eigenvalue. That is what makes them attractive
@@ -95,13 +97,11 @@ See [the before/after audit](https://github.com/wi-re/warpSPHIntegrators/blob/ma
 On the diffusion benchmark, RKL2 holds the error flat across the stiff range
 with *fewer* total RHS evaluations than the implicit baselines at the default
 JFNK settings — the implicit methods pay for a Newton+GMRES solve per step,
-while RKL2 pays $s$ cheap evaluations (NOTES.md §3.13,
-`scripts/rkl2_benchmark.py`, `images/rkl2_benchmark.png`;
-`benchmarks/rkc_benchmark.py`, `docs/assets/rkc_benchmark.png`). The crossover: once
+while RKL2 pays $s$ cheap evaluations (see the numerical record). The crossover: once
 the problem is stiff enough that the implicit solve converges in a small number
 of Krylov iterations, the implicit methods win; the benchmark plots both sides.
 
-TVD classification (NOTES.md §3.11): RKC2/RKL2 expose no tableau and are
+TVD classification (see the numerical record): RKC2/RKL2 expose no tableau and are
 classified by measurement — per-step TVD to CFL 1.5 (tested to CFL 5).
 
 ## Legendre/Gegenbauer backend factories
@@ -128,7 +128,8 @@ no automatic spectral estimator or SSP/positivity guarantee.
 ```python
 import math
 import torch
-from warpSPHIntegrators import StabilizedRK, TensorState, tensor_rhs, solve
+from warpSPHIntegrators.schemes import StabilizedRK
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
 
 method = StabilizedRK('rkg2', lambda_max=100.)
 initial = TensorState(torch.ones(4, dtype=torch.float64))
@@ -182,7 +183,8 @@ SERK2 avoids the source's unused extra initial evaluation.
 ```python
 import math
 import torch
-from warpSPHIntegrators import OrthogonalRK, TensorState, tensor_rhs, solve
+from warpSPHIntegrators.schemes import OrthogonalRK
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
 
 n = 64
 nu = .001
@@ -242,3 +244,5 @@ See [source, stability and consumer evidence](https://github.com/wi-re/warpSPHIn
 
 **Tests:** `tests/test_rkc.py` (order, stability-interval endpoints, odd-stage
 damping, the $s$-clamping and `lambda_max` selection).
+
+[The numerical record](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/research/integrators/notes-index.md) retains derivations, source pins and measured property gates.

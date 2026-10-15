@@ -41,15 +41,10 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
-from warpSPHIntegrators import (
-    RKC1,
-    RKC2,
-    RKL2,
-    getIntegrator,
-    get_reference_state,
-    stage_count,
-    testing,
-)
+from warpSPHIntegrators.drivers.stabilized.chebyshev import RKC1, RKC2, RKL2, stage_count
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.state import get_reference_state
+import warpSPHIntegrators.testing as testing
 
 N_VALUES = (16, 32, 64)
 T = 0.1
@@ -117,7 +112,7 @@ def main():
         problem = testing.PROBLEMS['diffusion'](n=n)
         per_scheme = {}
         for full, label in IMPLICIT:
-            rows = curve(full, getIntegrator(full), problem, n)
+            rows = curve(full, get_scheme(full), problem, n)
             per_scheme[label] = (rhs_to_target(rows), rows)
         for label, fn in RKC_FAMILIES:
             rows = curve(label, fn, problem, n, family=fn.family)

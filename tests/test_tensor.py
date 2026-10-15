@@ -4,10 +4,11 @@ import math
 import pytest
 import torch
 
-from warpSPHIntegrators import (
-    TensorState, tensor_rhs, filter_schemes, getIntegrator, StepHistory,
-    IMEXRHS, SemilinearRHS, estimate_error_norm, dormand_prince_dense_output,
-)
+from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme
+from warpSPHIntegrators.schemes import filter_schemes
+from warpSPHIntegrators.state import StepHistory
+from warpSPHIntegrators.adapters import IMEXRHS, SemilinearRHS
+from warpSPHIntegrators.runtime import estimate_error_norm, dormand_prince_dense_output
 
 
 @pytest.mark.parametrize('scheme', filter_schemes(state_kind='tensor'), ids=lambda s: s.name)
@@ -30,7 +31,7 @@ def test_tensor_adaptation_advances_every_compatible_driver(scheme):
 @pytest.mark.parametrize('name', ['RK4', 'Dormand-Prince 5(4)', 'Backward Euler (implicit)',
                                  'Gauss-Legendre 2'])
 def test_tensor_state_and_bound_parameter_gradients_match_finite_differences(name):
-    scheme = getIntegrator(name)
+    scheme = get_scheme(name)
     y = torch.tensor([.3, .7], dtype=torch.float64, requires_grad=True)
     rate = torch.tensor(.4, dtype=torch.float64, requires_grad=True)
     def run(y, rate):
@@ -50,7 +51,7 @@ def test_tensor_rhs_preserves_split_capabilities_and_binds_parameters():
     y = torch.tensor([1.], dtype=torch.float64)
     f = tensor_rhs(IMEXRHS(lambda t, y, a: a*y, lambda t, y, a: -2*a*y), a=2.)
     assert f.provides == {'explicit', 'implicit'}
-    result = getIntegrator('ARK3(2)4L[2]SA')(TensorState(y), .01, f)
+    result = get_scheme('ARK3(2)4L[2]SA')(TensorState(y), .01, f)
     assert result.state.y.item() == pytest.approx(math.exp(-.02), abs=1e-7)
     assert result.error is not None
     assert estimate_error_norm(result) >= 0
@@ -58,7 +59,7 @@ def test_tensor_rhs_preserves_split_capabilities_and_binds_parameters():
 
 def test_tensor_adapter_uses_actual_stage_times_and_dp5_dense_output():
     state = TensorState(torch.tensor(1., dtype=torch.float64), t=.2)
-    result = getIntegrator('Dormand-Prince 5(4)')(state, .1, tensor_rhs(lambda t, y: y*0+t))
+    result = get_scheme('Dormand-Prince 5(4)')(state, .1, tensor_rhs(lambda t, y: y*0+t))
     assert result.state.y.item() == pytest.approx(1.+(.3**2-.2**2)/2)
     dense = dormand_prince_dense_output(state, result.stages, .1, .5)
     assert dense.y.item() == pytest.approx(1.+(.25**2-.2**2)/2)
@@ -71,14 +72,14 @@ def test_tensor_adapter_uses_actual_stage_times_and_dp5_dense_output():
 ])
 def test_tensor_rhs_rejects_invalid_derivative_contract(function, exception):
     with pytest.raises(exception):
-        getIntegrator('RK4')(TensorState(torch.ones(2, dtype=torch.float64)), .1, tensor_rhs(function))
+        get_scheme('RK4')(TensorState(torch.ones(2, dtype=torch.float64)), .1, tensor_rhs(function))
 
 
 def test_tensor_adapter_rejects_second_order_drivers_and_integer_state():
     with pytest.raises(TypeError):
         TensorState(torch.ones(2, dtype=torch.int64))
     with pytest.raises(ValueError, match='position/velocity'):
-        getIntegrator('Velocity Verlet')(TensorState(torch.ones(2)), .1, tensor_rhs(lambda t,y:-y))
+        get_scheme('Velocity Verlet')(TensorState(torch.ones(2)), .1, tensor_rhs(lambda t,y:-y))
 
 
 @pytest.mark.parametrize('name,options', [
@@ -90,4 +91,4 @@ def test_family_numerical_controls_fail_before_rhs_evaluation(name, options):
     def rhs(t, y):
         pytest.fail('invalid controls must fail before RHS evaluation')
     with pytest.raises(ValueError):
-        getIntegrator(name)(TensorState(torch.ones(2)), .01, tensor_rhs(rhs), **options)
+        get_scheme(name)(TensorState(torch.ones(2)), .01, tensor_rhs(rhs), **options)

@@ -4,8 +4,10 @@ sidebar_label: Newmark
 
 # Newmark beta/gamma (`Newmark`) — 1 scheme
 
+Newmark and generalized-alpha advance position and velocity together in second-order mechanics. Average-acceleration Newmark preserves linear modal energy, while generalized-alpha can deliberately damp unresolved fast modes. Check the force, mass and accepted-acceleration assumptions before choosing the damping parameters.
+
 The classical **Newmark** time integrator for second-order dynamics
-$x'' = f(t, x, v)$, driven by `newmark.py` — a repo-native version of the
+$x'' = f(t, x, v)$, driven by `drivers.mechanics.newmark` — a repo-native version of the
 standard form:
 
 $$

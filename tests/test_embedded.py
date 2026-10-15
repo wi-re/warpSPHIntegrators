@@ -11,8 +11,10 @@ import pytest
 import torch
 
 from conftest import EXACT_ON_LINEAR_PROBLEMS, ESTIMATE_SCHEMES, dts_for, estimate_order, order_of
-from warpSPHIntegrators import getIntegrator, get_reference_state, testing
-from warpSPHIntegrators.butcher import getButcherTableau
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.state import get_reference_state
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.schemes.coefficients.explicit import getButcherTableau
 
 # TR-BDF2 carries SUNDIALS ARKODE's published (2, 3) embedded pair: the estimate
 # is O(dt^3) = dt^(order+1), the propagated branch's own true local error. The
@@ -105,7 +107,7 @@ def test_recorded_estimate_inventory_matches_driver_metadata():
 
 @pytest.mark.parametrize('name', EMBEDDED)
 def test_error_estimate_is_returned(name):
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     result = s(prob.initial(), dt=0.1, f=prob.rhs)
     assert result.error is not None, f'{name} returned no error estimate'
@@ -129,7 +131,7 @@ def test_error_estimate_has_the_embedded_order(name):
     the smallest problem where the pair is active, so it is the one both are
     measured on.
     """
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob_name = 'forced' if name in ('ROS3P', 'EXPRB32') else 'oscillator'
     prob = testing.PROBLEMS[prob_name]()
 
@@ -189,7 +191,7 @@ def test_error_estimate_is_the_right_size(name):
     local error, one order coarser, so the ratio grows ~ 1/dt (34x at dt = 0.05
     for ESDIRK4(3)6) -- conservative in the right direction for step-size control,
     absorbed by the loose upper bound."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     dt = 0.05
 
@@ -209,7 +211,7 @@ def test_error_estimate_is_the_right_size(name):
 @pytest.mark.parametrize('name', EMBEDDED)
 def test_propagated_solution_is_the_high_order_branch(name):
     """b[0] propagates. Returning b[-1] instead would silently cost a whole order."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     # EXPRB32 is exact on the linear autonomous oscillator (roundoff-floor error,
     # no measurable order); the forced problem is the smallest one where its order
     # 3 shows up. The wave-7 pairs floor out on the standard oscillator grid too,

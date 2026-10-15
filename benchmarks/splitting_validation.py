@@ -10,9 +10,11 @@ from pathlib import Path
 import time
 
 import torch
-from warpSPHIntegrators import (ConservativeDissipativeRHS,SemilinearRHS,TensorState,
-    tensor_rhs,Strang,LieTrotter,LinearExponentialFlow,compose,solve,getIntegrator,
-    classify_separable,testing,Yoshida4,get_reference_state)
+from warpSPHIntegrators.wrappers import ConservativeDissipativeRHS, Strang, LieTrotter, LinearExponentialFlow, compose, classify_separable, Yoshida4
+from warpSPHIntegrators.adapters import SemilinearRHS
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.state import get_reference_state
 
 OPTS=dict(matvec='jvp',tol=1e-12,newton_tol=1e-7)
 
@@ -61,7 +63,7 @@ def oscillator_diagnostics():
             measured_order=math.log(rows[-2]['error']/rows[-1]['error'],2),rows=rows))
     # Linear oscillator: images of the two phase-space basis vectors give its
     # Jacobian directly, without finite-difference or nonlinear probing error.
-    for name,method in methods[1:]+[('unsplit-RK4',getIntegrator('RK4'))]:
+    for name,method in methods[1:]+[('unsplit-RK4',get_scheme('RK4'))]:
         columns=[]
         for q,v in ((1.,0.),(0.,1.)):
             state=problem.initial();s=get_reference_state(state)
@@ -95,7 +97,7 @@ def main():
     parser.add_argument('--output-dir',type=Path,default=Path('.tmp/phase7/benchmarks'))
     args=parser.parse_args();torch.set_num_threads(1);args.output_dir.mkdir(parents=True,exist_ok=True)
     state,rhs,matrix=split_burgers()
-    reference,_=run(getIntegrator('RK4'),state,rhs,.0001,.1)
+    reference,_=run(get_scheme('RK4'),state,rhs,.0001,.1)
     errors=[]
     for kind,method in [('LieTrotter',LieTrotter('RK4','Implicit Midpoint')),
                         ('Strang-midpoint',Strang('RK4','Implicit Midpoint')),
@@ -129,7 +131,7 @@ def main():
     normal,_=run(Strang('RK4',d),initial,f,.01,.2);normal_flows=count[0];count[0]=0
     parts=[('dissipative',d)];coefficients=[.5/n]
     for i in range(n):
-        parts.extend([('conservative',getIntegrator('RK4')),('dissipative',d)])
+        parts.extend([('conservative',get_scheme('RK4')),('dissipative',d)])
         coefficients.extend([1/n,(.5 if i==n-1 else 1)/n])
     merged=compose(parts,coefficients,order=2,name='Merged exact-flow demonstration')
     result=merged(initial,.2,f)

@@ -4,9 +4,11 @@ sidebar_label: IMEX
 
 # Additive (IMEX) methods (`IMEX`) — 7 schemes
 
+An additive split separates a part that can be evaluated explicitly from a stiff part that needs an implicit solve. The explicit part still restricts the step. A split is useful only when it reflects the actual equations and makes the solve cheaper.
+
 For the **split right-hand side** $y' = f_E(t, y) + f_I(t, y)$: the smooth
 (non-stiff) part explicit, the stiff part implicit. The split is read by
-**capability** through `rhs.resolve` (NOTES.md §3.12): an `IMEXRHS` (or a
+**capability** through `rhs.resolve` (see the numerical record): an `IMEXRHS` (or a
 structured `RHS` providing `explicit`/`implicit`) activates the split; an
 ordinary RHS callable degenerates to the **pure-implicit limit** of the
 scheme, so the standard integrator call convention stays valid.
@@ -38,7 +40,7 @@ evaluations per step.
 ## ARK4(3)6L[2]SA (`ARK436L2SA`)
 
 Kennedy-Carpenter's 6-stage pair: implicit half order 4, explicit half order
-3, L[2]-stable, carried in `ark.py` in exact rational form
+3, L[2]-stable, carried in `schemes.coefficients.additive` in exact rational form
 ($c = (0, 1/2, 83/250, 31/50, 17/20, 1)$). Note the implicit half is a
 *different* 6-stage ESDIRK design from the standalone ESDIRK4(3)6L[2]SA
 (different nodes: $83/250, 31/50, 17/20$ vs. $(2-\sqrt2)/4, 5/8, 26/25$), so
@@ -46,14 +48,14 @@ its coefficients are carried in full rather than by reference.
 
 **Stability slices.** The additive pair's stability is two-parameter
 (implicit eigenvalue scale × explicit eigenvalue scale); the slices are
-measured in `tests/test_ark.py` (NOTES.md §3.6): the L[2] implicit half damps
+measured in `tests/test_ark.py` (see the numerical record): the L[2] implicit half damps
 its own stiff modes to $O(z^{-2})$ while the explicit half must stay inside
 its own region — the practical CFL is set by the smooth part, which is the
 point of the split.
 
 ## IMEX linear multistep — SBDF2, SBDF3, CNAB2
 
-The multistep additive family (`imexmultistep.py`, NOTES.md §3.19): a BDF or
+The multistep additive family (`drivers.history.imex`, the numerical record): a BDF or
 trapezoidal **implicit backbone** for the stiff part plus **explicit endpoint
 extrapolation** for the smooth part.
 
@@ -97,7 +99,7 @@ one solve plus the non-solve evaluations (the explicit-part evaluations, the
 CNAB2 implicit start-point evaluation, the endpoint history evaluation) are
 counted into `rhs_evaluations`, so the work-unit invariant covers the full
 step cost. Per-step TVD: measured to CFL 1.5 with the rest of the multistep
-family (NOTES.md §3.11).
+family (see the numerical record).
 
 ## Crank–Nicolson–Leapfrog (`cnlf2`)
 
@@ -136,3 +138,5 @@ tensor restart are covered by [the backend record](https://github.com/wi-re/warp
 stability slices, the pure-implicit limit), `tests/test_imexmultistep.py`
 (SBDF/CNAB orders, defects, the $\beta$ regression guard), `tests/test_rhs.py`
 (the capability-based split resolution).
+
+[The numerical record](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/research/integrators/notes-index.md) retains derivations, source pins and measured property gates.

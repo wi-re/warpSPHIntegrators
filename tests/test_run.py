@@ -3,9 +3,11 @@ from dataclasses import dataclass, field
 import math
 import pytest
 import torch
-from warpSPHIntegrators import (TensorState, tensor_rhs, solve, getIntegrator,
-    RunError, StepHistory, IntegrationResult, SolveDiagnostics,
-    SolveResult, testing)
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
+from warpSPHIntegrators.runtime import RunError
+from warpSPHIntegrators.state import StepHistory, IntegrationResult
+from warpSPHIntegrators.solvers import SolveDiagnostics, SolveResult
+import warpSPHIntegrators.testing as testing
 
 
 def state(value=1., t=0.):
@@ -88,7 +90,7 @@ class FailedSolver:
 
 def test_custom_solver_failure_without_diagnostics_is_observable_and_uncommitted():
     initial=state(); f=tensor_rhs(lambda t,y:-y)
-    single=getIntegrator('Backward Euler (implicit)')(initial,.1,f,solver=FailedSolver())
+    single=get_scheme('Backward Euler (implicit)')(initial,.1,f,solver=FailedSolver())
     assert not single.step_status.successful
     tx=Transaction()
     with pytest.raises(RunError) as info:
@@ -145,7 +147,7 @@ def test_field_tolerances_and_advanced_protocol():
                                  'Adams-Moulton 2 (implicit)','IMEX Euler'])
 def test_failed_custom_solver_propagates_through_other_implicit_drivers(name):
     r=solve(name,state(),.2,tensor_rhs(lambda t,y:-y),dt=.1,solver=FailedSolver(),raise_on_failure=False)
-    startup = int(bool(getIntegrator(name).metadata.history_length))
+    startup = int(bool(get_scheme(name).metadata.history_length))
     assert not r.successful and r.accepted_steps==startup and r.state.t==startup*.1
     assert len(r.history)==startup
 

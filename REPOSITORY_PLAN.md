@@ -287,26 +287,26 @@ projects as the supported consumer set for this rewrite; do not retain the broad
 root API or flat module paths solely for hypothetical external callers.
 [Refactor design and initial consumer audit](docs/plans/package-api-refactor.md).
 
-- [ ] Refresh the supported-consumer import and usage audit after Phase 8. Include
+- [x] Refresh the supported-consumer import and usage audit after Phase 8. Include
   wildcard-derived uses, deep imports, serialized scheme identifiers, custom
   lifecycle behavior, tableau access and device-clock/graph hooks.
-- [ ] Split state/contracts, scheme definitions and coefficients, numerical
+- [x] Split state/contracts, scheme definitions and coefficients, numerical
   drivers, solvers, runtime orchestration, wrappers and adapters into meaningful
   subpackages. Establish dependency direction and remove registry/driver cycles
   and concrete-family dispatch lists where a common stepping contract belongs.
-- [ ] Define a small explicit root API for ordinary use and focused public
+- [x] Define a small explicit root API for ordinary use and focused public
   subpackage APIs for SPH systems and solver extensions. Select fixed schemes
   through one canonical lookup and enums; keep raw named scheme functions and
   coefficient-generation internals out of the root facade. Retain explicit
   parameterized factories where configuration is genuinely necessary.
-- [ ] Migrate warpSPH, warpSPHCore, warpSPHCases and warpSPHPlotting together with
+- [x] Migrate warpSPH, warpSPHCore, warpSPHCases and warpSPHPlotting together with
   repository examples, tests, benchmarks, source tools and packaging. Replace
   wildcard imports with explicit imports. Preserve serialized identifiers or
   supply an explicit migration where storage formats change.
-- [ ] Preserve numerical maps, method metadata, lifecycle/quantity behavior,
+- [x] Preserve numerical maps, method metadata, lifecycle/quantity behavior,
   solver diagnostics, gradients, accepted-history/rejection semantics, restart
   and the consumer graph/clock contract throughout the structural change.
-- [ ] Validate the full numerical suite, installed-wheel exports/imports and
+- [x] Validate the full numerical suite, installed-wheel exports/imports and
   source/catalog tooling, then exercise representative supported-consumer flows.
   Separate missing downstream dependencies from actual regressions and record
   any consumer check that cannot be run.
@@ -326,28 +326,38 @@ the tone: explain the problem and behavior directly, use friendly method names
 alongside exact enum members, and show an understood runnable example before
 specialist detail. Backend interfaces should be settled before this full pass.
 
-- [ ] Review the documentation landing page, quick start, method-selection guide,
+- [x] Review the documentation landing page, quick start, method-selection guide,
   family guides, solver explanations, run/options/API pages, examples and notebook
   introductions as one user journey. Explain terms and prerequisites where used.
-- [ ] Use friendly author/construction names consistently, retaining exact enum
+- [x] Use friendly author/construction names consistently, retaining exact enum
   members, signatures and variant distinctions so examples remain discoverable
   and usable. Preserve source and numerical qualifications.
-- [ ] Explain what each family does, when to choose it, what its important
+- [x] Explain what each family does, when to choose it, what its important
   parameters mean and what its behavior looks like on a known problem. Keep
   essential assumptions, limitations and practical advice on the relevant page.
-- [ ] Replace internal phase/wave shorthand and stale implementation status in
+- [x] Replace internal phase/wave shorthand and stale implementation status in
   user-facing prose with current capabilities and plain explanations. Keep
   development history and detailed provenance in their existing reference records.
-- [ ] Reconcile examples, benchmark interpretation, method properties and links
+- [x] Reconcile examples, benchmark interpretation, method properties and links
   with the completed Phase 8 contracts; avoid making readers follow several
   documents to understand a basic choice or run a first example.
-- [ ] Execute published examples and validate generated catalogs, links/anchors
+- [x] Execute published examples and validate generated catalogs, links/anchors
   and the documentation-site build. Review the rendered pages for readability.
 
 Completion: a new user can understand the available approaches, select a method,
 run a complete example and interpret its result from the user documentation.
 This is a documentation and usability pass; new numerical methods or backend
 performance projects remain separate work.
+
+Both passes completed locally on 15 October 2026. The 0.7 API has four root
+entry points and explicit state/scheme/solver interfaces. All 142 enum
+identities and a real pre-refactor portable checkpoint are preserved.
+The full suite passes (8,785 passed, 639 skipped), as do the isolated
+0.7.0 wheel, numerical AST, catalog, examples, links and site gates.
+Supported-consumer CPU behavior passes; the pre-existing downstream
+FD/JVP tolerance failure and unavailable CUDA checks remain explicit.
+[Migration guide](docs/docs/migration.md) and
+[validation and consumer limits](docs/development/package-refactor-validation.md).
 
 ### Phase 9 Establish backend and performance projects
 

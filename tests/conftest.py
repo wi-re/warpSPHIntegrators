@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 from _pytest.mark.expression import Expression
 
-from warpSPHIntegrators import testing
-from warpSPHIntegrators.integration import IntegrationSchemes
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.schemes import IntegrationSchemes
 
 #: Test categories, as marker name -> test files. Every test file belongs to
 #: exactly one category; the marker is assigned at collection time by
@@ -20,6 +20,7 @@ CATEGORIES = {
     # State machinery, field semantics, registry metadata, backend dispatch.
     'core': [
         'test_backend_dispatch.py',
+        'test_package_api.py',
         'test_catalog.py',
         'test_copied_fields.py',
         'test_drift_fields.py',

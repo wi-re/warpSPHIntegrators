@@ -4,11 +4,13 @@ sidebar_label: Rosenbrock-W
 
 # Linearly implicit — Rosenbrock-W (`LinearlyImplicit`) — 1 scheme
 
+Rosenbrock methods replace nonlinear stage iterations with linear solves involving a frozen Jacobian. GMRES can still require many Jacobian–vector products per stage. The full-JVP configurations and legacy ROS3P have different gradient and stability qualifications, explained separately below.
+
 The fixed catalog contains **ROS3P**, a 3-stage, order-3,
 **A-stable** (not L-stable) Rosenbrock-W method with a built-in order-2
 embedded estimate, from the 3-stage Rosenbrock-W construction in **Lang &
 Verwer, BIT 41(4) (2001) 731-738** (the citable coefficient source). Driven by
-`rosenbrock.py`.
+`drivers.implicit.rosenbrock`.
 
 ## Additional Rosenbrock factories
 
@@ -142,7 +144,7 @@ accurate to a few percent on nonlinear ones.
 ## Benchmarks
 
 `benchmarks/rosenbrock_benchmark.py` → `docs/assets/rosenbrock_benchmark.png` (wave
-equation and viscous Burgers, NOTES.md §3.14): order 3 measured on both
+equation and viscous Burgers, the numerical record): order 3 measured on both
 semilinear problems with `w='jvp'`/`'fd'`, the order drop to 1 with
 `w='linear'`, and the per-step cost (2-3 $f$ + 3 GMRES in the shared operator)
 vs. the DIRK family at matched accuracy.

@@ -17,7 +17,8 @@
   "wave1/wave1_tableaus.py": {
     "original_scratch_path": ".tmp/wave1_tableaus.py",
     "original_sha256": "24b4b0cd54597f96f479e9962766690918541dfdd182a629285f348442056db2",
-    "maintained_sha256": "001bc1da4db8e47a747216c8f6d0384f606c3bb0aed410a474e96b0fa3fbd291"
+    "maintained_sha256": "b15287ae159de1d2fd9c3dbc8ba6531246440f191deea20453a6b2190146a811",
+    "maintenance_note": "0.7 package/API import migration; numerical coefficients and original provenance retained"
   },
   "wave6/extract_tableaus.jl": {
     "original_scratch_path": ".tmp/wave6_julia/extract_tableaus.jl",
@@ -42,7 +43,8 @@
   "wave6/verify_tableaus.py": {
     "original_scratch_path": ".tmp/wave6_verify_probe.py",
     "original_sha256": "2dfd74066ff2bd43fe67de2487c4814a01f0fc89146d0081d8e95652d1a0531d",
-    "maintained_sha256": "77c5f8187788bce5f8858cd4e4410f14a61b2d5f360fe2a23f0cb4b5575bfc62"
+    "maintained_sha256": "49e0b5ca3065c17ba12fd9301c6a23184277149a76f1ac763aed4556ff635e61",
+    "maintenance_note": "0.7 package/API import migration; numerical coefficients and original provenance retained"
   },
   "wave7/extract_wave7.jl": {
     "original_scratch_path": ".tmp/wave7_julia/extract_wave7.jl",
@@ -92,12 +94,14 @@
   "wave8/exact_values.py": {
     "original_scratch_path": ".tmp/wave8_dirk/exact_values.py",
     "original_sha256": "d19135790a3726564db573b35ad4b5212ea604a31f2fc2d8f76f8e2d04c8f2fa",
-    "maintained_sha256": "874f2b4cc77cf4b847fc6efad1525a576a22f5a24fe7eb367faadbf3d578fa28"
+    "maintained_sha256": "b6d8ee7f684fabc73c2cde2d571bb27e6ecd81010f95c37e8427a28c90fa5c5d",
+    "maintenance_note": "0.7 package/API import migration; numerical coefficients and original provenance retained"
   },
   "wave8/probe_wave8.py": {
     "original_scratch_path": ".tmp/wave8_dirk/probe_wave8.py",
     "original_sha256": "f50069d5628444b3fb83f9eff9793bdb8ab0df8987fb518df983c12b933819fd",
-    "maintained_sha256": "b7f42d42bec32d719a07ff3cd6cd236aee26b86ed268ee01915d6004d75b2570"
+    "maintained_sha256": "296157c501656c11b36d5635b671efe0b26cdf68b1b3eaae3821d1234bc8a89c",
+    "maintenance_note": "0.7 package/API import migration; numerical coefficients and original provenance retained"
   },
   "wave8/extract_wave8_out.txt": {
     "original_scratch_path": ".tmp/wave8_dirk/extract_wave8_out.txt",

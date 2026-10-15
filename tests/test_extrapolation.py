@@ -6,9 +6,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 import torch
-from warpSPHIntegrators import (Extrapolation,ExtrapolationQuadrature,extrapolation_coefficients,
-    TensorState,tensor_rhs,solve,getIntegrator,Strang,ConservativeDissipativeRHS,
-    save_checkpoint,load_checkpoint)
+from warpSPHIntegrators.schemes import Extrapolation
+from warpSPHIntegrators.schemes.families.extrapolation import ExtrapolationQuadrature
+from warpSPHIntegrators.schemes.coefficients.extrapolation import extrapolation_coefficients
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
+from warpSPHIntegrators.wrappers import Strang, ConservativeDissipativeRHS
+from warpSPHIntegrators.runtime import save_checkpoint, load_checkpoint
 
 SOURCE=json.loads((Path(__file__).parents[1]/'scripts/coefficients/wave13/extrapolation.json').read_text())
 METHODS=[Extrapolation('euler',p) for p in range(2,9)]+[Extrapolation('midpoint',p) for p in range(2,11,2)]
@@ -104,7 +107,7 @@ def test_parameter_gradients_and_physical_composition(base,order):
 def test_order_two_main_map_equivalence_is_recorded_without_registration():
     state=TensorState(torch.tensor([.7,-.4],dtype=torch.float64),t=.3)
     rhs=tensor_rhs(lambda t,y:-y+y.square()+math.sin(t))
-    reference=getIntegrator('Midpoint')(state,.1,rhs)
+    reference=get_scheme('Midpoint')(state,.1,rhs)
     for base in ('euler','midpoint'):
         result=Extrapolation(base,2)(state,.1,rhs)
         assert torch.allclose(result.state.y,reference.state.y,atol=1e-15,rtol=0)

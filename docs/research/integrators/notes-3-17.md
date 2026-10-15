@@ -5,7 +5,7 @@
 
 Phase 11 lands as **helpers, not a solver** — the decision the roadmap's open
 contract item asked for. The library exposes two functions in
-`src/warpSPHIntegrators/adaptive.py`, and the caller drives the accept/reject loop:
+`src/warpSPHIntegrators/runtime/adaptive.py`, and the caller drives the accept/reject loop:
 
 - `estimate_error_norm(result, rtol=1e-3, atol=1e-6)` — the embedded-pair
   difference as a dimensionless number: `state_norm(result.error,

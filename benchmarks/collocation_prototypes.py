@@ -7,7 +7,7 @@ RadauIIA3 is the already registered order-three, s=2 method. No companion
 estimator is claimed by these prototypes.
 """
 import numpy as np
-from warpSPHIntegrators.fullyimplicit import BlockTableau, fullyImplicitBlock
+from warpSPHIntegrators.drivers.implicit.coupled import BlockTableau, fullyImplicitBlock
 
 
 def prototype_tableau(family):

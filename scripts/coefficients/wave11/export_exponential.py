@@ -37,7 +37,7 @@ for method,program in source.items():
     for i,call in enumerate(program['calls']):calls.append(dict(c=call['time'],coefficients=compile_expr(call['state'],i)))
     programs[method]=dict(calls=calls,output=compile_expr(program['output'],n),error=None if program['error'] is None else compile_expr(program['error'],n))
 text='"""Operator-valued definitions extracted from actual pinned ExpRK kernels."""\nPROGRAMS = '+pprint.pformat(programs,width=115,sort_dicts=True)+'\n'
-target=root/'src/warpSPHIntegrators/_exponential_data.py'
+target=root/'src/warpSPHIntegrators/schemes/coefficients/exponential.py'
 p=argparse.ArgumentParser();p.add_argument('--check',action='store_true');args=p.parse_args()
 if args.check:assert target.read_text()==text
 else:target.write_text(text)

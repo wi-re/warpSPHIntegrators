@@ -13,7 +13,10 @@ parameters are forwarded; solver/step options are not passed to that function.
 [example:run a known discrete recurrence]: #
 ```python
 import torch
-from warpSPHIntegrators import FunctionMap, TensorState, tensor_map, solve, MapTransition
+from warpSPHIntegrators.schemes import FunctionMap
+from warpSPHIntegrators import TensorState, solve
+from warpSPHIntegrators.adapters import tensor_map
+from warpSPHIntegrators.schemes.families.function_map import MapTransition
 
 records = []
 result = solve(FunctionMap(), TensorState(torch.ones(4, dtype=torch.float64)),

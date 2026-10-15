@@ -19,16 +19,11 @@ import math
 import numpy as np
 import pytest
 
-from warpSPHIntegrators import get_reference_state, getIntegrator, testing
-from warpSPHIntegrators.integration import IntegrationSchemes
-from warpSPHIntegrators.prrk import (
-    pRRK22,
-    pRRK33,
-    pRRK54,
-    _prrk22_tableau,
-    _prrk33_tableau,
-    _prrk54_tableau,
-)
+from warpSPHIntegrators.state import get_reference_state
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.schemes import IntegrationSchemes
+from warpSPHIntegrators.drivers.explicit.relaxation import pRRK22, pRRK33, pRRK54, _prrk22_tableau, _prrk33_tableau, _prrk54_tableau
 
 # (driver, tableau fn, registered base-scheme name, formal order)
 PARRK = [
@@ -62,11 +57,11 @@ def test_prrk_kappa_zero_equals_base_ssprk(fn, tab_func, base_name, order):
     s0 = prob.initial()
     for dt in (0.07, 0.13):
         r_p = fn(s0, dt, prob.rhs, kappa=0.0)
-        r_b = getIntegrator(base_name)(s0, dt, prob.rhs)
+        r_b = get_scheme(base_name)(s0, dt, prob.rhs)
         sp, sb = get_reference_state(r_p.state), get_reference_state(r_b.state)
         d = max(float((sp.x - sb.x).abs().max()), float((sp.u - sb.u).abs().max()))
         assert d < 1e-13, f'{fn.__name__} @kappa=0 deviates from {base_name} by {d}'
-    tab0, base = tab_func(0.0, 0.07), getIntegrator(base_name).function.butcherTableau
+    tab0, base = tab_func(0.0, 0.07), get_scheme(base_name).function.butcherTableau
     assert np.allclose(tab0.a, base.a, atol=1e-14)
     assert np.allclose(tab0.b, base.b, atol=1e-14)
     assert np.allclose(tab0.c, base.c, atol=1e-14)

@@ -25,20 +25,12 @@ import warnings
 import pytest
 import torch
 
-from warpSPHIntegrators import (
-    RHS,
-    IMEXRHS,
-    SemilinearRHS,
-    add_updates,
-    check_contracts,
-    get_reference_state,
-    getIntegrator,
-    resolve,
-    sub_updates,
-    testing,
-)
-from warpSPHIntegrators.integration import IntegrationSchemes
-from warpSPHIntegrators.util import split_return
+from warpSPHIntegrators.adapters import RHS, IMEXRHS, SemilinearRHS, add_updates, check_contracts, resolve, sub_updates
+from warpSPHIntegrators.state import get_reference_state
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.schemes import IntegrationSchemes
+from warpSPHIntegrators.state.lifecycle import split_return
 
 _GOLDEN_PATH = os.path.join(os.path.dirname(__file__), 'data', 'bitident_golden.json')
 _GOLDEN = None
@@ -130,7 +122,7 @@ def test_imex_rhs_constructor_matches_handbuilt_rhs(scheme_name):
     assert sorted(via_constructor.provides) == sorted(via_class.provides) == ['explicit', 'implicit']
 
     prob = testing.PROBLEMS['oscillator']()
-    scheme = getIntegrator(scheme_name)
+    scheme = get_scheme(scheme_name)
     sys_a = prob.initial()
     sys_b = prob.initial()
     for _ in range(3):
@@ -333,7 +325,7 @@ def test_semilinear_rhs_rejects_both_nonlinear_and_combined():
 def test_viscous_burgers_conserves_mass():
     """Integrating the semilinear problem via its combined f conserves the mass."""
     prob = testing.PROBLEMS['viscousBurgers'](n=64, nu=0.01)
-    scheme = getIntegrator('RK4')
+    scheme = get_scheme('RK4')
     system = prob.initial()
     m0 = get_reference_state(system).x.sum().item()
     worst = 0.0

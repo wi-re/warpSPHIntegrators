@@ -23,13 +23,8 @@ suite is unaffected; ``test_jfnk.py`` remains the regression guard for that path
 import pytest
 import torch
 
-from warpSPHIntegrators import (
-    JFNKSolver,
-    diagonal_preconditioner,
-    get_reference_state,
-    gmres,
-    identity_preconditioner,
-)
+from warpSPHIntegrators.solvers import JFNKSolver, diagonal_preconditioner, gmres, identity_preconditioner
+from warpSPHIntegrators.state import get_reference_state
 from warpSPHIntegrators.solvers import SolveResult
 from warpSPHIntegrators.testing import ParticleState, ParticleSystem
 

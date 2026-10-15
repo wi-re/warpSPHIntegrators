@@ -2,18 +2,68 @@
 sidebar_label: Exponential
 ---
 
-# Exponential integrators (`Exponential`) — 2 schemes
+# Exponential integration and matrix-function actions
 
 Exponential integrators integrate the **linear part of a stiff problem
 exactly** — through the matrix exponential and the entire $\phi$-functions —
 and only quadrature the mild nonlinear remainder. The stiffness is carried by
 the linear operator, so the method is unconditionally stable for the linear
 part and can run comfortably past the explicit wall, with no nonlinear solve
-per step (driven by `exponential.py`; NOTES.md §3.15-3.16).
+per step. Finite-precision matrix-function actions still need a sufficient work
+budget; nonlinear remainder accuracy can impose a smaller step.
 
 The $\phi$-functions (Caliari & Ostermann, *Appl. Numer. Math.* 59 (2009)
 568-581): $\phi_k(z) = \sum_{j\ge 0} z^j / (j+k)!$, so
 $\phi_1(z) = (e^z - 1)/z$ and $\phi_2(z) = (e^z - 1 - z)/z^2$.
+
+## Higher-order exponential configurations
+
+`ExponentialRK` adds explicit configuration names without growing the fixed enum
+catalog. For a declared semilinear split, choose `LawsonEuler`, `NorsettEuler`,
+`ETDRK2`, `ETDRK3`, `ETDRK4` or `HochOst4`. For a full-Jacobian linearization,
+choose `Exp4`, `EPIRK4s3A`, `EPIRK4s3B`, `EPIRK5P1`, `EPIRK5P2`, `EXPRB53s3`,
+`Exprb32` or `Exprb43`. The latter two provide embedded estimates.
+
+[example:run exponential-configured]: #
+
+```python
+import math
+import torch
+from warpSPHIntegrators.schemes import ExponentialRK
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
+
+rhs = tensor_rhs(lambda t, y: -y + .1*y*y - .1*math.exp(-2*t))
+run = solve(ExponentialRK('Exprb43'),
+            TensorState(torch.ones(1, dtype=torch.float64)), 1., rhs, dt=.1)
+assert run.successful
+assert abs(run.state.y.item() - math.exp(-1)) < 1e-6
+```
+
+The time-dependent full-Jacobian path augments time before linearization. Dense
+actions up to `dense_limit=64` entries, including an augmented clock, retain complete Jacobian/operator
+derivatives. Above that bound, constant operators use Arnoldi and transpose
+adjoints; tracked operator derivatives require an explicit larger dense bound.
+`phi_dim=60` limits work, while `phi_tol=1e-11` controls dimension-refinement
+agreement. An insufficient action budget fails the step. This numerical check
+does not certify arbitrary nonnormal spectra.
+
+Custom finalize must declare `exponential_compatible=True` and consume
+`ExponentialQuadrature`, whose increments are already operator weighted. These
+are affine tensor ODE methods; mass matrices and nonlinear projectors need a
+different contract. There is no FSAL reuse.
+
+On the known nonlinear reaction–diffusion demo at 1,024 entries and h=.1,
+ETDRK2/3/4 errors are 6.36e-4 / 4.51e-6 / 4.34e-8, with times
+.371/.741/.966 seconds on the measured CPU. The existing ETD2RK reaches the same
+second-order result faster; higher order is an accuracy option.
+[Measurements and qualifications](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/exponential-validation.md)
+include source failures: pinned EPIRK5s3 misses order five, so it is unavailable,
+and HochOst4 uses the qualified cached formula.
+
+## Registered second-order and Rosenbrock alternatives
+
+The following two fixed registrations retain their original action and gradient
+contracts. The factory above has separate checked-action and operator-AD behavior.
 
 ## ETD2RK (`ETD2RK`)
 
@@ -83,7 +133,7 @@ only first order on a genuinely nonlinear problem — the same order drop the
 
 ## Matrix-free $\phi_k(\mathrm{dt}\,L)\,v$
 
-The linear operator is applied **matrix-free** through the Phase 14 `linear`
+The linear operator is applied **matrix-free** through the declared `linear`
 accessor; no dense matrix is ever formed. Each $\phi_k(\mathrm{dt}\,L)\,v$ (and
 $e^{\mathrm{dt}L}v$) is a Krylov approximation (Hochbrueck's method): build
 the Arnoldi basis from $v$ (the same Hessenberg process as `jfnk.gmres`),
@@ -119,46 +169,3 @@ step's Krylov-iteration count.
 
 **Tests:** `tests/test_exponential.py` (orders, linearity exactness, the
 non-autonomous $v_n$ term, the gradient re-attachment).
-
-## Higher-order exponential configurations
-
-`ExponentialRK` adds explicit configuration names without growing the fixed enum
-catalog. For a declared semilinear split, choose `LawsonEuler`, `NorsettEuler`,
-`ETDRK2`, `ETDRK3`, `ETDRK4` or `HochOst4`. For a full-Jacobian linearization,
-choose `Exp4`, `EPIRK4s3A`, `EPIRK4s3B`, `EPIRK5P1`, `EPIRK5P2`, `EXPRB53s3`,
-`Exprb32` or `Exprb43`. The latter two provide embedded estimates.
-
-[example:run exponential-configured]: #
-
-```python
-import math
-import torch
-from warpSPHIntegrators import ExponentialRK, TensorState, tensor_rhs, solve
-
-rhs = tensor_rhs(lambda t, y: -y + .1*y*y - .1*math.exp(-2*t))
-run = solve(ExponentialRK('Exprb43'),
-            TensorState(torch.ones(1, dtype=torch.float64)), 1., rhs, dt=.1)
-assert run.successful
-assert abs(run.state.y.item() - math.exp(-1)) < 1e-6
-```
-
-The time-dependent full-Jacobian path augments time before linearization. Dense
-actions up to `dense_limit=64` entries retain complete Jacobian/operator
-derivatives. Above that bound, constant operators use Arnoldi and transpose
-adjoints; tracked operator derivatives require an explicit larger dense bound.
-`phi_dim=60` limits work, while `phi_tol=1e-11` controls dimension-refinement
-agreement. An insufficient action budget fails the step. This numerical check
-does not certify arbitrary nonnormal spectra.
-
-Custom finalize must declare `exponential_compatible=True` and consume
-`ExponentialQuadrature`, whose increments are already operator weighted. These
-are affine tensor ODE methods; mass matrices and nonlinear projectors need a
-different contract. There is no FSAL reuse.
-
-On the known nonlinear reaction–diffusion demo at 1,024 entries and h=.1,
-ETDRK2/3/4 errors are 6.36e-4 / 4.51e-6 / 4.34e-8, with times
-.371/.741/.966 seconds on the measured CPU. The existing ETD2RK reaches the same
-second-order result faster; higher order is an accuracy option.
-[Measurements and qualifications](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/exponential-validation.md)
-include source failures: pinned EPIRK5s3 misses order five, so it is unavailable,
-and HochOst4 uses the qualified cached formula.

@@ -8,9 +8,12 @@ import pytest
 import torch
 from dataclasses import dataclass
 
-from warpSPHIntegrators import (StabilizedRK, stabilized_coefficients, stabilized_interval,
-    TensorState,tensor_rhs,solve,save_checkpoint,load_checkpoint,
-    BaseState,integrated,copied,reference_state,testing)
+from warpSPHIntegrators.schemes import StabilizedRK
+from warpSPHIntegrators.schemes.coefficients.stabilized import stabilized_coefficients, stabilized_interval
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
+from warpSPHIntegrators.runtime import save_checkpoint, load_checkpoint
+from warpSPHIntegrators.state import BaseState, integrated, copied, reference_state
+import warpSPHIntegrators.testing as testing
 
 SOURCE=json.loads((Path(__file__).parents[1]/'scripts/coefficients/wave11/stabilized.json').read_text())
 FAMILIES=['rkl1','rkl2','rkg1','rkg2']

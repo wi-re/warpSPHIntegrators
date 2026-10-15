@@ -9,18 +9,11 @@ from dataclasses import dataclass
 import pytest
 import torch
 
-from warpSPHIntegrators import (
-    BaseState,
-    IntegrationSchemeType,
-    StateBlend,
-    constant,
-    ephemeral,
-    getIntegrationEnum,
-    getIntegrator,
-    integrated,
-    testing,
-)
-from warpSPHIntegrators.integration import IntegrationSchemes
+from warpSPHIntegrators.state import BaseState, StateBlend, constant, ephemeral, integrated
+from warpSPHIntegrators.schemes import IntegrationSchemeType
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.schemes import IntegrationSchemes
 
 
 @dataclass
@@ -250,7 +243,7 @@ def test_update_helpers_do_not_advance_time():
 
     Composing the two therefore double-advanced time. Time belongs to the integrator.
     """
-    from warpSPHIntegrators import updateStateEuler, updateStateSemiImplicitEuler
+    from warpSPHIntegrators.state import updateStateEuler, updateStateSemiImplicitEuler
 
     prob = testing.PROBLEMS['oscillator']()
     system = prob.initial()
@@ -266,26 +259,26 @@ def test_update_helpers_do_not_advance_time():
 # --------------------------------------------------------------------------- #
 
 def test_getIntegrator_accepts_all_three_spellings():
-    """`getIntegrator('rungeKutta4')` used to raise: it compared an enum to a string."""
-    by_name = getIntegrator('RK4')
-    assert getIntegrator(IntegrationSchemeType.rungeKutta4) is by_name
-    assert getIntegrator('rungeKutta4') is by_name
+    """`get_scheme('rungeKutta4')` used to raise: it compared an enum to a string."""
+    by_name = get_scheme('RK4')
+    assert get_scheme(IntegrationSchemeType.rungeKutta4) is by_name
+    assert get_scheme('rungeKutta4') is by_name
 
 
-def test_getIntegrationEnum_matches_getIntegrator():
+def test_enum_identity_matches_selection():
     for s in IntegrationSchemes:
-        assert getIntegrationEnum(s.name) is s.identifier
-        assert getIntegrationEnum(s.identifier.name) is s.identifier
+        assert get_scheme(s.name).identifier is s.identifier
+        assert get_scheme(s.identifier.name).identifier is s.identifier
 
 
 def test_unknown_integrator_raises():
     with pytest.raises(ValueError):
-        getIntegrator('no such scheme')
+        get_scheme('no such scheme')
 
 
 def test_semi_implicit_euler_is_registered_as_first_order():
     """It was registered as order 2 and measures 1.0. It is one force evaluation."""
-    assert getIntegrator('Semi-Implicit Euler').order == 1
+    assert get_scheme('Semi-Implicit Euler').order == 1
 
 
 def test_registry_identifiers_are_unique():

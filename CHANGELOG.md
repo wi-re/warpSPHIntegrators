@@ -16,6 +16,17 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
   failures and explicit future controller contracts.
 
 
+### Changed
+
+- Prepare the breaking 0.7.0 import migration: separate state, scheme definitions,
+  coefficients, drivers, solvers, runtime, adapters, wrappers and analysis.
+  The root API is `get_scheme`, `solve`, `TensorState` and `tensor_rhs`.
+  Migrate supported sibling consumers to focused interfaces; preserve enum
+  storage identities and portable tensor checkpoints through a narrow bridge.
+- Bind generic RK methods as immutable, identity-based callable records with
+  owned read-only coefficients. Use the structural stepping/control contracts
+  in solve, switching and physical composition instead of family whitelists.
+
 ### Fixed
 
 - Derive fixed RKC1/RKC2/RKL2 stage times from their recurrence, restoring
@@ -26,6 +37,11 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
   includes the independent pRRK convergence reference and spatial solver checks.
 
 ### Documentation
+
+- Refresh the overview, quick start, API, selection/family/solver guides,
+  examples and notebook introductions around understood problems and practical
+  choices. Add the 0.7 migration guide and execute all published site examples;
+  retain the README's friendly scheme list, explanations and benchmark results.
 
 - Give the README and generated catalog friendly author/construction names,
   such as Tsitouras 5(4), alongside exact family enum members. Keep legacy

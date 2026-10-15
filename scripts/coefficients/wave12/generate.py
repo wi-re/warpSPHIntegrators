@@ -16,7 +16,7 @@ def main():
         'RKN4 is excluded: its velocity-dependent map does not achieve order four.\n"""\n\n'
         'SOURCE_TREE = '+repr(data['monorepo_tree'])+'\n\nTABLEAUS = '
         +pprint.pformat(qualified,width=110,sort_dicts=True)+'\n')
-    target=ROOT/'src/warpSPHIntegrators/_nystrom_data.py'
+    target=ROOT/'src/warpSPHIntegrators/schemes/coefficients/nystrom_data.py'
     if args.check:
         if target.read_text()!=text:raise SystemExit('Nyström coefficient module is stale')
     else:target.write_text(text)

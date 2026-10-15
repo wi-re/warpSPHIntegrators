@@ -9,7 +9,7 @@ import numpy as np
 
 ROOT=Path(__file__).resolve().parents[3]
 SOURCE=Path(__file__).with_name('oracle.json')
-MODULE=ROOT/'src/warpSPHIntegrators/_expanded_rk_data.py'
+MODULE=ROOT/'src/warpSPHIntegrators/schemes/coefficients/expanded_data.py'
 SCREEN=Path(__file__).with_name('screen.json')
 TOLERANCE=1e-10
 

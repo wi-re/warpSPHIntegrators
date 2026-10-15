@@ -204,7 +204,7 @@ def main():
     print()
     print("=== identity / cross-checks ===")
     sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
-    from warpSPHIntegrators.dirk import getDIRKTableau  # noqa: E402
+    from warpSPHIntegrators.schemes.coefficients.implicit import getDIRKTableau  # noqa: E402
 
     kc3 = dump["KenCarp3"]
     ref = getDIRKTableau("ESDIRK324L2SA")

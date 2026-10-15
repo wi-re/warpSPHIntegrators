@@ -16,17 +16,12 @@ import numpy as np
 import pytest
 import torch
 
-from warpSPHIntegrators import (
-    dormand_prince_dense_output,
-    estimate_error_norm,
-    getIntegrator,
-    get_reference_state,
-    propose_dt,
-    state_norm,
-    testing,
-)
-from warpSPHIntegrators.adaptive import _DP5_B_MAIN
-from warpSPHIntegrators.butcher import getButcherTableau
+from warpSPHIntegrators.runtime import dormand_prince_dense_output, estimate_error_norm, propose_dt
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.state import get_reference_state, state_norm
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.runtime.adaptive import _DP5_B_MAIN
+from warpSPHIntegrators.schemes.coefficients.explicit import getButcherTableau
 from conftest import ESTIMATE_SCHEMES, estimate_order
 
 #: The estimate emitters (tests/test_embedded.py): the (p, p-1) embedded pairs
@@ -114,7 +109,7 @@ def test_propose_dt_rejects_bad_arguments():
 # --------------------------------------------------------------------------- #
 
 def test_estimate_error_norm_scales_the_difference_against_the_propagated_state():
-    s = getIntegrator('Dormand-Prince 5(4)')
+    s = get_scheme('Dormand-Prince 5(4)')
     prob = testing.PROBLEMS['oscillator']()
     result = s(prob.initial(), dt=0.1, f=prob.rhs)
     assert estimate_error_norm(result) == pytest.approx(
@@ -126,7 +121,7 @@ def test_estimate_error_norm_raises_for_schemes_without_estimates():
     # (no estimate, and a variable step would restart its history anyway).
     # SBDF2/3 and CNAB2: the IMEX multistep family, same convention.
     for name in ('RK4', 'BDF2', 'SBDF2', 'SBDF3', 'CNAB2'):
-        s = getIntegrator(name)
+        s = get_scheme(name)
         prob = testing.PROBLEMS['oscillator']()
         result = s(prob.initial(), dt=0.1, f=prob.rhs)
         assert result.error is None
@@ -136,7 +131,7 @@ def test_estimate_error_norm_raises_for_schemes_without_estimates():
 
 @pytest.mark.parametrize('name', EMBEDDED)
 def test_estimate_error_norm_is_finite_and_positive(name):
-    s = getIntegrator(name)
+    s = get_scheme(name)
     # ROS3P's and EXPRB32's built-in estimates degenerate to zero on a linear
     # autonomous problem (tests/test_embedded.py); forced is the smallest
     # problem where they are active.
@@ -153,7 +148,7 @@ def test_estimate_error_norm_is_finite_and_positive(name):
 # --------------------------------------------------------------------------- #
 
 def test_adaptive_loop_holds_the_contract_on_the_oscillator():
-    s = getIntegrator('Dormand-Prince 5(4)')
+    s = get_scheme('Dormand-Prince 5(4)')
     prob = testing.PROBLEMS['oscillator']()
     state, accepted, rejected, norms = run_adaptive(s, prob, T=2.0, dt0=0.1,
                                                     rtol=1e-8, atol=1e-11)
@@ -173,7 +168,7 @@ def test_adaptive_loop_reaches_target_for_every_estimate_emitter(name):
     ROS3P/EXPRB32 need the forced problem to activate their estimates. A
     moderate tolerance keeps high-order pairs above the float64 solve floor.
     """
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob_name = 'forced' if name in ('ROS3P', 'EXPRB32') else 'oscillator'
     prob = testing.PROBLEMS[prob_name]()
     state, accepted, rejected, norms = run_adaptive(s, prob, T=2.0, dt0=0.1,
@@ -196,7 +191,7 @@ def test_rejections_trigger_and_gate_holds_on_van_der_pol_mu10():
     same error."""
     prob = testing.van_der_pol_problem(mu=10.0)
     T = 5.0
-    s = getIntegrator('Dormand-Prince 5(4)')
+    s = get_scheme('Dormand-Prince 5(4)')
     # reference: a fine fixed-dt run; its own error floor (~1e-13, measured at
     # two resolutions in the benchmark) is far below every error here
     ref = testing.run(s, prob, dt=5e-4, T=T)
@@ -237,7 +232,7 @@ def test_dense_output_endpoints_are_exact():
     """The gate: the interpolant reproduces the propagated solution exactly at
     the step endpoints (theta=0 the step's initial state; theta=1 the step's
     returned state, bit-for-bit)."""
-    s = getIntegrator('Dormand-Prince 5(4)')
+    s = get_scheme('Dormand-Prince 5(4)')
     prob = testing.PROBLEMS['oscillator']()
     state0 = prob.initial()
     result = s(state0, dt=0.2, f=prob.rhs)
@@ -255,7 +250,7 @@ def test_dense_output_interior_reaches_order_four():
     so the local interpolation error at a fixed theta is O(dt**5) -- measured
     on the linear oscillator, where the stage values are exact polynomials in
     dt and the only error is the polynomial approximation of the exact flow."""
-    s = getIntegrator('Dormand-Prince 5(4)')
+    s = get_scheme('Dormand-Prince 5(4)')
     prob = testing.PROBLEMS['oscillator']()
     theta = 0.4
     dts = [0.2, 0.1, 0.05, 0.025]
@@ -276,7 +271,7 @@ def test_dense_output_interior_tracks_fine_steps():
     vs. one step of dt/2 (t = dt/2) -- the difference is dominated by the
     coarse step's O(dt**5) interpolation error, the fine step's own error is
     one order smaller."""
-    s = getIntegrator('Dormand-Prince 5(4)')
+    s = get_scheme('Dormand-Prince 5(4)')
     prob = testing.PROBLEMS['oscillator']()
     state0 = prob.initial()
     result = s(state0, dt=0.2, f=prob.rhs)
@@ -290,13 +285,13 @@ def test_dense_output_interior_tracks_fine_steps():
 
 
 def test_dense_output_rejects_other_schemes_and_bad_theta():
-    s = getIntegrator('Bogacki-Shampine 3(2)')
+    s = get_scheme('Bogacki-Shampine 3(2)')
     prob = testing.PROBLEMS['oscillator']()
     state0 = prob.initial()
     result = s(state0, dt=0.1, f=prob.rhs)
     with pytest.raises(ValueError, match='seven stages'):
         dormand_prince_dense_output(state0, result.stages, 0.1, 0.5)
-    s5 = getIntegrator('Dormand-Prince 5(4)')
+    s5 = get_scheme('Dormand-Prince 5(4)')
     r5 = s5(state0, dt=0.1, f=prob.rhs)
     for bad in (-0.1, 1.1):
         with pytest.raises(ValueError, match='theta'):

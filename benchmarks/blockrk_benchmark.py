@@ -43,8 +43,10 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
-from warpSPHIntegrators import StepHistory, getIntegrator, get_reference_state, testing
-from warpSPHIntegrators.stability import bdf_characteristic_roots, rk_stability_function
+from warpSPHIntegrators.state import StepHistory, get_reference_state
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.analysis.stability import bdf_characteristic_roots, rk_stability_function
 
 DT_ENERGY = 0.1
 T_HORIZONS = [10.0, 20.0, 40.0, 80.0, 160.0]
@@ -127,7 +129,7 @@ def panel1_energy():
     prob = testing.PROBLEMS['oscillator']()
     data = {}
     for name, key in ENERGY_SCHEMES:
-        scheme = getIntegrator(name)
+        scheme = get_scheme(name)
         data[key] = (name,
                      [testing.max_energy_drift(scheme, prob, DT_ENERGY, T)
                       for T in T_HORIZONS])
@@ -147,7 +149,7 @@ def panel2_stiff():
     print('  per-step stiff-mode amplification |R(z)| / largest BDF root:')
     data = {}
     for name, key in STIFF_SCHEMES:
-        scheme = getIntegrator(name)
+        scheme = get_scheme(name)
         tableau = getattr(scheme.function, 'blockTableau',
                           getattr(scheme.function, 'dirkTableau',
                                   getattr(scheme.function, 'butcherTableau', None)))
@@ -189,7 +191,7 @@ def panel3_order():
     print(f'\nPanel 3: convergence on the linear oscillator (T = {ORDER_T})')
     print(f'  {"scheme":>28}  {"measured order":>14}  {"error @ dt=0.0125":>18}')
     for name, key in ORDER_SCHEMES:
-        scheme = getIntegrator(name)
+        scheme = get_scheme(name)
         order, errors = testing.convergence(scheme, prob, ORDER_DTS, ORDER_T)
         data[key] = (name, list(ORDER_DTS), list(errors), order)
         o = f'{order:.2f}' if order is not None else 'n/a'

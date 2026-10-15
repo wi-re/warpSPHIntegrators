@@ -44,8 +44,8 @@ SPH-shaped states with constant, copied, ephemeral, and integrated fields.
 
 | Area | Implementation | Current capability |
 |---|---|---|
-| State and updates | [fields.py](../../src/warpSPHIntegrators/fields.py), [specs.py](../../src/warpSPHIntegrators/specs.py), [protocol.py](../../src/warpSPHIntegrators/protocol.py), [util.py](../../src/warpSPHIntegrators/util.py) | Tagged dataclass fields, clone dispatch, typed and legacy update protocols, lifecycle hooks, integrated-field flattening |
-| Catalog and lookup | [enums.py](../../src/warpSPHIntegrators/enums.py), [integration.py](../../src/warpSPHIntegrators/integration.py), [reuse.py](../../src/warpSPHIntegrators/reuse.py) | Family enums, scheme lookup, order and stability metadata, first-stage reuse analysis and warnings |
+| State and updates | [fields.py](../../src/warpSPHIntegrators/state/fields.py), [specs.py](../../src/warpSPHIntegrators/state/specs.py), [protocol.py](../../src/warpSPHIntegrators/state/protocol.py), [util.py](../../src/warpSPHIntegrators/state/lifecycle.py) | Tagged dataclass fields, clone dispatch, typed and legacy update protocols, lifecycle hooks, integrated-field flattening |
+| Catalog and lookup | [enums.py](../../src/warpSPHIntegrators/schemes/enums.py), [integration.py](../../src/warpSPHIntegrators/schemes/registry.py), [reuse.py](../../src/warpSPHIntegrators/analysis/reuse.py) | Family enums, scheme lookup, order and stability metadata, first-stage reuse analysis and warnings |
 | Explicit and geometric stepping | `butcher.py`, `euler.py`, `tvd.py`, `verlet.py`, `ruth.py`, `prrk.py` | Classical, SSP, embedded and high-order RK; second-order dynamics; three unregistered parameterized pRRK drivers |
 | Implicit stepping | `dirk.py`, `fullyimplicit.py`, `newmark.py`, `solvers.py`, `jfnk.py` | DIRK, coupled RK and Newmark; matrix-free Newton and GMRES; FD/JVP matvecs, preconditioning, diagnostics, implicit differentiation |
 | Multistep and splits | `history.py`, `multistep.py`, `bdf.py`, `ssprkmsvs.py`, `ark.py`, `imex.py`, `imexmultistep.py`, `rhs.py` | Adams, BDF, SSP multistep, additive IMEX and semilinear RHS capabilities; fixed-step history and restart guards |
@@ -230,7 +230,7 @@ initial step even when the steady-state BDF formula is stable.
   implementing an SPH-shaped system. Keep the full state protocol for advanced
   users and demonstrate both entry points with runnable examples.
 - Provide catalog filtering by family, order, estimate support, dense output,
-  RHS requirements, reuse policy, and force assumptions. `getIntegrator` already
+  RHS requirements, reuse policy, and force assumptions. `get_scheme` already
   has useful suggestions for unknown names; discovery needs comparable support.
 - Consolidate metadata for stage count, propagated/embedded order, estimate
   exponent, required RHS capabilities, startup, and validity conditions. Generate

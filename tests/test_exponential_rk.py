@@ -3,8 +3,11 @@ import json,math
 from pathlib import Path
 import pytest
 import torch
-from warpSPHIntegrators import ExponentialRK,TensorState,tensor_rhs,SemilinearRHS,solve
-from warpSPHIntegrators.exponential_rk import SEMILINEAR,ORDERS,operator_function
+from warpSPHIntegrators.schemes import ExponentialRK
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
+from warpSPHIntegrators.adapters import SemilinearRHS
+from warpSPHIntegrators.schemes.families.exponential_rk import SEMILINEAR, ORDERS
+from warpSPHIntegrators.solvers.matrix_functions import operator_function
 SOURCE=json.loads((Path(__file__).parents[1]/'scripts/coefficients/wave11/exponential.json').read_text())
 RECORDS=[r for r in SOURCE['records'] if r['method'] in ORDERS and (
     (r['method'] in SEMILINEAR and not r['krylov_branch']) or (r['method'] not in SEMILINEAR and r['augmented_time']))]
@@ -72,7 +75,7 @@ def test_source_failures_are_retained_and_failed_method_is_unavailable():
 @pytest.mark.parametrize('method',['ETDRK4','Exprb32','Exprb43'])
 def test_adaptive_rejection_and_restart(method,tmp_path):
     if not ExponentialRK(method).has_error_estimate:return
-    from warpSPHIntegrators import save_checkpoint,load_checkpoint
+    from warpSPHIntegrators.runtime import save_checkpoint, load_checkpoint
     f=rhs(method,'manufactured');scheme=ExponentialRK(method)
     first=solve(scheme,TensorState(torch.tensor([1.,.4],dtype=torch.float64)),.5,f,dt=.5,adaptive=True,rtol=1e-8,atol=1e-10)
     assert first.successful and first.rejected_steps>0
@@ -97,3 +100,47 @@ def test_large_matrix_free_action_correct_transpose_gradient_and_budget_failure(
     p=torch.tensor(1.,dtype=y.dtype,requires_grad=True)
     with pytest.raises(ValueError,match='operator derivatives'):
         ExponentialRK('ETDRK4')(TensorState(y),.2,SemilinearRHS(tensor_rhs(lambda t,y:p*(L@y)),tensor_rhs(lambda t,y:torch.zeros_like(y))))
+
+
+@pytest.mark.parametrize('method',['ETDRK4','Exprb43'])
+def test_coupled_quantities_owned_lifecycle_and_operator_quadrature(method):
+    from dataclasses import dataclass,field
+    from warpSPHIntegrators.state import BaseState, BaseIntegrationSystem, integrated, copied, constant, reference_state, flatten_integrated
+    from warpSPHIntegrators.adapters import RHS
+    @dataclass
+    class Values(BaseState):
+        a:torch.Tensor=integrated('da',tags=('quantity',))
+        b:torch.Tensor=integrated('db',tags=('quantity',))
+        uid:torch.Tensor=constant()
+        marker:torch.Tensor=copied()
+    @dataclass
+    class Rates:
+        da:torch.Tensor
+        db:torch.Tensor
+    @dataclass
+    class System(BaseIntegrationSystem):
+        state:Values=reference_state()
+        t:float=0.
+        log:list=field(default_factory=list)
+        exponential_compatible=True
+        def initializeNewState(self,*args,**kwargs):return System(self.state.initializeNewState(),self.t,self.log)
+        def preprocess(self,initial,dt,*args,**kwargs):
+            self.log.append(self.t);self.state.marker=torch.full_like(self.state.a,self.t)
+            return self
+        def finalize(self,initial,dt,aux,updates,quadrature,*args,**kwargs):
+            reconstructed=flatten_integrated(initial)+quadrature.initial_increment+sum(quadrature.increments)
+            assert torch.allclose(reconstructed,flatten_integrated(self),rtol=0,atol=5e-15)
+            self.log.append('finalized');return self
+    state=System(Values(torch.tensor([1.],dtype=torch.float64),torch.tensor([.4],dtype=torch.float64),
+        torch.tensor([7]),torch.zeros(1,dtype=torch.float64)))
+    def full(s,h):
+        a,b=s.state.a,s.state.b
+        return Rates(-a+.2*b+.1*s.t,.3*a-2*b-.1*b*b)
+    def linear(s,h):return Rates(-s.state.a,-2*s.state.b)
+    f=RHS(combined=full,linear=linear) if method=='ETDRK4' else full
+    result=ExponentialRK(method)(state,.1,f)
+    assert result.step_status.successful
+    assert state.log==[] and state.t==0. and state.state.a.item()==1.
+    assert result.state.log[-1]=='finalized' and len(result.state.log)==len(result.stages)+1
+    assert result.state.state.marker.item()==pytest.approx(.1,abs=1e-14)
+    assert torch.equal(result.state.state.uid,state.state.uid)

@@ -8,11 +8,13 @@ import numpy as np
 import pytest
 import torch
 
-from warpSPHIntegrators import OrthogonalRK, TensorState, tensor_rhs, solve
-from warpSPHIntegrators import save_checkpoint, load_checkpoint, testing, AlgorithmSwitch, Strang
+from warpSPHIntegrators.schemes import OrthogonalRK
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
+from warpSPHIntegrators.runtime import save_checkpoint, load_checkpoint
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.wrappers import AlgorithmSwitch, Strang
 from test_nystrom import System, system
-from warpSPHIntegrators._orthogonal_program import (orthogonal_coefficients, recurrence_program,
-    available_stages,sizing_bound,_parameters)
+from warpSPHIntegrators.schemes.coefficients.orthogonal import orthogonal_coefficients, recurrence_program, available_stages, sizing_bound, _parameters
 
 SOURCE=json.loads((Path(__file__).parents[1]/'scripts/coefficients/wave11/orthogonal_stabilized.json').read_text())
 ROWS=[r for r in SOURCE['records'] if r['translated']]

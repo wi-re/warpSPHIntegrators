@@ -52,8 +52,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
-from warpSPHIntegrators import IMEXRHS, getIntegrator, get_reference_state, resolve
-from warpSPHIntegrators.history import StepHistory
+from warpSPHIntegrators.adapters import IMEXRHS, resolve
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.state import get_reference_state
+from warpSPHIntegrators.state import StepHistory
 from warpSPHIntegrators.testing import ParticleState, ParticleSystem, viscous_burgers_problem
 
 N, L, NU = 64, 1.0, 0.01
@@ -78,7 +80,7 @@ def run_cost(scheme_name, dt, T, f, system_factory, history=False, **scheme_kwar
     Mirrors the notebook's ``runTrajectory`` (cost = the Phase 1
     ``SolveDiagnostics`` summed over every stage solve).
     """
-    scheme = getIntegrator(scheme_name)
+    scheme = get_scheme(scheme_name)
     system = system_factory()
     step_history = StepHistory(maxlen=4) if history else None
     times, us = [0.0], [get_reference_state(system).x.clone()]
@@ -174,7 +176,7 @@ def main():
     def _explicit_stages(name):
         if name == 'TVD RK3':
             return 3
-        return len(getIntegrator(name).function.butcherTableau.a)
+        return len(get_scheme(name).function.butcherTableau.a)
 
     # ROS3P (W = jvp/fd): every GMRES matvec is a full Jacobian sweep already
     # counted in rhs_evaluations (the notebook's S11 convention, as in Panel 3

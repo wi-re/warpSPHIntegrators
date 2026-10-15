@@ -1,0 +1,216 @@
+{
+  "baseline": "7d12f0b",
+  "functions": [
+    {
+      "before": "jfnk.gmres",
+      "after": "solvers/krylov.gmres",
+      "numerical_ast_sha256": "81cd30b651cbab7dd9509cb4c198f49a4d48fe36c16975e98d816de4fd9165bb"
+    },
+    {
+      "before": "jfnk.fd_matvec",
+      "after": "solvers/krylov.fd_matvec",
+      "numerical_ast_sha256": "f458bdb11e2e0ecf47174301b78f3b636777d4d8c22ae00fcf5d2519cf6f26e0"
+    },
+    {
+      "before": "jfnk.jvp_matvec",
+      "after": "solvers/krylov.jvp_matvec",
+      "numerical_ast_sha256": "89849ba5552e33bc573ecd73e53a15399d1c75c795522c66e4c50b5313fb9c4b"
+    },
+    {
+      "before": "jfnk._implicit_diff_reattach",
+      "after": "solvers/krylov._implicit_diff_reattach",
+      "numerical_ast_sha256": "42d586190b558735b6abf84ddaa5ab2c836f3871d99296683879ecb029e5ecdc"
+    },
+    {
+      "before": "butcher.RungeKuttaB",
+      "after": "drivers/runge_kutta.RungeKuttaB",
+      "numerical_ast_sha256": "62e16b2a92e300b5fbf4f2aae47fe99cb3c99309e3c6408d3e4e362dcdd5a0c1"
+    },
+    {
+      "before": "butcher._RungeKuttaBOnce",
+      "after": "drivers/runge_kutta._RungeKuttaBOnce",
+      "numerical_ast_sha256": "e360d798ed471281ae7aa3ceaf59f0d2030d3e21067d1b1ef982ccdd6a00754d"
+    },
+    {
+      "before": "butcher._weighted_update",
+      "after": "drivers/runge_kutta._weighted_update",
+      "numerical_ast_sha256": "d686252a3ac2210ad04421c01dbc3e9cefd82bac5b5cb986a6730dd527db12cf"
+    },
+    {
+      "before": "butcher._error_estimate",
+      "after": "drivers/runge_kutta._error_estimate",
+      "numerical_ast_sha256": "4cfdd13b3a7bc4845a55200a8ac3d80cf3b66d046f66a596dc3de3570894daa3"
+    },
+    {
+      "before": "butcher.getButcherTableau",
+      "after": "schemes/coefficients/explicit.getButcherTableau",
+      "numerical_ast_sha256": "66470b16a72aaa12a3dc390fbae8d30455b8d73ceb50d37631a8c139455a4e4c"
+    },
+    {
+      "before": "dirk.getDIRKTableau",
+      "after": "schemes/coefficients/implicit.getDIRKTableau",
+      "numerical_ast_sha256": "3fb8c26a1ca829c46d080c2a8fc01819bb4561401097627bb2886816b0bd170c"
+    },
+    {
+      "before": "dirk.DIRK",
+      "after": "drivers/implicit/dirk.DIRK",
+      "numerical_ast_sha256": "dc1ed9037f5fb47eb73d6b83d42654eca2b1a80eee68d58c57d81a25cef224f3"
+    },
+    {
+      "before": "dirk._dirk_reuses_first_stage",
+      "after": "drivers/implicit/dirk._dirk_reuses_first_stage",
+      "numerical_ast_sha256": "094a9151806c6e1b87d0c6dfa6fe1a85512dd3244bc2a8e39b49ac7545c36bf3"
+    },
+    {
+      "before": "dirk._default_norm",
+      "after": "drivers/implicit/dirk._default_norm",
+      "numerical_ast_sha256": "e993087b84f5bd1e0d509c222272aff7117491b8b5d077039fc47171dd4b6c08"
+    },
+    {
+      "before": "fullyimplicit.getBlockTableau",
+      "after": "schemes/coefficients/coupled.getBlockTableau",
+      "numerical_ast_sha256": "ca8c4097426b6d6d115e97011c7f998cacbd7368116975555d04233e27dd15ac"
+    },
+    {
+      "before": "fullyimplicit.fullyImplicitBlock",
+      "after": "drivers/implicit/coupled.fullyImplicitBlock",
+      "numerical_ast_sha256": "70468836dc609bc7573160f2ab7b3636894d5f14d88f09418b5ceab7100b6769"
+    },
+    {
+      "before": "ark.getARKTableau",
+      "after": "schemes/coefficients/additive.getARKTableau",
+      "numerical_ast_sha256": "da34d44238dff7ca76bb0249958dc8413f3e9b12897e32d0a27dd7c92a8f2491"
+    },
+    {
+      "before": "ark.ARK",
+      "after": "drivers/implicit/ark.ARK",
+      "numerical_ast_sha256": "bd9382c753156fea9612c9350bbfe2e3d2092815ddad3477fdf4092fa892ffe9"
+    },
+    {
+      "before": "ark._additive_weighted_update",
+      "after": "drivers/implicit/ark._additive_weighted_update",
+      "numerical_ast_sha256": "34390373751ce0717f760eb33b721134fbdd022f0a1601ec60ab9498bcec63ef"
+    },
+    {
+      "before": "ark._additive_error_estimate",
+      "after": "drivers/implicit/ark._additive_error_estimate",
+      "numerical_ast_sha256": "10b740abaa8a4b6736a4c6e161555429c5d1509e542d5a658bc8a11121a14106"
+    },
+    {
+      "before": "rkc._rkc1_coeffs",
+      "after": "schemes/coefficients/chebyshev._rkc1_coeffs",
+      "numerical_ast_sha256": "273bc06d6415f3ce7c1564a1f1f6a35da1bdd470a1d50aaf4bccb0d9180be48a"
+    },
+    {
+      "before": "rkc._rkc2_coeffs",
+      "after": "schemes/coefficients/chebyshev._rkc2_coeffs",
+      "numerical_ast_sha256": "533bf8c13af1db6c9f29f5eb9a44ebb9e7a7c1a2498281edb9c4a76e652fbdd7"
+    },
+    {
+      "before": "rkc._rkl2_coeffs",
+      "after": "schemes/coefficients/chebyshev._rkl2_coeffs",
+      "numerical_ast_sha256": "1027a5e8ff5122c1fb429715e354377e8ec37f0c0219c9e7f63532c6d621801f"
+    },
+    {
+      "before": "rkc.stage_count",
+      "after": "schemes/coefficients/chebyshev.stage_count",
+      "numerical_ast_sha256": "99e8ccf36c9221fdc0b4f9bf9a39456d2dc7b5e2a24dda9b044ec048d5a22540"
+    },
+    {
+      "before": "rkc._recurrence_clock_weights",
+      "after": "schemes/coefficients/chebyshev._recurrence_clock_weights",
+      "numerical_ast_sha256": "41b1076b9ab4500d5c455a0379fc3223c82075329ade7499696a927b123c213d"
+    },
+    {
+      "before": "rkc.integrateRelaxedChebyshev",
+      "after": "drivers/stabilized/chebyshev.integrateRelaxedChebyshev",
+      "numerical_ast_sha256": "fa45ff63c840b840dcc6173ba9010476582723b9e9bde9e2115413aff7cac528"
+    },
+    {
+      "before": "rkc._reference_lincomb",
+      "after": "drivers/stabilized/chebyshev._reference_lincomb",
+      "numerical_ast_sha256": "d8ec46a61a4d08cd60503f41bc7fc970c5c9b093962629c830cc0a45e7eb2393"
+    },
+    {
+      "before": "collocation.Collocation.__call__",
+      "after": "drivers/implicit/collocation.step",
+      "numerical_ast_sha256": "c072f901b343f6379970b1090d6ca3b569b98ae8254fecbb594928361702efa5"
+    },
+    {
+      "before": "variable_adams.VariableAdams.__call__",
+      "after": "drivers/history/variable_adams.step",
+      "numerical_ast_sha256": "f6c0b6247e950d895247320358b12fe2c438515a58ef0f2a6f3a3f8ecb7c7bf4"
+    },
+    {
+      "before": "adaptive_adams.AdaptiveAdams.__call__",
+      "after": "drivers/history/adaptive_adams.step",
+      "numerical_ast_sha256": "eac8b1bb31fb828ef4b749acc9c2bad80965ee387c096f9a9e7475fc7bbff797"
+    },
+    {
+      "before": "ndf.NDF.__call__",
+      "after": "drivers/history/ndf.step",
+      "numerical_ast_sha256": "05bf178a854ee5c2e24f1387bbfaa90d4049151577432179e01b8a705479faf6"
+    },
+    {
+      "before": "adaptive_ndf.AdaptiveNDF.__call__",
+      "after": "drivers/history/adaptive_ndf.step",
+      "numerical_ast_sha256": "782ab13ce9e514cfb73d6c2a149e9a18527d6c219bf3c6229ce960339f88ac5a"
+    },
+    {
+      "before": "stabilized.StabilizedRK.__call__",
+      "after": "drivers/stabilized/stabilized.step",
+      "numerical_ast_sha256": "fc8926b22ef6a4034c51fdfe54d6574286da4fdf8a6eba9ac2b0ab67db9beba9"
+    },
+    {
+      "before": "orthogonal.OrthogonalRK.__call__",
+      "after": "drivers/stabilized/orthogonal.step",
+      "numerical_ast_sha256": "e01033e81ecd099669a26ffcec974e0fae03fd70e68b31e3c7a2082d596eadde"
+    },
+    {
+      "before": "nystrom.Nystrom.__call__",
+      "after": "drivers/mechanics/nystrom.step",
+      "numerical_ast_sha256": "118d12bf901d3ebafc82f3b44a44f79a1ffc15734566df788cc174a080882f5d"
+    },
+    {
+      "before": "improved_nystrom.ImprovedNystrom.__call__",
+      "after": "drivers/mechanics/improved_nystrom.step",
+      "numerical_ast_sha256": "ff86c32dcd34e9d0739a1f314df81d75fe400513c4b9a1389c9c4e772b209643"
+    },
+    {
+      "before": "generalized_alpha.GeneralizedAlpha.__call__",
+      "after": "drivers/mechanics/generalized_alpha.step",
+      "numerical_ast_sha256": "9490576f62a956aac4a616dc7e10469432c8c35949f5d82482f53a262f864973"
+    },
+    {
+      "before": "parallel_dirk.ParallelDIRK.__call__",
+      "after": "drivers/implicit/parallel_dirk.step",
+      "numerical_ast_sha256": "9881c45d9e9755284d30a6139d287b9d6011104b56b976732d86e9ed8adf4a68"
+    },
+    {
+      "before": "linearized.Rosenbrock.__call__",
+      "after": "drivers/implicit/linearized.step",
+      "numerical_ast_sha256": "5e3ae7c8d984811ade5b01152430563c93802767703596859ba1bfb127c7f107"
+    },
+    {
+      "before": "exponential_rk.ExponentialRK.__call__",
+      "after": "drivers/exponential/exponential_rk.step",
+      "numerical_ast_sha256": "b9e951fe774ad04a6101c3ca3fda7f6e5fd23d6d0b8ec95e3e72d44a2c91502a"
+    },
+    {
+      "before": "extrapolation.Extrapolation.__call__",
+      "after": "drivers/extrapolation/extrapolation.step",
+      "numerical_ast_sha256": "441200b3cffb24f0915e88787394b24786a3d4c3eb84f4a67bf8f3b359f8ad93"
+    },
+    {
+      "before": "expanded_rk.ExpandedRK.__call__",
+      "after": "drivers/explicit/expanded_rk.step",
+      "numerical_ast_sha256": "3ddffcc9482c63a21652836dbb7c5d7d336e7a1bda771baaac0db362107a5bfe"
+    },
+    {
+      "before": "function_map.FunctionMap.__call__",
+      "after": "drivers/maps/function_map.step",
+      "numerical_ast_sha256": "2455870de81e23841475cc83b93caab711d2e685ee64d3205e517c77ade6cad1"
+    }
+  ],
+  "qualification": "Exact Python AST comparison after removing import statements and docstrings and normalizing only the outer function name. All numerical statements, constants, calls, arguments and control flow are retained. Binding, registry guards, coefficient ownership and public API changes are gated separately by tests; this is not a whole-program equivalence proof."
+}

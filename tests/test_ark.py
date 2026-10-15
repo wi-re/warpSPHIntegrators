@@ -19,30 +19,13 @@ import numpy as np
 import pytest
 import torch
 
-from warpSPHIntegrators import (
-    BaseIntegrationSystem,
-    BaseState,
-    ComponentUpdateSpec,
-    IMEXRHS,
-    PositionUpdateSpec,
-    StepHistory,
-    constant,
-    copied,
-    ephemeral,
-    get_reference_state,
-    getIntegrator,
-    integrated,
-    reference_state,
-    tagged,
-    testing,
-)
-from warpSPHIntegrators.ark import getARKTableau
-from warpSPHIntegrators.fields import update_component, update_position
-from warpSPHIntegrators.stability import (
-    imex_is_stable,
-    imex_stability_function,
-    rk_stability_function,
-)
+from warpSPHIntegrators.state import BaseIntegrationSystem, BaseState, ComponentUpdateSpec, PositionUpdateSpec, StepHistory, constant, copied, ephemeral, get_reference_state, integrated, reference_state, tagged
+from warpSPHIntegrators.adapters import IMEXRHS
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.schemes.coefficients.additive import getARKTableau
+from warpSPHIntegrators.state.fields import update_component, update_position
+from warpSPHIntegrators.analysis.stability import imex_is_stable, imex_stability_function, rk_stability_function
 
 ARK_SCHEMES = ['ARK3(2)4L[2]SA', 'ARK4(3)6L[2]SA']
 ARK_TABLEAUS = {  # display name -> (tableau key, explicit order, implicit order)
@@ -184,7 +167,7 @@ def test_ark_implicit_half_is_stiffly_accurate(name):
 @pytest.mark.parametrize('name', ARK_SCHEMES)
 def test_ark_combined_method_is_not_fsal(name):
     """The registered flag must track the combined method (not the implicit half)."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     assert s.stiffly_accurate is False, f'{name} registered stiffly_accurate'
     assert s.implicit is True
     assert s.reuse_order is None, f'{name} claims a reuse order'
@@ -202,7 +185,7 @@ def test_ark_per_half_order_conditions(name):
 
 def test_ark324_implicit_half_is_the_registered_esdirk324():
     """a/b/c of the implicit half equal the registered standalone ESDIRK3(2)4L[2]SA."""
-    from warpSPHIntegrators.dirk import getDIRKTableau
+    from warpSPHIntegrators.schemes.coefficients.implicit import getDIRKTableau
     ark = getARKTableau('ARK324L2SA')
     esd = getDIRKTableau('ESDIRK324L2SA')
     assert np.allclose(ark.a_implicit, esd.a)
@@ -214,7 +197,7 @@ def test_ark324_implicit_half_is_the_registered_esdirk324():
 def test_ark324_ark_pair_d_differs_from_standalone_esdirk_d():
     """The ARK pair shares one d across both halves; it is not the standalone ESDIRK
     d (which is order-2 on its own)."""
-    from warpSPHIntegrators.dirk import getDIRKTableau
+    from warpSPHIntegrators.schemes.coefficients.implicit import getDIRKTableau
     ark = getARKTableau('ARK324L2SA')
     esd = getDIRKTableau('ESDIRK324L2SA')
     b_embed = esd.b[1] if isinstance(esd.b, tuple) else None
@@ -230,7 +213,7 @@ def test_ark324_ark_pair_d_differs_from_standalone_esdirk_d():
 def test_ark_pure_implicit_limit_reaches_claimed_order(name):
     """An ordinary RHS is treated as fully implicit: the step reduces to the implicit
     half (a standalone ESDIRK of the same order)."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     for problem_name in ['oscillator', 'forced', 'damped']:
         order, errors = testing.convergence(s, testing.PROBLEMS[problem_name](),
                                             testing.default_step_sizes(0.1, 5), T=2.0)
@@ -245,7 +228,7 @@ def test_ark_pure_implicit_limit_reaches_claimed_order(name):
     pytest.param(_imex_nonlinear_relaxation_problem, id='nonlinear_relaxation'),
 ])
 def test_ark_split_reaches_claimed_combined_order(name, problem_factory):
-    s = getIntegrator(name)
+    s = get_scheme(name)
     problem = problem_factory()
     order, errors = testing.convergence(s, problem, testing.default_step_sizes(0.1, 5), T=2.0)
     assert order == pytest.approx(s.order, abs=0.15), (
@@ -258,7 +241,7 @@ def test_ark_split_reaches_claimed_combined_order(name, problem_factory):
 
 @pytest.mark.parametrize('name', ARK_SCHEMES)
 def test_ark_rejects_prior_step_with_a_warning(name):
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     first = s(prob.initial(), dt=0.1, f=prob.rhs)
     with pytest.warns(RuntimeWarning, match='does not support first-stage reuse'):
@@ -267,7 +250,7 @@ def test_ark_rejects_prior_step_with_a_warning(name):
 
 @pytest.mark.parametrize('name', ARK_SCHEMES)
 def test_ark_history_is_bookkeeping_only(name):
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     plain = s(prob.initial(), dt=0.1, f=prob.rhs).state
     with_history = s(prob.initial(), dt=0.1, f=prob.rhs, history=StepHistory(maxlen=2)).state
@@ -358,7 +341,7 @@ def test_ark_split_copied_field_comes_from_the_implicit_buffer(name):
     """With both callbacks active, the final copied field is taken from the implicit
     buffer (the last implicit preprocess), not the throwaway explicit clone (whose
     last preprocess is the very last one of the step and is discarded)."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     system = _split_density_system()
     result = s(system, dt=0.05, f=_split_density_rhs())
     final = get_reference_state(result.state)
@@ -372,7 +355,7 @@ def test_ark_split_copied_field_comes_from_the_implicit_buffer(name):
 
 @pytest.mark.parametrize('name', ARK_SCHEMES)
 def test_ark_split_ephemeral_field_does_not_leak(name):
-    s = getIntegrator(name)
+    s = get_scheme(name)
     result = s(_split_density_system(), dt=0.05, f=_split_density_rhs())
     assert get_reference_state(result.state).scratch is None, (
         f'{name}: an ephemeral() field leaked out of a split step')
@@ -423,7 +406,7 @@ def test_ark_imex_is_stable_in_the_published_region(name):
 def test_ark_split_counts_explicit_evaluations_per_stage(name):
     """Each stage evaluates the explicit half exactly once, so a split step makes
     s explicit RHS evaluations (the implicit half is a solved fixed point on top)."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     s_evals = [0]
 
     def explicit(system, dt, **kwargs):
@@ -450,7 +433,7 @@ def test_ark_split_counts_explicit_evaluations_per_stage(name):
 def test_ark_split_reports_implicit_solve_diagnostics(name):
     """Every implicit stage with a nonzero diagonal records a solve; stage 0 (explicit
     first stage) records None. The diagnostics carry the residual / Krylov counts."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = _imex_transport_relaxation_problem()
     result = s(prob.initial(), dt=0.1, f=prob.rhs)
     diag = result.solver_diagnostics

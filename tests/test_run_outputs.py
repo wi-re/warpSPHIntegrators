@@ -2,8 +2,9 @@
 import math
 import pytest
 import torch
-from warpSPHIntegrators import (solve, TensorState, tensor_rhs, Event,
-    save_checkpoint, load_checkpoint, snapshot_state, testing)
+from warpSPHIntegrators import solve, TensorState, tensor_rhs
+from warpSPHIntegrators.runtime import Event, save_checkpoint, load_checkpoint, snapshot_state
+import warpSPHIntegrators.testing as testing
 
 
 def state(value=1.,t=0.):

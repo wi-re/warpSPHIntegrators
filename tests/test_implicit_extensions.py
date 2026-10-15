@@ -8,11 +8,14 @@ import pytest
 import torch
 from dataclasses import dataclass
 
-from warpSPHIntegrators import (TensorState, tensor_rhs, IMEXRHS, StepHistory,
-    HistoryEntry, solve, getIntegrator, save_checkpoint, load_checkpoint)
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
+from warpSPHIntegrators.adapters import IMEXRHS
+from warpSPHIntegrators.state import StepHistory, HistoryEntry
+from warpSPHIntegrators.runtime import save_checkpoint, load_checkpoint
 from warpSPHIntegrators.solvers import SolveResult, SolveDiagnostics
-from warpSPHIntegrators.stability import rk_stability_function
-from warpSPHIntegrators import BaseState, integrated, copied, constant, reference_state, testing
+from warpSPHIntegrators.analysis.stability import rk_stability_function
+from warpSPHIntegrators.state import BaseState, integrated, copied, constant, reference_state
+import warpSPHIntegrators.testing as testing
 
 ORACLE = json.loads((Path(__file__).parents[1] /
     'scripts/coefficients/wave10/implicit_extensions.json').read_text())
@@ -34,7 +37,7 @@ def test_mebdf2_matches_unchanged_source_step_body(forced):
     record=ORACLE['records']['mebdf2_'+('forced' if forced else 'autonomous')]
     implicit,_=parts(forced)
     state=TensorState(torch.tensor(record['initial'],dtype=torch.float64),t=record['t'])
-    result=getIntegrator('mebdf2')(state,record['h'],tensor_rhs(implicit),solver_opts=OPTIONS)
+    result=get_scheme('mebdf2')(state,record['h'],tensor_rhs(implicit),solver_opts=OPTIONS)
     assert result.step_status.successful
     assert result.state.y.tolist()==pytest.approx(record['state'],rel=0,abs=2e-13)
     assert record['solve_times']==pytest.approx([state.t+.1,state.t+.2,state.t+.1])
@@ -52,7 +55,7 @@ def test_cnlf2_matches_unchanged_source_step_body(forced,warm):
         update,_=tensor_rhs(implicit)(previous,record['h'])
         history=StepHistory(1,[HistoryEntry(previous.t,record['h'],update,None,previous)],
             context=dict(method='cnlf2.v1',layout=(('y',(2,),'torch.float64'),),uid=None))
-    result=getIntegrator('cnlf2')(state,record['h'],
+    result=get_scheme('cnlf2')(state,record['h'],
         IMEXRHS(explicit=tensor_rhs(explicit),implicit=tensor_rhs(implicit)),
         history=history,solver_opts=OPTIONS)
     assert result.step_status.successful
@@ -61,7 +64,7 @@ def test_cnlf2_matches_unchanged_source_step_body(forced,warm):
 
 
 def test_mebdf2_stability_function_and_beyond_endpoint_stage():
-    tab=getIntegrator('mebdf2').function.dirkTableau
+    tab=get_scheme('mebdf2').function.dirkTableau
     assert np.allclose(tab.c,[1,2,1])
     for z in [-1000.,-1.,-.2+2j,3j]:
         assert rk_stability_function(tab,z)==pytest.approx((1-2*z+.5*z*z)/(1-z)**3)
@@ -127,7 +130,7 @@ def test_cnlf2_failure_rollback_changed_dt_and_portable_restart(tmp_path):
     resumed=solve('cnlf2',None,.4,rhs,restart=load_checkpoint(path),solver_opts=OPTIONS)
     whole=solve('cnlf2',initial,.4,rhs,dt=.05,solver_opts=OPTIONS)
     assert torch.allclose(resumed.state.y,whole.state.y,atol=1e-14)
-    method=getIntegrator('cnlf2')
+    method=get_scheme('cnlf2')
     failed=method(first.state,.05,rhs,history=first.history,solver=FailedSolver())
     assert not failed.step_status.successful
     assert torch.equal(failed.history.latest.state.y,first.history.latest.state.y)
@@ -178,7 +181,7 @@ def test_cnlf2_full_quantities_copied_fields_and_particle_identity_reset():
     assert torch.equal(result.state.state.density,result.state.state.x.square())
     assert torch.equal(initial.state.density,torch.zeros(2,dtype=torch.float64))
     result.state.state.uid=result.state.state.uid.flip(0)
-    method=getIntegrator('cnlf2')
+    method=get_scheme('cnlf2')
     changed=method(result.state,.05,force,history=result.history,solver_opts=OPTIONS)
     cold=method(result.state,.05,force,solver_opts=OPTIONS)
     assert torch.equal(changed.state.state.x,cold.state.state.x)

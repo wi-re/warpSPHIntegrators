@@ -9,7 +9,9 @@ new-state alpha convention to the old-state weights used below.
 from dataclasses import dataclass
 import math
 import torch
-from warpSPHIntegrators import getIntegrator,get_reference_state,testing
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.state import get_reference_state
+import warpSPHIntegrators.testing as testing
 
 
 @dataclass(frozen=True)
@@ -109,7 +111,7 @@ def registered_newmark_trajectory(model,dt,end):
     def rhs(system,dt,**kwargs):
         s=get_reference_state(system)
         return testing.ParticleUpdate(s.u,model.acceleration(s.x,s.u),s.e*0),None
-    states=[initial];method=getIntegrator('Newmark')
+    states=[initial];method=get_scheme('Newmark')
     for _ in range(round(end/dt)):
         result=method(state,dt,rhs,solver_opts=dict(matvec='jvp',tol=1e-12,newton_tol=1e-7))
         if not result.step_status.tolerance_converged:raise RuntimeError('Registered Newmark solve did not reach tolerance')
@@ -120,7 +122,8 @@ def registered_newmark_trajectory(model,dt,end):
 
 def generalized_alpha_trajectory(model,dt,end,rho_inf=.5):
     """Exercise the package's nonlinear protocol driver on the dense toy model."""
-    from warpSPHIntegrators import GeneralizedAlpha, solve
+    from warpSPHIntegrators.schemes import GeneralizedAlpha
+    from warpSPHIntegrators import solve
     initial=model.initial();n=initial.q.numel()
     state=testing.ParticleSystem(testing.ParticleState(initial.q.clone(),initial.v.clone(),
             torch.zeros_like(initial.q),torch.ones_like(initial.q)))

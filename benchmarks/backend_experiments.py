@@ -3,7 +3,8 @@ import argparse,json,math,time,hashlib
 from pathlib import Path
 import numpy as np
 import torch
-from warpSPHIntegrators import ExpandedRK,TensorState,tensor_rhs,getIntegrator
+from warpSPHIntegrators.schemes import ExpandedRK
+from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme
 from warpSPHIntegrators.experiments import *
 
 def measurements():

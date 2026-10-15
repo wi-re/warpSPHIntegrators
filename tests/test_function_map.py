@@ -5,8 +5,11 @@ import math
 from pathlib import Path
 import pytest
 import torch
-from warpSPHIntegrators import (FunctionMap,StateMap,MapTransition,tensor_map,TensorState,tensor_rhs,
-    solve,save_checkpoint,load_checkpoint)
+from warpSPHIntegrators.schemes import FunctionMap
+from warpSPHIntegrators.adapters import StateMap, tensor_map
+from warpSPHIntegrators.schemes.families.function_map import MapTransition
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
+from warpSPHIntegrators.runtime import save_checkpoint, load_checkpoint
 
 SOURCE=json.loads((Path(__file__).parents[1]/'scripts/coefficients/wave13/function_map.json').read_text())
 

@@ -4,8 +4,10 @@ sidebar_label: Multistep (implicit)
 
 # Implicit multistep — BDF, Adams-Moulton and NDF
 
-The implicit multistep family: **BDF1-BDF5** (`bdf.py`) and the
-JFNK-corrected **Adams-Moulton 2-4** (`multistep.py`). One step = one
+Implicit multistep methods reuse history while solving for the new endpoint. They can be effective on long stiff trajectories, but higher order has narrower stability restrictions and a history/startup cost. The NDF configurations add bounded target-order control with explicit reset and retry behavior.
+
+The implicit multistep family: **BDF1-BDF5** (`drivers.history.bdf`) and the
+JFNK-corrected **Adams-Moulton 2-4** (`drivers.history.adams`). One step = one
 nonlinear solve (JFNK by default) for the new state, with the past states
 entering **as state values** from the scheme's `StepHistory` (state-snapshot
 history, threaded with `history=`).
@@ -106,7 +108,8 @@ history without requiring a frontend consumer.
 ```python
 import math
 import torch
-from warpSPHIntegrators import NDF, TensorState, tensor_rhs, solve
+from warpSPHIntegrators.schemes import NDF
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
 
 rhs = tensor_rhs(lambda t, y: -y)
 first = solve(NDF(3), TensorState(torch.ones(4, dtype=torch.float64)),
@@ -174,7 +177,8 @@ these scalar candidate ratios independently of the accepted-step policy.
 ```python
 import math
 import torch
-from warpSPHIntegrators import AdaptiveNDF, TensorState, tensor_rhs, solve
+from warpSPHIntegrators.schemes import AdaptiveNDF
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
 
 records = []
 result = solve(AdaptiveNDF(), TensorState(torch.ones(1, dtype=torch.float64)),

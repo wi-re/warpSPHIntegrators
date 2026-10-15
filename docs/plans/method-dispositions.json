@@ -21,7 +21,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
         "constructor": "forwardEuler"
       },
       "coefficient_modifications": [
@@ -48,8 +48,8 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "midpoint"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "RungeKutta2"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -75,7 +75,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
         "constructor": "heunsMethod"
       },
       "coefficient_modifications": [
@@ -102,8 +102,8 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "ralston"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "ralston2nd"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -129,8 +129,8 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "RK3"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "RungeKutta3"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -156,8 +156,8 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Heun3"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "heunsMethod3rd"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -183,8 +183,8 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "ralston3"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "ralston3rd"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -210,8 +210,8 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Wray3"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "Wray3rd"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -237,7 +237,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
         "constructor": "SSPRK3"
       },
       "coefficient_modifications": [
@@ -264,7 +264,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
         "constructor": "SSPRK104"
       },
       "coefficient_modifications": [
@@ -291,9 +291,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SSPRK53",
-        "materializer": "getButcherTableau; callable SSPRK53"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "SSPRK53"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -319,9 +318,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SSPRK63",
-        "materializer": "getButcherTableau; callable SSPRK63"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "SSPRK63"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -347,9 +345,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SSPRK73",
-        "materializer": "getButcherTableau; callable SSPRK73"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "SSPRK73"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -375,9 +372,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SSPRK83",
-        "materializer": "getButcherTableau; callable SSPRK83"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "SSPRK83"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -403,9 +399,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SSPRK54",
-        "materializer": "getButcherTableau; callable SSPRK54"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "SSPRK54"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -431,9 +426,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "KYKSSPRK42",
-        "materializer": "getButcherTableau; callable KYKSSPRK42"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "KYKSSPRK42"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -459,9 +453,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "KYK2014DGSSPRK_3S2",
-        "materializer": "getButcherTableau; callable KYK2014DGSSPRK_3S2"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "KYK2014DGSSPRK3S2"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -487,9 +480,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SSPRK43",
-        "materializer": "getButcherTableau; callable SSPRK43"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "SSPRK43"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order"
@@ -517,9 +509,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SSPRK432",
-        "materializer": "getButcherTableau; callable SSPRK432"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "SSPRK432"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order"
@@ -547,9 +538,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SSPRK932",
-        "materializer": "getButcherTableau; callable SSPRK932"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "SSPRK932"
       },
       "coefficient_modifications": [
         "Source estimator deliberately omitted; failed/unsupported companion construction recorded, fixed-step registration retained"
@@ -575,9 +565,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SSPRK53_2N1",
-        "materializer": "getButcherTableau; callable SSPRK53_2N1"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "SSPRK53_2N1"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -603,9 +592,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SSPRK53_2N2",
-        "materializer": "getButcherTableau; callable SSPRK53_2N2"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "SSPRK53_2N2"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -631,9 +619,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SSPRK53_H",
-        "materializer": "getButcherTableau; callable SSPRK53_H"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "SSPRK53_H"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -659,8 +646,8 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "RK4"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "RungeKutta4"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -686,8 +673,8 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "RK4alt"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "RungeKutta4alt"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -713,8 +700,8 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Nystrom5"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "Nystrom5th"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -740,7 +727,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
         "constructor": "BogackiShampine"
       },
       "coefficient_modifications": [
@@ -769,7 +756,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
         "constructor": "DormandPrince"
       },
       "coefficient_modifications": [
@@ -798,7 +785,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
         "constructor": "CashKarp"
       },
       "coefficient_modifications": [
@@ -827,9 +814,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Tsit5",
-        "materializer": "getButcherTableau; callable Tsit5"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "Tsit5"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -858,9 +844,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "OwrenZen3",
-        "materializer": "getButcherTableau; callable OwrenZen3"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "OwrenZen3"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -889,9 +874,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "OwrenZen4",
-        "materializer": "getButcherTableau; callable OwrenZen4"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "OwrenZen4"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -920,9 +904,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "OwrenZen5",
-        "materializer": "getButcherTableau; callable OwrenZen5"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "OwrenZen5"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -951,9 +934,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "BS5",
-        "materializer": "getButcherTableau; callable BS5"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "BS5"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -982,9 +964,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Stepanov5",
-        "materializer": "getButcherTableau; callable Stepanov5"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "Stepanov5"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -1013,9 +994,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Alshina2",
-        "materializer": "getButcherTableau; callable Alshina2"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "Alshina2"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -1044,9 +1024,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Alshina3",
-        "materializer": "getButcherTableau; callable Alshina3"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "Alshina3"
       },
       "coefficient_modifications": [
         "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
@@ -1072,9 +1051,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Alshina6",
-        "materializer": "getButcherTableau; callable Alshina6"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "Alshina6"
       },
       "coefficient_modifications": [
         "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
@@ -1100,9 +1078,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "MSRK5",
-        "materializer": "getButcherTableau; callable MSRK5"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "MSRK5"
       },
       "coefficient_modifications": [
         "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
@@ -1128,9 +1105,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "MSRK6",
-        "materializer": "getButcherTableau; callable MSRK6"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "MSRK6"
       },
       "coefficient_modifications": [
         "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
@@ -1156,9 +1132,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SIR54",
-        "materializer": "getButcherTableau; callable SIR54"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "SIR54"
       },
       "coefficient_modifications": [
         "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
@@ -1184,9 +1159,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Ralston4",
-        "materializer": "getButcherTableau; callable Ralston4"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "Ralston4"
       },
       "coefficient_modifications": [
         "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
@@ -1212,9 +1186,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "RKO65",
-        "materializer": "getButcherTableau; callable RKO65"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "RKO65"
       },
       "coefficient_modifications": [
         "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
@@ -1240,9 +1213,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "RKM",
-        "materializer": "getButcherTableau; callable RKM"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "RKM"
       },
       "coefficient_modifications": [
         "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim"
@@ -1268,9 +1240,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "PSRK4p7q6",
-        "materializer": "getButcherTableau; callable PSRK4p7q6"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "PSRK4p7q6"
       },
       "coefficient_modifications": [
         "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim",
@@ -1297,9 +1268,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "PSRK3p6q5",
-        "materializer": "getButcherTableau; callable PSRK3p6q5"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "PSRK3p6q5"
       },
       "coefficient_modifications": [
         "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim",
@@ -1326,9 +1296,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "PSRK3p5q4",
-        "materializer": "getButcherTableau; callable PSRK3p5q4"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "PSRK3p5q4"
       },
       "coefficient_modifications": [
         "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim",
@@ -1355,9 +1324,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Vern6",
-        "materializer": "getButcherTableau; callable Vern6"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "Vern6"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -1386,9 +1354,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Vern7",
-        "materializer": "getButcherTableau; callable Vern7"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "Vern7"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -1417,9 +1384,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Vern8",
-        "materializer": "getButcherTableau; callable Vern8"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "Vern8"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -1448,9 +1414,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Vern9",
-        "materializer": "getButcherTableau; callable Vern9"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "Vern9"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -1479,9 +1444,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "RKV76IIa",
-        "materializer": "getButcherTableau; callable RKV76IIa"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "RKV76IIa"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -1510,9 +1474,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "TanYam7",
-        "materializer": "getButcherTableau; callable TanYam7"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "TanYam7"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -1541,9 +1504,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "TsitPap8",
-        "materializer": "getButcherTableau; callable TsitPap8"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "TsitPap8"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -1572,9 +1534,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "DP8",
-        "materializer": "getButcherTableau; callable DP8"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "DP8"
       },
       "coefficient_modifications": [
         "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim",
@@ -1601,9 +1562,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Feagin10",
-        "materializer": "getButcherTableau; callable Feagin10"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "Feagin10"
       },
       "coefficient_modifications": [
         "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim",
@@ -1630,9 +1590,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Feagin12",
-        "materializer": "getButcherTableau; callable Feagin12"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "Feagin12"
       },
       "coefficient_modifications": [
         "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim",
@@ -1659,9 +1618,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Feagin14",
-        "materializer": "getButcherTableau; callable Feagin14"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "Feagin14"
       },
       "coefficient_modifications": [
         "Working/FSAL/companion stages materialized on generic driver; no low-storage execution claim",
@@ -1688,7 +1646,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/mechanics/verlet.py",
         "constructor": "leapFrog"
       },
       "coefficient_modifications": [
@@ -1715,7 +1673,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/mechanics/verlet.py",
         "constructor": "symplecticEuler"
       },
       "coefficient_modifications": [
@@ -1742,7 +1700,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/mechanics/verlet.py",
         "constructor": "velocityVerlet"
       },
       "coefficient_modifications": [
@@ -1769,7 +1727,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/mechanics/forest_ruth.py",
         "constructor": "PEFRL"
       },
       "coefficient_modifications": [
@@ -1796,7 +1754,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/mechanics/forest_ruth.py",
         "constructor": "VEFRL"
       },
       "coefficient_modifications": [
@@ -1823,8 +1781,8 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "midpoint"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "EPEC"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -1850,8 +1808,8 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "heunsMethod"
+        "file": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+        "constructor": "EPECmodified"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -1877,7 +1835,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/explicit/tvd.py",
         "constructor": "TVDRK3"
       },
       "coefficient_modifications": [
@@ -1904,7 +1862,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/explicit/tvd.py",
         "constructor": "TVDRK2"
       },
       "coefficient_modifications": [
@@ -1931,8 +1889,8 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "<lambda>"
+        "file": "src/warpSPHIntegrators/schemes/registry.py",
+        "constructor": "semiImplicitEuler"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -1958,8 +1916,8 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "<lambda>"
+        "file": "src/warpSPHIntegrators/schemes/registry.py",
+        "constructor": "explicitEuler"
       },
       "coefficient_modifications": [
         "No additional transformation recorded here; inspect source and numerical record"
@@ -1985,7 +1943,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
         "constructor": "backwardEuler"
       },
       "coefficient_modifications": [
@@ -2013,7 +1971,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
         "constructor": "implicitMidpoint"
       },
       "coefficient_modifications": [
@@ -2041,7 +1999,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
         "constructor": "trapezoidal"
       },
       "coefficient_modifications": [
@@ -2069,7 +2027,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
         "constructor": "SDIRK2"
       },
       "coefficient_modifications": [
@@ -2097,7 +2055,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
         "constructor": "TRBDF2"
       },
       "coefficient_modifications": [
@@ -2127,7 +2085,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
         "constructor": "ESDIRK324L2SA"
       },
       "coefficient_modifications": [
@@ -2157,7 +2115,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
         "constructor": "ESDIRK436L2SA"
       },
       "coefficient_modifications": [
@@ -2187,9 +2145,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Kvaerno3",
-        "materializer": "getDIRKTableau(Kvaerno3)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "Kvaerno3"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -2220,9 +2177,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Kvaerno4",
-        "materializer": "getDIRKTableau(Kvaerno4)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "Kvaerno4"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -2253,9 +2209,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Kvaerno5",
-        "materializer": "getDIRKTableau(Kvaerno5)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "Kvaerno5"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -2286,9 +2241,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "KenCarp3",
-        "materializer": "getDIRKTableau(KenCarp3)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "KenCarp3"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -2318,9 +2272,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "KenCarp4",
-        "materializer": "getDIRKTableau(KenCarp4)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "KenCarp4"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -2350,9 +2303,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "KenCarp47",
-        "materializer": "getDIRKTableau(KenCarp47)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "KenCarp47"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -2382,9 +2334,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "KenCarp5",
-        "materializer": "getDIRKTableau(KenCarp5)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "KenCarp5"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -2414,9 +2365,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "KenCarp58",
-        "materializer": "getDIRKTableau(KenCarp58)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "KenCarp58"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -2446,9 +2396,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "ESDIRK325L2SA",
-        "materializer": "getDIRKTableau(ESDIRK325L2SA)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "ESDIRK325L2SA"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -2478,9 +2427,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "ESDIRK436L2SA2",
-        "materializer": "getDIRKTableau(ESDIRK436L2SA2)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "ESDIRK436L2SA2"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -2510,9 +2458,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "ESDIRK437L2SA",
-        "materializer": "getDIRKTableau(ESDIRK437L2SA)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "ESDIRK437L2SA"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -2542,9 +2489,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "ESDIRK547L2SA2",
-        "materializer": "getDIRKTableau(ESDIRK547L2SA2)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "ESDIRK547L2SA2"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -2575,9 +2521,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "ESDIRK54I8L2SA",
-        "materializer": "getDIRKTableau(ESDIRK54I8L2SA)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "ESDIRK54I8L2SA"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -2607,9 +2552,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "ESDIRK659L2SA",
-        "materializer": "getDIRKTableau(ESDIRK659L2SA)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "ESDIRK659L2SA"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -2639,9 +2583,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SSPSDIRK2",
-        "materializer": "getDIRKTableau(SSPSDIRK2)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "SSPSDIRK2"
       },
       "coefficient_modifications": [
         "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments",
@@ -2669,9 +2612,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "ARS222",
-        "materializer": "getDIRKTableau(ARS222)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "ARS222"
       },
       "coefficient_modifications": [
         "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
@@ -2698,9 +2640,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "ARS232",
-        "materializer": "getDIRKTableau(ARS232)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "ARS232"
       },
       "coefficient_modifications": [
         "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
@@ -2727,9 +2668,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "ARS343",
-        "materializer": "getDIRKTableau(ARS343)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "ARS343"
       },
       "coefficient_modifications": [
         "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
@@ -2756,9 +2696,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "ARS443",
-        "materializer": "getDIRKTableau(ARS443)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "ARS443"
       },
       "coefficient_modifications": [
         "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
@@ -2785,9 +2724,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "BHR553",
-        "materializer": "getDIRKTableau(BHR553)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "BHR553"
       },
       "coefficient_modifications": [
         "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
@@ -2814,9 +2752,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Cash4",
-        "materializer": "getDIRKTableau(Cash4)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "Cash4"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -2847,9 +2784,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "CFNLIRK3",
-        "materializer": "getDIRKTableau(CFNLIRK3)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "CFNLIRK3"
       },
       "coefficient_modifications": [
         "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments"
@@ -2876,9 +2812,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Hairer4",
-        "materializer": "getDIRKTableau(Hairer4)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "Hairer4"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -2908,9 +2843,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "Hairer42",
-        "materializer": "getDIRKTableau(Hairer42)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "Hairer42"
       },
       "coefficient_modifications": [
         "Companion solution weights exposed; inspect recorded error-weight conversion and estimate order",
@@ -2940,9 +2874,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SFSDIRK4",
-        "materializer": "getDIRKTableau(SFSDIRK4)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "SFSDIRK4"
       },
       "coefficient_modifications": [
         "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments",
@@ -2970,9 +2903,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SFSDIRK5",
-        "materializer": "getDIRKTableau(SFSDIRK5)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "SFSDIRK5"
       },
       "coefficient_modifications": [
         "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments",
@@ -3000,9 +2932,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SFSDIRK6",
-        "materializer": "getDIRKTableau(SFSDIRK6)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "SFSDIRK6"
       },
       "coefficient_modifications": [
         "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments",
@@ -3030,9 +2961,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SFSDIRK7",
-        "materializer": "getDIRKTableau(SFSDIRK7)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "SFSDIRK7"
       },
       "coefficient_modifications": [
         "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments",
@@ -3060,9 +2990,8 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
-        "constructor": "SFSDIRK8",
-        "materializer": "getDIRKTableau(SFSDIRK8)"
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+        "constructor": "SFSDIRK8"
       },
       "coefficient_modifications": [
         "Pure implicit side only; coefficient/node adjustments are method-specific in notes 3.28 and source comments",
@@ -3090,7 +3019,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/coupled.py",
         "constructor": "gaussLegendre2"
       },
       "coefficient_modifications": [
@@ -3120,7 +3049,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/coupled.py",
         "constructor": "radauIia2"
       },
       "coefficient_modifications": [
@@ -3150,7 +3079,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/additive.py",
         "constructor": "ARK324L2SA"
       },
       "coefficient_modifications": [
@@ -3180,7 +3109,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/additive.py",
         "constructor": "ARK436L2SA"
       },
       "coefficient_modifications": [
@@ -3210,7 +3139,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/mechanics/newmark.py",
         "constructor": "newmark"
       },
       "coefficient_modifications": [
@@ -3238,7 +3167,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/bdf.py",
         "constructor": "BDF1"
       },
       "coefficient_modifications": [
@@ -3266,7 +3195,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/bdf.py",
         "constructor": "BDF2"
       },
       "coefficient_modifications": [
@@ -3294,7 +3223,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/bdf.py",
         "constructor": "BDF3"
       },
       "coefficient_modifications": [
@@ -3322,7 +3251,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/bdf.py",
         "constructor": "BDF4"
       },
       "coefficient_modifications": [
@@ -3350,7 +3279,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/bdf.py",
         "constructor": "BDF5"
       },
       "coefficient_modifications": [
@@ -3378,7 +3307,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/implicit/imex.py",
         "constructor": "IMEXEuler"
       },
       "coefficient_modifications": [
@@ -3406,7 +3335,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/imex.py",
         "constructor": "SBDF2"
       },
       "coefficient_modifications": [
@@ -3434,7 +3363,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/imex.py",
         "constructor": "SBDF3"
       },
       "coefficient_modifications": [
@@ -3462,7 +3391,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/imex.py",
         "constructor": "CNAB2"
       },
       "coefficient_modifications": [
@@ -3490,7 +3419,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/adams.py",
         "constructor": "AB2"
       },
       "coefficient_modifications": [
@@ -3517,7 +3446,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/adams.py",
         "constructor": "AB3"
       },
       "coefficient_modifications": [
@@ -3544,7 +3473,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/adams.py",
         "constructor": "AB4"
       },
       "coefficient_modifications": [
@@ -3571,7 +3500,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/adams.py",
         "constructor": "AB5"
       },
       "coefficient_modifications": [
@@ -3598,7 +3527,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/adams.py",
         "constructor": "ABM2"
       },
       "coefficient_modifications": [
@@ -3625,7 +3554,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/adams.py",
         "constructor": "ABM3"
       },
       "coefficient_modifications": [
@@ -3652,7 +3581,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/adams.py",
         "constructor": "ABM4"
       },
       "coefficient_modifications": [
@@ -3679,7 +3608,7 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/ssp.py",
         "constructor": "SSPRKMSVS32"
       },
       "coefficient_modifications": [
@@ -3706,7 +3635,7 @@
         "verification": "pinned transcription recorded"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/ssp.py",
         "constructor": "SSPRKMSVS43"
       },
       "coefficient_modifications": [
@@ -3733,7 +3662,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/adams.py",
         "constructor": "AM2"
       },
       "coefficient_modifications": [
@@ -3761,7 +3690,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/adams.py",
         "constructor": "AM3"
       },
       "coefficient_modifications": [
@@ -3789,7 +3718,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/history/adams.py",
         "constructor": "AM4"
       },
       "coefficient_modifications": [
@@ -3817,7 +3746,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/stabilized/chebyshev.py",
         "constructor": "RKC1"
       },
       "coefficient_modifications": [
@@ -3846,7 +3775,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/stabilized/chebyshev.py",
         "constructor": "RKC2"
       },
       "coefficient_modifications": [
@@ -3875,7 +3804,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/stabilized/chebyshev.py",
         "constructor": "RKL2"
       },
       "coefficient_modifications": [
@@ -3904,7 +3833,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/implicit/rosenbrock.py",
         "constructor": "integrateROS3P"
       },
       "coefficient_modifications": [
@@ -3934,7 +3863,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/exponential/legacy.py",
         "constructor": "integrateETD2RK"
       },
       "coefficient_modifications": [
@@ -3961,7 +3890,7 @@
         "verification": "legacy primary-source revision awaiting verification; citations retained in implementation/family docs"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/integration.py",
+        "file": "src/warpSPHIntegrators/drivers/exponential/legacy.py",
         "constructor": "integrateEXPRB32"
       },
       "coefficient_modifications": [
@@ -3990,7 +3919,7 @@
         "verification": "Complete monorepo tree verified; source SHA-256, Julia coefficients and nonlinear autonomous/non-autonomous one-step oracle in scripts/coefficients/wave9/oracle.json"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/fullyimplicit.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/coupled.py",
         "constructor": "gaussLegendre3"
       },
       "coefficient_modifications": [
@@ -4021,7 +3950,7 @@
         "verification": "Complete monorepo tree verified; source SHA-256, Julia coefficients and nonlinear autonomous/non-autonomous one-step oracle in scripts/coefficients/wave9/oracle.json"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/fullyimplicit.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/coupled.py",
         "constructor": "radauIia3"
       },
       "coefficient_modifications": [
@@ -4053,7 +3982,7 @@
         "verification": "Pinned coefficient-functional oracle and repository one-step test; classical AB5/AM5 with explicit repository startup/cache policy, not full upstream solver equivalence"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/multistep.py",
+        "file": "src/warpSPHIntegrators/drivers/history/adams.py",
         "constructor": "ABM5"
       },
       "coefficient_modifications": [
@@ -4083,7 +4012,7 @@
         "verification": "Pinned unchanged constant-cache step-body oracle with independent dense nonlinear solves; not full upstream solver/controller equivalence"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/dirk.py",
+        "file": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
         "constructor": "MEBDF2"
       },
       "coefficient_modifications": [
@@ -4111,7 +4040,7 @@
         "verification": "Pinned unchanged constant-cache step-body oracle with independent dense nonlinear solves; not full upstream solver/controller equivalence"
       },
       "implementation": {
-        "file": "src/warpSPHIntegrators/imexmultistep.py",
+        "file": "src/warpSPHIntegrators/drivers/history/imex.py",
         "constructor": "CNLF2"
       },
       "coefficient_modifications": [
@@ -4133,7 +4062,7 @@
       "status": "implemented",
       "reason": "Standalone drivers depend on kappa and dt; no fixed registry entry",
       "source": "OrdinaryDiffEq 7.8.1, SSPRK recurrence/algorithm kappa fields",
-      "implementation": "src/warpSPHIntegrators/prrk.py",
+      "implementation": "src/warpSPHIntegrators/drivers/explicit/relaxation.py",
       "tests": "tests/test_prrk.py",
       "evidence": "docs/research/integrators/notes-3-24.md",
       "intended_consumer": "parameterized SSP relaxation"
@@ -4143,7 +4072,7 @@
       "status": "equivalent",
       "reason": "Forward Euler applied to the combined RHS f1+f2; historical Symplectic Euler equivalence claim corrected by direct source inspection",
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqLowOrderRK/src/split_perform_step.jl, perform_step!(SplitEulerConstantCache / SplitEulerCache)",
-      "implementation": "src/warpSPHIntegrators/butcher.py",
+      "implementation": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
       "tests": "tests/test_convergence.py",
       "evidence": "docs/research/integrators/notes-3-26.md",
       "intended_consumer": "split RHS callbacks combined for an explicit Euler step"
@@ -4153,7 +4082,7 @@
       "status": "equivalent",
       "reason": "Stored implicit tableau equals ARS222; both public registrations retained; upstream additive pairs differ",
       "source": "OrdinaryDiffEq 7.8.1 ARS222Tableau / ARS232Tableau",
-      "implementation": "src/warpSPHIntegrators/dirk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
       "tests": "tests/test_dirk.py",
       "evidence": "docs/research/integrators/notes-3-28.md",
       "intended_consumer": "compatibility with upstream scheme names"
@@ -4783,7 +4712,7 @@
       "status": "implemented",
       "reason": "Parameterized Collocation backend supplies stages 2\u20139 outside the fixed catalog, with source/companion and Schur spatial scale gates",
       "source": "OrdinaryDiffEq 7.8.1 pinned monorepo, lib/OrdinaryDiffEqFIRK; arbitrary-stage Gauss / Radau generators",
-      "implementation": "src/warpSPHIntegrators/collocation.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/collocation.py",
       "tests": [
         "tests/test_collocation_factory.py"
       ],
@@ -4795,7 +4724,7 @@
       "status": "implemented",
       "reason": "StabilizedRK factory with source recurrence/time agreement, full-state lifecycle and adaptive/portable continuation; outside the fixed registry",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree, StabilizedRK 2.6.0 rkc_perform_step.jl RKL1ConstantCache",
-      "implementation": "src/warpSPHIntegrators/stabilized.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/stabilized.py",
       "tests": [
         "tests/test_stabilized_backend.py"
       ],
@@ -4807,7 +4736,7 @@
       "status": "implemented",
       "reason": "StabilizedRK factory with source recurrence/time agreement, full-state lifecycle and adaptive/portable continuation; outside the fixed registry",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree, StabilizedRK 2.6.0 rkc_perform_step.jl RKL2ConstantCache",
-      "implementation": "src/warpSPHIntegrators/stabilized.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/stabilized.py",
       "tests": [
         "tests/test_stabilized_backend.py"
       ],
@@ -4819,7 +4748,7 @@
       "status": "implemented",
       "reason": "StabilizedRK factory with source recurrence/time agreement, full-state lifecycle and adaptive/portable continuation; outside the fixed registry",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree, StabilizedRK 2.6.0 rkc_perform_step.jl RKG1ConstantCache",
-      "implementation": "src/warpSPHIntegrators/stabilized.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/stabilized.py",
       "tests": [
         "tests/test_stabilized_backend.py"
       ],
@@ -4831,7 +4760,7 @@
       "status": "implemented",
       "reason": "StabilizedRK factory with source recurrence/time agreement, full-state lifecycle and adaptive/portable continuation; outside the fixed registry",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree, StabilizedRK 2.6.0 rkc_perform_step.jl RKG2ConstantCache",
-      "implementation": "src/warpSPHIntegrators/stabilized.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/stabilized.py",
       "tests": [
         "tests/test_stabilized_backend.py"
       ],
@@ -4843,7 +4772,7 @@
       "status": "implemented",
       "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl DPRKN12Tableau",
-      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/nystrom.py",
       "tests": [
         "tests/test_nystrom.py"
       ],
@@ -4855,7 +4784,7 @@
       "status": "implemented",
       "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl DPRKN4Tableau",
-      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/nystrom.py",
       "tests": [
         "tests/test_nystrom.py"
       ],
@@ -4867,7 +4796,7 @@
       "status": "implemented",
       "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl DPRKN5Tableau",
-      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/nystrom.py",
       "tests": [
         "tests/test_nystrom.py"
       ],
@@ -4879,7 +4808,7 @@
       "status": "implemented",
       "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl DPRKN6Tableau",
-      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/nystrom.py",
       "tests": [
         "tests/test_nystrom.py"
       ],
@@ -4891,7 +4820,7 @@
       "status": "implemented",
       "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl DPRKN6FMTableau",
-      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/nystrom.py",
       "tests": [
         "tests/test_nystrom.py"
       ],
@@ -4903,7 +4832,7 @@
       "status": "implemented",
       "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl DPRKN8Tableau",
-      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/nystrom.py",
       "tests": [
         "tests/test_nystrom.py"
       ],
@@ -4915,7 +4844,7 @@
       "status": "implemented",
       "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl ERKN4Tableau",
-      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/nystrom.py",
       "tests": [
         "tests/test_nystrom.py"
       ],
@@ -4927,7 +4856,7 @@
       "status": "implemented",
       "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl ERKN5Tableau",
-      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/nystrom.py",
       "tests": [
         "tests/test_nystrom.py"
       ],
@@ -4939,7 +4868,7 @@
       "status": "implemented",
       "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl ERKN7Tableau",
-      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/nystrom.py",
       "tests": [
         "tests/test_nystrom.py"
       ],
@@ -4951,7 +4880,7 @@
       "status": "implemented",
       "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl FineRKN4Tableau",
-      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/nystrom.py",
       "tests": [
         "tests/test_nystrom.py"
       ],
@@ -4963,7 +4892,7 @@
       "status": "implemented",
       "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl FineRKN5Tableau",
-      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/nystrom.py",
       "tests": [
         "tests/test_nystrom.py"
       ],
@@ -4975,7 +4904,7 @@
       "status": "implemented",
       "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl Nystrom4Tableau",
-      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/nystrom.py",
       "tests": [
         "tests/test_nystrom.py"
       ],
@@ -4987,7 +4916,7 @@
       "status": "implemented",
       "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl Nystrom4VelocityIndependentTableau",
-      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/nystrom.py",
       "tests": [
         "tests/test_nystrom.py"
       ],
@@ -4999,7 +4928,7 @@
       "status": "implemented",
       "reason": "Nystrom factory with pinned constructor/nonlinear-map evidence, component quadrature and known mechanics/thermal consumers; outside fixed catalog",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 rkn_tableaus.jl Nystrom5VelocityIndependentTableau",
-      "implementation": "src/warpSPHIntegrators/nystrom.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/nystrom.py",
       "tests": [
         "tests/test_nystrom.py"
       ],
@@ -5024,7 +4953,7 @@
       "wave": 10,
       "reason": "Source-checked warm difference kernel, polynomial resampling, implicit RK startup and quasi-constant accepted-step policy; outside fixed catalog. Upstream adaptive-order QNDF controller remains separate.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; BDF 2.4.5 QNDFConstantCache, U!, calc_R!, update_D! and kappa defaults",
-      "implementation": "src/warpSPHIntegrators/ndf.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/ndf.py",
       "tests": [
         "tests/test_ndf.py"
       ],
@@ -5037,7 +4966,7 @@
       "wave": 10,
       "reason": "Source-checked warm difference kernel, polynomial resampling, implicit RK startup and quasi-constant accepted-step policy; outside fixed catalog. Upstream adaptive-order QNDF controller remains separate.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; BDF 2.4.5 QNDFConstantCache, U!, calc_R!, update_D! and kappa defaults",
-      "implementation": "src/warpSPHIntegrators/ndf.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/ndf.py",
       "tests": [
         "tests/test_ndf.py"
       ],
@@ -5050,7 +4979,7 @@
       "wave": 10,
       "reason": "Source-checked warm difference kernel, polynomial resampling, implicit RK startup and quasi-constant accepted-step policy; outside fixed catalog. Upstream adaptive-order QNDF controller remains separate.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; BDF 2.4.5 QNDFConstantCache, U!, calc_R!, update_D! and kappa defaults",
-      "implementation": "src/warpSPHIntegrators/ndf.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/ndf.py",
       "tests": [
         "tests/test_ndf.py"
       ],
@@ -5063,7 +4992,7 @@
       "wave": 10,
       "reason": "Source-checked warm difference kernel, polynomial resampling, implicit RK startup and quasi-constant accepted-step policy; outside fixed catalog. Upstream adaptive-order QNDF controller remains separate.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; BDF 2.4.5 QNDFConstantCache, U!, calc_R!, update_D! and kappa defaults",
-      "implementation": "src/warpSPHIntegrators/ndf.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/ndf.py",
       "tests": [
         "tests/test_ndf.py"
       ],
@@ -5076,7 +5005,7 @@
       "wave": 10,
       "reason": "Source-checked warm difference kernel, polynomial resampling, implicit RK startup and quasi-constant accepted-step policy; outside fixed catalog. Upstream adaptive-order QNDF controller remains separate.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; BDF 2.4.5 QNDFConstantCache, U!, calc_R!, update_D! and kappa defaults",
-      "implementation": "src/warpSPHIntegrators/ndf.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/ndf.py",
       "tests": [
         "tests/test_ndf.py"
       ],
@@ -5089,7 +5018,7 @@
       "wave": 10,
       "reason": "kappa_5=0 gives BDF5 main coefficients; difference history, bootstrap, defect and timestep policy remain distinct",
       "source": "OrdinaryDiffEq BDF 2.4.5 pinned QNDF defaults",
-      "implementation": "src/warpSPHIntegrators/ndf.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/ndf.py",
       "tests": [
         "tests/test_ndf.py"
       ],
@@ -5102,7 +5031,7 @@
       "wave": 10,
       "reason": "Accepted target orders 1\u20135 with source-checked neighboring proposals, full-field normalization, owned difference/controller transitions and portable restart. Package maturity/hold/startup/retry policy is explicit; not complete upstream QNDF controller equivalence.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; BDF 2.4.5 QNDF accepted-controller candidate mathematics",
-      "implementation": "src/warpSPHIntegrators/adaptive_ndf.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/adaptive_ndf.py",
       "tests": [
         "tests/test_adaptive_ndf.py"
       ],
@@ -5115,7 +5044,7 @@
       "wave": 13,
       "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
-      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/extrapolation.py",
       "tests": [
         "tests/test_extrapolation.py"
       ],
@@ -5128,7 +5057,7 @@
       "wave": 13,
       "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
-      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/extrapolation.py",
       "tests": [
         "tests/test_extrapolation.py"
       ],
@@ -5141,7 +5070,7 @@
       "wave": 13,
       "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
-      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/extrapolation.py",
       "tests": [
         "tests/test_extrapolation.py"
       ],
@@ -5154,7 +5083,7 @@
       "wave": 13,
       "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
-      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/extrapolation.py",
       "tests": [
         "tests/test_extrapolation.py"
       ],
@@ -5167,7 +5096,7 @@
       "wave": 13,
       "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
-      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/extrapolation.py",
       "tests": [
         "tests/test_extrapolation.py"
       ],
@@ -5180,7 +5109,7 @@
       "wave": 13,
       "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
-      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/extrapolation.py",
       "tests": [
         "tests/test_extrapolation.py"
       ],
@@ -5193,7 +5122,7 @@
       "wave": 13,
       "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
-      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/extrapolation.py",
       "tests": [
         "tests/test_extrapolation.py"
       ],
@@ -5206,7 +5135,7 @@
       "wave": 13,
       "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
-      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/extrapolation.py",
       "tests": [
         "tests/test_extrapolation.py"
       ],
@@ -5219,7 +5148,7 @@
       "wave": 13,
       "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
-      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/extrapolation.py",
       "tests": [
         "tests/test_extrapolation.py"
       ],
@@ -5232,7 +5161,7 @@
       "wave": 13,
       "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
-      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/extrapolation.py",
       "tests": [
         "tests/test_extrapolation.py"
       ],
@@ -5245,7 +5174,7 @@
       "wave": 13,
       "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
-      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/extrapolation.py",
       "tests": [
         "tests/test_extrapolation.py"
       ],
@@ -5258,7 +5187,7 @@
       "wave": 13,
       "reason": "Fixed-column explicit extrapolation with exact-derived coefficients, comparison exponent, affine full-state quadrature, adaptive timestep and composition; source order/work controller and threading remain distinct.",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; Extrapolation 2.5.0 AitkenNeville/Deuflhard midpoint constant-cache fixed columns",
-      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/extrapolation.py",
       "tests": [
         "tests/test_extrapolation.py"
       ],
@@ -5271,7 +5200,7 @@
       "wave": 13,
       "reason": "Both equal registered explicit midpoint; Euler comparison and factory representation are distinct, with no duplicate fixed registration",
       "source": "Pinned fixed-column recurrence and independent nonlinear/time-dependent map comparison",
-      "implementation": "src/warpSPHIntegrators/extrapolation.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/extrapolation.py",
       "tests": [
         "tests/test_extrapolation.py"
       ],
@@ -5284,7 +5213,7 @@
       "wave": 13,
       "reason": "Owned active-child history, cold-start method transitions, accepted adaptive delegation and portable nested restart; pure zero-based policy differs from source integrator policy/cache transfer",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; Core 4.15.1 CompositeAlgorithm/choose_algorithm! source semantics audit",
-      "implementation": "src/warpSPHIntegrators/switching.py",
+      "implementation": "src/warpSPHIntegrators/wrappers/switching.py",
       "tests": [
         "tests/test_algorithm_switch.py"
       ],
@@ -5297,7 +5226,7 @@
       "wave": 13,
       "reason": "Explicit StateMap/tensor_map declaration, source endpoint clock, owned complete-state transitions, endpoint lifecycle/quantity and portable restart; separate result transition metadata, no ODE order/error claim",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; FunctionMap 2.2.1 constant-cache step-body oracle",
-      "implementation": "src/warpSPHIntegrators/function_map.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/function_map.py",
       "tests": [
         "tests/test_function_map.py"
       ],
@@ -5310,7 +5239,7 @@
       "wave": 13,
       "reason": "Expressed explicitly as StateMap y+h*rate(t_next,y_old); source nonlinear/time-dependent values tested without a public overloaded derivative/map flag. Not old-clock Euler equivalence in general.",
       "source": "Pinned FunctionMap 2.2.1 source step body",
-      "implementation": "src/warpSPHIntegrators/function_map.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/function_map.py",
       "tests": [
         "tests/test_function_map.py"
       ],
@@ -5323,7 +5252,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5336,7 +5265,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5349,7 +5278,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5362,7 +5291,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5375,7 +5304,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5388,7 +5317,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5401,7 +5330,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5414,7 +5343,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5427,7 +5356,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5440,7 +5369,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5453,7 +5382,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5466,7 +5395,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5479,7 +5408,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5492,7 +5421,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5505,7 +5434,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5518,7 +5447,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5531,7 +5460,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5544,7 +5473,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5557,7 +5486,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5570,7 +5499,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5583,7 +5512,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5596,7 +5525,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5609,7 +5538,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5622,7 +5551,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5635,7 +5564,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5648,7 +5577,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5661,7 +5590,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5674,7 +5603,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5687,7 +5616,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5700,7 +5629,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5713,7 +5642,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5726,7 +5655,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5739,7 +5668,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5752,7 +5681,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5765,7 +5694,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5778,7 +5707,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5791,7 +5720,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5804,7 +5733,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5817,7 +5746,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5830,7 +5759,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5843,7 +5772,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5856,7 +5785,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5869,7 +5798,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5882,7 +5811,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5895,7 +5824,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5908,7 +5837,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5921,7 +5850,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5934,7 +5863,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5947,7 +5876,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5960,7 +5889,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5973,7 +5902,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5986,7 +5915,7 @@
       "wave": 16,
       "reason": "Screened full-stage main map; checked companion",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -5999,7 +5928,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -6012,7 +5941,7 @@
       "wave": 16,
       "reason": "Screened full-stage fixed-step main map",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; LowStorageRK 3.4.0 actual constructor and step-body oracle",
-      "implementation": "src/warpSPHIntegrators/expanded_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/expanded_rk.py",
       "tests": [
         "tests/test_expanded_rk.py"
       ],
@@ -6088,7 +6017,7 @@
       "wave": 10,
       "reason": "Source neighboring defects and mature branch; bounded package order/maturity/startup/retry policy",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; AdamsBashforthMoulton 2.2.0 VCABM helpers and accepted-order branch",
-      "implementation": "src/warpSPHIntegrators/adaptive_adams.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/adaptive_adams.py",
       "tests": [
         "tests/test_adaptive_adams.py"
       ],
@@ -6101,7 +6030,7 @@
       "wave": 10,
       "reason": "Source neighboring defects and mature branch; bounded package order/maturity/startup/retry policy",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; AdamsBashforthMoulton 2.2.0 VCABM helpers and accepted-order branch",
-      "implementation": "src/warpSPHIntegrators/adaptive_adams.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/adaptive_adams.py",
       "tests": [
         "tests/test_adaptive_adams.py"
       ],
@@ -6114,7 +6043,7 @@
       "wave": 10,
       "reason": "Source neighboring defects and mature branch; bounded package order/maturity/startup/retry policy",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; AdamsBashforthMoulton 2.2.0 VCABM helpers and accepted-order branch",
-      "implementation": "src/warpSPHIntegrators/adaptive_adams.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/adaptive_adams.py",
       "tests": [
         "tests/test_adaptive_adams.py"
       ],
@@ -6163,7 +6092,7 @@
       "wave": 12,
       "reason": "Pinned mutable warm recurrence with explicitly corrected physical old/end accelerations and correctly timed old substage seed",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 warm kernels; corrected startup is a documented transformation",
-      "implementation": "src/warpSPHIntegrators/improved_nystrom.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/improved_nystrom.py",
       "tests": [
         "tests/test_improved_nystrom.py"
       ],
@@ -6176,7 +6105,7 @@
       "wave": 12,
       "reason": "Pinned mutable warm recurrence with explicitly corrected physical old/end accelerations and correctly timed old substage seed",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; RKN 2.2.0 warm kernels; corrected startup is a documented transformation",
-      "implementation": "src/warpSPHIntegrators/improved_nystrom.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/improved_nystrom.py",
       "tests": [
         "tests/test_improved_nystrom.py"
       ],
@@ -6189,7 +6118,7 @@
       "wave": 12,
       "reason": "Pinned ordinary first-order parallel DIRK map executed by serial full-state DIRK solver; no stage-threading claim",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; PDIRK 2.4.1 actual coefficient constructor and both constant-cache step branches",
-      "implementation": "src/warpSPHIntegrators/parallel_dirk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/parallel_dirk.py",
       "tests": [
         "tests/test_parallel_dirk.py"
       ],
@@ -6202,7 +6131,7 @@
       "wave": 11,
       "reason": "Exact full-RHS JVP and complete implicit adjoints; corrected pair time term / unchanged six-stage source coefficients",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; Rosenbrock 2.7.0 and RosenbrockTableaus 2.4.2 actual constant-cache kernels",
-      "implementation": "src/warpSPHIntegrators/linearized.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/linearized.py",
       "tests": [
         "tests/test_linearized.py"
       ],
@@ -6215,7 +6144,7 @@
       "wave": 11,
       "reason": "Exact full-RHS JVP and complete implicit adjoints; corrected pair time term / unchanged six-stage source coefficients",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; Rosenbrock 2.7.0 and RosenbrockTableaus 2.4.2 actual constant-cache kernels",
-      "implementation": "src/warpSPHIntegrators/linearized.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/linearized.py",
       "tests": [
         "tests/test_linearized.py"
       ],
@@ -6228,7 +6157,7 @@
       "wave": 11,
       "reason": "Exact full-RHS JVP and complete implicit adjoints; corrected pair time term / unchanged six-stage source coefficients",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; Rosenbrock 2.7.0 and RosenbrockTableaus 2.4.2 actual constant-cache kernels",
-      "implementation": "src/warpSPHIntegrators/linearized.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/linearized.py",
       "tests": [
         "tests/test_linearized.py"
       ],
@@ -6259,7 +6188,7 @@
       "wave": 11,
       "reason": "Actual pinned recurrence in translated coordinates, exact zero rates, qualified conservative stage selection and source-specific high-count exceptions",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; StabilizedRK 2.6.0 actual constructors, selectors and constant-cache kernels",
-      "implementation": "src/warpSPHIntegrators/orthogonal.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/orthogonal.py",
       "tests": [
         "tests/test_orthogonal.py"
       ],
@@ -6272,7 +6201,7 @@
       "wave": 11,
       "reason": "Actual pinned recurrence in translated coordinates, exact zero rates, qualified conservative stage selection and source-specific high-count exceptions",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; StabilizedRK 2.6.0 actual constructors, selectors and constant-cache kernels",
-      "implementation": "src/warpSPHIntegrators/orthogonal.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/orthogonal.py",
       "tests": [
         "tests/test_orthogonal.py"
       ],
@@ -6285,7 +6214,7 @@
       "wave": 11,
       "reason": "Actual pinned recurrence in translated coordinates, exact zero rates, qualified conservative stage selection and source-specific high-count exceptions",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; StabilizedRK 2.6.0 actual constructors, selectors and constant-cache kernels",
-      "implementation": "src/warpSPHIntegrators/orthogonal.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/orthogonal.py",
       "tests": [
         "tests/test_orthogonal.py"
       ],
@@ -6298,7 +6227,7 @@
       "wave": 11,
       "reason": "Actual pinned recurrence in translated coordinates, exact zero rates, qualified conservative stage selection and source-specific high-count exceptions",
       "source": "OrdinaryDiffEq 7.8.1 pinned tree; StabilizedRK 2.6.0 actual constructors, selectors and constant-cache kernels",
-      "implementation": "src/warpSPHIntegrators/orthogonal.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/orthogonal.py",
       "tests": [
         "tests/test_orthogonal.py"
       ],
@@ -6338,7 +6267,7 @@
       "wave": 11,
       "reason": "Qualified cached semilinear or time-augmented full-Jacobian map; ETDRK2 is mathematically equivalent to registered ETD2RK, with a distinct checked-action/AD backend.",
       "source": "scripts/coefficients/wave11/exponential.json",
-      "implementation": "src/warpSPHIntegrators/exponential_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/exponential_rk.py",
       "tests": [
         "tests/test_exponential_rk.py"
       ],
@@ -6351,7 +6280,7 @@
       "wave": 11,
       "reason": "Qualified cached semilinear or time-augmented full-Jacobian map; ETDRK2 is mathematically equivalent to registered ETD2RK, with a distinct checked-action/AD backend.",
       "source": "scripts/coefficients/wave11/exponential.json",
-      "implementation": "src/warpSPHIntegrators/exponential_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/exponential_rk.py",
       "tests": [
         "tests/test_exponential_rk.py"
       ],
@@ -6364,7 +6293,7 @@
       "wave": 11,
       "reason": "Qualified cached semilinear or time-augmented full-Jacobian map; ETDRK2 is mathematically equivalent to registered ETD2RK, with a distinct checked-action/AD backend.",
       "source": "scripts/coefficients/wave11/exponential.json",
-      "implementation": "src/warpSPHIntegrators/exponential_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/exponential_rk.py",
       "tests": [
         "tests/test_exponential_rk.py"
       ],
@@ -6377,7 +6306,7 @@
       "wave": 11,
       "reason": "Qualified cached semilinear or time-augmented full-Jacobian map; ETDRK2 is mathematically equivalent to registered ETD2RK, with a distinct checked-action/AD backend.",
       "source": "scripts/coefficients/wave11/exponential.json",
-      "implementation": "src/warpSPHIntegrators/exponential_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/exponential_rk.py",
       "tests": [
         "tests/test_exponential_rk.py"
       ],
@@ -6390,7 +6319,7 @@
       "wave": 11,
       "reason": "Qualified cached semilinear or time-augmented full-Jacobian map; ETDRK2 is mathematically equivalent to registered ETD2RK, with a distinct checked-action/AD backend.",
       "source": "scripts/coefficients/wave11/exponential.json",
-      "implementation": "src/warpSPHIntegrators/exponential_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/exponential_rk.py",
       "tests": [
         "tests/test_exponential_rk.py"
       ],
@@ -6403,7 +6332,7 @@
       "wave": 11,
       "reason": "Qualified cached semilinear or time-augmented full-Jacobian map; ETDRK2 is mathematically equivalent to registered ETD2RK, with a distinct checked-action/AD backend.",
       "source": "scripts/coefficients/wave11/exponential.json",
-      "implementation": "src/warpSPHIntegrators/exponential_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/exponential_rk.py",
       "tests": [
         "tests/test_exponential_rk.py"
       ],
@@ -6416,7 +6345,7 @@
       "wave": 11,
       "reason": "Qualified cached semilinear or time-augmented full-Jacobian map; ETDRK2 is mathematically equivalent to registered ETD2RK, with a distinct checked-action/AD backend.",
       "source": "scripts/coefficients/wave11/exponential.json",
-      "implementation": "src/warpSPHIntegrators/exponential_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/exponential_rk.py",
       "tests": [
         "tests/test_exponential_rk.py"
       ],
@@ -6429,7 +6358,7 @@
       "wave": 11,
       "reason": "Qualified cached semilinear or time-augmented full-Jacobian map; ETDRK2 is mathematically equivalent to registered ETD2RK, with a distinct checked-action/AD backend.",
       "source": "scripts/coefficients/wave11/exponential.json",
-      "implementation": "src/warpSPHIntegrators/exponential_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/exponential_rk.py",
       "tests": [
         "tests/test_exponential_rk.py"
       ],
@@ -6442,7 +6371,7 @@
       "wave": 11,
       "reason": "Qualified cached semilinear or time-augmented full-Jacobian map; ETDRK2 is mathematically equivalent to registered ETD2RK, with a distinct checked-action/AD backend.",
       "source": "scripts/coefficients/wave11/exponential.json",
-      "implementation": "src/warpSPHIntegrators/exponential_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/exponential_rk.py",
       "tests": [
         "tests/test_exponential_rk.py"
       ],
@@ -6455,7 +6384,7 @@
       "wave": 11,
       "reason": "Qualified cached semilinear or time-augmented full-Jacobian map; ETDRK2 is mathematically equivalent to registered ETD2RK, with a distinct checked-action/AD backend.",
       "source": "scripts/coefficients/wave11/exponential.json",
-      "implementation": "src/warpSPHIntegrators/exponential_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/exponential_rk.py",
       "tests": [
         "tests/test_exponential_rk.py"
       ],
@@ -6468,7 +6397,7 @@
       "wave": 11,
       "reason": "Qualified cached semilinear or time-augmented full-Jacobian map; ETDRK2 is mathematically equivalent to registered ETD2RK, with a distinct checked-action/AD backend.",
       "source": "scripts/coefficients/wave11/exponential.json",
-      "implementation": "src/warpSPHIntegrators/exponential_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/exponential_rk.py",
       "tests": [
         "tests/test_exponential_rk.py"
       ],
@@ -6481,7 +6410,7 @@
       "wave": 11,
       "reason": "Qualified cached semilinear or time-augmented full-Jacobian map; ETDRK2 is mathematically equivalent to registered ETD2RK, with a distinct checked-action/AD backend.",
       "source": "scripts/coefficients/wave11/exponential.json",
-      "implementation": "src/warpSPHIntegrators/exponential_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/exponential_rk.py",
       "tests": [
         "tests/test_exponential_rk.py"
       ],
@@ -6494,7 +6423,7 @@
       "wave": 11,
       "reason": "Qualified cached semilinear or time-augmented full-Jacobian map; ETDRK2 is mathematically equivalent to registered ETD2RK, with a distinct checked-action/AD backend.",
       "source": "scripts/coefficients/wave11/exponential.json",
-      "implementation": "src/warpSPHIntegrators/exponential_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/exponential_rk.py",
       "tests": [
         "tests/test_exponential_rk.py"
       ],
@@ -6507,7 +6436,7 @@
       "wave": 11,
       "reason": "Qualified cached semilinear or time-augmented full-Jacobian map; ETDRK2 is mathematically equivalent to registered ETD2RK, with a distinct checked-action/AD backend.",
       "source": "scripts/coefficients/wave11/exponential.json",
-      "implementation": "src/warpSPHIntegrators/exponential_rk.py",
+      "implementation": "src/warpSPHIntegrators/schemes/families/exponential_rk.py",
       "tests": [
         "tests/test_exponential_rk.py"
       ],

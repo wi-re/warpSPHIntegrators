@@ -9,7 +9,9 @@ import platform
 import sys
 import time
 import torch
-from warpSPHIntegrators import AlgorithmSwitch,NDF,TensorState,tensor_rhs,solve,getIntegrator
+from warpSPHIntegrators.wrappers import AlgorithmSwitch
+from warpSPHIntegrators.schemes import NDF
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -25,7 +27,7 @@ def measurements():
                 return int(bound>(10 if previous==1 else 30))
             methods=[AlgorithmSwitch(('dormandPrince','trbdf2'),choose,'declared-bound-trbdf-v1'),
                 AlgorithmSwitch(('dormandPrince',NDF(3)),choose,'declared-bound-ndf-v1'),
-                getIntegrator('dormandPrince'),getIntegrator('trbdf2'),NDF(3)]
+                get_scheme('dormandPrince'),get_scheme('trbdf2'),NDF(3)]
             for tolerance in (1e-4,1e-7):
                 for method in methods:
                     calls=0;choices=Counter();switches=0;previous=None;gmres=0
@@ -57,7 +59,7 @@ def measurements():
     return dict(device='cpu',dtype='float64',threads=1,python=sys.version,torch=torch.__version__,platform=platform.platform(),
         cases=rows,qualification='Manufactured exp(-slow*t) solution with smooth time-varying diagonal stiffness and exact diagonal forward preconditioning. User policy uses a declared spectral bound and hysteresis, not inferred stiffness. RHS counts include retries; GMRES counts cover accepted solves. Same tolerances are not equal-accuracy comparisons. Histories cold-start on actual switches; source CompositeAlgorithm cache transfer is not reproduced.',
         source_sha256={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (
-            ROOT/'src/warpSPHIntegrators/switching.py',ROOT/'src/warpSPHIntegrators/run.py',Path(__file__).resolve())})
+            ROOT/'src/warpSPHIntegrators/wrappers/switching.py',ROOT/'src/warpSPHIntegrators/runtime/run.py',Path(__file__).resolve())})
 
 
 if __name__=='__main__':

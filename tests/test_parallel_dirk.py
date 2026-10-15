@@ -8,9 +8,13 @@ import numpy as np
 import pytest
 import torch
 
-from warpSPHIntegrators import (ParallelDIRK, parallel_dirk_tableau, TensorState,
-    tensor_rhs, solve, save_checkpoint, load_checkpoint, testing, AlgorithmSwitch, Strang)
-from warpSPHIntegrators.stability import rk_stability_function
+from warpSPHIntegrators.schemes import ParallelDIRK
+from warpSPHIntegrators.schemes.coefficients.parallel_dirk import parallel_dirk_tableau
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
+from warpSPHIntegrators.runtime import save_checkpoint, load_checkpoint
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.wrappers import AlgorithmSwitch, Strang
+from warpSPHIntegrators.analysis.stability import rk_stability_function
 from warpSPHIntegrators.solvers import SolveResult, SolveDiagnostics
 from test_nystrom import System, system
 

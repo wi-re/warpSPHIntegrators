@@ -11,7 +11,7 @@ equations as `s` *sequential* solves because `a_ij == 0` for `i != j`; both
 shipped tableaus have nonzero off-diagonal entries, so stage `i` references the
 still-unknown stage `j` and the `s` equations are one `s`-by-`s` coupled
 system. That is a different *solver shape*, not more tableau data — hence the
-new driver, `src/warpSPHIntegrators/fullyimplicit.py`, and the new product
+new driver, `src/warpSPHIntegrators/drivers/implicit/coupled.py`, and the new product
 type `fields.BlockState`.
 
 **`BlockState` and the `fields.py` bridges.** A `BlockState` holds `s` full

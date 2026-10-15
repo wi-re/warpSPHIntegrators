@@ -8,7 +8,8 @@ import platform
 import sys
 import time
 import torch
-from warpSPHIntegrators import AdaptiveNDF,NDF,TensorState,tensor_rhs,solve,getIntegrator
+from warpSPHIntegrators.schemes import AdaptiveNDF, NDF
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -19,8 +20,8 @@ def measurements():
         for problem in ('reaction','stiff_decay'):
             nonlinear=problem=='reaction';end=4. if nonlinear else 1.
             rates=torch.linspace(.1,10,n,dtype=torch.float64) if nonlinear else torch.logspace(0,4,n,dtype=torch.float64)
-            methods=[AdaptiveNDF(),NDF(5),getIntegrator('KenCarp5')]
-            if nonlinear:methods.append(getIntegrator('dormandPrince'))
+            methods=[AdaptiveNDF(),NDF(5),get_scheme('KenCarp5')]
+            if nonlinear:methods.append(get_scheme('dormandPrince'))
             for tolerance in (1e-4,1e-6,1e-8):
                 for method in methods:
                     calls=0;gmres=0;warm=0;orders=Counter();records=0
@@ -53,8 +54,8 @@ def measurements():
     return dict(device='cpu',dtype='float64',threads=1,python=sys.version,torch=torch.__version__,platform=platform.platform(),
         cases=rows,qualification='Analytic manufactured nonlinear reaction and diagonal stiff decay with exact diagonal forward preconditioning. RHS counts include retries; accepted GMRES counts omit rejected solves. Weighted local-defect tolerances do not promise final global errors or equal-accuracy speed. This accepted-order policy uses source proposal mathematics with different maturity, hold, bootstrap and retry semantics from QNDF.',
         source_sha256={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (
-            ROOT/'src/warpSPHIntegrators/adaptive_ndf.py',ROOT/'src/warpSPHIntegrators/ndf.py',
-            ROOT/'src/warpSPHIntegrators/run.py',Path(__file__).resolve())})
+            ROOT/'src/warpSPHIntegrators/schemes/families/adaptive_ndf.py',ROOT/'src/warpSPHIntegrators/schemes/families/ndf.py',
+            ROOT/'src/warpSPHIntegrators/runtime/run.py',Path(__file__).resolve())})
 
 
 if __name__=='__main__':

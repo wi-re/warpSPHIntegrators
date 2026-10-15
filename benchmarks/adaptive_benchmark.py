@@ -44,14 +44,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
-from warpSPHIntegrators import (
-    dormand_prince_dense_output,
-    estimate_error_norm,
-    getIntegrator,
-    get_reference_state,
-    propose_dt,
-    testing,
-)
+from warpSPHIntegrators.runtime import dormand_prince_dense_output, estimate_error_norm, propose_dt
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.state import get_reference_state
+import warpSPHIntegrators.testing as testing
 
 MU, T = 10.0, 5.0
 DT0 = 0.1  # deliberately far outside the explicit wall (fast eigenvalue ~ O(10-20))
@@ -111,7 +107,7 @@ def fixed_run(scheme, problem, dt, T):
 
 def main():
     prob = testing.van_der_pol_problem(mu=MU)
-    scheme = getIntegrator('Dormand-Prince 5(4)')
+    scheme = get_scheme('Dormand-Prince 5(4)')
 
     # ---- reference: fine fixed-dt DP5, floor at two resolutions ------------ #
     ref = fixed_run(scheme, prob, dt=5e-4, T=T)

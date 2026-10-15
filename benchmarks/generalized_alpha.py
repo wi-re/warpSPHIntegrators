@@ -9,7 +9,10 @@ import sys
 import time
 
 import torch
-from warpSPHIntegrators import GeneralizedAlpha, getIntegrator, get_reference_state, solve, testing
+from warpSPHIntegrators.schemes import GeneralizedAlpha
+from warpSPHIntegrators import get_scheme, solve
+from warpSPHIntegrators.state import get_reference_state
+import warpSPHIntegrators.testing as testing
 
 ROOT=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('alpha_consumer',ROOT/'examples/structural_modes.py')
@@ -56,7 +59,7 @@ def measurements():
         behavior.append(dict(rho_inf=rho,max_displacement_difference=parity,
             max_velocity_difference=velocity,endpoint_algorithmic_acceleration_difference=acceleration,
             modal_energy_retained=(model.modal_energy(actual[-1])/model.modal_energy(actual[0])).tolist(),**work))
-    _,_,newmark=run(model,getIntegrator('Newmark'),.1,12.)
+    _,_,newmark=run(model,get_scheme('Newmark'),.1,12.)
     order=[];resolved=demo.two_mass_problem(slow=1.,fast=3.)
     for rho in (0.,.5,1.):
         errors=[];grid=(.1,.05,.025,.0125,.00625)
@@ -71,7 +74,7 @@ def measurements():
         registered_newmark_work=newmark,order=order,
         qualification='Same physical consumer, timestep and JVP solver tolerances; generalized-alpha solves augmented state/acceleration and makes two RHS evaluations per map. Tiny filtered modal energies reflect numerical floors.',
         source_sha256={str(path.relative_to(ROOT)):hashlib.sha256(path.read_bytes()).hexdigest() for path in (
-            ROOT/'src/warpSPHIntegrators/generalized_alpha.py',ROOT/'examples/structural_modes.py',Path(__file__).resolve())})
+            ROOT/'src/warpSPHIntegrators/schemes/families/generalized_alpha.py',ROOT/'examples/structural_modes.py',Path(__file__).resolve())})
 
 
 if __name__=='__main__':

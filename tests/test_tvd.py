@@ -30,11 +30,13 @@ import numpy as np
 import pytest
 import torch
 
-from warpSPHIntegrators import getIntegrator, get_reference_state, testing
-from warpSPHIntegrators import tvd_analysis
-from warpSPHIntegrators.butcher import getButcherTableau
-from warpSPHIntegrators.dirk import getDIRKTableau
-from warpSPHIntegrators.integration import IntegrationSchemes
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.state import get_reference_state
+import warpSPHIntegrators.testing as testing
+import warpSPHIntegrators.analysis.tvd as tvd_analysis
+from warpSPHIntegrators.schemes.coefficients.explicit import getButcherTableau
+from warpSPHIntegrators.schemes.coefficients.implicit import getDIRKTableau
+from warpSPHIntegrators.schemes import IntegrationSchemes
 from warpSPHIntegrators.testing import ParticleState, ParticleSystem
 
 N = 64
@@ -338,7 +340,7 @@ def test_tvd_rk_drivers_match_their_tableaus():
 
     for name, tableau in [('TVD RK2', tvd_analysis.TVD_RK2_TABLEAU),
                           ('TVD RK3', tvd_analysis.TVD_RK3_TABLEAU)]:
-        scheme = getIntegrator(name)
+        scheme = get_scheme(name)
         result = scheme(system, dt=dt, f=prob.rhs)
         ys, ks, uplus = manual(tableau)
         assert len(result.stages) == len(ks), f'{name}: stage count'
@@ -357,7 +359,7 @@ def test_tvd_rk_drivers_match_their_tableaus():
 def test_tvd_schemes_do_not_increase_total_variation_at_cfl_one(name):
     """Per-step TV increases of the registered driver on the step initial
     condition, at exactly CFL 1 (one-step schemes: no burn-in needed)."""
-    scheme = getIntegrator(name)
+    scheme = get_scheme(name)
     prob = advection('step')
     tv0 = tvd_analysis.total_variation(prob.initial().state.x)
     increases = tvd_analysis.tv_per_step_increases(
@@ -371,7 +373,7 @@ def test_tvd_rk3_preserves_positivity_at_cfl_one():
     """A non-negative initial condition (half step) stays non-negative under
     TVD RK3 at CFL 1: a convex-combination step maps non-negative data to
     non-negative data."""
-    scheme = getIntegrator('TVD RK3')
+    scheme = get_scheme('TVD RK3')
     prob = advection('step')
     u0 = torch.zeros(N, dtype=torch.float64)
     u0[:N // 2] = 1.0
@@ -386,7 +388,7 @@ def test_tvd_rk3_preserves_positivity_at_cfl_one():
 def test_burgers_tvd_rk3_does_not_increase_tv_at_cfl_one():
     """The nonlinear hyperbolic problem: TVD RK3 on Burgers at CFL 1
     (alpha = max|u0| = 1) does not increase total variation per step."""
-    scheme = getIntegrator('TVD RK3')
+    scheme = get_scheme('TVD RK3')
     prob = testing.PROBLEMS['burgers'](n=N)
     h = 1.0 / N
     tv0 = tvd_analysis.total_variation(prob.initial().state.x)
@@ -431,7 +433,7 @@ def test_classical_rk3_stage_leaves_the_convex_hull():
 
     # Classical RK3: stage 3 of the tableau is a[2] = (-1, 2, 0).
     states, _ = stage_states(
-        getIntegrator('RK3'), [[], [1.0 / 2.0], [-1.0, 2.0]])
+        get_scheme('RK3'), [[], [1.0 / 2.0], [-1.0, 2.0]])
     y3 = states[2]
     expected = torch.zeros(N, dtype=torch.float64)
     expected[0], expected[1], expected[2] = 1.0, -1.0, 1.0
@@ -446,7 +448,7 @@ def test_classical_rk3_stage_leaves_the_convex_hull():
     # a[2] = (1/4, 1/4). Every stage state and the final state is a convex
     # combination of the (non-negative) initial condition.
     states, final = stage_states(
-        getIntegrator('TVD RK3'), [[], [1.0], [0.25, 0.25]])
+        get_scheme('TVD RK3'), [[], [1.0], [0.25, 0.25]])
     for j, Y in enumerate(states + [final]):
         assert Y.min() >= -1e-12, (
             f'TVD RK3 stage {j + 1} state at CFL 1 left the convex hull '
@@ -463,7 +465,7 @@ def test_classical_rk3_stage_leaves_the_convex_hull():
 def test_backward_euler_families_are_tv_to_large_cfl(name):
     """BE (and BDF1 = BE) is the Fejer kernel: a convex combination of shifts
     at every CFL. The trajectory sweep must pass at the top of the grid."""
-    scheme = getIntegrator(name)
+    scheme = get_scheme(name)
     prob = advection('step')
     measurement = tvd_analysis.measure_tvd_cfl(
         scheme, prob, cfls=[1.0, 2.0, 5.0], dt_scale=DT_SCALE)
@@ -716,7 +718,7 @@ def test_classifier_verdicts_match_the_recorded_landscape(s):
 def test_legacy_explicit_bdf_startup_retains_its_measured_cfl_cap(name):
     """The Phase 6 opt-in legacy path retains the previous numerical landscape."""
     from functools import partial
-    scheme=getIntegrator(name)
+    scheme=get_scheme(name)
     legacy=scheme._replace(function=partial(scheme.function,startup='explicit'))
     verdict=tvd_analysis.classify_tvd(legacy,advection('step'),CFLS,DT_SCALE,mu_max=4.)
     assert verdict.tvd_cfl==1.5 and not verdict.unconditional

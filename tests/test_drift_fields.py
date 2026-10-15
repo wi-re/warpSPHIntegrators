@@ -19,7 +19,10 @@ import math
 import pytest
 import torch
 
-from warpSPHIntegrators import drift_fields_active, getIntegrator, get_reference_state, testing
+from warpSPHIntegrators.state.drift import drift_fields_active
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.state import get_reference_state
+import warpSPHIntegrators.testing as testing
 
 VERLET_FAMILY = ['Symplectic Euler', 'Velocity Verlet', 'Leap Frog', 'Semi-Implicit Euler', 'PEFRL', 'VEFRL']
 
@@ -28,7 +31,7 @@ H, N_SHORT, N_LONG = 0.3, 200, 1600
 
 
 def _acoustic_drift(name, drift, steps):
-    scheme = getIntegrator(name)
+    scheme = get_scheme(name)
     dt = H / testing.acoustic_omega()
     return testing.max_energy_drift(scheme, testing.acoustic_problem(drift=drift), dt, steps * dt)
 
@@ -55,7 +58,7 @@ def test_kick_attached_density_pumps_acoustic_energy(name):
 def test_symplectic_euler_growth_is_the_explicit_midpoint_rate():
     """|lambda|^2 = 1 + h^4/4 per step for the (rho, v) pair: the energy of the
     un-dissipated mode grows by that factor, to within a few percent."""
-    scheme = getIntegrator('Symplectic Euler')
+    scheme = get_scheme('Symplectic Euler')
     dt = H / testing.acoustic_omega()
     problem = testing.acoustic_problem(drift=False)
     system = problem.initial()
@@ -70,8 +73,8 @@ def test_symplectic_euler_growth_is_the_explicit_midpoint_rate():
 
 
 def _order(name, gamma, drift):
-    scheme = getIntegrator(name)
-    reference = get_reference_state(testing.run(getIntegrator('RK4'),
+    scheme = get_scheme(name)
+    reference = get_reference_state(testing.run(get_scheme('RK4'),
                                                  testing.drift_oscillator_problem(gamma=gamma), 1e-4, 2.0))
     errors = []
     dts = [0.05, 0.025, 0.0125]
@@ -105,7 +108,7 @@ def test_kick_attached_update_is_first_order(name):
 
 @pytest.mark.parametrize('name', ['RK4', 'Midpoint', "Heun's Method (2nd order)"])
 def test_other_schemes_ignore_the_declaration(name):
-    scheme = getIntegrator(name)
+    scheme = get_scheme(name)
     finals = []
     for drift in (False, True):
         s = get_reference_state(testing.run(scheme, testing.drift_oscillator_problem(gamma=0.3, drift=drift), 0.05, 1.0))

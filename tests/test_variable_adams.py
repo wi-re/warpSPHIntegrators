@@ -8,9 +8,13 @@ import numpy as np
 import pytest
 import torch
 
-from warpSPHIntegrators import (VariableAdams, adams_weights, TensorState, tensor_rhs,
-    solve, save_checkpoint, load_checkpoint, StepHistory, HistoryEntry, snapshot_state, getIntegrator)
-from warpSPHIntegrators import (BaseState, integrated, copied, constant, reference_state, testing)
+from warpSPHIntegrators.schemes import VariableAdams
+from warpSPHIntegrators.schemes.coefficients.adams import adams_weights
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
+from warpSPHIntegrators.runtime import save_checkpoint, load_checkpoint, snapshot_state
+from warpSPHIntegrators.state import StepHistory, HistoryEntry
+from warpSPHIntegrators.state import BaseState, integrated, copied, constant, reference_state
+import warpSPHIntegrators.testing as testing
 
 ORACLE=Path(__file__).resolve().parents[1]/'scripts/coefficients/wave10/variable_adams.json'
 
@@ -150,14 +154,14 @@ def test_registered_fifth_order_pece_matches_source_weights_and_two_rhs_cost():
     expected=state.y+h*sum(b*v for b,v in zip(source['corrector'],[endpoint]+list(reversed(values))[:-1]))
     calls=[]
     def counted(t,y):calls.append(t);return force(t,y)
-    result=getIntegrator('abm5')(state,h,tensor_rhs(counted),history=StepHistory(4,entries))
+    result=get_scheme('abm5')(state,h,tensor_rhs(counted),history=StepHistory(4,entries))
     assert torch.allclose(result.state.y,expected,atol=1e-14)
     assert len(calls)==2 and result.error is None and result.history.maxlen==4
 
 
 @pytest.mark.parametrize('name',['ab3','abm4','abm5','am3'])
 def test_constant_coefficient_adams_reset_before_a_changed_step(name):
-    method=getIntegrator(name);state=TensorState(torch.ones(1,dtype=torch.float64));history=StepHistory(5)
+    method=get_scheme(name);state=TensorState(torch.ones(1,dtype=torch.float64));history=StepHistory(5)
     for _ in range(6):
         result=method(state,.05,tensor_rhs(force),history=history)
         state,history=result.state,result.history

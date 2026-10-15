@@ -17,6 +17,11 @@ Additional parameterized backends extend these families without adding fixed
 registry entries. Stepping currently uses PyTorch; native NVIDIA Warp execution
 remains future work.
 
+The 0.7 root API is `get_scheme`, `solve`, `TensorState` and `tensor_rhs`.
+Enums and configurations live in `schemes`; custom state and solver capabilities
+have focused packages. [The migration guide](docs/docs/migration.md) lists the
+coordinated import changes and stored-data compatibility.
+
 [Run an example](#a-damped-oscillator-you-can-check) ·
 [Choose a method](#choosing-a-method) ·
 [Understand TVD and geometry](#tvd-ssp-and-symplecticity) ·
@@ -142,7 +147,7 @@ if __name__ == '__main__':
 `TensorState` accepts scalar, vector or batched floating-point tensors, and
 `tensor_rhs` adapts `f(t, y, ...)` to the integration protocol. `solve` owns
 acceptance, rejection, history and compatible stage reuse. For one explicit
-step you can instead call `getIntegrator('RK4')(state, dt, rhs)` and read
+step you can instead call `get_scheme('RK4')(state, dt, rhs)` and read
 `result.state`. An embedded pair also returns `result.error`.
 
 ![Damped oscillator: displacement, phase portrait, mechanical energy converted to heat, and total energy defect](docs/assets/readme-damped-oscillator.png)
@@ -208,15 +213,16 @@ Some practical details matter as much as the method name:
 
 [example:run readme-discovery]: #
 ```python
-from warpSPHIntegrators import ExplicitRK, filter_schemes, getIntegrator
+from warpSPHIntegrators.schemes import ExplicitRK, filter_schemes
+from warpSPHIntegrators import get_scheme
 
 pairs = filter_schemes(family='ExplicitRK', has_error_estimate=True,
                        supports_reuse=True)
 assert any(method.name == 'Dormand-Prince 5(4)' for method in pairs)
-scheme = getIntegrator('Dormand-Prince 5(4)')
+scheme = get_scheme('Dormand-Prince 5(4)')
 assert scheme.order == 5 and scheme.embedded_order == 4 and scheme.fsal
 # The enum column below gives the exact identifier for a friendly method name.
-tsitouras = getIntegrator(ExplicitRK.tsit5)  # Tsitouras 5(4)
+tsitouras = get_scheme(ExplicitRK.tsit5)  # Tsitouras 5(4)
 assert tsitouras.order == 5 and tsitouras.embedded_order == 4
 ```
 
@@ -386,11 +392,11 @@ preconditioner can matter much more than a local diagonal scaling.
 [example:run readme-jfnk]: #
 ```python
 import torch
-from warpSPHIntegrators import TensorState, tensor_rhs, getIntegrator
+from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme
 
 state = TensorState(torch.ones(4, dtype=torch.float64))
 rhs = tensor_rhs(lambda t, y: -1000*y)
-result = getIntegrator('TR-BDF2')(state, .01, rhs, solver_opts={
+result = get_scheme('TR-BDF2')(state, .01, rhs, solver_opts={
     'matvec': 'jvp', 'tol': 1e-12, 'newton_tol': 1e-7,
 })
 assert result.step_status.tolerance_converged
@@ -445,6 +451,7 @@ Other understood consumers exercise different reasons to choose a backend:
 | Reaction vector, $N=4096$, rates .1–10, $T=1$, adaptive `rtol=1e-8`, `atol=1e-10` | Expanded RDPK3Sp510: 385 RHS entries, max error $2.38\times10^{-11}$; DP5: 511, $4.40\times10^{-11}$ | A high-stage explicit map can earn its cost on a smooth problem; this implementation still stores all stages |
 | Same reaction vector/tolerances | Midpoint extrapolation order 10: 351 RHS entries, error $1.50\times10^{-11}$ | A measured niche for high-order extrapolation; columns currently execute serially |
 | Varying-stiffness manufactured vector, $N=4096$, peak rate $10^4$, `rtol=1e-7` | DP5/NDF3 switch: 665 RHS entries, error $9.48\times10^{-9}$; DP5 throughout: 21,924, $2.47\times10^{-9}$ | A declared stiffness bound can avoid a severe explicit stability cost; always-NDF3 uses 558 entries here, so switching is not the best of all choices |
+| Manufactured reaction–diffusion, $N=1024$, $h=.1$ | ETDRK2/3/4 errors $6.36\times10^{-4}$ / $4.51\times10^{-6}$ / $4.34\times10^{-8}$ | Higher order improves accuracy on this known problem; the existing ETD2RK is faster at its larger error, so these are not equal-error timings |
 | Reaction–diffusion scale gate, $N=64,256,1024$, Gauss/Radau stages 3/4/5/7/9 | All 60 cases pass with at most 10 Krylov iterations and 167.4 MiB additional peak RSS | Schur/shifted spatial preconditioning makes these particular coupled solves practical; this is not an unstructured SPH scaling result |
 
 The underlying records cover
@@ -463,7 +470,7 @@ runtime catalog by `python scripts/generate_catalog.py`, so new registrations
 update the front page as well as the detailed catalog.
 
 Friendly names expand author names and method abbreviations. The enum column
-gives the exact member to pass to `getIntegrator`, such as `ExplicitRK.tsit5`
+gives the exact member to pass to `get_scheme`, such as `ExplicitRK.tsit5`
 for Tsitouras 5(4). Family enum members share their values with
 `IntegrationSchemeType`; existing lookup strings retain their original spelling.
 

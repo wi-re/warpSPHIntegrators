@@ -6,8 +6,9 @@ from pathlib import Path
 import time
 
 import torch
-from warpSPHIntegrators import (ParallelDIRK, TensorState, tensor_rhs, solve,
-    getIntegrator, stage_block_preconditioner)
+from warpSPHIntegrators.schemes import ParallelDIRK
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
+from warpSPHIntegrators.solvers import stage_block_preconditioner
 
 
 def measurements():
@@ -15,7 +16,7 @@ def measurements():
     for n in (64,4096):
         for stiff in (False,True):
             rates=torch.logspace(0,4 if stiff else .5,n,dtype=torch.float64)
-            for method in (ParallelDIRK(),getIntegrator('sdirk2'),getIntegrator('Radau IIA s=2'),getIntegrator('ESDIRK4(3)6L[2]SA')):
+            for method in (ParallelDIRK(),get_scheme('sdirk2'),get_scheme('Radau IIA s=2'),get_scheme('ESDIRK4(3)6L[2]SA')):
                 for h in (.125,.0625):
                     calls=0;gmres=0;newton_rhs=0
                     def force(t,y):
@@ -44,7 +45,7 @@ def measurements():
     return dict(device='cpu',dtype='float64',threads=1,torch=torch.__version__,cases=rows,
         qualification='First-order ODEs with independent rates 1–sqrt(10) or 1–10000. Serial PDIRK stage execution; no stage-threading speed claim. Shifted diagonal preconditioning (block for Radau). Actual RHS entries include refresh/probes; solver diagnostics are reported separately. Finite horizon and fixed steps, not equal-error comparisons.',
         source_sha256={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in [
-            root/'src/warpSPHIntegrators/parallel_dirk.py',root/'src/warpSPHIntegrators/dirk.py',Path(__file__).resolve()]})
+            root/'src/warpSPHIntegrators/schemes/families/parallel_dirk.py',root/'src/warpSPHIntegrators/schemes/definitions/dirk.py',Path(__file__).resolve()]})
 
 
 if __name__=='__main__':

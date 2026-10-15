@@ -4,7 +4,9 @@ sidebar_label: Coupled RK
 
 # Coupled (block) fully implicit RK (`CoupledRK`) — 4 schemes
 
-The fully implicit RK family, driven by `fullyimplicit.py`: Gauss-Legendre 2/3
+Collocation methods solve their stages together. Gauss–Legendre targets high accuracy and Hamiltonian geometry; Radau IIA also damps very fast decaying modes. `Collocation(family, stages)` provides additional stage counts, with an explicit solve and preconditioning cost.
+
+The fully implicit RK family, driven by `drivers.implicit.coupled`: Gauss-Legendre 2/3
 and Radau IIA $s=2/3$. These are the collocation methods whose Butcher $a$
 matrices are **coupled** ($a_{ij} \neq 0$ for $j > i$) — a DIRK driver cannot
 take them, because no stage is a function of already-known quantities alone.
@@ -26,7 +28,8 @@ are separate interfaces.
 ```python
 import math
 import torch
-from warpSPHIntegrators import Collocation, TensorState, tensor_rhs, solve
+from warpSPHIntegrators.schemes import Collocation
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
 
 method = Collocation('radau', 5)  # propagated order 9; companion order 5
 result = solve(method, TensorState(torch.ones(1, dtype=torch.float64)), .5,
@@ -61,17 +64,17 @@ finite-difference map derivative; select the **exact JVP** with
 `solver_opts={'matvec': 'jvp'}` for forward AD without `fd_eps`). One step costs $s$ RHS evaluations inside the solve plus the
 Krylov matvecs.
 
-Driver conventions (NOTES.md §3.18):
+Driver conventions (see the numerical record):
 
 - `history=` is bookkeeping only; `priorStep=` is **refused** — a coupled
   tableau has no stage that can be consumed alone, and the reuse analyses in
-  `reuse.py` both assume a stage that can be solved without the others.
+  `analysis.reuse` both assume a stage that can be solved without the others.
   `warmStart=` accepts a list of previous stage derivatives (`result.stages`),
   predicting the current stage states as a Newton initial guess.
 - The step's `SolveDiagnostics` is scaled by $s$ (`rhs_evaluations` and
   `gmres_iterations` × $s$). These counters describe solver-internal map/Krylov
   work; final-stage re-evaluation, companion and gradient work add RHS calls.
-  Phase 6 divides Krylov counts by $s$ and instruments actual RHS calls for
+  The scale benchmark divides Krylov counts by $s$ and instruments actual RHS calls for
   end-to-end work comparisons.
 - The two-stage schemes carry a **null-stage order-2 companion**: the 2-stage-only
   order-2 embedded pair is degenerate (it is $b$ itself), so the companion
@@ -119,7 +122,7 @@ The negative $a_{12}$ makes the implicit solution **non-monotone**: on the
 256-DOF advection scale gate (CFL 100, step IC) the true method value is
 $\max|u| = 1.6903$ — a bounded Gibbs-like overshoot of the exact
 $\max|u| = 1$, with every per-mode $|R(z)| \le 1$ (the matrix-free gate pins
-this; NOTES.md §3.18).
+this; the numerical record).
 
 ## Radau IIA $s=2$ (`Radau IIA s=2`)
 
@@ -201,21 +204,22 @@ A local stage-block preconditioner and three-stage Gauss/Radau prototypes are
 measured on reaction and mesh-refined diffusion systems at N=64/256/1024. The
 reaction cases pass; diffusion exceeds the work bar at N=256 and fails tolerance
 at N=1024, including the two-stage baselines. The spatial follow-up clears those
-cases. Phase 8 retests the actual registered s=3 drivers, including companion
+cases. The later scale gate retests the actual registered s=3 drivers, including companion
 work: shifted ILU and direct LU pass the unchanged bar through N=1024.
 At N=1024 diffusion, shifted ILU takes 10 Krylov iterations per step for each
 three-stage method; maximum additional native RSS is about 155 MiB. General
-unstructured/multifield SPH assembly remains application work. Stages four and
-above are not registered and need their own evidence. See
+unstructured/multifield SPH assembly remains application work. The fixed catalog stops at three stages. The `Collocation` factory supports
+two through nine stages under its separate coefficient, solve and accuracy
+qualification; those configurations are not extra fixed registrations. See
 [the recorded gate and benchmark](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/phase6-validation.md)
-and [Phase 8 validation](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/phase8-wave9-validation.md),
+and [registered-driver validation](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/phase8-wave9-validation.md),
 with [preconditioner usage](../solver).
 
 ## References
 
 - Hairer & Wanner, *Solving ODEs II* (1996), Ch. IV — Gauss and Radau IIA collocation, their stability functions, symplecticity of Gauss methods.
 - Radau, I. (1985) — the Radau IIA construction (as summarized in Hairer-Wanner).
-- The tableaus are **not** in the SUNDIALS ARKODE v7.9.0 extract this repo cites elsewhere; the derivations (order conditions, collocation identity, stability functions) are in NOTES.md §3.18.
+- The tableaus are **not** in the SUNDIALS ARKODE v7.9.0 extract this repo cites elsewhere; the derivations (order conditions, collocation identity, stability functions) are in the numerical record.
 
 **Tests:** `tests/test_fullyimplicit.py` (32 tests: tableaus, order, the block
 JVP against the hand-computed dense Jacobian, the scale gate, companions,
@@ -223,3 +227,5 @@ warm-start, the GMRES finding), `tests/test_hamiltonian.py` (GL2
 symplecticity), `tests/test_stiff.py` (Radau L-damping), `tests/test_tvd.py`
 (both: no SSP coefficient — `blockTableau` is not read by the tableau
 classifier — measured per-step TVD to CFL 5).
+
+[The numerical record](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/research/integrators/notes-index.md) retains derivations, source pins and measured property gates.

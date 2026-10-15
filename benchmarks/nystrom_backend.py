@@ -11,7 +11,9 @@ import time
 
 import numpy as np
 import torch
-from warpSPHIntegrators import Nystrom,Strang,getIntegrator,solve
+from warpSPHIntegrators.schemes import Nystrom
+from warpSPHIntegrators.wrappers import Strang
+from warpSPHIntegrators import get_scheme, solve
 
 ROOT=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('nystrom_demo',ROOT/'examples/nystrom_demo.py')
@@ -21,7 +23,7 @@ SOURCE=json.loads((ROOT/'scripts/coefficients/wave12/nystrom.json').read_text())
 
 def measurements():
     rows=[];methods=[Nystrom(name,structure='declared') for name in SOURCE['tableaus'] if name!='RKN4']
-    baseline=[getIntegrator('RK4'),getIntegrator('dormandPrince')]
+    baseline=[get_scheme('RK4'),get_scheme('dormandPrince')]
     for n in (64,4096):
         for damping in (0.,.4):
             initial,rhs,exact,omega,split=demo.problem(n,damping)
@@ -40,7 +42,7 @@ def measurements():
                     # both underlying entrypoints rather than a combined call.
                     chosen=counted
                     if method.name=='Strang':
-                        from warpSPHIntegrators import ConservativeDissipativeRHS
+                        from warpSPHIntegrators.wrappers import ConservativeDissipativeRHS
                         def cons(system,dt,**kwargs):
                             nonlocal calls
                             calls+=1
@@ -69,9 +71,9 @@ def measurements():
             disposition='Only order two for velocity-dependent acceleration; same a,b,bp,c as Nystrom4VelocityIndependent under its restricted contract; excluded from factory'),
         qualification='Analytic underdamped modes and total mechanical-plus-thermal energy; finite horizon and fixed steps. High-order fine-grid measurements can reach rounding. Probe policy includes extra AD/structure RHS calls. No general SPH conservation, symplecticity or equal-accuracy speed claim.',
         source_sha256={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (
-            ROOT/'src/warpSPHIntegrators/nystrom.py',ROOT/'src/warpSPHIntegrators/_nystrom_data.py',
-            ROOT/'src/warpSPHIntegrators/splitting.py',ROOT/'src/warpSPHIntegrators/run.py',
-            ROOT/'src/warpSPHIntegrators/specs.py',ROOT/'examples/nystrom_demo.py',Path(__file__).resolve())})
+            ROOT/'src/warpSPHIntegrators/schemes/families/nystrom.py',ROOT/'src/warpSPHIntegrators/schemes/coefficients/nystrom_data.py',
+            ROOT/'src/warpSPHIntegrators/wrappers/splitting.py',ROOT/'src/warpSPHIntegrators/runtime/run.py',
+            ROOT/'src/warpSPHIntegrators/state/specs.py',ROOT/'examples/nystrom_demo.py',Path(__file__).resolve())})
 
 
 if __name__=='__main__':

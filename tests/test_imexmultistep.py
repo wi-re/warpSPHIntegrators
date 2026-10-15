@@ -1,6 +1,6 @@
 """SBDF2/3 and CNAB2: IMEX multistep with BDF / trapezoidal backbones (Phase 12).
 
-The schemes are in ``warpSPHIntegrators.imexmultistep``: a BDFp (SBDF2/3) or
+The schemes are in ``warpSPHIntegrators.drivers.history.imex``: a BDFp (SBDF2/3) or
 trapezoidal (CNAB2) implicit backbone for the stiff part, explicit endpoint
 extrapolation for the smooth part, the BDF derivative weight scaling the whole
 endpoint derivative. Pinned here:
@@ -23,9 +23,11 @@ import numpy as np
 import pytest
 import torch
 
-from warpSPHIntegrators import getIntegrator, testing, IMEXRHS, resolve
-from warpSPHIntegrators.history import StepHistory
-from warpSPHIntegrators.imexmultistep import _extrapolation_weights
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.adapters import IMEXRHS, resolve
+from warpSPHIntegrators.state import StepHistory
+from warpSPHIntegrators.drivers.history.imex import _extrapolation_weights
 
 # Exact (autograd) Jacobian, tight tolerance: the order runs must not be
 # limited by the linear solver (same rationale as tests/test_bdf.py).
@@ -51,7 +53,7 @@ def _burgers_split(n=64, length=1.0, nu=0.01):
 
 def _burgers_reference(dt_ref=2e-3, T=0.4, n=64, length=1.0, nu=0.01):
     problem, imex_rhs = _burgers_split(n, length, nu)
-    scheme = getIntegrator('RK4')
+    scheme = get_scheme('RK4')
     return testing.get_reference_state(_run(scheme, problem, dt_ref, T, imex_rhs)).x
 
 
@@ -105,7 +107,7 @@ def test_imex_multistep_reach_claimed_order_on_split_burgers(name, expected_orde
     sits inside the explicit half's practical stability range (see the
     stability tests below): at the coarsest dt the convective |z| is 0.256
     (SBDF2/CNAB2) and 0.128 (SBDF3)."""
-    scheme = getIntegrator(name)
+    scheme = get_scheme(name)
     problem, imex_rhs = _burgers_split()
     ref = _burgers_reference()
     errors = []
@@ -126,7 +128,7 @@ def test_plain_callable_limits_reach_claimed_order(name, expected_order):
     """An ordinary RHS (no split) runs the pure-implicit backbone on a
     NON-AUTONOMOUS problem, pinning the grid-time handling through the driver
     (the same regression class NOTES 2.2/2.3 caught in the RK schemes)."""
-    scheme = getIntegrator(name)
+    scheme = get_scheme(name)
     problem = testing.PROBLEMS['forced']()
     dts = testing.default_step_sizes(0.1, 5)
     errors = []
@@ -152,9 +154,9 @@ def test_sbdf_pure_implicit_limits_are_bit_exact_against_the_backbone(name, back
     formula, same solve path, same initial guess)."""
     problem = testing.PROBLEMS['oscillator']()
     a = testing.get_reference_state(
-        _run(getIntegrator(name), problem, 0.05, T=0.5, rhs=problem.rhs)).x
+        _run(get_scheme(name), problem, 0.05, T=0.5, rhs=problem.rhs)).x
     b = testing.get_reference_state(
-        _run(getIntegrator(backbone), problem, 0.05, T=0.5, rhs=problem.rhs)).x
+        _run(get_scheme(backbone), problem, 0.05, T=0.5, rhs=problem.rhs)).x
     assert torch.equal(a, b), f'{name} pure-implicit limit differs from {backbone}'
 
 
@@ -163,9 +165,9 @@ def test_cnab2_pure_implicit_limit_is_the_trapezoidal_rule():
     the tolerance, not bit-for-bit (measured rel diff ~1e-5 at dt=0.02)."""
     problem = testing.PROBLEMS['oscillator']()
     a = testing.get_reference_state(
-        _run(getIntegrator('CNAB2'), problem, 0.02, T=0.4, rhs=problem.rhs)).x
+        _run(get_scheme('CNAB2'), problem, 0.02, T=0.4, rhs=problem.rhs)).x
     b = testing.get_reference_state(
-        _run(getIntegrator('Trapezoidal (Crank-Nicolson)'), problem, 0.02, T=0.4,
+        _run(get_scheme('Trapezoidal (Crank-Nicolson)'), problem, 0.02, T=0.4,
              rhs=problem.rhs)).x
     rel = float((a - b).norm() / b.norm())
     assert rel < 1e-3, f'CNAB2 vs trapezoidal: rel diff {rel:.3e}'
@@ -185,9 +187,9 @@ def test_cnab2_pure_explicit_limit_is_bit_exact_against_ab2():
     explicit_only = IMEXRHS(explicit=problem.rhs,
                             implicit=lambda state, dt, *a, **k: (zero_update, None))
     a = testing.get_reference_state(
-        _run(getIntegrator('CNAB2'), problem, 0.004, T=0.2, rhs=explicit_only)).x
+        _run(get_scheme('CNAB2'), problem, 0.004, T=0.2, rhs=explicit_only)).x
     b = testing.get_reference_state(
-        _run(getIntegrator('Adams-Bashforth 2'), problem, 0.004, T=0.2,
+        _run(get_scheme('Adams-Bashforth 2'), problem, 0.004, T=0.2,
              rhs=problem.rhs)).x
     assert torch.equal(a, b), 'CNAB2 pure-explicit limit differs from AB2'
 
@@ -264,7 +266,7 @@ def test_pure_explicit_limit_boundaries_are_measured_on_the_burgers_convective_s
         zero_update = zero_update[0]
     explicit_only = IMEXRHS(explicit=problem.rhs,
                             implicit=lambda state, dt, *a, **k: (zero_update, None))
-    scheme = getIntegrator('SBDF2')
+    scheme = get_scheme('SBDF2')
 
     def peak_u(dt, steps):
         """Running max of |u|; returns the first non-finite value if one appears."""
@@ -290,7 +292,7 @@ def test_pure_explicit_limit_boundaries_are_measured_on_the_burgers_convective_s
 
 @pytest.mark.parametrize('name', ['SBDF2', 'SBDF3', 'CNAB2'])
 def test_cold_start_bootstraps_from_dormand_prince_and_records_snapshots(name):
-    scheme = getIntegrator(name)
+    scheme = get_scheme(name)
     problem = testing.PROBLEMS['oscillator']()
     result = scheme(problem.initial(), dt=0.1, f=problem.rhs)
     assert result.history is not None
@@ -300,7 +302,7 @@ def test_cold_start_bootstraps_from_dormand_prince_and_records_snapshots(name):
 
 @pytest.mark.parametrize('name', ['SBDF2', 'SBDF3', 'CNAB2'])
 def test_history_entries_carry_state_snapshots(name):
-    scheme = getIntegrator(name)
+    scheme = get_scheme(name)
     problem = testing.PROBLEMS['oscillator']()
     system = problem.initial()
     history = StepHistory(maxlen=max(1, scheme.steps))
@@ -316,7 +318,7 @@ def test_dt_change_resets_history_and_stays_correct():
     """A dt change mid-run invalidates the state-snapshot history and the
     scheme re-bootstraps from Dormand-Prince: no stale-snapshot mixing, still
     near the analytic solution (the BDF family's contract, tests/test_bdf.py)."""
-    scheme = getIntegrator('SBDF3')
+    scheme = get_scheme('SBDF3')
     problem = testing.PROBLEMS['oscillator']()
     system = problem.initial()
     history = StepHistory(maxlen=2)
@@ -332,7 +334,7 @@ def test_dt_change_resets_history_and_stays_correct():
 
 @pytest.mark.parametrize('name', ['SBDF2', 'SBDF3', 'CNAB2'])
 def test_prior_step_is_refused(name):
-    scheme = getIntegrator(name)
+    scheme = get_scheme(name)
     problem = testing.PROBLEMS['oscillator']()
     first = scheme(problem.initial(), dt=0.1, f=problem.rhs)
     with pytest.warns(RuntimeWarning, match='does not support first-stage reuse'):
@@ -343,7 +345,7 @@ def test_step_diagnostics_count_the_split_evaluations():
     """The diagnostics rhs_evaluations include the non-solve evaluations of
     the step (SBDF2: two explicit-part evaluations + the endpoint
     evaluation), on top of the solve's map evaluations."""
-    scheme = getIntegrator('SBDF2')
+    scheme = get_scheme('SBDF2')
     problem, imex_rhs = _burgers_split()
     system = problem.initial()
     history = StepHistory(maxlen=1)

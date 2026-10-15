@@ -44,12 +44,14 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 
-from warpSPHIntegrators import StepHistory, getIntegrator, get_reference_state, testing
+from warpSPHIntegrators.state import StepHistory, get_reference_state
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
 
 
 def _run(scheme_name, problem, dt, n_steps, history_len=0, record=True):
     """Fixed-step run; returns (x at every output time, per-step solver diagnostics)."""
-    scheme = getIntegrator(scheme_name)
+    scheme = get_scheme(scheme_name)
     system = problem.initial()
     history = StepHistory(maxlen=history_len) if history_len else None
     xs, diags = [], []
@@ -141,7 +143,7 @@ def _vdp_energy():
         (0.2, 'ESDIRK6 dt = 0.2', '#758c37'),
         (0.4, 'ESDIRK6 dt = 0.4 (diverges)', '#c44e52'),
     ):
-        scheme = getIntegrator('ESDIRK4(3)6L[2]SA')
+        scheme = get_scheme('ESDIRK4(3)6L[2]SA')
         system = problem.initial()
         ts, es = [0.0], []
         es.append(energy(system))
@@ -151,7 +153,7 @@ def _vdp_energy():
             es.append(energy(system))
         series[label] = (np.asarray(ts), np.asarray(es), color)
     # the DP5 wall: 20 steps at dt = 0.5 (T = 10), energy leaves the axis fast
-    scheme = getIntegrator('Dormand-Prince 5(4)')
+    scheme = get_scheme('Dormand-Prince 5(4)')
     system = problem.initial()
     ts, es = [0.0], [energy(system)]
     for _ in range(20):
@@ -167,7 +169,7 @@ def _robertson_sweeps():
     T = 10.01; ref ESDIRK6 dt=0.002 (5000 main steps)."""
     def run_bootstrapped(scheme_name, dt, history_len=0):
         problem = testing.robertson_problem()
-        scheme = getIntegrator(scheme_name)
+        scheme = get_scheme(scheme_name)
         system = problem.initial()
         xs = []
         for _ in range(10):

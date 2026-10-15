@@ -5,9 +5,11 @@ import math
 import numpy as np
 import pytest
 import torch
-from warpSPHIntegrators import (TensorState,tensor_rhs,getIntegrator,BlockState,
-    stage_block_preconditioner,testing)
-from warpSPHIntegrators.stability import rk_stability_function
+from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme
+from warpSPHIntegrators.state import BlockState
+from warpSPHIntegrators.solvers import stage_block_preconditioner
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.analysis.stability import rk_stability_function
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'benchmarks'))
 from collocation_prototypes import prototype_tableau,prototype_scheme
 
@@ -78,7 +80,7 @@ def test_stage_coupling_reduces_krylov_cost_without_changing_solution(family):
 
 
 def test_implicit_first_stage_warm_guess_preserves_answer_and_stage_context():
-    scheme=getIntegrator('SDIRK2');f=tensor_rhs(lambda t,y:-3*y)
+    scheme=get_scheme('SDIRK2');f=tensor_rhs(lambda t,y:-3*y)
     state=TensorState(torch.ones(1,dtype=torch.float64))
     first=scheme(state,.1,f,solver_opts=OPTS)
     contexts=[]
@@ -89,7 +91,7 @@ def test_implicit_first_stage_warm_guess_preserves_answer_and_stage_context():
     assert {c['stage_index'] for c in contexts}=={0,1}
     assert all(c['stage_coefficient']>0 and c['dt']==.1 for c in contexts)
     with pytest.raises(ValueError,match='implicit first stage'):
-        getIntegrator('TR-BDF2')(state,.1,f,warmStart=first.stages[0])
+        get_scheme('TR-BDF2')(state,.1,f,warmStart=first.stages[0])
 
 
 @pytest.mark.parametrize('family',['gauss3','radau3'])

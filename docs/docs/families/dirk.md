@@ -4,6 +4,8 @@ sidebar_label: DIRK
 
 # Diagonally implicit RK (`DIRK`) — 37 schemes
 
+A diagonally implicit Runge–Kutta method closes one stage equation at a time. L-stable choices damp fast decaying modes; a suitable nonlinear solve is still required. `DIRK.esdirk324l2sa` selects the Kennedy–Carpenter ESDIRK 3(2) pair through `get_scheme`.
+
 One-step methods on a **triangular** Butcher tableau driven by `dirk.DIRK`:
 each stage with a nonzero diagonal $a_{ii}$ is closed as one nonlinear solve
 
@@ -43,7 +45,7 @@ PDIRK as another four-stage L-stable option rather than a new default. See
 [source and numerical validation](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/parallel-dirk-validation.md).
 
 All 37 fixed records are in `dirk.getDIRKTableau`, covered by convergence, tableau consistency, reuse,
-stability, adaptive and gradient tests (NOTES.md §§3.6 and 3.28).
+stability, adaptive and gradient tests (see the numerical record).
 
 ### MEBDF2 (`mebdf2`)
 
@@ -69,7 +71,7 @@ $$
 Order 1, **L-stable** ($R(z)\to 0$ as $z\to-\infty$). One solve per step. The
 stiffness workhorse; on a stiff scalar problem with $z = -10$ it damps the
 mode to $|R(-10)| = 0.0909$ in a single step. Unconditionally TVD (the Fejer
-kernel; NOTES.md §3.11).
+kernel; the numerical record).
 
 ### Implicit Midpoint (`implicitMidpoint`)
 
@@ -87,8 +89,7 @@ method, so for separable Hamiltonians it is symplectic *once its stage equation
 is solved* — the README's symplectic column marks it `yes` with the qualifier
 "strict solve for geometry". One solve per step. Caveat (measured): under an
 explicitly selected low-overhead Picard solve it measures dissipative — the symplecticity
-is a property of the converged map, not of two Picard iterates (NOTES.md §3.6
-finding).
+is a property of the converged map, not of two Picard iterates (see the numerical record).
 
 ### Trapezoidal / Crank-Nicolson (`trapezoidal`)
 
@@ -109,7 +110,7 @@ function as implicit midpoint, so no damping on the imaginary axis: oscillatory
 stiff modes are *not* damped, only bounded). The linear oscillator's map
 preserves area exactly (the "linear only" symplectic flag). **FSAL-eligible**:
 explicit first stage + stiffly accurate, so `priorStep` reuse is lossless.
-SSP coefficient $r = 2$ (NOTES.md §3.11).
+SSP coefficient $r = 2$ (see the numerical record).
 
 ### SDIRK2 (`SDIRK2`)
 
@@ -161,7 +162,7 @@ g = 0.4358665215084589994160194511935568425293,
 $$
 
 with $c = (0, 2g, 0.6, 1)$; the full $a$ matrix and the (3, 2) embedded pair
-are in `dirk.py` (Kennedy-Carpenter coefficients as published in SUNDIALS
+are in `schemes.coefficients.implicit` (Kennedy-Carpenter coefficients as published in SUNDIALS
 ARKODE v7.9.0, `arkode_butcher_dirk.def`). Cost: three implicit stage solves and one explicit
 first-stage evaluation per step (the explicit evaluation is saved under reuse).
 
@@ -169,17 +170,17 @@ first-stage evaluation per step (the explicit evaluation is saved under reuse).
 
 Kennedy-Carpenter's 6-stage ESDIRK, order 4 / embedded 3, same property set
 (A- and L-stable, L[2], stiffly accurate, explicit first stage). Carried in
-`dirk.py` in its exact radical/rational form:
-$c = (0, 1/2, (2-\sqrt2)/4, 5/8, 26/25, 1)$, all $a_{ii} = 1/4$. Wave 8 adds
+`schemes.coefficients.implicit` in its exact radical/rational form:
+$c = (0, 1/2, (2-\sqrt2)/4, 5/8, 26/25, 1)$, all implicit-stage diagonals $a_{ii} = 1/4$. The catalog includes
 DIRK methods through order 6.
 
-## Wave 8 tableaus
+## Additional SDIRK and ESDIRK methods
 
 The additional 29 registrations come from OrdinaryDiffEq v7.8.1's SDIRK
 family. Stage counts include upstream null/endpoint stages, and every entry
 uses the same DIRK driver. `ESDIRK4(3)6L[2]SA2` is distinct from the existing
-`ESDIRK4(3)6L[2]SA`. The coefficient/source records are in `dirk.py` and
-NOTES.md §3.28.
+`ESDIRK4(3)6L[2]SA`. The coefficient/source records are in `schemes.coefficients.implicit` and
+the numerical record.
 
 | Scheme | Order | Stored stages | Pair | Stability | Lossless reuse |
 |---|---:|---:|---|---|---|
@@ -246,9 +247,9 @@ and strict-solve standard-grid checks for the three measured Kepler cases.
 ($a_{11} = 0$, $c_1 = 0$) *and* is stiffly accurate ($c_s = 1$,
 $a_{s\cdot} = b$) — then the previous step's last stage *is*
 $f(t^{n+1}, y^{n+1})$, exactly what this step's first stage needs. That covers
-24 DIRKs: Trapezoidal, TR-BDF2, the two original ESDIRKs, and 20 wave 8
-entries marked above. The other 12 DIRKs (implicit first stages, including
-backward Euler and implicit midpoint) **refuses** `priorStep` with the standard warning. The rule is derived
+24 DIRKs: Trapezoidal, TR-BDF2, the two original ESDIRKs, and 20 extended-catalog
+entries marked above. The other 13 DIRKs (implicit first stages, including
+backward Euler and implicit midpoint) **refuse** `priorStep` with the standard warning. The rule is derived
 from the tableau itself (`_dirk_reuses_first_stage`), so it cannot drift from
 the registered `stiffly_accurate` metadata.
 
@@ -264,14 +265,14 @@ the registered `stiffly_accurate` metadata.
 | ESDIRK3(2)4L[2]SA | yes | yes | yes | yes |
 | ESDIRK4(3)6L[2]SA | yes | yes | yes | yes |
 
-TVD (NOTES.md §3.11): backward Euler is unconditionally TVD (Fejer kernel);
+TVD (see the numerical record): backward Euler is unconditionally TVD (Fejer kernel);
 implicit midpoint and trapezoidal have $r = 2$ (the Cayley factor is a convex
 combination only for $\mu \le 2$ — *not* unconditionally TVD, despite the
 A-stability); SDIRK2/TR-BDF2 have $r = 1+\sqrt{2}$; the ESDIRKs have $r = 0$
 (their stages leave the convex hull immediately) but their stiffly-accurate
 final maps damp so strongly that per-step TVD measures to CFL 5.
 
-The wave 8 step-advection trajectory sweep finds no TV growth through CFL 5
+The extended-DIRK step-advection trajectory sweep finds no TV growth through CFL 5
 for any addition. This is a finite model-specific measurement. The all-stage
 convex-combination scan finds 0 for most, 0.1217 for Kvaerno5, 0.1118 for
 ESDIRK3(2)5L[2]SA, 2.4142 for ARS222/232, 0.1367 for Hairer4 and 0.0927
@@ -282,9 +283,11 @@ The verdicts are pinned per scheme in `tests/test_tvd.py`.
 
 - Kennedy & Carpenter, *Additive Runge-Kutta schemes for stiff problems*, J. Comput. Phys. 181 (2002) 362-415 — the ESDIRK/TR-BDF2 designs (as shipped in SUNDIALS ARKODE v7.9.0).
 - Hairer & Wanner, *Solving ODEs II* (1996), Ch. 4 — DIRK theory, L-stability, L[$q$] damping.
-- OrdinaryDiffEq v7.8.1, `OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl` and stage caches — wave 8 coefficient source; source-specific citations accompany each array in `dirk.py`.
+- OrdinaryDiffEq v7.8.1, `OrdinaryDiffEqSDIRK/src/sdirk_tableaus.jl` and stage caches — extended-DIRK coefficient source; source-specific citations accompany each array in `schemes.coefficients.implicit`.
 - Lambert (2005) — TR-BDF2.
 
 **Tests:** `tests/test_dirk.py` (order conditions, stability functions, the
 reuse rule), `tests/test_stiff.py` (stiff damping), `tests/test_embedded.py`
 (embedded-pair rates), `tests/test_tvd.py` (the TVD row above).
+
+[The numerical record](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/research/integrators/notes-index.md) retains derivations, source pins and measured property gates.

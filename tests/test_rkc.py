@@ -22,16 +22,10 @@ import pytest
 import torch
 
 from conftest import ORDER_TOLERANCE
-from warpSPHIntegrators import (
-    RKC1,
-    RKC2,
-    RKL2,
-    StageResult,
-    get_reference_state,
-    stage_count,
-    testing,
-    TensorState, tensor_rhs, solve,
-)
+from warpSPHIntegrators.drivers.stabilized.chebyshev import RKC1, RKC2, RKL2, stage_count
+from warpSPHIntegrators.state import StageResult, get_reference_state
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
 
 #: (driver, family key, registered order) for each of the three schemes.
 SCHEMES = [

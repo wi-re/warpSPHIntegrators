@@ -63,7 +63,7 @@ Create a state class that inherits from `BaseState` and annotate fields with the
 ```python
 from dataclasses import dataclass
 import torch
-from warpSPHIntegrators import BaseState, integrated, constant
+from warpSPHIntegrators.state import BaseState, integrated, constant
 
 @dataclass
 class MyState(BaseState):
@@ -98,7 +98,7 @@ stage writing into the same object — so register a handler for it:
 
 [example:skip Provide your own mylib.Buffer implementation]: #
 ```python
-from warpSPHIntegrators import register_clone_handler
+from warpSPHIntegrators.state import register_clone_handler
 
 register_clone_handler(
     'mylib.Buffer',
@@ -115,7 +115,7 @@ Create a dataclass that holds all derivatives and auxiliary values:
 [example:run quickstart]: #
 ```python
 from dataclasses import dataclass
-from warpSPHIntegrators import tagged
+from warpSPHIntegrators.state import tagged
 
 @dataclass
 class MyUpdate:
@@ -129,10 +129,8 @@ Create an `IntegrationSystem` that knows how to apply updates to your state:
 
 [example:run quickstart]: #
 ```python
-from warpSPHIntegrators import (
-    BaseIntegrationSystem, PositionUpdateSpec, ComponentUpdateSpec,
-    reference_state, get_reference_state, update_position, update_component,
-)
+from warpSPHIntegrators.state import BaseIntegrationSystem, PositionUpdateSpec, ComponentUpdateSpec, reference_state, get_reference_state
+from warpSPHIntegrators.state.fields import update_position, update_component
 from dataclasses import dataclass
 
 @dataclass
@@ -217,7 +215,8 @@ See [NOTES.md §3.12](../research/integrators/notes-index.md#312-phase-14-the-st
 
 [example:run quickstart]: #
 ```python
-from warpSPHIntegrators import getIntegrator, IntegrationSchemeType
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.schemes import IntegrationSchemeType
 
 # Create initial system
 initial_state = MyState(
@@ -229,7 +228,7 @@ initial_state = MyState(
 system = MySystem(state=initial_state, t=0.0)
 
 # Get an integrator
-integrator = getIntegrator(IntegrationSchemeType.rungeKutta4)
+integrator = get_scheme(IntegrationSchemeType.rungeKutta4)
 
 # Integrate one step
 dt = 0.01
@@ -254,7 +253,7 @@ All integrator functions return an `IntegrationResult` frozen dataclass:
 
 [example:run quickstart]: #
 ```python
-from warpSPHIntegrators import IntegrationResult, StageResult
+from warpSPHIntegrators.state import IntegrationResult, StageResult
 
 result: IntegrationResult = integrator(system, dt=0.01, f=my_rhs)
 
@@ -378,7 +377,7 @@ than method-limited ([`benchmarks/rkc_benchmark.py`](../../benchmarks/rkc_benchm
 
 [example:skip Provide a diffusion RHS and its system, s and L bounds]: #
 ```python
-from warpSPHIntegrators import RKC2
+from warpSPHIntegrators.drivers.stabilized.chebyshev import RKC2
 
 system = RKC2(system, dt=dt, f=rhs, s=s).state            # explicit stage count
 system = RKC2(system, dt=dt, f=rhs, lambda_max=L).state   # or let stage_count pick s
@@ -409,13 +408,13 @@ the derivation and [the DIRK family catalog](../docs/families/dirk.md) for all 3
 
 [example:run newmark]: #
 ```python
-from warpSPHIntegrators import getIntegrator
+from warpSPHIntegrators import get_scheme
 
-from warpSPHIntegrators import testing
+import warpSPHIntegrators.testing as testing
 
 # Newmark currently requires x/u state fields.
 problem = testing.oscillator_problem()
-scheme = getIntegrator('Newmark')
+scheme = get_scheme('Newmark')
 result = scheme(problem.initial(), dt=0.01, f=problem.rhs, beta=0.25, gamma=0.5)
 ```
 
@@ -425,9 +424,10 @@ depends on that nonlinear convergence. An explicit low-cost Picard override is s
 
 [example:run quickstart]: #
 ```python
-from warpSPHIntegrators import FixedPointSolver, getIntegrator
+from warpSPHIntegrators.solvers import FixedPointSolver
+from warpSPHIntegrators import get_scheme
 
-scheme = getIntegrator('Implicit Midpoint')
+scheme = get_scheme('Implicit Midpoint')
 result = scheme(system, dt=dt, f=rhs, solver=FixedPointSolver(iterations=16))
 ```
 
@@ -489,10 +489,10 @@ function, symplecticity):
 
 [example:run quickstart]: #
 ```python
-from warpSPHIntegrators import getIntegrator
+from warpSPHIntegrators import get_scheme
 
 for name in ('Gauss-Legendre 2', 'Radau IIA s=2'):
-    scheme = getIntegrator(name)
+    scheme = get_scheme(name)
     result = scheme(system, dt=dt, f=rhs)
 ```
 
@@ -513,9 +513,10 @@ derivatives only exist if you carry `IntegrationResult.history` forward yourself
 
 [example:run quickstart]: #
 ```python
-from warpSPHIntegrators import getIntegrator, StepHistory
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.state import StepHistory
 
-scheme = getIntegrator('Adams-Bashforth 4')
+scheme = get_scheme('Adams-Bashforth 4')
 history = StepHistory(maxlen=3)   # order - 1
 for _ in range(n_steps):
     result = scheme(system, dt=dt, f=rhs, history=history)
@@ -545,9 +546,10 @@ problems.
 
 [example:run quickstart]: #
 ```python
-from warpSPHIntegrators import StepHistory, getIntegrator
+from warpSPHIntegrators.state import StepHistory
+from warpSPHIntegrators import get_scheme
 
-scheme = getIntegrator('BDF4')
+scheme = get_scheme('BDF4')
 history = StepHistory(maxlen=3)
 for _ in range(n_steps):
     result = scheme(system, dt=dt, f=rhs, history=history)
@@ -578,9 +580,10 @@ should be checked against it (or use a BDF scheme).
 
 [example:run quickstart]: #
 ```python
-from warpSPHIntegrators import StepHistory, getIntegrator
+from warpSPHIntegrators.state import StepHistory
+from warpSPHIntegrators import get_scheme
 
-scheme = getIntegrator('Adams-Moulton 3 (implicit)')
+scheme = get_scheme('Adams-Moulton 3 (implicit)')
 history = StepHistory(maxlen=2)
 for _ in range(n_steps):
     result = scheme(system, dt=dt, f=rhs, history=history)
@@ -604,9 +607,10 @@ return convention.
 
 [example:skip Provide transport_rhs and diffusion_rhs split callbacks]: #
 ```python
-from warpSPHIntegrators import IMEXRHS, getIntegrator
+from warpSPHIntegrators.adapters import IMEXRHS
+from warpSPHIntegrators import get_scheme
 
-scheme = getIntegrator('IMEX Euler')
+scheme = get_scheme('IMEX Euler')
 rhs = IMEXRHS(explicit=transport_rhs, implicit=diffusion_rhs)
 result = scheme(system, dt=dt, f=rhs)
 ```
@@ -626,9 +630,10 @@ reused `priorStep` is rejected and the schemes register `stiffly_accurate=False`
 
 [example:skip Provide transport_rhs and diffusion_rhs split callbacks]: #
 ```python
-from warpSPHIntegrators import IMEXRHS, getIntegrator
+from warpSPHIntegrators.adapters import IMEXRHS
+from warpSPHIntegrators import get_scheme
 
-scheme = getIntegrator('ARK3(2)4L[2]SA')   # or 'ARK4(3)6L[2]SA'
+scheme = get_scheme('ARK3(2)4L[2]SA')   # or 'ARK4(3)6L[2]SA'
 rhs = IMEXRHS(explicit=transport_rhs, implicit=diffusion_rhs)
 result = scheme(system, dt=dt, f=rhs)
 ```
@@ -669,9 +674,11 @@ pure-implicit limit, re-bootstrap on a `dt` change); `priorStep` is refused.
 
 [example:skip Provide transport_rhs and diffusion_rhs split callbacks]: #
 ```python
-from warpSPHIntegrators import IMEXRHS, getIntegrator, StepHistory
+from warpSPHIntegrators.adapters import IMEXRHS
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.state import StepHistory
 
-scheme = getIntegrator('SBDF3')   # or 'SBDF2', 'CNAB2'
+scheme = get_scheme('SBDF3')   # or 'SBDF2', 'CNAB2'
 rhs = IMEXRHS(explicit=transport_rhs, implicit=diffusion_rhs)
 history = StepHistory(maxlen=2)   # order - 1 state snapshots
 result = scheme(system, dt=dt, f=rhs, history=history)
@@ -783,18 +790,19 @@ registered scheme:
 
 [example:run quickstart]: #
 ```python
-from warpSPHIntegrators import getIntegrator, ExplicitRK, DIRK
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.schemes import ExplicitRK, DIRK
 
-getIntegrator(ExplicitRK.rungeKutta4)   # -> the 'RK4' scheme
-getIntegrator(DIRK.backwardEuler)       # -> 'Backward Euler (implicit)'
-getIntegrator('RK4')                    # same scheme, by display name
+get_scheme(ExplicitRK.rungeKutta4)   # -> the 'RK4' scheme
+get_scheme(DIRK.backwardEuler)       # -> 'Backward Euler (implicit)'
+get_scheme('RK4')                    # same scheme, by display name
 ```
 
 Every scheme knows its family, so family-wide queries are one line:
 
 [example:run quickstart]: #
 ```python
-from warpSPHIntegrators import IntegrationSchemes, DIRK
+from warpSPHIntegrators.schemes import IntegrationSchemes, DIRK
 
 [s.name for s in IntegrationSchemes if s.family is DIRK]
 # ['Backward Euler (implicit)', 'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)', ...]
@@ -823,13 +831,14 @@ caller** — so ask before opting in:
 
 [example:run quickstart]: #
 ```python
-from warpSPHIntegrators import getIntegrator, step_reuse_order, supports_step_reuse
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.analysis import step_reuse_order, supports_step_reuse
 
-scheme = getIntegrator('Dormand-Prince 5(4)')
+scheme = get_scheme('Dormand-Prince 5(4)')
 supports_step_reuse(scheme)   # True  -- FSAL, reuse is exact
 step_reuse_order(scheme)      # 5
 
-scheme = getIntegrator('SSP RK3')
+scheme = get_scheme('SSP RK3')
 supports_step_reuse(scheme)   # False
 step_reuse_order(scheme)      # 1  -- third order becomes first
 ```
@@ -849,7 +858,7 @@ imaginary axis.
 
 [example:run quickstart]: #
 ```python
-scheme = getIntegrator('Dormand-Prince 5(4)')
+scheme = get_scheme('Dormand-Prince 5(4)')
 result = scheme(system, dt=dt, f=rhs)
 result.error        # embedded pairs only: y_high - y_low, as a state
 ```
@@ -928,7 +937,7 @@ With damping, the amplification matrix gains the dimensionless damping
 $c = 2\zeta\,dt\omega$ and the stability domain is two-parameter. The gallery below
 shows $\log_{10}\rho(h\omega, \zeta)$ for $h\omega \in [0, 8]$ and $\zeta \in [0, 1]$
 with the $\rho = 1$ boundary contoured (the same closed-form matrices as the test
-suite's one-step cross-checks, in `warpSPHIntegrators.stability`). Damping extends
+suite's one-step cross-checks, in `warpSPHIntegrators.analysis.stability`). Damping extends
 velocity Verlet's region — at $h\omega = 2.5$ the stable window is
 $0.5055 < \zeta < 0.8$ — but it cannot rescue Leap Frog: its damping term is
 evaluated at the *old* velocity, so it is itself an explicit update unstable for
@@ -984,7 +993,7 @@ Two behaviours worth knowing before reading those curves:
 ### TVD / total-variation classification
 
 The TVD/SSP property of the registered schemes is measured, not asserted by name.
-`warpSPHIntegrators.tvd_analysis` classifies every registered scheme on the model
+`warpSPHIntegrators.analysis.tvd` classifies every registered scheme on the model
 hyperbolic problem (1D periodic first-order upwind advection, step initial
 condition, `testing.advection_problem`) with two independent measurements:
 
@@ -1043,7 +1052,7 @@ geometric invariants.
 from dataclasses import dataclass
 from typing import Any
 import torch
-from warpSPHIntegrators import BaseState, integrated, constant, copied, ephemeral, custom
+from warpSPHIntegrators.state import BaseState, integrated, constant, copied, ephemeral, custom
 
 @dataclass
 class MyState(BaseState):
@@ -1067,10 +1076,7 @@ class MyState(BaseState):
 
 [example:run quickstart]: #
 ```python
-from warpSPHIntegrators import (
-    PositionUpdateSpec, ComponentUpdateSpec, StateBlend,
-    blend_state, explicit_step, semi_implicit_position_step, verlet_position_step,
-)
+from warpSPHIntegrators.state import PositionUpdateSpec, ComponentUpdateSpec, StateBlend, blend_state, explicit_step, semi_implicit_position_step, verlet_position_step
 
 # `StateBlend` is a three-field dataclass describing how the existing value is folded
 # in:  value <- self_scale * value + reference_weight * reference_state_value + ...
@@ -1096,15 +1102,12 @@ verlet_position_step(dt, update_velocity_dt=dt**2/2) # x += dt*k.x + (dt^2/2)*k.
 
 [example:skip Supply the system state, rhs_function and kwargs]: #
 ```python
-from warpSPHIntegrators import (
-    IntegrationSchemeType,
-    getIntegrator,
-    IntegrationResult,
-    StageResult,
-)
+from warpSPHIntegrators.schemes import IntegrationSchemeType
+from warpSPHIntegrators import get_scheme
+from warpSPHIntegrators.state import IntegrationResult, StageResult
 
 # Get an integrator
-integrator = getIntegrator(IntegrationSchemeType.rungeKutta4)
+integrator = get_scheme(IntegrationSchemeType.rungeKutta4)
 
 # Call it
 result: IntegrationResult = integrator.function(
@@ -1124,12 +1127,8 @@ stages = result.stages  # List of StageResult namedtuples
 
 [example:skip Supply an update and PositionUpdateSpec]: #
 ```python
-from warpSPHIntegrators import (
-    get_reference_state,        # Extract state from system
-    get_tagged_attr,            # Access fields by tag
-    update_position,            # Apply position update
-    update_component,           # Apply component update
-)
+from warpSPHIntegrators.state import get_reference_state, get_tagged_attr
+from warpSPHIntegrators.state.fields import update_position, update_component
 
 # Extract state from system
 state = get_reference_state(system)
@@ -1151,7 +1150,7 @@ For systems with multiple coupled components, use multiple field types:
 
 [example:run quickstart]: #
 ```python
-from warpSPHIntegrators import copied
+from warpSPHIntegrators.state import copied
 
 @dataclass
 class ComplexState(BaseState):
@@ -1254,7 +1253,7 @@ For a hand-rolled scheme with no tableau:
 4. Evaluate `f` on a fresh `initializeNewState()` buffer, never on the caller's state
 5. Return `IntegrationResult(state=..., stages=[StageResult(...), ...])`
 6. Register in the `IntegrationSchemeType` enum and record its reuse behaviour in
-   `HANDROLLED_REUSE` in [reuse.py](../../src/warpSPHIntegrators/reuse.py)
+   `HANDROLLED_REUSE` in [reuse.py](../../src/warpSPHIntegrators/analysis/reuse.py)
 
 Example template:
 

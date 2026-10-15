@@ -12,8 +12,7 @@ from pathlib import Path
 import numpy as np
 from scipy.fft import dct
 
-from warpSPHIntegrators._orthogonal_program import (available_stages,sizing_bound,
-    recurrence_program,_parameters)
+from warpSPHIntegrators.schemes.coefficients.orthogonal import available_stages, sizing_bound, recurrence_program, _parameters
 
 
 def scan():
@@ -45,7 +44,7 @@ def scan():
     return dict(numpy=np.__version__,cases=rows,
         qualification='All 46 ROCK2 / 48 ROCK4 / 11 SERK2 / 998 RKMC2 supported configurations. ROCK/SERK include numerical polynomial critical points; RKMC is grid sampled. ROCK4 source counts 133/152 excluded after actual-source interior instability controls. ROCK4/SERK sizing includes .95/.9 margins. Numerical normal negative-real screening, not an exact arithmetic, nonnormal or nonlinear stability certificate.',
         source_sha256={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in [
-            root/'src/warpSPHIntegrators/_orthogonal_program.py',root/'src/warpSPHIntegrators/_orthogonal_data.py',Path(__file__).resolve()]})
+            root/'src/warpSPHIntegrators/schemes/coefficients/orthogonal.py',root/'src/warpSPHIntegrators/schemes/coefficients/orthogonal_data.py',Path(__file__).resolve()]})
 
 
 if __name__=='__main__':

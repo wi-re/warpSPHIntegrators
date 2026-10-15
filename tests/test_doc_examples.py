@@ -6,7 +6,7 @@ import runpy
 
 import pytest
 
-from warpSPHIntegrators import get_reference_state
+from warpSPHIntegrators.state import get_reference_state
 
 
 ROOT = Path(__file__).resolve().parents[1]

@@ -26,7 +26,7 @@ the full history if the reasoning behind a fix is needed again.
 ## 0. Status
 
 **Fixed in v0.5.0:** `priorStep` first-stage reuse now knows which schemes it is valid
-for (`warpSPHIntegrators.reuse`: `step_reuse_order` / `supports_step_reuse` / `is_fsal`, plus
+for (`warpSPHIntegrators.analysis.reuse`: `step_reuse_order` / `supports_step_reuse` / `is_fsal`, plus
 three genuinely FSAL tableaus — Bogacki–Shampine 3(2), Dormand–Prince 5(4), Cash–Karp
 5(4) — so reuse is lossless where it matters); every scheme evaluates its stages at
 the correct time, including stage 0; the embedded-pair path returns a real error
@@ -137,7 +137,7 @@ are gone.
 The four open housekeeping items on IMPLICIT_ROADMAP closed:
 
 - **`nonLagrangian` removed.** `IntegrationScheme.nonLagrangian` (the metadata
-  flag in [util.py](../../../src/warpSPHIntegrators/util.py)) agreed with `dissipation`
+  flag in [util.py](../../../src/warpSPHIntegrators/state/lifecycle.py)) agreed with `dissipation`
   for every registered scheme, so it carried no information, and nothing in the
   codebase read either flag. The copy-paste inconsistencies the flag's values
   had encoded were already reconciled when `dissipation` was re-derived from
@@ -177,14 +177,14 @@ separation and it is the main asset here.
 
 | Layer | File | Role |
 |---|---|---|
-| **Field metadata** | [fields.py](../../../src/warpSPHIntegrators/fields.py) | `dataclasses.field` wrappers that stamp `metadata['behavior']` (`integrated` / `constant` / `copied` / `ephemeral` / `custom`) and `metadata['tags']` onto state fields. Drives generic cloning and tag-based lookup. |
-| **Update specs** | [specs.py](../../../src/warpSPHIntegrators/specs.py) | Frozen dataclasses describing *what* an update does, without saying to which field: `ComponentUpdateSpec(derivative_dt, blend)`, `PositionUpdateSpec(+current_velocity_dt, +update_velocity_dt)`, `StateBlend(self_scale, reference_state, reference_weight)`. |
-| **Dispatch** | [util.py](../../../src/warpSPHIntegrators/util.py), [protocol.py](../../../src/warpSPHIntegrators/protocol.py) | `applyPositionUpdate` / `applyVelocityUpdate` / `applyQuantityUpdate` / `applyStateUpdate` try the typed `apply_*_update` methods, else fall back to legacy `integratePosition` / `integrateVelocity` / … . Lifecycle hooks `initialize` / `preprocess` / `postprocess` / `finalize`. |
-| **Schemes** | [butcher.py](../../../src/warpSPHIntegrators/butcher.py), [verlet.py](../../../src/warpSPHIntegrators/verlet.py), [ruth.py](../../../src/warpSPHIntegrators/ruth.py), [tvd.py](../../../src/warpSPHIntegrators/tvd.py), [euler.py](../../../src/warpSPHIntegrators/euler.py) | 23 registered schemes, all built from the four `apply*` primitives. Registry + lookup in [integration.py](../../../src/warpSPHIntegrators/integration.py). |
+| **Field metadata** | [fields.py](../../../src/warpSPHIntegrators/state/fields.py) | `dataclasses.field` wrappers that stamp `metadata['behavior']` (`integrated` / `constant` / `copied` / `ephemeral` / `custom`) and `metadata['tags']` onto state fields. Drives generic cloning and tag-based lookup. |
+| **Update specs** | [specs.py](../../../src/warpSPHIntegrators/state/specs.py) | Frozen dataclasses describing *what* an update does, without saying to which field: `ComponentUpdateSpec(derivative_dt, blend)`, `PositionUpdateSpec(+current_velocity_dt, +update_velocity_dt)`, `StateBlend(self_scale, reference_state, reference_weight)`. |
+| **Dispatch** | [util.py](../../../src/warpSPHIntegrators/state/lifecycle.py), [protocol.py](../../../src/warpSPHIntegrators/state/protocol.py) | `applyPositionUpdate` / `applyVelocityUpdate` / `applyQuantityUpdate` / `applyStateUpdate` try the typed `apply_*_update` methods, else fall back to legacy `integratePosition` / `integrateVelocity` / … . Lifecycle hooks `initialize` / `preprocess` / `postprocess` / `finalize`. |
+| **Schemes** | [butcher.py](../../../src/warpSPHIntegrators/schemes/definitions/explicit.py), [verlet.py](../../../src/warpSPHIntegrators/drivers/mechanics/verlet.py), [ruth.py](../../../src/warpSPHIntegrators/drivers/mechanics/forest_ruth.py), [tvd.py](../../../src/warpSPHIntegrators/drivers/explicit/tvd.py), [euler.py](../../../src/warpSPHIntegrators/drivers/explicit/euler.py) | 23 registered schemes, all built from the four `apply*` primitives. Registry + lookup in [integration.py](../../../src/warpSPHIntegrators/schemes/registry.py). |
 
 ### 1.2 The generic update kernel
 
-Everything bottoms out in two functions at [fields.py:267-310](../../../src/warpSPHIntegrators/fields.py#L267-L310):
+Everything bottoms out in two functions at [fields.py:267-310](../../../src/warpSPHIntegrators/state/fields.py#L267-L310):
 
 ```
 update_component:   X ← self_scale·X + reference_weight·X_ref + Σᵢ dtᵢ·kᵢ.dX
@@ -216,7 +216,7 @@ return IntegrationResult(state=new_state, stages=[StageResult(aux, update), ...]
 
 `priorStep` (a `StageResult` from the previous step) can be passed in to skip the `k0`
 evaluation. Whether that costs convergence order is a property of the tableau, not of
-the caller — computed automatically by `warpSPHIntegrators.reuse` (`step_reuse_order`,
+the caller — computed automatically by `warpSPHIntegrators.analysis.reuse` (`step_reuse_order`,
 `supports_step_reuse`) and carried on the registered `IntegrationScheme`.
 
 ---

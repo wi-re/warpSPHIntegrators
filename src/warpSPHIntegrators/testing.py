@@ -72,11 +72,11 @@ from typing import Callable, List, NamedTuple, Optional, Sequence
 
 import torch
 
-from .fields import BaseState, constant, integrated, get_reference_state, reference_state, tagged, update_component, update_position
-from .history import StepHistory
-from .protocol import BaseIntegrationSystem
-from .rhs import SemilinearRHS
-from .specs import ComponentUpdateSpec, PositionUpdateSpec
+from warpSPHIntegrators.state.fields import BaseState, constant, integrated, get_reference_state, reference_state, tagged, update_component, update_position
+from warpSPHIntegrators.state.history import StepHistory
+from warpSPHIntegrators.state.protocol import BaseIntegrationSystem
+from warpSPHIntegrators.adapters.rhs import SemilinearRHS
+from warpSPHIntegrators.state.specs import ComponentUpdateSpec, PositionUpdateSpec
 
 
 # --------------------------------------------------------------------------- #
@@ -649,7 +649,7 @@ def viscous_burgers_problem(n: int = 64, L: float = 1.0, nu: float = 0.01) -> Pr
 
     No closed-form semi-discrete solution: the reference is a fine-``dt``
     integration of the combined (unsplit) dynamics, e.g.
-    ``testing.run(getIntegrator('RK4'), problem, dt, T)`` with a small ``dt``
+    ``testing.run(get_scheme('RK4'), problem, dt, T)`` with a small ``dt``
     (the stiffest decay rate is ``~4 nu / h^2``).
     """
     h = L / n
@@ -907,9 +907,9 @@ def viscous_burgers_reference(n: int = 64, L: float = 1.0, nu: float = 0.01,
     ``n``, ready for a relative-``L2`` comparison:
     ``torch.linalg.norm(u - ref) / torch.linalg.norm(ref)``.
     """
-    from .integration import getIntegrator
+    from warpSPHIntegrators.schemes.registry import get_scheme
     problem = viscous_burgers_problem(n=n, L=L, nu=nu)
-    system = run(getIntegrator('RK4'), problem, dt=dt, T=T)
+    system = run(get_scheme('RK4'), problem, dt=dt, T=T)
     return get_reference_state(system).x
 
 

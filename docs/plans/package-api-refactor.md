@@ -1,9 +1,16 @@
 # Package structure and public API refactor
 
-This design records the requested pass **after Phase 8 and before the user-facing
-documentation cleanup**. The sole schedule and task list is
-[the execution plan](../../REPOSITORY_PLAN.md). These are proposed boundaries,
-not implemented import paths or a second catalog-expansion phase.
+Implemented locally in version **0.7.0**, after the Phase 8 candidate review.
+The package boundaries below are now real import paths, and the user-facing
+documentation pass is complete. The root API is exactly `get_scheme`, `solve`,
+`TensorState` and `tensor_rhs`; focused subpackages provide the remaining public
+interfaces. See the [migration guide](../docs/migration.md) and
+[validation record](../development/package-refactor-validation.md) for the
+implemented structure, stored-data checks and downstream limits. No release or
+push is part of this work.
+
+The remaining text preserves the design rationale and initial audit. The sole
+schedule and task list remains [the execution plan](../../REPOSITORY_PLAN.md).
 
 The user explicitly limits compatibility work for this rewrite to warpSPH and
 its sibling projects. Coordinate those consumers rather than preserving every
@@ -25,7 +32,7 @@ Read-only inspection of the local sibling checkouts on 14 October 2026 found:
 | Consumer | Python files importing the library | Relevant usage |
 |---|---:|---|
 | warpSPH | 43 | Enum/lookup configuration; field and system protocols through wildcard imports; solver selection; deep solver/state/spec imports; tableau inspection; CUDA graph clock hooks |
-| warpSPHCore | 1 | A spike/profile script imports `getIntegrator`; no integrator import found in its production Python source |
+| warpSPHCore | 1 | A spike/profile script imports `get_scheme`; no integrator import found in its production Python source |
 | warpSPHCases | 1 | A copied Sod resume example imports the lookup from `integration` |
 | warpSPHPlotting | 0 | No direct Python import found |
 
@@ -38,7 +45,7 @@ packages. Repeat and resolve this audit at implementation time.
 The important warpSPH contracts are concrete:
 
 - Simulation configuration selects methods through `IntegrationSchemeType` and
-  `getIntegrator`, and serializes enum information. Raw scheme functions are not
+  `get_scheme`, and serializes enum information. Raw scheme functions are not
   the normal method-selection interface in the inspected production code.
 - Particle systems use `BaseState`, `BaseIntegrationSystem`, field decorators,
   reference-state access, typed position/component updates and update helpers.
@@ -53,10 +60,10 @@ The important warpSPH contracts are concrete:
   construct/import `IntegrationResult` and `StageResult`. These need explicit
   new homes and consumer checks.
 
-## Proposed package boundaries
+## Implemented package boundaries
 
-Names below are a working design to refine against the completed Phase 8 code.
-Each package needs an explicit public surface and private implementation modules.
+The following packages have explicit public surfaces and focused implementation
+modules, with family configuration, coefficients and definitions under `schemes`.
 Avoid both a new miscellaneous `util` bucket and a second flat directory hidden
 under a generic name.
 
@@ -87,11 +94,9 @@ a separately reviewed numerical fix is required.
 ## Public API direction
 
 Keep a handful of ordinary entry points at the root: a single canonical scheme
-lookup, `solve`, `TensorState` and `tensor_rhs` are the working starting point.
+lookup, `solve`, `TensorState` and `tensor_rhs` are the complete root API.
 Use focused imports from `schemes`, `state` and `solvers` for enums, custom SPH
-systems and nonlinear-solver configuration. Final spelling and the precise root
-set should be decided together, once, during this pass; avoid creating another
-collection of synonymous lookup/preferred/raw-callable paths.
+systems and nonlinear-solver configuration. The previous synonymous lookup/preferred/raw-callable paths are removed.
 
 Fixed scheme selection should return a consistently configured callable scheme
 record/object with metadata. Enums provide unambiguous identity; friendly names

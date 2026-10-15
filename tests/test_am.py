@@ -14,9 +14,11 @@ import math
 import pytest
 import torch
 
-from warpSPHIntegrators import get_reference_state, getIntegrator, testing
-from warpSPHIntegrators.butcher import DormandPrince
-from warpSPHIntegrators.history import StepHistory
+from warpSPHIntegrators.state import get_reference_state
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.schemes.definitions.explicit import DormandPrince
+from warpSPHIntegrators.state import StepHistory
 from warpSPHIntegrators.testing import ParticleUpdate
 
 AM_SCHEMES = [('Adams-Moulton 2 (implicit)', 2), ('Adams-Moulton 3 (implicit)', 3),
@@ -59,7 +61,7 @@ _ORDER_SOLVER_OPTS = {'matvec': 'jvp', 'tol': 1e-12, 'newton_tol': 1e-12}
 @pytest.mark.parametrize('name,order', AM_SCHEMES)
 @pytest.mark.parametrize('problem_name', ['oscillator', 'forced', 'damped', 'kepler'])
 def test_am_scheme_reaches_its_claimed_order(name, order, problem_name):
-    s = getIntegrator(name)
+    s = get_scheme(name)
     assert s.order == order
     dts = testing.default_step_sizes(0.1, 5)
     problem = testing.PROBLEMS[problem_name]()
@@ -80,7 +82,7 @@ def test_without_history_threading_falls_back_to_the_starter_exactly(name, order
     """Never passing history= must reproduce running Dormand-Prince alone, bit for
     bit -- the same safety argument as the explicit multistep family (test_multistep).
     """
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
 
     system_am = prob.initial()
@@ -97,7 +99,7 @@ def test_without_history_threading_falls_back_to_the_starter_exactly(name, order
 @pytest.mark.parametrize('name,order', AM_SCHEMES)
 def test_with_history_threading_diverges_from_the_starter(name, order):
     """The inverse check: once there is enough history, it must actually use it."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
 
     system_am = _run(s, order, prob, dt=0.1, T=2.0)
@@ -139,7 +141,7 @@ def test_am_corrector_converges_on_stiff_nonlinear_relaxation(name, order):
     so it is unstable there, and the AM stability region does not contain
     z = -10 for order >= 3 either -- the startup, not the corrector, limits it.)
     """
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     system = prob.initial()
     history = StepHistory(maxlen=order - 1)
@@ -177,8 +179,8 @@ def test_am_corrector_beats_pece_on_stiff_nonlinear_case(am_name, pece_name, ord
     ~8e-4 / 4e-4 / 3e-3 -- the corrector's extra iteration is worth an order of
     magnitude once the problem is stiff enough for the predictor to be wrong.
     """
-    am_err = _stiff_final_error(getIntegrator(am_name), order, rate=10.0, dt=0.1, T=1.0)
-    pece_err = _stiff_final_error(getIntegrator(pece_name), order, rate=10.0, dt=0.1, T=1.0)
+    am_err = _stiff_final_error(get_scheme(am_name), order, rate=10.0, dt=0.1, T=1.0)
+    pece_err = _stiff_final_error(get_scheme(pece_name), order, rate=10.0, dt=0.1, T=1.0)
     assert am_err < pece_err, \
         f'{am_name} err={am_err:.3e} should beat {pece_name} err={pece_err:.3e} on the stiff case'
 
@@ -193,7 +195,7 @@ def test_predictor_only_changes_the_initial_guess(name, order):
     prediction, predictor=False from the known part. Both must land on the same
     corrector fixed point (to solver tolerance), i.e. the predictor is an
     efficiency choice, not a numerical one, on a non-stiff problem."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
 
     with_pred = _run(s, order, prob, dt=0.1, T=2.0)
@@ -212,7 +214,7 @@ def test_predictor_only_changes_the_initial_guess(name, order):
 
 @pytest.mark.parametrize('name,order', AM_SCHEMES)
 def test_am_rejects_prior_step_with_a_warning(name, order):
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     first = s(prob.initial(), dt=0.1, f=prob.rhs)
     with pytest.warns(RuntimeWarning, match='does not support first-stage reuse'):
@@ -221,7 +223,7 @@ def test_am_rejects_prior_step_with_a_warning(name, order):
 
 @pytest.mark.parametrize('name,order', AM_SCHEMES)
 def test_am_scheme_does_not_mutate_the_caller_state(name, order):
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     system = prob.initial()
     before_x = system.state.x.clone()
@@ -233,7 +235,7 @@ def test_dt_change_restarts_history_and_stays_correct():
     """A dt change mid-run drops the stale history entries (StepHistory's own guard)
     and the scheme falls back to bootstrapping again: no crash, still near the
     analytic solution."""
-    s = getIntegrator('Adams-Moulton 3 (implicit)')
+    s = get_scheme('Adams-Moulton 3 (implicit)')
     prob = testing.PROBLEMS['oscillator']()
     system = prob.initial()
     history = StepHistory(maxlen=2)
@@ -248,7 +250,7 @@ def test_dt_change_restarts_history_and_stays_correct():
 
 def test_testing_run_history_true_is_the_blessed_calling_convention():
     """testing.run(..., history=True) (NOTES.md S5) must reach the claimed order too."""
-    s = getIntegrator('Adams-Moulton 4 (implicit)')
+    s = get_scheme('Adams-Moulton 4 (implicit)')
     prob = testing.PROBLEMS['oscillator']()
     dts = testing.default_step_sizes(0.1, 5)
     errors = []

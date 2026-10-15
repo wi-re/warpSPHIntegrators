@@ -17,18 +17,16 @@ import numpy as np
 import pytest
 import torch
 
-from warpSPHIntegrators import StepHistory, getIntegrator, get_reference_state, testing
-from warpSPHIntegrators.newmark import newmark
-from warpSPHIntegrators.stability import (
-    damped_oscillator_amplification_matrix,
-    damped_oscillator_spectral_radius,
-    oscillator_spectral_radius,
-)
+from warpSPHIntegrators.state import StepHistory, get_reference_state
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.drivers.mechanics.newmark import newmark
+from warpSPHIntegrators.analysis.stability import damped_oscillator_amplification_matrix, damped_oscillator_spectral_radius, oscillator_spectral_radius
 
 
 def _run(scheme_name, problem, dt, T, history_len=0, **kw):
     """Fixed-step run of ``T`` with the registered scheme; returns the final system."""
-    scheme = getIntegrator(scheme_name)
+    scheme = get_scheme(scheme_name)
     system = problem.initial()
     history = StepHistory(maxlen=history_len) if history_len else None
     for _ in range(int(round(T / dt))):
@@ -133,7 +131,7 @@ def test_van_der_pol_moderate_mu_limit_cycle_amplitude():
     """mu=2: the attractor is a limit cycle of amplitude ~2; ESDIRK6 at dt=0.05 sits
     on the cycle in the second half of the run."""
     problem = testing.van_der_pol_problem(mu=2.0)
-    scheme = getIntegrator('ESDIRK4(3)6L[2]SA')
+    scheme = get_scheme('ESDIRK4(3)6L[2]SA')
     system = problem.initial()
     amplitude = []
     for i in range(800):  # T = 40
@@ -148,7 +146,7 @@ def test_van_der_pol_large_mu_limit_cycle_amplitude():
     stays on the amplitude-~2 cycle at dt=0.1 where coarser steps land on spurious
     large-amplitude discrete attractors (see scripts/stiff_benchmark_suite.py)."""
     problem = testing.van_der_pol_problem(mu=10.0)
-    scheme = getIntegrator('ESDIRK4(3)6L[2]SA')
+    scheme = get_scheme('ESDIRK4(3)6L[2]SA')
     system = problem.initial()
     amplitude = []
     for i in range(500):  # T = 50
@@ -170,7 +168,7 @@ def test_van_der_pol_large_mu_explicit_diverges():
     """mu=10, dt=0.5: the fast eigenvalue is ~ mu*(1 + x^2) ~ O(10-20), z is far outside
     DP5's stability region, and the solution leaves the O(1) band within a few steps."""
     problem = testing.van_der_pol_problem(mu=10.0)
-    scheme = getIntegrator('Dormand-Prince 5(4)')
+    scheme = get_scheme('Dormand-Prince 5(4)')
     system = problem.initial()
     for _ in range(5):
         system = scheme(system, dt=0.5, f=problem.rhs).state
@@ -187,7 +185,7 @@ def _run_robertson_bootstrapped(scheme_name, dt, T, history_len=0, **kw):
     of dt >= 0.02 cannot cross from y(0) = (1, 0, 0): ten dt=0.001 bootstrap steps put
     the solution on the quasi-steady manifold, then the main dt takes over."""
     problem = testing.robertson_problem()
-    scheme = getIntegrator(scheme_name)
+    scheme = get_scheme(scheme_name)
     system = problem.initial()
     history = StepHistory(maxlen=history_len) if history_len else None
     for _ in range(10):
@@ -205,7 +203,7 @@ def test_robertson_invariants_on_long_run():
     plateau. (dt >= 2 instead converges each step to an unstable discrete fixed point
     of the stiff quadratic and diverges; that is BE inaccuracy at dt above the fast
     scale, not a solver failure.)"""
-    scheme = getIntegrator('Backward Euler (implicit)')
+    scheme = get_scheme('Backward Euler (implicit)')
     problem = testing.robertson_problem()
     system = problem.initial()
     for _ in range(10):
@@ -352,7 +350,7 @@ def test_damped_matrix_matches_registered_one_step(method, scheme_name, scheme_k
     """The closed-form matrix in stability.py must equal the scheme's actual
     one-step map (basis-state cross-check). omega = 1, h = h_omega,
     c = 2*zeta*omega."""
-    scheme = getIntegrator(scheme_name) if scheme_name else newmark
+    scheme = get_scheme(scheme_name) if scheme_name else newmark
     numerical = _one_step_matrix(scheme, 1.0, 2.0 * zeta, h_omega, **scheme_kw)
     closed = damped_oscillator_amplification_matrix(method, h_omega, zeta)
     tol = 1e-8 if method.startswith('newmark') else 1e-10

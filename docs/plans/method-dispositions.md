@@ -64,148 +64,148 @@ explicitly marked awaiting verification, not assigned the expansion source pin.
 
 | Method | Wave | Local callable/source | Evidence |
 |---|---:|---|---|
-| Forward Euler | baseline | [`forwardEuler`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Midpoint | baseline | [`midpoint`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Heun's Method (2nd order) | baseline | [`heunsMethod`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Ralston's Method (2nd order) | baseline | [`ralston`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| RK3 | baseline | [`RK3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Heun's Method (3rd order) | baseline | [`Heun3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Ralston's Method (3rd order) | baseline | [`ralston3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Wray's Method (3rd order) | baseline | [`Wray3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| SSP RK3 | baseline | [`SSPRK3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| SSPRK(10,4) | baseline | [`SSPRK104`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| SSPRK53 | 1 | [`SSPRK53`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-21.md) |
-| SSPRK63 | 1 | [`SSPRK63`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-21.md) |
-| SSPRK73 | 1 | [`SSPRK73`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-21.md) |
-| SSPRK83 | 1 | [`SSPRK83`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-21.md) |
-| SSPRK54 | 1 | [`SSPRK54`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-21.md) |
-| KYKSSPRK42 | 1 | [`KYKSSPRK42`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-21.md) |
-| KYK2014DGSSPRK_3S2 | 1 | [`KYK2014DGSSPRK_3S2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-21.md) |
-| SSPRK43 | 2 | [`SSPRK43`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-22.md) |
-| SSPRK432 | 2 | [`SSPRK432`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-22.md) |
-| SSPRK932 | 2 | [`SSPRK932`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-22.md) |
-| SSPRK53_2N1 | 5 | [`SSPRK53_2N1`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-25.md) |
-| SSPRK53_2N2 | 5 | [`SSPRK53_2N2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-25.md) |
-| SSPRK53_H | 5 | [`SSPRK53_H`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-25.md) |
-| RK4 | baseline | [`RK4`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| RK4 (alternative) | baseline | [`RK4alt`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Nystrom 5th order | baseline | [`Nystrom5`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Bogacki-Shampine 3(2) | baseline | [`BogackiShampine`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Dormand-Prince 5(4) | baseline | [`DormandPrince`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Cash-Karp 5(4) | baseline | [`CashKarp`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Tsit5 5(4) | 6 | [`Tsit5`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| OwrenZen3 3(2) | 6 | [`OwrenZen3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| OwrenZen4 4(3) | 6 | [`OwrenZen4`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| OwrenZen5 5(4) | 6 | [`OwrenZen5`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| BS5 5(4) | 6 | [`BS5`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| Stepanov5 5(4) | 6 | [`Stepanov5`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| Alshina2 2(1) | 6 | [`Alshina2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| Alshina3 | 6 | [`Alshina3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| Alshina6 | 6 | [`Alshina6`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| MSRK5 | 6 | [`MSRK5`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| MSRK6 | 6 | [`MSRK6`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| SIR54 | 6 | [`SIR54`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| Ralston4 | 6 | [`Ralston4`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| RKO65 | 6 | [`RKO65`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| RKM | 6 | [`RKM`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| PSRK4p7q6 | 6 | [`PSRK4p7q6`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| PSRK3p6q5 | 6 | [`PSRK3p6q5`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| PSRK3p5q4 | 6 | [`PSRK3p5q4`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-26.md) |
-| Vern6 6(5) | 7 | [`Vern6`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-27.md) |
-| Vern7 7(6) | 7 | [`Vern7`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-27.md) |
-| Vern8 8(7) | 7 | [`Vern8`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-27.md) |
-| Vern9 9(8) | 7 | [`Vern9`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-27.md) |
-| RKV76IIa 7(6) | 7 | [`RKV76IIa`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-27.md) |
-| TanYam7 7(6) | 7 | [`TanYam7`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-27.md) |
-| TsitPap8 8(7) | 7 | [`TsitPap8`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-27.md) |
-| DP8 | 7 | [`DP8`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-27.md) |
-| Feagin10 | 7 | [`Feagin10`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-27.md) |
-| Feagin12 | 7 | [`Feagin12`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-27.md) |
-| Feagin14 | 7 | [`Feagin14`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-27.md) |
-| Leap Frog | baseline | [`leapFrog`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Symplectic Euler | baseline | [`symplecticEuler`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Velocity Verlet | baseline | [`velocityVerlet`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| PEFRL | baseline | [`PEFRL`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| VEFRL | baseline | [`VEFRL`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| EPEC | baseline | [`midpoint`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| EPEC Modified | baseline | [`heunsMethod`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| TVD RK3 | baseline | [`TVDRK3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| TVD RK2 | baseline | [`TVDRK2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Semi-Implicit Euler | baseline | [`<lambda>`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Explicit Euler | baseline | [`<lambda>`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Backward Euler (implicit) | baseline | [`backwardEuler`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Implicit Midpoint | baseline | [`implicitMidpoint`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Trapezoidal (Crank-Nicolson) | baseline | [`trapezoidal`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| SDIRK2 | baseline | [`SDIRK2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| TR-BDF2 | baseline | [`TRBDF2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| ESDIRK3(2)4L[2]SA | baseline | [`ESDIRK324L2SA`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| ESDIRK4(3)6L[2]SA | baseline | [`ESDIRK436L2SA`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Kvaerno3 | 8 | [`Kvaerno3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| Kvaerno4 | 8 | [`Kvaerno4`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| Kvaerno5 | 8 | [`Kvaerno5`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| KenCarp3 | 8 | [`KenCarp3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| KenCarp4 | 8 | [`KenCarp4`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| KenCarp47 | 8 | [`KenCarp47`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| KenCarp5 | 8 | [`KenCarp5`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| KenCarp58 | 8 | [`KenCarp58`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| ESDIRK3(2)5L[2]SA | 8 | [`ESDIRK325L2SA`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| ESDIRK4(3)6L[2]SA2 | 8 | [`ESDIRK436L2SA2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| ESDIRK4(3)7L[2]SA | 8 | [`ESDIRK437L2SA`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| ESDIRK5(4)7L[2]SA2 | 8 | [`ESDIRK547L2SA2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| ESDIRK5(4)I8L[2]SA | 8 | [`ESDIRK54I8L2SA`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| ESDIRK6(5)9L[2]SA | 8 | [`ESDIRK659L2SA`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| SSPSDIRK2 | 8 | [`SSPSDIRK2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| ARS222 | 8 | [`ARS222`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| ARS232 | 8 | [`ARS232`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| ARS343 | 8 | [`ARS343`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| ARS443 | 8 | [`ARS443`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| BHR553 | 8 | [`BHR553`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| Cash4 | 8 | [`Cash4`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| CFNLIRK3 | 8 | [`CFNLIRK3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| Hairer4 | 8 | [`Hairer4`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| Hairer42 | 8 | [`Hairer42`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| SFSDIRK4 | 8 | [`SFSDIRK4`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| SFSDIRK5 | 8 | [`SFSDIRK5`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| SFSDIRK6 | 8 | [`SFSDIRK6`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| SFSDIRK7 | 8 | [`SFSDIRK7`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| SFSDIRK8 | 8 | [`SFSDIRK8`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-28.md) |
-| Gauss-Legendre 2 | baseline | [`gaussLegendre2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Radau IIA s=2 | baseline | [`radauIia2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Gauss-Legendre 3 | 9 (first batch) | [`gaussLegendre3`](../../src/warpSPHIntegrators/fullyimplicit.py) | [validation](../development/phase8-wave9-validation.md) |
-| Radau IIA s=3 | 9 (first batch) | [`radauIia3`](../../src/warpSPHIntegrators/fullyimplicit.py) | [validation](../development/phase8-wave9-validation.md) |
-| ARK3(2)4L[2]SA | baseline | [`ARK324L2SA`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| ARK4(3)6L[2]SA | baseline | [`ARK436L2SA`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Newmark | baseline | [`newmark`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| BDF1 | baseline | [`BDF1`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| BDF2 | baseline | [`BDF2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| BDF3 | baseline | [`BDF3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| BDF4 | baseline | [`BDF4`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| BDF5 | baseline | [`BDF5`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| IMEX Euler | baseline | [`IMEXEuler`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| SBDF2 | baseline | [`SBDF2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| SBDF3 | baseline | [`SBDF3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| CNAB2 | baseline | [`CNAB2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| CNLF2 | 10 | [`CNLF2`](../../src/warpSPHIntegrators/imexmultistep.py) | [validation](../development/implicit-extensions-validation.md) |
-| MEBDF2 | 10 | [`MEBDF2`](../../src/warpSPHIntegrators/dirk.py) | [validation](../development/implicit-extensions-validation.md) |
-| Adams-Bashforth 2 | baseline | [`AB2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Adams-Bashforth 3 | baseline | [`AB3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Adams-Bashforth 4 | baseline | [`AB4`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Adams-Bashforth 5 | baseline | [`AB5`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Adams-Bashforth-Moulton 2 (PECE) | baseline | [`ABM2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Adams-Bashforth-Moulton 3 (PECE) | baseline | [`ABM3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Adams-Bashforth-Moulton 4 (PECE) | baseline | [`ABM4`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Adams-Bashforth-Moulton 5 (PECE) | 10 | [`ABM5`](../../src/warpSPHIntegrators/multistep.py) | [validation](../development/variable-adams-validation.md) |
-| SSPRKMSVS32 | 3 | [`SSPRKMSVS32`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-23.md) |
-| SSPRKMSVS43 | 3 | [`SSPRKMSVS43`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-3-23.md) |
-| Adams-Moulton 2 (implicit) | baseline | [`AM2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Adams-Moulton 3 (implicit) | baseline | [`AM3`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| Adams-Moulton 4 (implicit) | baseline | [`AM4`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| RKC1 | baseline | [`RKC1`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| RKC2 | baseline | [`RKC2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| RKL2 | baseline | [`RKL2`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| ROS3P | baseline | [`integrateROS3P`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| ETD2RK | baseline | [`integrateETD2RK`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
-| EXPRB32 | baseline | [`integrateEXPRB32`](../../src/warpSPHIntegrators/integration.py) | [record](../research/integrators/notes-index.md) |
+| Forward Euler | baseline | [`forwardEuler`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Midpoint | baseline | [`midpoint`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Heun's Method (2nd order) | baseline | [`heunsMethod`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Ralston's Method (2nd order) | baseline | [`ralston`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| RK3 | baseline | [`RK3`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Heun's Method (3rd order) | baseline | [`Heun3`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Ralston's Method (3rd order) | baseline | [`ralston3`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Wray's Method (3rd order) | baseline | [`Wray3`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| SSP RK3 | baseline | [`SSPRK3`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| SSPRK(10,4) | baseline | [`SSPRK104`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| SSPRK53 | 1 | [`SSPRK53`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-21.md) |
+| SSPRK63 | 1 | [`SSPRK63`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-21.md) |
+| SSPRK73 | 1 | [`SSPRK73`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-21.md) |
+| SSPRK83 | 1 | [`SSPRK83`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-21.md) |
+| SSPRK54 | 1 | [`SSPRK54`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-21.md) |
+| KYKSSPRK42 | 1 | [`KYKSSPRK42`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-21.md) |
+| KYK2014DGSSPRK_3S2 | 1 | [`KYK2014DGSSPRK_3S2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-21.md) |
+| SSPRK43 | 2 | [`SSPRK43`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-22.md) |
+| SSPRK432 | 2 | [`SSPRK432`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-22.md) |
+| SSPRK932 | 2 | [`SSPRK932`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-22.md) |
+| SSPRK53_2N1 | 5 | [`SSPRK53_2N1`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-25.md) |
+| SSPRK53_2N2 | 5 | [`SSPRK53_2N2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-25.md) |
+| SSPRK53_H | 5 | [`SSPRK53_H`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-25.md) |
+| RK4 | baseline | [`RK4`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| RK4 (alternative) | baseline | [`RK4alt`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Nystrom 5th order | baseline | [`Nystrom5`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Bogacki-Shampine 3(2) | baseline | [`BogackiShampine`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Dormand-Prince 5(4) | baseline | [`DormandPrince`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Cash-Karp 5(4) | baseline | [`CashKarp`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Tsit5 5(4) | 6 | [`Tsit5`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| OwrenZen3 3(2) | 6 | [`OwrenZen3`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| OwrenZen4 4(3) | 6 | [`OwrenZen4`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| OwrenZen5 5(4) | 6 | [`OwrenZen5`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| BS5 5(4) | 6 | [`BS5`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| Stepanov5 5(4) | 6 | [`Stepanov5`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| Alshina2 2(1) | 6 | [`Alshina2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| Alshina3 | 6 | [`Alshina3`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| Alshina6 | 6 | [`Alshina6`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| MSRK5 | 6 | [`MSRK5`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| MSRK6 | 6 | [`MSRK6`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| SIR54 | 6 | [`SIR54`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| Ralston4 | 6 | [`Ralston4`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| RKO65 | 6 | [`RKO65`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| RKM | 6 | [`RKM`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| PSRK4p7q6 | 6 | [`PSRK4p7q6`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| PSRK3p6q5 | 6 | [`PSRK3p6q5`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| PSRK3p5q4 | 6 | [`PSRK3p5q4`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-26.md) |
+| Vern6 6(5) | 7 | [`Vern6`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-27.md) |
+| Vern7 7(6) | 7 | [`Vern7`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-27.md) |
+| Vern8 8(7) | 7 | [`Vern8`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-27.md) |
+| Vern9 9(8) | 7 | [`Vern9`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-27.md) |
+| RKV76IIa 7(6) | 7 | [`RKV76IIa`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-27.md) |
+| TanYam7 7(6) | 7 | [`TanYam7`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-27.md) |
+| TsitPap8 8(7) | 7 | [`TsitPap8`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-27.md) |
+| DP8 | 7 | [`DP8`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-27.md) |
+| Feagin10 | 7 | [`Feagin10`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-27.md) |
+| Feagin12 | 7 | [`Feagin12`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-27.md) |
+| Feagin14 | 7 | [`Feagin14`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-27.md) |
+| Leap Frog | baseline | [`leapFrog`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Symplectic Euler | baseline | [`symplecticEuler`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Velocity Verlet | baseline | [`velocityVerlet`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| PEFRL | baseline | [`PEFRL`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| VEFRL | baseline | [`VEFRL`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| EPEC | baseline | [`midpoint`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| EPEC Modified | baseline | [`heunsMethod`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| TVD RK3 | baseline | [`TVDRK3`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| TVD RK2 | baseline | [`TVDRK2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Semi-Implicit Euler | baseline | [`<lambda>`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Explicit Euler | baseline | [`<lambda>`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Backward Euler (implicit) | baseline | [`backwardEuler`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Implicit Midpoint | baseline | [`implicitMidpoint`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Trapezoidal (Crank-Nicolson) | baseline | [`trapezoidal`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| SDIRK2 | baseline | [`SDIRK2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| TR-BDF2 | baseline | [`TRBDF2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| ESDIRK3(2)4L[2]SA | baseline | [`ESDIRK324L2SA`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| ESDIRK4(3)6L[2]SA | baseline | [`ESDIRK436L2SA`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Kvaerno3 | 8 | [`Kvaerno3`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| Kvaerno4 | 8 | [`Kvaerno4`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| Kvaerno5 | 8 | [`Kvaerno5`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| KenCarp3 | 8 | [`KenCarp3`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| KenCarp4 | 8 | [`KenCarp4`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| KenCarp47 | 8 | [`KenCarp47`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| KenCarp5 | 8 | [`KenCarp5`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| KenCarp58 | 8 | [`KenCarp58`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| ESDIRK3(2)5L[2]SA | 8 | [`ESDIRK325L2SA`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| ESDIRK4(3)6L[2]SA2 | 8 | [`ESDIRK436L2SA2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| ESDIRK4(3)7L[2]SA | 8 | [`ESDIRK437L2SA`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| ESDIRK5(4)7L[2]SA2 | 8 | [`ESDIRK547L2SA2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| ESDIRK5(4)I8L[2]SA | 8 | [`ESDIRK54I8L2SA`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| ESDIRK6(5)9L[2]SA | 8 | [`ESDIRK659L2SA`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| SSPSDIRK2 | 8 | [`SSPSDIRK2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| ARS222 | 8 | [`ARS222`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| ARS232 | 8 | [`ARS232`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| ARS343 | 8 | [`ARS343`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| ARS443 | 8 | [`ARS443`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| BHR553 | 8 | [`BHR553`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| Cash4 | 8 | [`Cash4`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| CFNLIRK3 | 8 | [`CFNLIRK3`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| Hairer4 | 8 | [`Hairer4`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| Hairer42 | 8 | [`Hairer42`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| SFSDIRK4 | 8 | [`SFSDIRK4`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| SFSDIRK5 | 8 | [`SFSDIRK5`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| SFSDIRK6 | 8 | [`SFSDIRK6`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| SFSDIRK7 | 8 | [`SFSDIRK7`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| SFSDIRK8 | 8 | [`SFSDIRK8`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-28.md) |
+| Gauss-Legendre 2 | baseline | [`gaussLegendre2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Radau IIA s=2 | baseline | [`radauIia2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Gauss-Legendre 3 | 9 (first batch) | [`gaussLegendre3`](../../src/warpSPHIntegrators/drivers/implicit/coupled.py) | [validation](../development/phase8-wave9-validation.md) |
+| Radau IIA s=3 | 9 (first batch) | [`radauIia3`](../../src/warpSPHIntegrators/drivers/implicit/coupled.py) | [validation](../development/phase8-wave9-validation.md) |
+| ARK3(2)4L[2]SA | baseline | [`ARK324L2SA`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| ARK4(3)6L[2]SA | baseline | [`ARK436L2SA`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Newmark | baseline | [`newmark`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| BDF1 | baseline | [`BDF1`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| BDF2 | baseline | [`BDF2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| BDF3 | baseline | [`BDF3`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| BDF4 | baseline | [`BDF4`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| BDF5 | baseline | [`BDF5`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| IMEX Euler | baseline | [`IMEXEuler`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| SBDF2 | baseline | [`SBDF2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| SBDF3 | baseline | [`SBDF3`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| CNAB2 | baseline | [`CNAB2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| CNLF2 | 10 | [`CNLF2`](../../src/warpSPHIntegrators/drivers/history/imex.py) | [validation](../development/implicit-extensions-validation.md) |
+| MEBDF2 | 10 | [`MEBDF2`](../../src/warpSPHIntegrators/schemes/definitions/dirk.py) | [validation](../development/implicit-extensions-validation.md) |
+| Adams-Bashforth 2 | baseline | [`AB2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Adams-Bashforth 3 | baseline | [`AB3`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Adams-Bashforth 4 | baseline | [`AB4`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Adams-Bashforth 5 | baseline | [`AB5`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Adams-Bashforth-Moulton 2 (PECE) | baseline | [`ABM2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Adams-Bashforth-Moulton 3 (PECE) | baseline | [`ABM3`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Adams-Bashforth-Moulton 4 (PECE) | baseline | [`ABM4`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Adams-Bashforth-Moulton 5 (PECE) | 10 | [`ABM5`](../../src/warpSPHIntegrators/drivers/history/adams.py) | [validation](../development/variable-adams-validation.md) |
+| SSPRKMSVS32 | 3 | [`SSPRKMSVS32`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-23.md) |
+| SSPRKMSVS43 | 3 | [`SSPRKMSVS43`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-3-23.md) |
+| Adams-Moulton 2 (implicit) | baseline | [`AM2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Adams-Moulton 3 (implicit) | baseline | [`AM3`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| Adams-Moulton 4 (implicit) | baseline | [`AM4`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| RKC1 | baseline | [`RKC1`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| RKC2 | baseline | [`RKC2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| RKL2 | baseline | [`RKL2`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| ROS3P | baseline | [`integrateROS3P`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| ETD2RK | baseline | [`integrateETD2RK`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
+| EXPRB32 | baseline | [`integrateEXPRB32`](../../src/warpSPHIntegrators/schemes/registry.py) | [record](../research/integrators/notes-index.md) |
 
 ## Other dispositions
 

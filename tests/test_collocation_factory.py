@@ -7,8 +7,10 @@ import numpy as np
 import pytest
 import torch
 
-from warpSPHIntegrators import (Collocation, TensorState, tensor_rhs, solve, getIntegrator,
-    BlockState, stage_schur_preconditioner)
+from warpSPHIntegrators.schemes import Collocation
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
+from warpSPHIntegrators.state import BlockState
+from warpSPHIntegrators.solvers import stage_schur_preconditioner
 
 ORACLE=Path(__file__).resolve().parents[1]/'scripts/coefficients/wave9/higher_stages.json'
 OPTIONS=dict(matvec='jvp',tol=1e-13,newton_tol=1e-9)
@@ -96,7 +98,7 @@ def test_existing_three_stage_maps_are_preserved():
         rhs=tensor_rhs(lambda t,y:-y+y*y*.1+math.sin(t))
         state=TensorState(torch.tensor([.7],dtype=torch.float64),t=.3)
         factory=Collocation(family,3)(state,.1,rhs,solver_opts=OPTIONS)
-        registered=getIntegrator(name)(state,.1,rhs,solver_opts=OPTIONS)
+        registered=get_scheme(name)(state,.1,rhs,solver_opts=OPTIONS)
         assert torch.allclose(factory.state.y,registered.state.y,atol=1e-13)
         assert torch.allclose(factory.error.y,registered.error.y,atol=1e-13)
 

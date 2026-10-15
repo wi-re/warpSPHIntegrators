@@ -16,12 +16,13 @@ import types
 
 import torch
 from torch.profiler import record_function
-from warpSPHIntegrators import TensorState,tensor_rhs,getIntegrator
-from warpSPHIntegrators import rkc
-from warpSPHIntegrators.fields import get_reference_state,field_behavior
-from warpSPHIntegrators.specs import IntegrationResult,StageResult
-from warpSPHIntegrators.util import (initializeSystem,finalizeSystem,updateStep,
-    updateStateEuler,reject_prior_step)
+from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme
+import warpSPHIntegrators.drivers.stabilized.chebyshev as rkc
+from warpSPHIntegrators.state import get_reference_state
+from warpSPHIntegrators.state.fields import field_behavior
+from warpSPHIntegrators.state import IntegrationResult, StageResult
+from warpSPHIntegrators.state.lifecycle import initializeSystem, finalizeSystem, updateStep, reject_prior_step
+from warpSPHIntegrators.state import updateStateEuler
 
 ROOT=Path(__file__).resolve().parents[1]
 BASELINE='f6c0edf'
@@ -45,7 +46,7 @@ def baseline_module():
 def measurements():
     old,old_hash=baseline_module();rows=[]
     for name in ['RKC1','RKC2','RKL2']:
-        for version,method in [('before',getattr(old,name)),('after',getIntegrator(name))]:
+        for version,method in [('before',getattr(old,name)),('after',get_scheme(name))]:
             for problem in ['time_force','nonlinear_forced']:
                 errors=[]
                 for n in [20,40,80]:

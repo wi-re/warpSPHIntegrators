@@ -10,14 +10,16 @@ import time
 
 import numpy as np
 import torch
-from warpSPHIntegrators import NDF,TensorState,tensor_rhs,solve,getIntegrator,ndf_difference_transform
+from warpSPHIntegrators.schemes import NDF
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
+from warpSPHIntegrators.schemes.coefficients.ndf import ndf_difference_transform
 
 ROOT=Path(__file__).resolve().parents[1]
 
 
 def measurements():
     rows=[]
-    methods=[NDF(p) for p in range(1,6)]+[getIntegrator(n) for n in ('BDF3','BDF5','KenCarp5')]
+    methods=[NDF(p) for p in range(1,6)]+[get_scheme(n) for n in ('BDF3','BDF5','KenCarp5')]
     for n in (64,4096):
         for problem in ('reaction','stiff_decay'):
             rates=torch.linspace(.1,10,n,dtype=torch.float64) if problem=='reaction' else torch.logspace(0,4,n,dtype=torch.float64)
@@ -79,8 +81,8 @@ def measurements():
             six_step_block_spectral_radius=float(max(abs(np.linalg.eigvals(np.linalg.matrix_power(advance,6)@up@np.linalg.matrix_power(advance,6)@down))))),
         qualification='Fixed target orders with quasi-constant accepted-step blocks. Nonlinear analytic manufactured reaction and diagonal stiff decay, finite horizon, JVP and exact diagonal forward preconditioning. Equal-grid work, not equal-accuracy speed or SPH/DAE claims. Local defects do not guarantee final global tolerances. No variable-order QNDF controller equivalence.',
         source_sha256={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (
-            ROOT/'src/warpSPHIntegrators/ndf.py',ROOT/'src/warpSPHIntegrators/run.py',ROOT/'src/warpSPHIntegrators/dirk.py',
-            ROOT/'src/warpSPHIntegrators/checkpoint.py',Path(__file__).resolve())})
+            ROOT/'src/warpSPHIntegrators/schemes/families/ndf.py',ROOT/'src/warpSPHIntegrators/runtime/run.py',ROOT/'src/warpSPHIntegrators/schemes/definitions/dirk.py',
+            ROOT/'src/warpSPHIntegrators/runtime/checkpoint.py',Path(__file__).resolve())})
 
 
 if __name__=='__main__':

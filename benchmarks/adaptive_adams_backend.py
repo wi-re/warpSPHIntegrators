@@ -9,13 +9,14 @@ import platform
 import sys
 import time
 import torch
-from warpSPHIntegrators import AdaptiveAdams,VariableAdams,TensorState,tensor_rhs,solve,getIntegrator
+from warpSPHIntegrators.schemes import AdaptiveAdams, VariableAdams
+from warpSPHIntegrators import TensorState, tensor_rhs, solve, get_scheme
 ROOT=Path(__file__).resolve().parents[1]
 
 
 def measurements():
     rows=[]
-    methods=[AdaptiveAdams(p) for p in (3,4,5)]+[VariableAdams(p,'abm') for p in (3,4,5)]+[getIntegrator('dormandPrince')]
+    methods=[AdaptiveAdams(p) for p in (3,4,5)]+[VariableAdams(p,'abm') for p in (3,4,5)]+[get_scheme('dormandPrince')]
     for n in (64,4096):
         rates=torch.linspace(.1,3.,n,dtype=torch.float64)
         for problem in ('reaction','spiral_heat'):
@@ -52,7 +53,7 @@ def measurements():
     model=next((line.split(':',1)[1].strip() for line in cpuinfo.read_text().splitlines() if line.startswith('model name')),platform.processor()) if cpuinfo.exists() else platform.processor()
     return dict(cpu_model=model,device='cpu',dtype='float64',threads=1,python=sys.version,torch=torch.__version__,platform=platform.platform(),
         cases=rows,qualification='Known nonlinear forced reaction and damped rotation/thermal budget, T=4, rates .1–3. RHS entries include rejected attempts. Equal tolerances are not equal-accuracy speed comparisons. No stiff/SPH or complete source-controller equivalence claim.',
-        source_sha256={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (Path(__file__).resolve(),ROOT/'src/warpSPHIntegrators/adaptive_adams.py',ROOT/'src/warpSPHIntegrators/variable_adams.py',ROOT/'src/warpSPHIntegrators/run.py')})
+        source_sha256={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (Path(__file__).resolve(),ROOT/'src/warpSPHIntegrators/schemes/families/adaptive_adams.py',ROOT/'src/warpSPHIntegrators/schemes/families/variable_adams.py',ROOT/'src/warpSPHIntegrators/runtime/run.py')})
 
 
 if __name__=='__main__':

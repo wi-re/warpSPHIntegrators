@@ -2,8 +2,11 @@
 
 import math
 import torch
-from warpSPHIntegrators import (ConservativeDissipativeRHS, SemilinearRHS,
-    TensorState, tensor_rhs, Strang, LinearExponentialFlow, solve)
+from warpSPHIntegrators.wrappers import (
+    ConservativeDissipativeRHS, Strang, LinearExponentialFlow,
+)
+from warpSPHIntegrators.adapters import SemilinearRHS
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
 
 
 def run_example():

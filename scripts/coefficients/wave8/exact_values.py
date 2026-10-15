@@ -53,7 +53,7 @@ BATCH3 = ["ARS222", "ARS232", "ARS343", "ARS443", "BHR553", "Cash4", "CFNLIRK3",
 
 dump = parse_dump(DUMP)
 
-from warpSPHIntegrators.dirk import getDIRKTableau
+from warpSPHIntegrators.schemes.coefficients.implicit import getDIRKTableau
 
 print("=== VERIFY batch1+2 (registered vs computed) ===")
 for name in BATCH12:

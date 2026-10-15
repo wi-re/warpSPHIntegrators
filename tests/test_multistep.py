@@ -15,12 +15,12 @@ and -- for the SSPRKMSVS pair -- the fixed-step-only contract (no error estimate
 import pytest
 import torch
 
-from warpSPHIntegrators import get_reference_state, getIntegrator, testing
-from warpSPHIntegrators.butcher import DormandPrince
-from warpSPHIntegrators.history import StepHistory
-from warpSPHIntegrators.multistep import (
-    AB2, AB3, AB4, AB5, ABM2, ABM3, ABM4, getABCoefficients, getAMCoefficients,
-)
+from warpSPHIntegrators.state import get_reference_state
+from warpSPHIntegrators import get_scheme
+import warpSPHIntegrators.testing as testing
+from warpSPHIntegrators.schemes.definitions.explicit import DormandPrince
+from warpSPHIntegrators.state import StepHistory
+from warpSPHIntegrators.drivers.history.adams import AB2, AB3, AB4, AB5, ABM2, ABM3, ABM4, getABCoefficients, getAMCoefficients
 
 AB_SCHEMES = [('Adams-Bashforth 2', 2), ('Adams-Bashforth 3', 3),
              ('Adams-Bashforth 4', 4), ('Adams-Bashforth 5', 5)]
@@ -72,7 +72,7 @@ def test_am_coefficients_sum_to_one(order):
 @pytest.mark.parametrize('name,order', ALL_MULTISTEP)
 @pytest.mark.parametrize('problem_name', ['oscillator', 'forced', 'damped'])
 def test_multistep_scheme_reaches_its_claimed_order(name, order, problem_name):
-    s = getIntegrator(name)
+    s = get_scheme(name)
     assert s.order == order
     dts = testing.default_step_sizes(0.1, 5)
     problem = testing.PROBLEMS[problem_name]()
@@ -96,7 +96,7 @@ def test_without_history_threading_falls_back_to_the_starter_exactly(name, order
     trajectory (Dormand-Prince 5(4) is higher order than any of these), not a subtly
     wrong one.
     """
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
 
     system_multistep = prob.initial()
@@ -113,7 +113,7 @@ def test_without_history_threading_falls_back_to_the_starter_exactly(name, order
 @pytest.mark.parametrize('name,order', ALL_MULTISTEP)
 def test_with_history_threading_diverges_from_the_starter(name, order, problem_name='oscillator'):
     """The inverse check: once there is enough history, it must actually use it."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS[problem_name]()
 
     system_multistep = _run(s, order, prob, dt=0.1, T=2.0)
@@ -150,7 +150,7 @@ def _count_evaluations(scheme, order, problem, dt, steps):
 
 @pytest.mark.parametrize('name,order', AB_SCHEMES)
 def test_ab_costs_one_evaluation_per_step_after_bootstrap(name, order):
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     per_step = _count_evaluations(s, order, prob, dt=0.1, steps=order + 3)
     assert per_step[-1] == 1, f'{name}: expected 1 evaluation/step once warmed up, got {per_step}'
@@ -158,7 +158,7 @@ def test_ab_costs_one_evaluation_per_step_after_bootstrap(name, order):
 
 @pytest.mark.parametrize('name,order', ABM_SCHEMES)
 def test_abm_costs_two_evaluations_per_step_after_bootstrap(name, order):
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     per_step = _count_evaluations(s, order, prob, dt=0.1, steps=order + 3)
     assert per_step[-1] == 2, f'{name}: expected 2 evaluations/step once warmed up, got {per_step}'
@@ -172,7 +172,7 @@ def test_abm_costs_two_evaluations_per_step_after_bootstrap(name, order):
 def test_ssprkmsvs_costs_one_evaluation_per_step_after_bootstrap(name, order):
     """The steady state reuses the past derivative from the history, so once the
     cold start (DP5 for `steps` calls) is done, each step is ONE evaluation."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     per_step = _count_evaluations(s, order, prob, dt=0.1, steps=order + 3)
     assert per_step[-1] == 1, f'{name}: expected 1 evaluation/step once warmed up, got {per_step}'
@@ -183,7 +183,7 @@ def test_ssprkmsvs_is_fixed_step_only(name, order):
     """No embedded estimate exists, so `result.error` must be None on every call
     (bootstrap and steady state alike) -- adaptive stepping is refused by
     construction rather than by a check that could be forgotten."""
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     system = prob.initial()
     history = StepHistory(maxlen=max(1, s.steps))
@@ -206,7 +206,7 @@ def test_dt_change_restarts_history_and_stays_correct(name, order):
     bootstrapping again with the new dt, rather than either crashing or silently using
     coefficients computed for the wrong step size.
     """
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     system = prob.initial()
     history = StepHistory(maxlen=max(1, s.steps))
@@ -224,7 +224,7 @@ def test_dt_change_restarts_history_and_stays_correct(name, order):
 def test_history_restarts_when_maxlen_is_exceeded_by_a_shorter_one():
     """A history built for a lower-order scheme (smaller maxlen) never over-fills."""
     history = StepHistory(maxlen=1)
-    s2 = getIntegrator('Adams-Bashforth 2')
+    s2 = get_scheme('Adams-Bashforth 2')
     prob = testing.PROBLEMS['oscillator']()
     system = prob.initial()
     for _ in range(3):
@@ -239,7 +239,7 @@ def test_history_restarts_when_maxlen_is_exceeded_by_a_shorter_one():
 
 @pytest.mark.parametrize('name,order', ALL_MULTISTEP)
 def test_multistep_rejects_prior_step_with_a_warning(name, order):
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     first = s(prob.initial(), dt=0.1, f=prob.rhs)
     with pytest.warns(RuntimeWarning, match='does not support first-stage reuse'):
@@ -248,7 +248,7 @@ def test_multistep_rejects_prior_step_with_a_warning(name, order):
 
 @pytest.mark.parametrize('name,order', ALL_MULTISTEP)
 def test_multistep_scheme_does_not_mutate_the_caller_state(name, order):
-    s = getIntegrator(name)
+    s = get_scheme(name)
     prob = testing.PROBLEMS['oscillator']()
     system = prob.initial()
     before_x = system.state.x.clone()
@@ -258,7 +258,7 @@ def test_multistep_scheme_does_not_mutate_the_caller_state(name, order):
 
 def test_testing_run_history_true_is_the_blessed_calling_convention():
     """testing.run(..., history=True) (NOTES.md S5) must reach the claimed order too."""
-    s = getIntegrator('Adams-Bashforth 4')
+    s = get_scheme('Adams-Bashforth 4')
     prob = testing.PROBLEMS['oscillator']()
     dts = testing.default_step_sizes(0.1, 5)
     errors = []

@@ -4,7 +4,10 @@ import math
 from pathlib import Path
 import pytest
 import torch
-from warpSPHIntegrators import AdaptiveNDF,NDF,TensorState,tensor_rhs,solve,save_checkpoint,load_checkpoint,snapshot_state,ndf_order_proposals
+from warpSPHIntegrators.schemes import AdaptiveNDF, NDF
+from warpSPHIntegrators import TensorState, tensor_rhs, solve
+from warpSPHIntegrators.runtime import save_checkpoint, load_checkpoint, snapshot_state
+from warpSPHIntegrators.schemes.families.adaptive_ndf import ndf_order_proposals
 SOURCE=json.loads((Path(__file__).parents[1]/'scripts/coefficients/wave10/ndf_controller.json').read_text())
 OPTIONS=dict(matvec='jvp',tol=1e-15,newton_tol=1e-10)
 
@@ -100,7 +103,7 @@ def test_order_changes_can_reduce_and_zero_defects_do_not_raise_order():
 
 
 def test_foreign_history_explicit_restart_and_insufficient_capacity():
- from warpSPHIntegrators import StepHistory
+ from warpSPHIntegrators.state import StepHistory
  method=AdaptiveNDF()
  with pytest.raises(ValueError,match='capacity'):
   method(TensorState(torch.ones(1,dtype=torch.float64)),.1,tensor_rhs(lambda t,y:-y),history=StepHistory(1))
