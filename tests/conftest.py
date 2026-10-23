@@ -20,6 +20,7 @@ CATEGORIES = {
     # State machinery, field semantics, registry metadata, backend dispatch.
     'core': [
         'test_backend_dispatch.py',
+        'test_conserved_lagrangian.py',
         'test_package_api.py',
         'test_catalog.py',
         'test_copied_fields.py',
