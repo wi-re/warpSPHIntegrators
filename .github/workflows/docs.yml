@@ -38,12 +38,19 @@ jobs:
           python scripts/validate_repository.py
           python scripts/validate_doc_examples.py
           python scripts/generate_catalog.py --check
+          python web/tools/export_catalog.py --check
+          python web/tools/export_reference.py --check
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: docs/package-lock.json
+
+      - name: Check browser laboratory
+        run: |
+          npm --prefix web run check
+          npm --prefix web test
 
       - name: Install
         # The site reads committed generated data; Python is used only by

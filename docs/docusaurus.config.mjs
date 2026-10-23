@@ -83,6 +83,7 @@ const config = {
             label: 'Families',
           },
           { to: 'docs/solver', position: 'left', label: 'Solver stack' },
+          { href: 'https://fluids.dev/warpSPHIntegrators/laboratory/', position: 'left', label: 'Laboratory' },
           {
             to: 'https://github.com/wi-re/warpSPHIntegrators',
             label: 'GitHub',

@@ -204,3 +204,7 @@ cython_debug/
 **/models/
 # Local probes/output preserved after durable oracles were promoted.
 .tmp/
+
+# Generated browser laboratory assets.
+/web/dist/
+/docs/static/laboratory/

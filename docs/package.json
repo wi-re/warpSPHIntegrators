@@ -7,7 +7,9 @@
     "start": "docusaurus start",
     "build": "docusaurus build",
     "serve": "docusaurus serve",
-    "clear": "docusaurus clear"
+    "clear": "docusaurus clear",
+    "prebuild": "node ../web/tools/build.mjs --docs",
+    "prestart": "node ../web/tools/build.mjs --docs"
   },
   "dependencies": {
     "@docusaurus/core": "3.7.0",

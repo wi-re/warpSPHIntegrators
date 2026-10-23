@@ -9,6 +9,7 @@ const sidebars = {
     'function-maps',
     'operator-splitting',
     'structural-demo',
+    'browser-laboratory',
     'options',
     'selection',
     'catalog',
