@@ -81,7 +81,7 @@ factor.
 2. **JFNK with FD matvecs.** Stiff, backend-agnostic, no capability gate — works for
    *any* `f`. Needs the flatten/unflatten bijection over integrated fields
    (mechanical — the field metadata already names them) plus GMRES. **Built
-   2026-08-24 — `docs/plans/wcsph-jfnk.md` Phase A, `JFNKSolver` in `jfnk.py`.** Opt-in only
+   2026-08-24 — `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md` Phase A, `JFNKSolver` in `jfnk.py`.** Opt-in only
    (`solver=JFNKSolver()`), validated against the implicit wave-equation example:
    reproduces the hand-rolled CG reference to solver tolerance through the generic
    DIRK driver, and succeeds (bounded, correctly L-stably damped) at a stiffness
@@ -110,7 +110,7 @@ factor.
    field whose tangent slice is identically zero and leave it primal, which is exact
    by linearity (not an approximation) and still lets a live field's tangent
    propagate correctly to every output, including one for a field that was itself
-   left primal. See `docs/plans/wcsph-jfnk.md` Phase A3 for the full account.
+   left primal. See `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md` Phase A3 for the full account.
 4. **User-supplied `solve_linear`.** An ISPH code already owns a pressure-projection
    solve and will always beat a generic Krylov method. This should be the contract;
    1–3 are the fallbacks.
@@ -124,7 +124,7 @@ in right-hand-side evaluations:
   few of the default 20-correction budget on smooth stage systems; the count grows
   with the stage system's nonlinearity and with `dt` past the non-stiff regime
   (measured: mean corrections `3.1 → 11.6` as the `dt` multiplier over the
-  acoustic CFL goes `1× → 30×` on `docs/plans/wcsph-jfnk.md` Phase B step 6's acoustic core).
+  acoustic CFL goes `1× → 30×` on `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md` Phase B step 6's acoustic core).
 - **GMRES matvecs.** Each correction solves one linear system with restarted GMRES
   (default restart 30), one matvec per Krylov iteration; the total across all
   corrections is `SolveDiagnostics.gmres_iterations`. **Each matvec is itself one
@@ -141,11 +141,11 @@ in right-hand-side evaluations:
   multi-scale flat vector (E1.5's finding); the exact JVP is exact by linearity
   for the qualifying `f`s and measurably uses no more GMRES iterations
   (`test_jfnk.py`'s `iters_jvp <= iters_fd` check). On the turbulent-flow probe
-  (`docs/plans/wcsph-jfnk.md` E1.6) that accuracy difference is the thing that keeps the
+  (`docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md` E1.6) that accuracy difference is the thing that keeps the
   large-`dt` forced branch tracking the reference where the FD matvec starts
   drifting — reach for `matvec='jvp'` there, when the `f` qualifies.
 - **Measured scale** (acoustic core, `nx=24`, Backward Euler,
-  `docs/plans/wcsph-jfnk.md` Phase B step 6): wall clock `13.75 → 1218.69` ms/step from
+  `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md` Phase B step 6): wall clock `13.75 → 1218.69` ms/step from
   `1×` to `30×` the acoustic CFL, against plain explicit RK4's `2.87` ms/step at
   its native `1×`. JFNK is not a wall-clock win at a `dt` where explicit is still
   stable; it is the only bounded option past explicit's own limit, and it stays

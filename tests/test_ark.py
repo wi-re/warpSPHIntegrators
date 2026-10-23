@@ -1,4 +1,4 @@
-"""Additive (IMEX) Kennedy-Carpenter ARK pair (NOTES.md S3.9 Phase 5).
+"""Additive (IMEX) Kennedy-Carpenter ARK pair (docs/research/integrators/notes-3-9.md Phase 5).
 
 Generic behaviour (state cloning, copied/ephemeral fields, stage times, kwargs
 passthrough, pure-implicit convergence order, energy behaviour) is already covered

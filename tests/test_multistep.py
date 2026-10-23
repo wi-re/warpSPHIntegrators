@@ -1,5 +1,5 @@
 """Explicit multistep drivers: Adams-Bashforth / Adams-Bashforth-Moulton
-(NOTES.md S3.6 Phase 1) and Shu's SSPRKMSVS (NOTES.md S3.23, wave 3).
+(docs/research/integrators/notes-3-6.md Phase 1) and Shu's SSPRKMSVS (docs/research/integrators/notes-3-23.md, wave 3).
 
 Most generic behaviour (state cloning, copied/ephemeral fields, kwargs passthrough) is
 already covered for these schemes for free, the moment they joined the `scheme`
@@ -66,7 +66,7 @@ def test_am_coefficients_sum_to_one(order):
 
 
 # --------------------------------------------------------------------------- #
-# Convergence order (empirical, matching NOTES.md S3.1's own verified table)   #
+# Convergence order (empirical, matching docs/research/integrators/notes-3-1.md's own verified table)   #
 # --------------------------------------------------------------------------- #
 
 @pytest.mark.parametrize('name,order', ALL_MULTISTEP)
@@ -126,7 +126,7 @@ def test_with_history_threading_diverges_from_the_starter(name, order, problem_n
 
 
 # --------------------------------------------------------------------------- #
-# Evaluation-count cost claim (NOTES.md S3.6's table: AB=1, ABM=2 per step     #
+# Evaluation-count cost claim (docs/research/integrators/notes-3-6.md's table: AB=1, ABM=2 per step     #
 # once past the bootstrap)                                                    #
 # --------------------------------------------------------------------------- #
 
@@ -257,7 +257,7 @@ def test_multistep_scheme_does_not_mutate_the_caller_state(name, order):
 
 
 def test_testing_run_history_true_is_the_blessed_calling_convention():
-    """testing.run(..., history=True) (NOTES.md S5) must reach the claimed order too."""
+    """testing.run(..., history=True) (docs/research/integrators/baseline-audit-2026-08-05.md S5) must reach the claimed order too."""
     s = get_scheme('Adams-Bashforth 4')
     prob = testing.PROBLEMS['oscillator']()
     dts = testing.default_step_sizes(0.1, 5)

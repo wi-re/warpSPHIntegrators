@@ -67,7 +67,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # v7.9.0, `src/arkode/arkode_butcher_dirk.def` (ARKODE_ESDIRK324L2SA).
         # Explicit first stage (a11 = 0, c1 = 0). Order, embedded order, and
         # A/L stability verified by symbolic Taylor expansion, numeric
-        # local-error rates, and exact stability-function sweeps (NOTES.md S3.6).
+        # local-error rates, and exact stability-function sweeps (docs/research/integrators/notes-3-6.md).
         g = 0.4358665215084589994160194511935568425293
         return butcherTableau(
             a=np.array([
@@ -101,7 +101,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # in its exact radical/rational form. Explicit first stage. The
         # off-diagonal A[i][0] entries are derived exactly as in that file:
         # A[i][0] = c[i] - sum_{j>=1} A[i][j]. Order, embedded order, and
-        # A/L stability verified as for ESDIRK324L2SA (NOTES.md S3.6).
+        # A/L stability verified as for ESDIRK324L2SA (docs/research/integrators/notes-3-6.md).
         sqrt2 = np.sqrt(2.0)
         b0 = (1181.0 - 987.0 * sqrt2) / 13782.0
         b2 = 47.0 * (-267.0 + 1783.0 * sqrt2) / 273343.0
@@ -143,7 +143,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
     elif scheme == 'Kvaerno3':
         # Kvaerno's 4-stage L-stable ESDIRK3(2) (order 3 / embedded 2, A- and
         # L-stable, stiffly accurate), Kværnø, BIT 44(3):489-502 (2004);
-        # coefficients from the ODE v7.8.1 ESDIRKIMEXTableau (NOTES.md S3.28).
+        # coefficients from the ODE v7.8.1 ESDIRKIMEXTableau (docs/research/integrators/notes-3-28.md).
         # ODE stores c[1] = gamma (the SDIRK diagonal) while row 2 sums to
         # 2*gamma; the row sum is the consistent node, so c[1] = 2*gamma here
         # (ODE's non-autonomous execution evaluates stage 2 at the stored, wrong
@@ -165,7 +165,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # R(inf) ~ 0.718 -- NOT L-stable, unlike its 3- and 5-stage siblings),
         # Kværnø, BIT 44(3):489-502 (2004); coefficients from the ODE v7.8.1
         # ESDIRKIMEXTableau. Same c[1] = 2*gamma storage-bug correction as
-        # Kvaerno3 (NOTES.md S3.28).
+        # Kvaerno3 (docs/research/integrators/notes-3-28.md).
         g = 0.4358665215
         return butcherTableau(
             a=np.array([
@@ -183,7 +183,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # Kvaerno's 7-stage L-stable ESDIRK5(4) (order 5 / embedded 4, A- and
         # L-stable, stiffly accurate), Kværnø, BIT 44(3):489-502 (2004);
         # coefficients from the ODE v7.8.1 ESDIRKIMEXTableau. Same c[1] = 2*gamma
-        # storage-bug correction (NOTES.md S3.28). c[2] = 1.2303... > 1.
+        # storage-bug correction (docs/research/integrators/notes-3-28.md). c[2] = 1.2303... > 1.
         return butcherTableau(
             a=np.array([
                 [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -206,7 +206,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # TM-2001-210878 (2001). Its (a, b, c) core is bit-identical to the
         # SUNDIALS ARKODE ESDIRK324L2SA registered above; only the embedded pair
         # differs (Kennedy's btilde vs ARKODE's published `d`). Coefficients from
-        # the ODE v7.8.1 ESDIRKIMEXTableau (NOTES.md S3.28).
+        # the ODE v7.8.1 ESDIRKIMEXTableau (docs/research/integrators/notes-3-28.md).
         g = 0.435866521508459
         return butcherTableau(
             a=np.array([
@@ -222,7 +222,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
     elif scheme == 'KenCarp4':
         # Kennedy's 6-stage ESDIRK4(3)6L[2]SA (order 4 / embedded 3, A- and
         # L-stable, stiffly accurate), Kennedy, NASA TM-2001-210878 (2001);
-        # coefficients from the ODE v7.8.1 ESDIRKIMEXTableau (NOTES.md S3.28).
+        # coefficients from the ODE v7.8.1 ESDIRKIMEXTableau (docs/research/integrators/notes-3-28.md).
         return butcherTableau(
             a=np.array([
                 [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -242,7 +242,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # Kennedy-Carpenter's 7-stage ESDIRK4(3)7L[2]SA (order 4 / embedded 3,
         # A- and L-stable, stiffly accurate), Kennedy & Carpenter, ANM
         # 136:183-205 (2019); coefficients from the ODE v7.8.1
-        # ESDIRKIMEXTableau (NOTES.md S3.28).
+        # ESDIRKIMEXTableau (docs/research/integrators/notes-3-28.md).
         return butcherTableau(
             a=np.array([
                 [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -262,7 +262,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
     elif scheme == 'KenCarp5':
         # Kennedy's 8-stage ESDIRK5(4)8L[2]SA (order 5 / embedded 4, A- and
         # L-stable, stiffly accurate), Kennedy, NASA TM-2001-210878 (2001);
-        # coefficients from the ODE v7.8.1 ESDIRKIMEXTableau (NOTES.md S3.28).
+        # coefficients from the ODE v7.8.1 ESDIRKIMEXTableau (docs/research/integrators/notes-3-28.md).
         return butcherTableau(
             a=np.array([
                 [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -284,7 +284,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # Kennedy-Carpenter's 8-stage ESDIRK5(4)8L[2]SA (order 5 / embedded 4,
         # A- and L-stable, stiffly accurate), Kennedy & Carpenter, ANM
         # 136:183-205 (2019); coefficients from the ODE v7.8.1
-        # ESDIRKIMEXTableau (NOTES.md S3.28).
+        # ESDIRKIMEXTableau (docs/research/integrators/notes-3-28.md).
         return butcherTableau(
             a=np.array([
                 [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -306,7 +306,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # Kennedy-Carpenter's optimized 5-stage ESDIRK3(2)5L[2]SA (order 3 /
         # embedded 2, A- and L-stable, stiffly accurate), Kennedy & Carpenter,
         # ANM 146:221-244 (2019); coefficients from the ODE v7.8.1
-        # ESDIRKIMEXTableau (NOTES.md S3.28).
+        # ESDIRKIMEXTableau (docs/research/integrators/notes-3-28.md).
         return butcherTableau(
             a=np.array([
                 [0.0, 0.0, 0.0, 0.0, 0.0],
@@ -323,7 +323,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # Kennedy-Carpenter's optimized 6-stage ESDIRK4(3)6L[2]SA (order 4 /
         # embedded 3, A- and L-stable, stiffly accurate), Kennedy & Carpenter,
         # ANM 146:221-244 (2019); coefficients from the ODE v7.8.1
-        # ESDIRKIMEXTableau (NOTES.md S3.28). c[4] = 16/15 > 1.
+        # ESDIRKIMEXTableau (docs/research/integrators/notes-3-28.md). c[4] = 16/15 > 1.
         return butcherTableau(
             a=np.array([
                 [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -343,7 +343,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # Kennedy-Carpenter's optimized 7-stage ESDIRK4(3)7L[2]SA (order 4 /
         # embedded 3, A- and L-stable, stiffly accurate), Kennedy & Carpenter,
         # ANM 146:221-244 (2019); coefficients from the ODE v7.8.1
-        # ESDIRKIMEXTableau (NOTES.md S3.28).
+        # ESDIRKIMEXTableau (docs/research/integrators/notes-3-28.md).
         return butcherTableau(
             a=np.array([
                 [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -364,7 +364,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # Kennedy-Carpenter's optimized 7-stage ESDIRK5(4)7L[2]SA (order 5 /
         # embedded 4, A- and L-stable, stiffly accurate), Kennedy & Carpenter,
         # ANM 146:221-244 (2019); coefficients from the ODE v7.8.1
-        # ESDIRKIMEXTableau (NOTES.md S3.28). ODE stores c[3] = 49/453 while row
+        # ESDIRKIMEXTableau (docs/research/integrators/notes-3-28.md). ODE stores c[3] = 49/453 while row
         # 4 sums to 0.1388101983002833; with the row sum b.c = 1/2 exactly, so
         # the row sum is the consistent node and the stored value is an ODE
         # typo (its non-autonomous execution evaluates stage 4 at the wrong
@@ -389,7 +389,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # Kennedy-Carpenter's 8-stage ESDIRK5(4)I8L[2]SA (order 5 / embedded 4,
         # A- and L-stable, stiffly accurate; the intermediate-stage variant of
         # the 5th-order pair), Kennedy & Carpenter, ANM 146:221-244 (2019);
-        # coefficients from the ODE v7.8.1 ESDIRKIMEXTableau (NOTES.md S3.28).
+        # coefficients from the ODE v7.8.1 ESDIRKIMEXTableau (docs/research/integrators/notes-3-28.md).
         return butcherTableau(
             a=np.array([
                 [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -410,7 +410,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
     elif scheme == 'ESDIRK659L2SA':
         # Kennedy-Carpenter's 9-stage ESDIRK6(5)9L[2]SA (order 6 / embedded 5,
         # stiffly accurate), Kennedy & Carpenter, ANM 146:221-244 (2019);
-        # coefficients from the ODE v7.8.1 ESDIRKIMEXTableau (NOTES.md S3.28).
+        # coefficients from the ODE v7.8.1 ESDIRKIMEXTableau (docs/research/integrators/notes-3-28.md).
         # NOTE: ODE's own docstring flags this tableau with "STABILITY ISSUES"
         # (SciML/OrdinaryDiffEq.jl#1933); the probe's 89-degree A-cone grid and
         # real-axis sweep found no violation on the tested ranges, but it is
@@ -438,7 +438,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # region (order 2, gamma = 1/4, A-stable on the real axis with
         # R(inf) = 1 -- NOT L-stable), Ketcheson, Macdonald & Gottlieb, ANM
         # 59(2):373-392 (2009). Coefficients from the ODE v7.8.1
-        # ESDIRKIMEXTableau (NOTES.md S3.28). ODE stores c = [1, 1] (an
+        # ESDIRKIMEXTableau (docs/research/integrators/notes-3-28.md). ODE stores c = [1, 1] (an
         # execution artifact of its explicit_fsallast handling); the consistent
         # abscissae are the row sums [1/4, 3/4], and ODE's non-autonomous
         # execution evaluates both stages at the stored (wrong) times.
@@ -455,7 +455,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # the implicit half of ODE's ARS222 IMEX method -- its Ae/be explicit
         # part is unused on pure problems), Ascher, Ruuth & Spiteri, ANM
         # 25(2-3):151-167 (1997); coefficients from the ODE v7.8.1 tableau
-        # (NOTES.md S3.28). The first stage is free (a[0] = 0, b[0] = 0):
+        # (docs/research/integrators/notes-3-28.md). The first stage is free (a[0] = 0, b[0] = 0):
         # the effective method is the 2-stage SDIRK with
         # gamma = 1 - 1/sqrt(2) = 0.29289321881345254.
         return butcherTableau(
@@ -470,7 +470,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
     elif scheme == 'ARS232':
         # Ascher-Ruuth-Spiteri's 3-stage ESDIRK2 (order 2, stiffly accurate),
         # Ascher, Ruuth & Spiteri, ANM 25(2-3):151-167 (1997); coefficients
-        # from the ODE v7.8.1 tableau (NOTES.md S3.28). ODE's ARS232Tableau
+        # from the ODE v7.8.1 tableau (docs/research/integrators/notes-3-28.md). ODE's ARS232Tableau
         # carries the SAME implicit (Ai, bi, c) as ARS222 -- only the Ae/be
         # explicit part differs (delta = -2*sqrt(2)/3), and it is unused on
         # pure problems, so this is the implicit half of ARS(2,3,2).
@@ -487,7 +487,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # Ascher-Ruuth-Spiteri's 4-stage ESDIRK3 (order 3, stiffly accurate;
         # the implicit half of ODE's ARS343 IMEX method), Ascher, Ruuth &
         # Spiteri, ANM 25(2-3):151-167 (1997); coefficients from the ODE
-        # v7.8.1 tableau (NOTES.md S3.28).
+        # v7.8.1 tableau (docs/research/integrators/notes-3-28.md).
         return butcherTableau(
             a=np.array([
                 [0.0, 0.0, 0.0, 0.0],
@@ -502,7 +502,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # Ascher-Ruuth-Spiteri's 5-stage ESDIRK3 (order 3, stiffly accurate;
         # the implicit half of ODE's ARS443 IMEX method, gamma = 1/2),
         # Ascher, Ruuth & Spiteri, ANM 25(2-3):151-167 (1997); coefficients
-        # from the ODE v7.8.1 tableau (NOTES.md S3.28).
+        # from the ODE v7.8.1 tableau (docs/research/integrators/notes-3-28.md).
         return butcherTableau(
             a=np.array([
                 [0.0, 0.0, 0.0, 0.0, 0.0],
@@ -518,7 +518,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # Boscarino-Russo's 5-stage ESDIRK3 (order 3, stiffly accurate; the
         # BHR(5,5,3)* tableau, implicit half of ODE's BHR553 IMEX method),
         # Boscarino & Russo, SIAM J. Sci. Comput. 31(3):1926-1945 (2009);
-        # coefficients from the ODE v7.8.1 tableau (NOTES.md S3.28), as
+        # coefficients from the ODE v7.8.1 tableau (docs/research/integrators/notes-3-28.md), as
         # stored (12 digits). Stage 4 sits at c[3] = 1.5, well past the step
         # end (as in ODE) -- see test_stage_times_stay_within_the_step.
         return butcherTableau(
@@ -538,7 +538,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # accuracy predicate -- and this registration -- record it as NOT
         # stiffly accurate), Hindmarsh et al. (SUNDIALS), ACM Trans. Math.
         # Software 31(3):363-396 (2005); coefficients from the ODE v7.8.1
-        # tableau (NOTES.md S3.28), as stored (12 digits) except the last
+        # tableau (docs/research/integrators/notes-3-28.md), as stored (12 digits) except the last
         # b weight, nudged by 7.8e-12 so sum(b) == 1.0 exactly (ODE's
         # stored weights sum to 1 + 7.8e-12). Implicit first stage
         # (a[0,0] = gamma); the c row is the row sums, not ODE's stored c
@@ -558,7 +558,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
     elif scheme == 'CFNLIRK3':
         # Calvo-DeFrutos-Novo's 4-stage linearly-implicit ESDIRK3 (order 3,
         # stiffly accurate), Calvo, De Frutos & Novo, ANM 37(4):535-549
-        # (2001); coefficients from the ODE v7.8.1 tableau (NOTES.md
+        # (2001); coefficients from the ODE v7.8.1 tableau (docs/research/integrators/notes-index.md
         # S3.28), as stored (12 digits). ODE registers CFNLIRK3 as a split
         # (IMEX) method; on a pure problem the effective step is the
         # implicit-side DIRK, whose coefficients match ARS343's to the 12
@@ -577,7 +577,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # Hairer-Wanner's 5-stage SDIRK4 (order 4, stiffly accurate, (4,3)
         # embedded pair), Hairer & Wanner, Solving Ordinary Differential
         # Equations II, Springer (1996); coefficients from the ODE v7.8.1
-        # tableau (NOTES.md S3.28). Implicit first stage (a[0,0] = 1/4).
+        # tableau (docs/research/integrators/notes-3-28.md). Implicit first stage (a[0,0] = 1/4).
         return butcherTableau(
             a=np.array([
                 [0.25, 0.0, 0.0, 0.0, 0.0],
@@ -595,7 +595,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # embedded pair; the second of the book's two 4th-order 5-stage
         # tableaus), Hairer & Wanner, Solving Ordinary Differential
         # Equations II, Springer (1996); coefficients from the ODE v7.8.1
-        # tableau (NOTES.md S3.28). Implicit first stage (a[0,0] = 4/15).
+        # tableau (docs/research/integrators/notes-3-28.md). Implicit first stage (a[0,0] = 4/15).
         return butcherTableau(
             a=np.array([
                 [0.26666666666666666, 0.0, 0.0, 0.0, 0.0],
@@ -612,7 +612,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
         # Ferracina-Spijker's 4-stage SFSDIRK (order 4, NOT stiffly
         # accurate -- the c nodes stop at 0.885), Ferracina & Spijker, ANM
         # 58(11):1675-1686 (2008); coefficients from the ODE v7.8.1 tableau
-        # (NOTES.md S3.28), as stored (12 digits). Implicit first stage;
+        # (docs/research/integrators/notes-3-28.md), as stored (12 digits). Implicit first stage;
         # the c row is the row sums, not ODE's stored c (which carries
         # ~9e-12 transcription noise).
         return butcherTableau(
@@ -628,7 +628,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
     elif scheme == 'SFSDIRK5':
         # Ferracina-Spijker's 5-stage SFSDIRK (order 4, NOT stiffly
         # accurate), Ferracina & Spijker, ANM 58(11):1675-1686 (2008);
-        # coefficients from the ODE v7.8.1 tableau (NOTES.md S3.28), as
+        # coefficients from the ODE v7.8.1 tableau (docs/research/integrators/notes-3-28.md), as
         # stored (12 digits) except the last b weight, nudged by 1e-12 so
         # sum(b) == 1.0 exactly. ODE's own alg_order records 4 (its
         # docstring's
@@ -649,7 +649,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
     elif scheme == 'SFSDIRK6':
         # Ferracina-Spijker's 6-stage SFSDIRK (order 4, NOT stiffly
         # accurate), Ferracina & Spijker, ANM 58(11):1675-1686 (2008);
-        # coefficients from the ODE v7.8.1 tableau (NOTES.md S3.28), as
+        # coefficients from the ODE v7.8.1 tableau (docs/research/integrators/notes-3-28.md), as
         # stored (12 digits). Implicit first stage.
         return butcherTableau(
             a=np.array([
@@ -666,7 +666,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
     elif scheme == 'SFSDIRK7':
         # Ferracina-Spijker's 7-stage SFSDIRK (order 4, NOT stiffly
         # accurate), Ferracina & Spijker, ANM 58(11):1675-1686 (2008);
-        # coefficients from the ODE v7.8.1 tableau (NOTES.md S3.28), as
+        # coefficients from the ODE v7.8.1 tableau (docs/research/integrators/notes-3-28.md), as
         # stored (12 digits) except the last b weight, nudged by 1e-12 so
         # sum(b) == 1.0 exactly. Implicit first stage.
         return butcherTableau(
@@ -685,7 +685,7 @@ def getDIRKTableau(scheme: str) -> butcherTableau:
     elif scheme == 'SFSDIRK8':
         # Ferracina-Spijker's 8-stage SFSDIRK (order 4, NOT stiffly
         # accurate), Ferracina & Spijker, ANM 58(11):1675-1686 (2008);
-        # coefficients from the ODE v7.8.1 tableau (NOTES.md S3.28), as
+        # coefficients from the ODE v7.8.1 tableau (docs/research/integrators/notes-3-28.md), as
         # stored (12 digits) except the last b weight, nudged by 1e-12 so
         # sum(b) == 1.0 exactly. Implicit first stage.
         return butcherTableau(

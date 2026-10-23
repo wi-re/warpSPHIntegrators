@@ -298,13 +298,13 @@ NOT_APPLICABLE_IDENTIFIERS = {
     'newmark',
 }
 
-#: Parabolic super-timestepping schemes (RKC1 / RKC2 / RKL2, NOTES.md S3.13).
+#: Parabolic super-timestepping schemes (RKC1 / RKC2 / RKL2, docs/research/integrators/notes-3-13.md).
 #: They take a per-step stage count and are built to stabilise real negative
 #: (parabolic) eigenvalues, so they cannot be run on the advection problem as-is
 #: and the hyperbolic TVD / SSP question does not apply to them either.
 PARABOLIC_ONLY_IDENTIFIERS = {'rkc1', 'rkc2', 'rkl2'}
 
-#: Structured-semilinear-only schemes (NOTES.md S3.15). These integrate the
+#: Structured-semilinear-only schemes (docs/research/integrators/notes-3-15.md). These integrate the
 #: linear part ``L`` exactly and therefore require the ``linear`` accessor of a
 #: ``SemilinearRHS`` (a plain callable carries only the combined ``f``). The
 #: model advection problem is registered as a plain callable, so such a scheme

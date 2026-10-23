@@ -33,14 +33,14 @@ from conftest import ORDER_TOLERANCE, dts_for, order_of, problem
 #: than the ~1e-14 the all-explicit FSAL pairs reach -- hence the exactness tolerance
 #: in `test_fsal_reuse_is_free` is sized for the JFNK level.
 FSAL_SCHEMES = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)',
-                # The wave-6 ODE tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13):
+                # The wave-6 ODE tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13):
                 # the six embedded pairs are FSAL (c_s == 1, a[-1] == b_main),
                 # and so are the three fixed-step MSRK5/MSRK6/SIR54 (their last
                 # row IS the weight vector).
                 'Tsit5 5(4)', 'OwrenZen3 3(2)', 'OwrenZen4 4(3)', 'OwrenZen5 5(4)',
                 'BS5 5(4)', 'Stepanov5 5(4)',
                 'MSRK5', 'MSRK6', 'SIR54',
-                # Wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13): of the eleven new
+                # Wave 7 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): of the eleven new
                 # high-order tableaus only Vern6 6(5) is FSAL (c_s == 1 and its
                 # last row IS the main weight vector); the other Verner pairs,
                 # TsitPap8 and the plain DP8/Feagin tableaus are not.
@@ -81,7 +81,7 @@ def test_fsal_tableaus_have_matching_endpoint_and_explicit_first_stage(name):
 #: 2.98 on Kepler, so the degrading-reuse warning is not needless.
 REUSE_EXACT_ON_LINEAR_AUTONOMOUS = {'SSPRK(10,4)'}
 
-#: Wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13): reuse orders that are pre-asymptotic
+#: Wave 7 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): reuse orders that are pre-asymptotic
 #: on every grid affordable in double precision. The reuse recurrence's leading
 #: error term is one degree below the nominal order, so at the finest usable dt
 #: pair the measured slope sits up to ~0.5 below the asymptotic prediction

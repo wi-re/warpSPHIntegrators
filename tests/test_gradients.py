@@ -1,6 +1,6 @@
 """Gradient-through-step coverage, and the implicit-differentiation path behind it.
 
-Before this file existed, ``IMPLICIT_ROADMAP.md``'s Completion Definition claimed the
+Before this file existed, ``docs/research/integrators/notes-index.md``'s Completion Definition claimed the
 torch path was "differentiable by construction" and recorded that the claim had no
 test. It was in fact false for every implicit scheme: ``gmres`` builds its Hessenberg
 factor, Givens rotations and back-substitution vector by in-place element writes, so
@@ -266,7 +266,7 @@ def test_solve_leaves_diagnostics_untouched_on_the_differentiable_path():
     """Re-attaching gradients must not inflate the reported solver cost.
 
     The extra ``step`` applications belong to the gradient machinery, not to the
-    nonlinear solve, so ``rhs_evaluations`` (whose cost model NOTES.md S3.4 documents)
+    nonlinear solve, so ``rhs_evaluations`` (whose cost model docs/research/integrators/notes-3-4.md documents)
     must report the same number either way.
     """
     problem = testing.oscillator_problem(k=K)

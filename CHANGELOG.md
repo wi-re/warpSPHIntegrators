@@ -2,12 +2,20 @@
 
 All notable changes to `warpSPHIntegrators` are documented here. History before
 0.6.0 lives in the git log; the per-phase measurement record lives in
-[NOTES.md](docs/research/integrators/notes-index.md).
+[numerical notes](docs/research/integrators/notes-index.md).
 
 ## [Unreleased]
 
 ### Added
 
+- Added the static browser laboratory with float64 CPU and bounded float32
+  WebGPU drivers, warm history, Python reference fixtures and versioned assets.
+  Added per-configuration coefficient exports and relative CFL controls with
+  explicit SSP/model qualifications. Python runtime/AD contracts remain separate.
+- Added ConservedLagrangian Hancock/SSPRK/KDK and single-evaluation ProjectedStep
+  factories for custom application systems, with analytic lifecycle/gradient
+  tests and qualified in-memory run continuation. Custom-state portable checkpoint
+  files remain unsupported; no universal ODE order or estimate is advertised.
 - Added fourteen source-qualified exponential RK configurations with time
   augmentation, bounded complete operator AD and checked matrix-free actions.
 - Audited remaining backend candidates and added bounded tensor prototypes for
@@ -18,7 +26,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Changed
 
-- Prepare the breaking 0.7.0 import migration: separate state, scheme definitions,
+- Implement the breaking 0.7.0 import migration: separate state, scheme definitions,
   coefficients, drivers, solvers, runtime, adapters, wrappers and analysis.
   The root API is `get_scheme`, `solve`, `TensorState` and `tensor_rhs`.
   Migrate supported sibling consumers to focused interfaces; preserve enum
@@ -29,6 +37,11 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Fixed
 
+- Include the configured lowercase `license.md` in built distributions and
+  verify its bytes in the isolated-wheel gate. Extend installed-wheel checks to
+  both consumer maps and their continuation/serialization boundaries.
+- Accept either Python string quote style in the publishing script's source
+  version guard, matching the current package initializer.
 - Derive fixed RKC1/RKC2/RKL2 stage times from their recurrence, restoring
   nonautonomous order two for RKC2/RKL2. Anchor affine combinations to preserve
   passive fields and supply finalization quadratures without extra RHS calls.
@@ -38,6 +51,13 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 
 ### Documentation
 
+- Consolidate current scheduling in the root execution plan, retain numerical
+  evidence and design/source qualifications, and remove five retired specialist
+  plans and five temporary root redirects. Migrate references and check direct
+  migration-map destinations and nonregistered ledger evidence paths.
+- Refresh contributor registration paths, distinguish fixed methods/factories/
+  consumer maps, and document editable metadata versus installed-wheel/release
+  validation. Preserve the optional local hosting association outside Git.
 - Refresh the overview, quick start, API, selection/family/solver guides,
   examples and notebook introductions around understood problems and practical
   choices. Add the 0.7 migration guide and execute all published site examples;
@@ -294,7 +314,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 ### Added — schemes (64 → 71): the wave-1 SSPRK tableaus
 
 - Seven plain SSP tableaus from OrdinaryDiffEq v7.8.1 on the generic Butcher
-  driver (wave 1 of `docs/plans/scheme-expansion.md`): SSPRK53, SSPRK63, SSPRK73,
+  driver (wave 1 of `docs/development/plan-reconciliation-2026-10-23.md`): SSPRK53, SSPRK63, SSPRK73,
   SSPRK83 (Ruuth's globally optimized order-3 methods; measured SSP
   coefficients 2.6506 / 3.5184 / 4.2879 / 5.1071), SSPRK54 (order 4;
   1.7693), KYKSSPRK42 (4-stage order 2; 2.2838) and KYK2014DGSSPRK_3S2
@@ -303,7 +323,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 - Coefficients transcribed from ODE's Shu–Osher alphas/betas and stage
   recurrences and converted to Butcher form: row sums equal ODE's stored c to
   1e-16, measured order at or above the registered order for all seven, none
-  FSAL (NOTES.md §3.21).
+  FSAL (numerical notes §3.21).
 - `tests/test_tvd.py` pins each SSP boundary (scanned to CFL 8) and real-axis
   stability interval; the verdict table gains seven entries (SSPRK83 measures
   unconditionally TVD to the CFL-5 cap).
@@ -311,14 +331,14 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 ### Added — schemes (71 → 74): the wave-2 SSPRK 3(2) pairs and SSPRK932
 
 - Three more OrdinaryDiffEq v7.8.1 SSP tableaus on the generic Butcher
-  driver (wave 2 of `docs/plans/scheme-expansion.md`): SSPRK43 and SSPRK432
+  driver (wave 2 of `docs/development/plan-reconciliation-2026-10-23.md`): SSPRK43 and SSPRK432
   (4-stage order 3 with an embedded order-2 estimate — the registry's first
   SSP 3(2) pairs; measured SSP coefficient 2.0, real axis [-5.149, 0] for
   both) and SSPRK932 (9-stage order 3; exact SSP coefficient 6.0, real axis
   [-13.290, 0]).
 - All three reproduce ODE's verbatim stage recurrences to ~2.5e-16 under
   exact-rational verification, and ODE's published SSP coefficients match
-  the library's all-stage measurements exactly (NOTES.md §3.22).
+  the library's all-stage measurements exactly (numerical notes §3.22).
 - SSPRK932 is registered fixed-step only: ODE's adaptive estimate
   `(uprev + 6*u6 + 6*dt*k)/7 - u_final` is `(5/7)*dt*u'(t) + O(dt^2)`
   (measured scaling 1.058), not a valid 3(2) embedded solution; SSPRK43 /
@@ -330,7 +350,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 ### Added — schemes (74 → 76): the wave-3 SSPRKMSVS multistep methods
 
 - Shu's strong-stability-preserving *multistep* methods from OrdinaryDiffEq
-  v7.8.1 (wave 3 of `docs/plans/scheme-expansion.md`), in a new driver
+  v7.8.1 (wave 3 of `docs/development/plan-reconciliation-2026-10-23.md`), in a new driver
   `ssprkmsvs.py`: SSPRKMSVS32 (3-step, order 2, SSP C = 1/2) and
   SSPRKMSVS43 (4-step, order 3, SSP C = 1/3). The first non-Adams multistep
   schemes in the registry: the steady-state formula is a convex combination
@@ -341,7 +361,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
   Dormand-Prince 5(4) starter, not ODE's 2nd-order Heun self-start: a fixed
   `k-1`-step bootstrap of a `q`-order starter accumulates only `O(dt^{q+1})`
   starting error, so Heun is the minimum for the 3rd-order method and the
-  full order is reached with either (NOTES.md §3.23).
+  full order is reached with either (numerical notes §3.23).
 - Fixed-step only (no embedded estimate; `result.error is None`), and
   `steps == order` (2 / 3), not `order - 1` as for the Adams family — the
   multistep tests now size their `StepHistory` from `scheme.steps`.
@@ -356,7 +376,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
   parametric-relaxation variants of Heun / SSP RK3 / SSPRK54 with a free
   `κ` parameter that trades the SSP (TVD) constant for a much larger
   negative-real-axis stability interval (wave 4 of
-  `docs/plans/scheme-expansion.md`).
+  `docs/development/plan-reconciliation-2026-10-23.md`).
 - **Not registered** in `IntegrationSchemes`: the relaxation parameter is
   `z = κ·dt`, so the tableau depends on both `κ` and `dt` (not a fixed
   tableau), and at `κ = 0` the methods duplicate already-registered schemes.
@@ -367,7 +387,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
   relaxation unfolds to a standard Butcher tableau because every modified
   α-row sums to 1 for all `z`), but `(a, b, c)` is recomputed from the
   caller's `(κ, dt)` on every step and fed to the shared `RungeKuttaB` — a
-  `butcherScheme` factory (tableau built once) cannot express it (NOTES.md
+  `butcherScheme` factory (tableau built once) cannot express it (numerical notes
   §3.24).
 - `κ = 0` reduces exactly to the base method (machine precision); the formal
   order (2 / 3 / 4) is preserved for every `κ`; the real-axis interval is
@@ -380,7 +400,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 - SSPRK53_2N1 / SSPRK53_2N2 / SSPRK53_H (Higueras & Roldán, *New third
   order low-storage SSP explicit Runge–Kutta methods*, arXiv:1809.04807) —
   5-stage order-3 low-storage SSP methods from OrdinaryDiffEq v7.8.1 (wave 5
-  of `docs/plans/scheme-expansion.md`), on the generic Butcher driver.
+  of `docs/development/plan-reconciliation-2026-10-23.md`), on the generic Butcher driver.
 - **Screened before registration** (the plan's gate): all three are
   algebraically *distinct* one-step maps from the already-registered
   SSPRK53 — different stages and final b-row, one-step map differing by
@@ -392,7 +412,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
   to Butcher form: row sums equal ODE's stored c to 1e-15, all order-3
   conditions hold to ≤5e-15, and the same derivation reproduces the
   registered SSPRK53 tableau to 3e-17 (validating the conversion)
-  (NOTES.md §3.25).
+  (numerical notes §3.25).
 - Measured: SSP coefficient 2.1808 / 2.1487 / 2.6506 (ODE publishes
   2.18 / 2.148 / 2.65), real-axis interval [-5.528, 0] / [-7.263, 0] /
   [-6.213, 0]. SSPRK53_2N2 has the largest real-axis interval of the four
@@ -407,7 +427,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 ### Added — schemes (79 → 97): the wave-6 Tsit5 + LowOrderRK workhorses
 
 - 18 OrdinaryDiffEq v7.8.1 tableaus on the generic Butcher driver (wave 6 of
-  `docs/plans/scheme-expansion.md`): the Tsit5 5(4) pair (ODE's recommended default
+  `docs/development/plan-reconciliation-2026-10-23.md`): the Tsit5 5(4) pair (ODE's recommended default
   for unknown stiffness) and the LowOrderRK workhorses — OwrenZen3 3(2) /
   OwrenZen4 4(3) / OwrenZen5 5(4) (Owren–Zennaro embedded pairs), BS5 5(4)
   (Bogacki–Shampine), Stepanov5 5(4) (7-stage FSAL pair), Alshina2 2(1) /
@@ -420,7 +440,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
   OwrenZen3 / OwrenZen4 / OwrenZen5 / BS5 / Stepanov5 / Alshina2, the other
   ten register fixed-step only. RKM's ODE "estimate", Alshina3's `b2tilde`
   (sums to 5/9) and SIR54's `btilde` (sums to 7.854) are derivative
-  estimates, not embedded solutions (NOTES.md §3.26).
+  estimates, not embedded solutions (numerical notes §3.26).
 - RKO65 is the registry's first **free-first-stage** method: with
   `a[0] = b[0] = 0` no order condition of any order involves `c[0]` (ODE's
   `2/3` is decorative), and with `(b^T a)[0] = 0` the stale reused k0 reaches
@@ -446,7 +466,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
 ### Added — schemes (97 → 108): the wave-7 high-order tableaus (Verner / HighOrderRK / Feagin / DP8)
 
 - Eleven high-order OrdinaryDiffEq v7.8.1 tableaus on the generic Butcher
-  driver (wave 7 of `docs/plans/scheme-expansion.md`): Verner's optimal pairs
+  driver (wave 7 of `docs/development/plan-reconciliation-2026-10-23.md`): Verner's optimal pairs
   Vern6 6(5) / Vern7 7(6) / Vern8 8(7) / Vern9 9(8) (*Numer. Algorithms* 53
   (2010) 383-396), TanYam7 7(6) (Tanaka–Muramatsu–Yamashita, *IPSJ* 33.12
   (1992) 1512-1526), RKV76IIa 7(6) (Verner's 2024 "most efficient" 10-stage
@@ -461,7 +481,7 @@ All notable changes to `warpSPHIntegrators` are documented here. History before
   Vern6 is the wave's only FSAL tableau (lossless reuse).
 - Cross-checked against the actual ODE v7.8.1 solver on a real (nonlinear,
   non-autonomous) problem: max |Δy| ≤ 8.9e-16 at T = 2 for every member of
-  the wave (NOTES.md §3.27).
+  the wave (numerical notes §3.27).
 - **Reuse: the first multi-stage refusal class.** Vern7, RKV76IIa, TanYam7
   and Feagin14 refuse `priorStep` reuse outright: the reuse-modified
   recurrence is a three-dimensional two-step map (state

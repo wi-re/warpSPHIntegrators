@@ -1,6 +1,6 @@
 """Symplecticity: which schemes conserve energy over long runs, and which drift.
 
-This is what the `dissipation` flag on `IntegrationScheme` is *for*. NOTES.md 2.13
+This is what the `dissipation` flag on `IntegrationScheme` is *for*. docs/research/integrators/baseline-audit-2026-08-05.md 2.13
 observed that the flag was copy-pasted and self-inconsistent (symplecticEuler was True
 while leapFrog was False; PEFRL was False while VEFRL was True) and that nothing read
 it. It now has one precise meaning -- "the energy error on a Hamiltonian problem grows
@@ -136,7 +136,7 @@ LINEARLY_SYMPLECTIC = {
 }
 NONLINEARLY_SYMPLECTIC = LINEARLY_SYMPLECTIC - {'Newmark', 'Trapezoidal (Crank-Nicolson)'}
 
-# Wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13): high-order NON-symplectic tableaus
+# Wave 7 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): high-order NON-symplectic tableaus
 # whose area defect at this test's step (dt = 0.5, omega = 2, so h = dt*omega = 1)
 # sits below the 1e-7 discrimination floor. A non-symplectic order-p method's
 # defect on the linear oscillator is O(h^(p+2)) with a method-dependent

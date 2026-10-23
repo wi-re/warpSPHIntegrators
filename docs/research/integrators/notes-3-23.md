@@ -7,7 +7,7 @@ The two strong-stability-preserving *multistep* methods that OrdinaryDiffEq
 v7.8.1 ships (`ssprk_perform_step.jl`, the SSPRKMSVS32 / SSPRKMSVS43
 perform_step blocks), from Shu, *Efficient time integration for parabolic and
 hyperbolic PDEs*, J. Comput. Phys. 169 (2001) 201-228. Wave 3 of
-`docs/plans/scheme-expansion.md`, and the first non-Adams multistep scheme in the
+`docs/development/plan-reconciliation-2026-10-23.md`, and the first non-Adams multistep scheme in the
 registry -- a new driver, `ssprkmsvs.py`. Unlike the Adams family (which
 consumes a *derivative* history), the steady-state formula consumes past
 *states*, so each `HistoryEntry` carries a state snapshot **and** the

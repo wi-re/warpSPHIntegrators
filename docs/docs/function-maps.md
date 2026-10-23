@@ -68,3 +68,27 @@ old values, as the pinned step body does. There is no overloaded derivative/map
 flag. Source default-identity and step-limiter machinery are not part of this API.
 Known affine recurrences and a damped rotation that generates heat provide
 analytic consumer checks; their exact map accuracy is specific to those models.
+
+## Application mechanics maps
+
+`schemes.ConservedLagrangian(temporal=...)` accepts `hancock`, `ssprk` or `kdk` and
+preserves application-specific moving-quadrature recurrences. Systems supply tagged position
+and conserved fields, `conserved_velocity(Q)` and `wrap_positions(x)` hooks, and
+the normal stage/finalization lifecycle. The historical SSPRK position predictor
+differs from applying ordinary Heun to position and conserved state.
+
+`schemes.ProjectedStep()` evaluates one complete projected map on an owned stage
+and finalizes that advanced state once. The system declares `projected_map=True`
+and handles stage-state finalization; the returned auxiliary update is not
+integrated again. Spatial pressure ordering and physical model choices remain
+application responsibilities.
+
+Both factories are outside the fixed catalog and advertise no universal ODE
+order, adaptive estimate, dense output or first-stage reuse. `solve` and its
+in-memory checkpoint can continue custom systems with integrated tensor fields;
+callbacks accept forwarded step options such as history. Constant-only states
+can use direct stepping but do not satisfy the runner's integrated-field contract.
+Portable checkpoint files remain restricted to plain TensorState; custom-state
+saves raise an explicit TypeError and require application serialization. The
+[consumer qualification](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/consumer-map-qualification-2026-10-23.md)
+records analytic steps, gradients, continuation and installed-wheel checks.

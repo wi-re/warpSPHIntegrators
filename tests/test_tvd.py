@@ -1,4 +1,4 @@
-"""TVD / SSP classification of the registered schemes (NOTES.md S3.11).
+"""TVD / SSP classification of the registered schemes (docs/research/integrators/notes-3-11.md).
 
 The TVD/SSP-named schemes advertise a property nothing else in the test suite
 measured: that one step does not increase total variation (and, for the SSP
@@ -95,7 +95,7 @@ def test_named_tvd_schemes_have_ssp_coefficient_one(tableau_name):
     # the scan's default cap, so it is pinned with an explicit mu_max in
     # test_ssprk104_ssp_boundary_and_real_axis_interval.
     ('SSPRK104', 4.0),
-    # The wave-1 ODE SSPRK tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12): the
+    # The wave-1 ODE SSPRK tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-12): the
     # library's upwind-model all-stage convex-combination CFL at the default
     # scan cap 4.0. SSPRK53/63/73/83 agree with ODE's published
     # ssp_coefficient (2.65/3.518/4.2879/5.107) to <= 6.3e-4.
@@ -115,7 +115,7 @@ def test_named_tvd_schemes_have_ssp_coefficient_one(tableau_name):
     # ODE's published 0.8417 is the paper's DG-context coefficient, not the
     # upwind-model stage-map convexity CFL (1.8939).
     ('KYK2014DGSSPRK_3S2', 1.8939),
-    # Wave-2 ODE SSPRK tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12): the 3(2)
+    # Wave-2 ODE SSPRK tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-12): the 3(2)
     # pairs SSPRK43/SSPRK432 agree with ODE's published ssp_coefficient (2.0)
     # in the upwind model. SSPRK932's true SSP boundary 6.0 is beyond the
     # scan cap, so the scan reports the cap (a lower bound); the exact
@@ -124,14 +124,14 @@ def test_named_tvd_schemes_have_ssp_coefficient_one(tableau_name):
     ('SSPRK43', 2.0),
     ('SSPRK432', 2.0),
     ('SSPRK932', 4.0),
-    # Wave-5 ODE SSPRK tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13): the
+    # Wave-5 ODE SSPRK tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): the
     # Higueras-Roldan low-storage third-order variants; ODE's published
     # ssp_coefficient (2.18/2.148/2.65) agrees with the library's all-stage
     # measurement (2.1808/2.1487/2.6506) to <= 8e-4.
     ('SSPRK53_2N1', 2.18),
     ('SSPRK53_2N2', 2.148),
     ('SSPRK53_H', 2.65),
-    # Wave-6 ODE tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13): Tsit5 and the
+    # Wave-6 ODE tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): Tsit5 and the
     # LowOrderRK workhorses, measured on the propagated branch (the embedded
     # pairs store `b` as a tuple; the scan reads the main weights).
     ('Tsit5', 0.0),
@@ -152,7 +152,7 @@ def test_named_tvd_schemes_have_ssp_coefficient_one(tableau_name):
     ('PSRK4p7q6', 0.0),
     ('PSRK3p6q5', 0.0),
     ('PSRK3p5q4', 0.0),
-    # Wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13): the high-order Verner /
+    # Wave 7 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): the high-order Verner /
     # TsitPap / DP8 / Feagin tableaus. None is SSP in the upwind model beyond
     # the small convex-combination coefficients below (the Feagin and
     # RKV76IIa/TanYam7 stage maps leave the convex hull at every resolvable
@@ -228,14 +228,14 @@ def test_ssprk104_ssp_boundary_and_real_axis_interval():
     ('SSPRK54', 1.7693, -5.33147),
     ('KYKSSPRK42', 2.2838, -4.95391),
     ('KYK2014DGSSPRK_3S2', 1.8939, -4.26688),
-    # Wave 2 (SCHEME_EXPANSION_PLAN, 2026-10-12): SSPRK43/SSPRK432 share the
+    # Wave 2 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-12): SSPRK43/SSPRK432 share the
     # same (a, c, b_main), so the same boundary and interval; SSPRK932's exact
     # boundary 6.0 is the reason this scan goes to CFL 8 (the default cap 4.0
     # would clip it).
     ('SSPRK43', 2.0, -5.14940),
     ('SSPRK432', 2.0, -5.14940),
     ('SSPRK932', 6.0, -13.28960),
-    # Wave 5 (SCHEME_EXPANSION_PLAN, 2026-10-13): the Higueras-Roldan
+    # Wave 5 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): the Higueras-Roldan
     # low-storage variants. SSPRK53_2N2 has the largest real-axis interval of
     # the four despite the smallest SSP coefficient; SSPRK53_H matches
     # SSPRK53's interval to 1e-4 (it shares SSPRK53's first two nodes but has
@@ -243,7 +243,7 @@ def test_ssprk104_ssp_boundary_and_real_axis_interval():
     ('SSPRK53_2N1', 2.1808, -5.52779),
     ('SSPRK53_2N2', 2.1487, -7.26303),
     ('SSPRK53_H', 2.6506, -6.21351),
-    # Wave 6 (SCHEME_EXPANSION_PLAN, 2026-10-13): the Tsit5 + LowOrderRK
+    # Wave 6 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): the Tsit5 + LowOrderRK
     # workhorses. PSRK4p7q6 (Aubry-Chartier pseudo-symplectic) has the
     # largest real-axis interval of the wave ([-11.41, 0]).
     ('Tsit5', 0.0, -3.506),
@@ -264,7 +264,7 @@ def test_ssprk104_ssp_boundary_and_real_axis_interval():
     ('PSRK4p7q6', 0.0, -11.41),
     ('PSRK3p6q5', 0.0, -3.548),
     ('PSRK3p5q4', 0.0, -2.784),
-    # Wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13): the high-order tableaus.
+    # Wave 7 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): the high-order tableaus.
     # Vern8 has the widest real-axis interval of the wave ([-13.42, 0]);
     # Feagin14 the narrowest ([-1.874, 0] -- verified genuine, |R(-2.0)| = 3.51:
     # its 35-stage stability polynomial oscillates for |z| >~ 2, smaller than
@@ -284,7 +284,7 @@ def test_ssprk104_ssp_boundary_and_real_axis_interval():
 def test_expanded_ssprk_ssp_boundaries_and_real_axis_intervals(
         name, ssp_boundary, real_axis_left):
     """The wave 1/2/6 ODE SSPRK + Tsit5/LowOrderRK tableaus
-    (SCHEME_EXPANSION_PLAN, 2026-10-12/13): the exact SSP convex-combination
+    (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-12/13): the exact SSP convex-combination
     boundary and the negative real-axis stability limit of each, mirroring the
     SSPRK(10,4) pin above."""
     tableau = getButcherTableau(name)
@@ -474,7 +474,7 @@ def test_backward_euler_families_are_tv_to_large_cfl(name):
 
 
 # --------------------------------------------------------------------------- #
-# The full-registry verdict table (the maintained fact of NOTES.md S3.11)      #
+# The full-registry verdict table (the maintained fact of docs/research/integrators/notes-3-11.md)      #
 # --------------------------------------------------------------------------- #
 
 #: (ssp_cfl, tvd_cfl, unconditional) as measured by the Phase 13 sweep
@@ -499,7 +499,7 @@ EXPECTED_VERDICTS = {
     # real-axis stability interval [-13.916, 0] keeps every per-mode
     # amplification <= 1, so the sweep finds no TV increase up to the CFL cap.
     'SSPRK(10,4)': (4.0, 5.0, True),
-    # The wave-1 ODE SSPRK tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12): the
+    # The wave-1 ODE SSPRK tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-12): the
     # upwind-model all-stage convex-combination CFL at the scan cap 4.0.
     # SSPRK73/SSPRK83 sit beyond the cap (exact boundaries 4.2879 / 5.1071,
     # pinned in test_expanded_ssprk_ssp_boundaries_and_real_axis_intervals),
@@ -511,7 +511,7 @@ EXPECTED_VERDICTS = {
     'SSPRK54': (1.7693, 2.0, False),
     'KYKSSPRK42': (2.2838, 2.0, False),
     'KYK2014DGSSPRK_3S2': (1.8939, 1.5, False),
-    # The wave-2 ODE SSPRK tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12).
+    # The wave-2 ODE SSPRK tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-12).
     # SSPRK932's ssp is the scan cap 4.0 (the exact boundary is 6.0, pinned in
     # test_expanded_ssprk_ssp_boundaries_and_real_axis_intervals); its real-axis
     # interval [-13.290, 0] keeps every per-mode amplification <= 1, so the
@@ -519,7 +519,7 @@ EXPECTED_VERDICTS = {
     'SSPRK43': (2.0, 2.0, False),
     'SSPRK432': (2.0, 2.0, False),
     'SSPRK932': (4.0, 5.0, True),
-    # The wave-5 ODE SSPRK tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13): the
+    # The wave-5 ODE SSPRK tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): the
     # Higueras-Roldan low-storage third-order variants. All three measure the
     # same per-step TVD CFL 2.0 as SSPRK53 in the upwind-model sweep, and none
     # is unconditionally TVD (the stage maps leave the convex hull past CFL 2).
@@ -532,7 +532,7 @@ EXPECTED_VERDICTS = {
     'Bogacki-Shampine 3(2)': (1.0, 1.0, False),
     'Dormand-Prince 5(4)': (0.0, 1.5, False),
     'Cash-Karp 5(4)': (5.0 / 12.0, 1.5, False),
-    # The wave-6 ODE tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13): Tsit5 and
+    # The wave-6 ODE tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): Tsit5 and
     # the LowOrderRK workhorses. The embedded pairs' ssp values are measured
     # on the propagated (main) branch, as in test_explicit_ssp_coefficients.
     'Tsit5 5(4)': (0.0, 1.5, False),
@@ -553,7 +553,7 @@ EXPECTED_VERDICTS = {
     'PSRK4p7q6': (0.0, 2.0, False),
     'PSRK3p6q5': (0.0, 1.5, False),
     'PSRK3p5q4': (0.0, 1.25, False),
-    # The wave-7 high-order tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13).
+    # The wave-7 high-order tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13).
     # None is unconditionally TVD: every one of them grows TV past its
     # measured per-step CFL (DP8 is the best of the wave at 3.0; Feagin14
     # the worst at 0.75).
@@ -642,7 +642,7 @@ EXPECTED_VERDICTS = {
     # SSPRKMSVS43) -- the trajectory sweep does not thread history, so the driver
     # re-runs its DP5 starter every step, exactly the cap the Adams/BDF/AM family
     # carries. The tight SSP coefficients are a structural property of the
-    # steady-state convex combination (NOTES.md S3.23), not a trajectory limit.
+    # steady-state convex combination (docs/research/integrators/notes-3-23.md), not a trajectory limit.
     'SSPRKMSVS32': (None, 1.5, False),
     'SSPRKMSVS43': (None, 1.5, False),
     'Adams-Moulton 2 (implicit)': (None, 1.5, False),
@@ -676,7 +676,7 @@ EXPECTED_VERDICTS = {
     'Radau IIA s=2': (None, 5.0, True),
     'Gauss-Legendre 3': (None, 5.0, True),
     'Radau IIA s=3': (None, 5.0, True),
-    # The IMEX multistep family (NOTES.md S3.19): no tableau attribute the SSP
+    # The IMEX multistep family (docs/research/integrators/notes-3-19.md): no tableau attribute the SSP
     # scan reads, so no ssp_cfl. The measured 1.5 is the shared Dormand-Prince
     # cold start's imaginary-axis boundary (the bootstrap is explicit and
     # unstable once CFL*2 >~ 3.4), NOT the backbones' TVD limits -- exactly

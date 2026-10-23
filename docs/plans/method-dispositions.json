@@ -4104,7 +4104,7 @@
       "source": "OrdinaryDiffEq 7.8.1 HighOrderRK PFRK87ConstantCache / perform_step!",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#runtime-fitted-tableau-contracts",
       "intended_consumer": "periodic ODEs with a verified frequency/step contract"
     },
     {
@@ -4124,7 +4124,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, DormandPrince(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4134,7 +4134,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, RKF5(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4144,7 +4144,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, RungeFirst5(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4154,7 +4154,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, Cassity5(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4164,7 +4164,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, Lawson5(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4174,7 +4174,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, LutherKonen5(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4184,7 +4184,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, LutherKonen52(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4194,7 +4194,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, LutherKonen53(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4204,7 +4204,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, PapakostasPapaGeorgiou5(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4214,7 +4214,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, PapakostasPapaGeorgiou52(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4224,7 +4224,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, Tsitouras5(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4234,7 +4234,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, BogakiShampine5(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4244,7 +4244,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, SharpSmart5(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4254,7 +4254,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, BogakiShampine3(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4264,7 +4264,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, CashKarp(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4274,7 +4274,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order5.jl, RKF4(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4284,7 +4284,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Butcher63(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4294,7 +4294,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Butcher6(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4304,7 +4304,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Butcher62(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4314,7 +4314,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Verner6(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4324,7 +4324,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, DormandPrince6(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4334,7 +4334,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, SharpVerner6(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4344,7 +4344,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Verner9162(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4354,7 +4354,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Verner916(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4364,7 +4364,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, VernerRobust6(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4374,7 +4374,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, VernerEfficient6(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4384,7 +4384,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Verner7(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4394,7 +4394,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Verner8(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4404,7 +4404,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Papakostas6(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4414,7 +4414,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Lawson6(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4424,7 +4424,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, TsitourasPapakostas6(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4434,7 +4434,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, DormandLockyerMcCorriganPrince6(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4444,7 +4444,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, TanakaKasugaYamashitaYazaki6D(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4454,7 +4454,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, TanakaKasugaYamashitaYazaki6C(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4464,7 +4464,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, TanakaKasugaYamashitaYazaki6B(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4474,7 +4474,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, TanakaKasugaYamashitaYazaki6A(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4484,7 +4484,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, MikkawyEisa(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4494,7 +4494,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Chummund6(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4504,7 +4504,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Chummund62(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4514,7 +4514,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Huta62(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4524,7 +4524,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order6.jl, Huta6(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4534,7 +4534,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, EnrightVerner7(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4544,7 +4544,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, VernerRobust7(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4554,7 +4554,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, VernerEfficient7(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4564,7 +4564,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, SharpVerner7(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4574,7 +4574,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, SharpSmart7(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4584,7 +4584,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, TanakaYamashitaEfficient7(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4594,7 +4594,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, TanakaYamashitaStable7(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4604,7 +4604,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, CooperVerner8(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4614,7 +4614,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, CooperVerner82(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4624,7 +4624,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order7.jl, Curtis8(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4634,7 +4634,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order8_9.jl, EnrightVerner8(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4644,7 +4644,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order8_9.jl, dverk78(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4654,7 +4654,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order8_9.jl, TsitourasPapakostas8(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4664,7 +4664,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order8_9.jl, VernerRobust9(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4674,7 +4674,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order8_9.jl, VernerEfficient9(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4684,7 +4684,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order8_9.jl, Sharp9(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4694,7 +4694,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order8_9.jl, Tsitouras9(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {
@@ -4704,7 +4704,7 @@
       "source": "OrdinaryDiffEq 7.8.1, lib/OrdinaryDiffEqExplicitTableaus/src/tableaus_order8_9.jl, Tsitouras92(T,T_time)",
       "implementation": null,
       "tests": null,
-      "evidence": "docs/plans/scheme-expansion.md",
+      "evidence": "docs/development/source-candidate-inventory.md#extra-explicit-tableau-constructors",
       "intended_consumer": "only after equivalence/order/cost screening"
     },
     {

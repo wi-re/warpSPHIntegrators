@@ -1,4 +1,4 @@
-"""Coupled (block) fully implicit Runge-Kutta driver (NOTES.md S3.18, Phase 6).
+"""Coupled (block) fully implicit Runge-Kutta driver (docs/research/integrators/notes-3-18.md, Phase 6).
 
 A DIRK solves its ``s`` stage equations as ``s`` *sequential* solves, because
 ``a_ij == 0`` for ``j > i`` makes stage ``i`` a function of already-known stages
@@ -19,7 +19,7 @@ explicit first stage to splice a previous step's derivative into); instead the
 ``warmStart=`` kwarg takes the previous step's converged stage *states*
 (``IntegrationResult.stages``) as the block solve's initial guess.
 
-The tableaus below are hand-derived and verified (NOTES.md S3.18): Radau IIA s=2
+The tableaus below are hand-derived and verified (docs/research/integrators/notes-3-18.md): Radau IIA s=2
 is the collocation method at the Radau points ``{1/3, 1}`` (right endpoint
 pinned, so s=1 is exactly backward Euler), order 3, L-stable, stiffly accurate;
 Gauss-Legendre 2 is the collocation method at the Gauss points ``1/2 +- sqrt(3)/6``,
@@ -179,7 +179,7 @@ def fullyImplicitBlock(initialState, dt, f, tableau: BlockTableau, *args,
             )
         solver_diagnostics = [diag]
 
-        # Null-stage companion (NOTES.md S3.18): the 2-stage-only order-2 pair is
+        # Null-stage companion (docs/research/integrators/notes-3-18.md): the 2-stage-only order-2 pair is
         # degenerate for both shipped tableaus (it is b itself), so the estimate
         # quadratures k0 = f(t^n, y^n) at c0 = 0 in addition to the two stages.
         # It is evaluated here, before the converged block is re-evaluated below,

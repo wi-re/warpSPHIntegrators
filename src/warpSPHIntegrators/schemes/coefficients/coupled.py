@@ -59,7 +59,7 @@ def getBlockTableau(scheme: str) -> BlockTableau:
         # collocation identity (A c)_i = c_i^2/2, and the stability function
         # R(z) = (1 + z/3) / (1 - 2z/3 + z^2/6) (L-stable: R(-100) ~= 0.019) by
         # hand; no Radau IIA tableau is published in SUNDIALS ARKODE v7.9.0, so
-        # the derivation stands in for a citable source (NOTES.md S3.18).
+        # the derivation stands in for a citable source (docs/research/integrators/notes-3-18.md).
         # Companion: min-norm order-2 quadrature over (k0, k1, k2), k0 the null
         # stage at c0 = 0; the 2-stage-only order-2 pair is b itself (degenerate).
         return BlockTableau(
@@ -78,7 +78,7 @@ def getBlockTableau(scheme: str) -> BlockTableau:
         # (R(-100) ~= 0.887, and R(z) -> 1 as z -> -inf) and not stiffly
         # accurate (c_2 != 1). Stability function R(z) =
         # (1 + z/2 + z^2/12) / (1 - z/2 + z^2/12), verified by hand as for
-        # Radau IIA s=2 (NOTES.md S3.18). Companion as for radauIia2: min-norm
+        # Radau IIA s=2 (docs/research/integrators/notes-3-18.md). Companion as for radauIia2: min-norm
         # order-2 quadrature over (k0, k1, k2).
         sqrt3 = np.sqrt(3.0)
         c1 = 0.5 - sqrt3 / 6.0

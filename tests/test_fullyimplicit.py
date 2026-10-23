@@ -1,4 +1,4 @@
-"""The coupled fully implicit block driver (NOTES.md S3.18).
+"""The coupled fully implicit block driver (docs/research/integrators/notes-3-18.md).
 
 Gauss-Legendre 2 (order 4, A-stable, symplectic) and Radau IIA s=2 (order 3,
 L-stable, stiffly accurate) solve their coupled stage equations as ONE s-by-s
@@ -55,8 +55,7 @@ def _particle_system(t=0.0, x=1.0, u=0.0, e=0.0):
 
 
 def test_flatten_is_substate_major_and_round_trips():
-    """'0:x', '0:u', '0:e', '1:x', ... -- the solver's cost model (NOTES.md
-    S3.4) is per-substate, and the JVP layout must match flatten exactly."""
+    """'0:x', '0:u', '0:e', '1:x', ... -- the solver's cost model (docs/research/integrators/notes-3-4.md) is per-substate, and the JVP layout must match flatten exactly."""
     block = BlockState((_particle_system(t=0.0, x=1.0, u=2.0),
                         _particle_system(t=0.5, x=3.0, u=4.0)))
     names = integrated_field_names(block)

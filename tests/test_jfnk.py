@@ -1,9 +1,9 @@
-"""JFNK core machinery (JFNK_PLAN.md Phase A): flatten/unflatten (A1), the two
+"""JFNK core machinery (docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md Phase A): flatten/unflatten (A1), the two
 matvec builders (A2 finite-difference, A3 exact-JVP), GMRES (A4), and
 ``JFNKSolver`` (A5) plugged into the DIRK driver as a ``solver=`` override.
 
 None of this touches anything registered this session -- ``JFNKSolver`` is
-opt-in only (JFNK_PLAN.md A5) -- so the full suite's pass/skip count is
+opt-in only (docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md A5) -- so the full suite's pass/skip count is
 unaffected by this file existing.
 """
 
@@ -280,7 +280,7 @@ def test_jfnk_reproduces_exact_backward_euler_where_picard_diverges():
 @pytest.mark.parametrize('name', ['backwardEuler', 'implicitMidpoint', 'SDIRK2'])
 @pytest.mark.parametrize('problem_name', ['oscillator', 'forced'])
 def test_jfnk_reaches_the_same_order_as_the_shipped_default_on_other_dirk_schemes(name, problem_name):
-    """Cheap bonus (JFNK_PLAN.md A6): the driver is generic, so JFNK should reach
+    """Cheap bonus (docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md A6): the driver is generic, so JFNK should reach
     the same convergence order FixedPointSolver does on every tableau, not just
     backward Euler -- this exercises Implicit Midpoint and SDIRK2 too, for free.
     """
@@ -300,7 +300,7 @@ def test_jfnk_reaches_the_same_order_as_the_shipped_default_on_other_dirk_scheme
 
 # --------------------------------------------------------------------------- #
 # Phase 1: Newton convergence, stagnation, GMRES exhaustion, NaN/Inf,         #
-# and line-search recovery (IMPLICIT_ROADMAP.md Phase 1)                      #
+# and line-search recovery (docs/research/integrators/notes-index.md Phase 1)                      #
 # --------------------------------------------------------------------------- #
 
 def _cubic_system(x0: float, dtype=torch.float64):

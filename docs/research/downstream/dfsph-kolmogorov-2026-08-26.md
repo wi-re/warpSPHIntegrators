@@ -4,7 +4,7 @@
 
 # DFSPH (incompressible) vs. the JFNK/compressible-acoustic-core Kolmogorov study
 
-Scratch findings file for a supervising session to fold into `docs/plans/wcsph-jfnk.md`.
+Scratch findings file for a supervising session to fold into `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md`.
 Answers the question the project owner asked directly: does this codebase's
 existing, already-registered incompressible SPH solver (`scheme=
 'divergenceFree'`, DFSPH, `warpSPH/src/warpSPH/schemes/dfsph.py`) already
@@ -15,7 +15,7 @@ E1.5/E1.6/E1.7 on the *compressible* acoustic core) is chasing, on the same
 All numbers below are from a new standalone script,
 `warpSPH/scripts/probe_kolmogorovIncompressible.py`, run on this machine's
 GPU (`NVIDIA RTX PRO 6000 Blackwell`), `nx=24` and `nx=128`, `L=2.0`, `k=4`,
-`xi=1.0` (matching `cases/kolmogorov.py`'s own defaults and `docs/plans/wcsph-jfnk.md`
+`xi=1.0` (matching `cases/kolmogorov.py`'s own defaults and `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md`
 E1.6/E1.7's own probes). `cases/kolmogorov.py` and `cases/tgv.py` were **not
 modified** -- see "What was built" below.
 
@@ -26,7 +26,7 @@ CFL by construction (confirmed by reading the code, not just by outcome --
 see "no acoustic term" below) and, on this probe, it also does not need
 explicit physical viscosity to keep the Kolmogorov shear instability's
 turbulent cascade *statistically bounded* -- a genuinely different answer
-than the compressible+JFNK story, where `docs/plans/wcsph-jfnk.md` E1.5 found a real
+than the compressible+JFNK story, where `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md` E1.5 found a real
 `nu>=0.03` stability threshold below which every run eventually diverges.
 But DFSPH is **not free of a timestep constraint or of failure modes** --
 it pays elsewhere:
@@ -75,7 +75,7 @@ building the system directly from:
 - The Kolmogorov `v_x = xi*sin(k*pi*y)` forcing closure, re-derived inline
   (it is a nested closure inside `cases/kolmogorov.py`'s own
   `initialConditions`, not an importable standalone function). The
-  Perlin-noise symmetry-breaking term is dropped, matching `docs/plans/wcsph-jfnk.md`
+  Perlin-noise symmetry-breaking term is dropped, matching `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md`
   Phase E1's own precedent -- a small position jitter (`jitter=0.01`,
   `shuffleParticles(..., 0, jitterAmount=jitter)`, the same helper
   `cases/tgv.py`'s own relax step uses) is enough to seed the instability
@@ -168,7 +168,7 @@ since `nu=0` disables the viscous term), `xi=1.0`, `k=4`, `jitter=0.01`,
 Every value tested, **including exactly zero**, stays in a statistically
 steady, bounded, fluctuating turbulent-like state -- no divergence at any
 `nu`, and the `nu=0` run was extended to 900 steps (`t~81s` simulated,
-~9x longer than the longest bounded compressible-core run in `docs/plans/wcsph-jfnk.md`
+~9x longer than the longest bounded compressible-core run in `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md`
 E1.5's own nu-sweep) specifically to rule out "just hasn't diverged yet."
 The expected physical trend is visible too (higher `nu` -> lower saturated
 KE/`vMax`/`rhoStd`, more damped cascade), so this is not a case of the
@@ -176,7 +176,7 @@ forcing/instability failing to engage -- the flow visibly transitions and
 saturates, it just never blows up.
 
 This directly contradicts a naive expectation that DFSPH would need the
-same kind of `nu>=0.03`-style threshold `docs/plans/wcsph-jfnk.md` E1.5 found for the
+same kind of `nu>=0.03`-style threshold `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md` E1.5 found for the
 compressible+JFNK core. The most likely explanation, from reading the code
 (not proven by a targeted ablation, stated as a hypothesis): DFSPH's
 default `solverConfig.integrateRho=False` means density is **recomputed
@@ -247,7 +247,7 @@ finding #2), 16384 particles, 1000-step budget:
 | `alphaToNu(0.01, c_s=10, h)` | 720 (`t=6.39s`) | 149.0s (~207ms/step) | **diverged to NaN at step 720** | (peaked ~5.3 at `t~2.8s`, settling toward ~2.4-2.5 before divergence) | (~2.1-2.8 before divergence) |
 
 The `nu=0` run's `vMax` band (`~2.2-2.6`, `KE~2.57-2.65`) lands right in
-the range `docs/plans/wcsph-jfnk.md` E1.6 measured for the *compressible* core at the
+the range `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md` E1.6 measured for the *compressible* core at the
 same `nx=128`/`xi=1.0`/`k=4` (`vMax~2.1-2.9`, `KE~2.65-2.8`) -- a
 genuinely cross-validating result: two completely different formulations
 (compressible EOS+pressure-gradient vs. incompressible divergence-free
@@ -289,7 +289,7 @@ regardless of local state).
 
 **Wall-clock vs. the compressible core's own numbers**: `nx=128` reached
 `t=7.92s` of simulated time in `186s` wall time (1000 steps, `dt` shrinking
-from `0.1` down to `~0.006-0.008` as the flow saturates). `docs/plans/wcsph-jfnk.md`
+from `0.1` down to `~0.006-0.008` as the flow saturates). `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md`
 E1.6 reports the *compressible* core's own plain-explicit `RK4` spin-up
 reaching `t=8s` at the same `nx=128` in `24.6s` wall time (4266 steps,
 fixed `dt=0.001875`). **This is not a controlled apples-to-apples
@@ -304,7 +304,7 @@ explicit `RK4` on the compressible core at the same resolution and
 duration -- before JFNK's own added Newton/GMRES cost on top of that `RK4`
 baseline is even counted. A fair total-cost comparison against JFNK
 specifically (rather than against plain `RK4`) was not attempted here and
-would need one; `docs/plans/wcsph-jfnk.md` E1.6/E1.7 do not report an absolute
+would need one; `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md` E1.6/E1.7 do not report an absolute
 wall-clock number for the JFNK branch itself, only iteration-count/`dt`-
 multiplier findings, so there is nothing directly comparable to quote yet.
 
@@ -315,7 +315,7 @@ multiplier findings, so there is nothing directly comparable to quote yet.
   (`xi=1.0`), one random seed for the symmetry-breaking jitter. Kolmogorov
   flow is chaotic; exact step counts at which anything happens (or doesn't)
   are this probe's own realization, not universal constants -- consistent
-  with how `docs/plans/wcsph-jfnk.md`'s own E1.6/E1.7 caveat their compressible-core
+  with how `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md`'s own E1.6/E1.7 caveat their compressible-core
   numbers.
 - No dt-multiplier "how far past DFSPH's own natural CFL can you push it
   while still tracking a reference" sweep was run at `nx=128` (the
@@ -331,7 +331,7 @@ multiplier findings, so there is nothing directly comparable to quote yet.
   the naive "more viscosity = more stable" prior, this is the single
   finding in this writeup most worth an independent rerun before leaning
   on it.
-- Wall-clock comparisons against `docs/plans/wcsph-jfnk.md` E1.6's own numbers are
+- Wall-clock comparisons against `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md` E1.6's own numbers are
   cross-codepath, cross-session, single-run, and not controlled for kernel-
   cache warm state -- treat the *direction* (DFSPH's per-step cost is
   substantial and non-adaptive) as the finding, not the specific ratio.

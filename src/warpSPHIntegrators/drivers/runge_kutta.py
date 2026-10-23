@@ -74,7 +74,7 @@ def _RungeKuttaBOnce(initialState, dt, f, butcherTableau, *args, _initExtra=None
         currentState = initialState.initializeNewState(*args, **kwargs)
         # Stage 0 sits at t^n. The user's initializeNewState is not required to
         # forward `t`, so set it explicitly rather than inheriting whatever came
-        # back (see NOTES.md 2.3).
+        # back (see docs/research/integrators/baseline-audit-2026-08-05.md 2.3).
         currentState.t = hostTime(initialState.t)
         if verbose:
             if priorStep is not None:
@@ -167,7 +167,7 @@ def _error_estimate(initialState, ks, b_main, b_embedded, dt, *args, **kwargs):
 
     Computes ``y_main`` and ``y_embedded`` in full, the same way the propagated state
     itself is computed, then differences them field-by-field with
-    ``fields.state_difference`` (NOTES.md S1) -- equivalent to the old hand-rolled
+    ``fields.state_difference`` (docs/research/integrators/baseline-audit-2026-08-05.md S1) -- equivalent to the old hand-rolled
     linear combination of raw stage derivatives ``dt * sum_i (b_main[i] -
     b_embedded[i]) * k_i`` for the additive update semantics every system here uses,
     and correct even for a system whose ``apply_state_update`` is not purely linear,

@@ -3,7 +3,7 @@
 
 ## 3.18 Phase 6: coupled fully implicit RK (Gauss-Legendre 2, Radau IIA s=2) — done 2026-09-15
 
-Phase 6 of `docs/plans/implicit.md` lands the two coupled fully implicit RK
+Phase 6 of `docs/development/plan-reconciliation-2026-10-23.md` lands the two coupled fully implicit RK
 tableaus the library could not run before: **Gauss-Legendre 2** (order 4,
 A-stable, symplectic for separable Hamiltonians, *not* L-stable) and **Radau
 IIA s=2** (order 3, L-stable, stiffly accurate). A DIRK solves its `s` stage

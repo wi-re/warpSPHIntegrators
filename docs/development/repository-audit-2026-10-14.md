@@ -80,7 +80,7 @@ the timestep changes.
 
 ## Expansion progress
 
-At audit start, [SCHEME_EXPANSION_PLAN.md](../../docs/plans/scheme-expansion.md) said
+At audit start, [SCHEME_EXPANSION_PLAN.md](plan-reconciliation-2026-10-23.md#expansion-inventory-dispositions) said
 waves 8–16 were unstarted and the registry contained 108 schemes, despite its
 wave 8 section recording the local implementation. [NOTES.md](../../docs/research/integrators/notes-index.md), section
 3.28, labeled wave 8 done before its final gate. Phase 1 reconciles those wave 8
@@ -171,9 +171,9 @@ preserve public identifiers when deciding how aliases should be presented.
 
 | Document | Current position | Reconciliation needed |
 |---|---|---|
-| [IMPLICIT_ROADMAP.md](../../docs/plans/implicit.md) | Its original phases 0–14 are recorded complete; remaining items are gated/deferred extensions | SSPRK54 is still called unimplemented, although wave 1 registered it. Connect generalized-alpha to wave 11, RKN to wave 12, FIRK scaling to wave 9, and composition to the splitting plan |
-| [SPLITTING_PLAN.md](../../docs/plans/splitting.md) | Detailed design and realization phases A–F; foundational implementation is absent | `rhs.CAPABILITIES` still contains only explicit, implicit, linear, nonlinear. No `ConservativeDissipativeRHS`, `classify_separable`, or general `compose` driver is present. The pressure-entropy downstream prototype is a prerequisite in the plan; the proposed gate removals are not accomplished by writing the design |
-| [JFNK_PLAN.md](../../docs/plans/wcsph-jfnk.md) | Records A/B and E1 through E1.10 complete across three repositories; C/D, E2 and E3 remain open | The library solver exists, but full WCSPH wiring, pressure-force JVP work, mDBC and free-surface support belong partly to `warpSPH`/`warpSPHCore`. Verify downstream status there before scheduling. Historical Picard-default and sole-solver statements need dating or archiving |
+| [IMPLICIT_ROADMAP.md](plan-reconciliation-2026-10-23.md#implicit-roadmap-dispositions) | Its original phases 0–14 are recorded complete; remaining items are gated/deferred extensions | SSPRK54 is still called unimplemented, although wave 1 registered it. Connect generalized-alpha to wave 11, RKN to wave 12, FIRK scaling to wave 9, and composition to the splitting plan |
+| [SPLITTING_PLAN.md](operator-splitting-design.md) | Detailed design and realization phases A–F; foundational implementation is absent | `rhs.CAPABILITIES` still contains only explicit, implicit, linear, nonlinear. No `ConservativeDissipativeRHS`, `classify_separable`, or general `compose` driver is present. The pressure-entropy downstream prototype is a prerequisite in the plan; the proposed gate removals are not accomplished by writing the design |
+| [JFNK_PLAN.md](../research/downstream/wcsph-jfnk-design.md) | Records A/B and E1 through E1.10 complete across three repositories; C/D, E2 and E3 remain open | The library solver exists, but full WCSPH wiring, pressure-force JVP work, mDBC and free-surface support belong partly to `warpSPH`/`warpSPHCore`. Verify downstream status there before scheduling. Historical Picard-default and sole-solver statements need dating or archiving |
 | [JFNK_DRIVER_OVERHEAD_NOTES.md](../../docs/research/integrators/jfnk-driver-overhead-2026-08-24.md) | Historical performance investigation with same-day fixes and findings | Extract any still-applicable performance tasks using fresh profiles; old line numbers and costs are not a current benchmark baseline |
 | [NOTES.md](../../docs/research/integrators/notes-index.md) | Extensive implementation and measurement history, plus open-work sections | Separate current architecture and open work from dated experiments. The architecture section still describes 23 explicit schemes; the reproduction section quotes an August test run. Retain numerical caveats and derivations |
 | [hamiltonian.md](../../docs/research/integrators/hamiltonian-proposal.md) | Proposal assessed and corrected by the splitting plan | Keep it as background research with a prominent pointer to the corrected design |

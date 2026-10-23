@@ -3,7 +3,7 @@
 `copied` promises "not integrated; copied from last substep in finalize", and
 `_state_finalize` implemented exactly that -- but it was never called anywhere in the
 package, so `copied` behaved identically to `ephemeral`: nulled by
-`initializeNewState` and never restored (NOTES.md 2.7).
+`initializeNewState` and never restored (docs/research/integrators/baseline-audit-2026-08-05.md 2.7).
 
 This is the behaviour SPH needs for a quantity recomputed per stage rather than
 integrated -- summation density, pressure, a smoothing length. `preprocess` writes it

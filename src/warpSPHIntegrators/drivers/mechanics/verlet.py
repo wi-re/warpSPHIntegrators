@@ -118,7 +118,7 @@ def symplecticEuler(state, dt, f, *args, **kwargs):
             # and, when present, update density twice -- once through that bespoke
             # method and once through the generic path with `densitySwitch=True`
             # injected into the user's apply_quantity_update signature. That was a
-            # solver-specific hook leaked in from diffSPH (NOTES.md 2.14); a system
+            # solver-specific hook leaked in from diffSPH (docs/research/integrators/baseline-audit-2026-08-05.md 2.14); a system
             # that needs density handled differently should express it through the
             # field-behavior metadata or its own apply_quantity_update.
             applyQuantityUpdate(finalState, k1, explicit_step(dt), **kwargs)

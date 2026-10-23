@@ -48,6 +48,9 @@ Issues = "https://github.com/wi-re/warpSPHIntegrators"
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+license-files = ["license.md"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

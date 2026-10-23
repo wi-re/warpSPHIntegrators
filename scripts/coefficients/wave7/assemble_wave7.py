@@ -215,7 +215,7 @@ STAGES = {
 # companion (the `er` weights) and a 3rd/4th-order companion (the `btilde`
 # weights) for step control. Neither is a (p-1)=7th-order solution, so no
 # single b_embed captures its error estimate -- register plain, like the
-# Feagin methods and wave-6's SIR54 (NOTES.md 3.27).
+# Feagin methods and wave-6's SIR54 (docs/research/integrators/notes-3-27.md).
 PLAIN = {"DP8"}
 
 

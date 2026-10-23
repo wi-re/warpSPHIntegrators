@@ -26,7 +26,7 @@ stiff accuracy. For both pairs here the *implicit* (DIRK) half is stiffly accura
 A_e[last]``). So the combined method is **not** FSAL -- ``y^{n+1} != z_last`` -- and
 SUNDIALS's own ``IsStifflyAccurate`` check (which requires *both* halves) falls
 through to the additive b-weighted update. Using the last stage as the solution
-instead would drop the method to first order (verified numerically, NOTES.md S3.6);
+instead would drop the method to first order (verified numerically, docs/research/integrators/notes-3-6.md);
 the additive b-weighted combination retains the full claimed order. The "SA" in the
 published names therefore refers to the *implicit half's* property, not to the
 combined method, and the schemes are registered with ``stiffly_accurate=False``
@@ -58,7 +58,7 @@ coefficients as published in SUNDIALS ARKODE v7.9.0, split across
 ``src/arkode/arkode_butcher_erk.def`` (explicit halves) and
 ``arkode_butcher_dirk.def`` (implicit halves). Order, embedded order, the
 pure-explicit / pure-implicit component limits, and the two-parameter IMEX
-stability region are verified in tests/ and NOTES.md S3.6.
+stability region are verified in tests/ and docs/research/integrators/notes-3-6.md.
 """
 
 from warpSPHIntegrators.schemes.coefficients.additive import AdditiveTableau

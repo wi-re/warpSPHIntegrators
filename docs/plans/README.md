@@ -1,18 +1,22 @@
-# Specialist designs and source inventory
+# Method inventory and retained designs
 
-The sole current task list is [REPOSITORY_PLAN.md](../../REPOSITORY_PLAN.md).
-These documents retain detailed designs, gates and source lists, rather than
-independent schedules.
+[REPOSITORY_PLAN.md](../../REPOSITORY_PLAN.md) is the sole current task list.
+The five specialist plans and five root redirects were removed in cleanup
+Batch 3 after their unique content and evidence references were reconciled.
+A deferred candidate, bounded experiment or historical record is not a separate
+schedule.
 
-| Document | Reconciled position, 14 October 2026 |
+| Reference | Purpose |
 |---|---|
-| [Package/API refactor](package-api-refactor.md) | After Phase 8 and before the documentation pass: meaningful subpackages, small explicit facade and coordinated warpSPH/sibling migration |
-| [Scheme expansion](scheme-expansion.md) | Waves 1–8 and first s=3 wave-9 batch implemented; higher stages/driver families retain their gates; waves 10–11 re-enumerated from pinned source |
-| [Implicit roadmap](implicit.md) | Original phases 0–14 complete; SSPRK54 complete since wave 1; remaining extensions conditional on consumers/scaling |
-| [Splitting design](splitting.md) | Package/toy Phase 7 complete: capabilities, compositions, implicit/dense exact D, bounded Yoshida4 and geometric diagnostics; PESPH and specialized extensions remain application/follow-on work |
-| [WCSPH/JFNK design](wcsph-jfnk.md) | A/B/E1–E1.10 historically recorded complete; C/D/E2/E3 open in downstream repositories, not reverified by this migration |
-| [Method dispositions](method-dispositions.md) | Implemented, equivalent, deferred, excluded and awaiting-verification entries with source/evidence links |
+| [Method dispositions](method-dispositions.md) and [JSON ledger](method-dispositions.json) | Fixed and parameterized implementations, source verification, equivalences, exclusions, prototypes and revisit conditions. |
+| [Specialist plan reconciliation](../development/plan-reconciliation-2026-10-23.md) | Completed scope and activation conditions for residual implicit, expansion, splitting and downstream proposals. |
+| [Source candidate inventory](../development/source-candidate-inventory.md) | The 59 unverified ExplicitTableaus declarations and fitted-method contracts. |
+| [Architecture rationale](../development/architecture.md#package-design-rationale), [migration guide](../docs/migration.md) and [consumer audit](../development/package-refactor-validation.md) | Implemented package/API decisions and their compatibility/validation limits. |
+| [Splitting design](../development/operator-splitting-design.md) | Closure, order, geometry, compatible-energy work and application requirements. |
+| [WCSPH/JFNK handoff](../research/downstream/wcsph-jfnk-design.md) | Acoustic derivatives, periodic-run acceptance and downstream boundary/surface ownership. |
+| [Completed work](../development/completed-work.md) | Milestones and numerical evidence. |
+| [Migration map](../development/migration-map.json) | Historical filenames mapped directly to retained files/sections. |
 
-Generalized-alpha belongs to expansion wave 11 / execution Phase 8; general RKN
-catalog additions remain wave 12 / Phase 8 and use Phase 7's composition contract.
-Higher-stage FIRK belongs to wave 9 / Phase 6; composition to Phase 7.
+Implementation and primary-source verification remain separate facts. The method
+ledger stays at its existing paths for tooling consumers; dated measurements and
+coefficient oracles remain in their maintained directories.

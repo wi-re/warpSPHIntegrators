@@ -125,7 +125,7 @@ def test_every_tableau_is_consistent_at_the_dahlquist_origin():
 @pytest.mark.parametrize('name', [
     'Backward Euler (implicit)', 'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)',
     'SDIRK2', 'TR-BDF2', 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
-    # Wave 8 (NOTES.md 3.28): the 24 A-stable new tableaus (22 L-stable plus
+    # Wave 8 (docs/research/integrators/notes-3-28.md): the 24 A-stable new tableaus (22 L-stable plus
     # Kvaerno4 and SSPSDIRK2, A-stable not L). All contain these three LHP
     # probe points; SFSDIRK4-8 are NOT A-stable (bounded real-axis region only)
     # and stay out of this list.
@@ -144,7 +144,7 @@ def test_a_stable_dirk_schemes_contain_known_left_half_plane_points(name, z):
 @pytest.mark.parametrize('name', [
     'Backward Euler (implicit)', 'SDIRK2', 'TR-BDF2',
     'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
-    # Wave 8 (NOTES.md 3.28): the 19 new L-stable tableaus whose measured
+    # Wave 8 (docs/research/integrators/notes-3-28.md): the 19 new L-stable tableaus whose measured
     # |R(-100)| lands under 0.1 (2.6e-3 .. 7.9e-2). The three new L-stable
     # tableaus with a large damping constant (|R(-100)| = 0.149/0.125/0.106)
     # are pinned at larger |z| in the test below.
@@ -176,7 +176,7 @@ def test_l_stable_dirk_schemes_with_large_damping_constants(name):
     KenCarp47 0.149, ESDIRK4(3)7L[2]SA 0.125, ESDIRK5(4)7L[2]SA2 0.106).
     L-stability is pinned at larger |z|: |R(-1000)| < 0.1 (measured
     2.6e-2/2.2e-2/1.5e-2) and |R(-1e6)| < 1e-4 (measured 2.8e-5/2.4e-5/1.6e-5).
-    A fine left-half-plane grid (NOTES.md 3.28) found no |R| > 1 for any of
+    A fine left-half-plane grid (docs/research/integrators/notes-3-28.md) found no |R| > 1 for any of
     the three, so the classification stays 'L' despite the large constant."""
     tab = get_scheme(name).function.dirkTableau
     r100 = abs(rk_stability_function(tab, -100.0))
@@ -202,7 +202,7 @@ def test_a_stable_but_not_l_dirk_schemes_approach_unit_magnitude(name):
 
 @pytest.mark.parametrize('name', ['Kvaerno4', 'SSPSDIRK2'])
 def test_a_stable_not_l_dirk_schemes_damp_sub_l(name):
-    """The middle class of the stability='A' flag (wave 8, NOTES.md 3.28):
+    """The middle class of the stability='A' flag (wave 8, docs/research/integrators/notes-3-28.md):
     A-stable (they pass the probe-point test above) but not L-stable, so R(z)
     does not decay to 0 along the negative real axis.
 

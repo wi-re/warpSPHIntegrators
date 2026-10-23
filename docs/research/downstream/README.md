@@ -10,7 +10,13 @@ downstream code and performance have not been reverified in this migration.
 - [Neighbor-list rebuild ablation](neighborlist-rebuild-2026-08-26.md): E1.8;
   negative result for the tested Newton/GMRES multiplier ceiling.
 - [Historical WCSPH/JFNK ladder](wcsph-jfnk-2026-08-24-to-09-04.md): A/B/E1–E1.10.
-- [WCSPH/JFNK design and ownership](../../plans/wcsph-jfnk.md).
+- [WCSPH/JFNK design and ownership](wcsph-jfnk-design.md): retained acoustic,
+  periodic-run, boundary and surface contracts; no independent package schedule.
+
+The old package plan entry points were removed after the
+[reference migration](../../development/repository-cleanup-batch3-2026-10-23.md).
+The [migration map](../../development/migration-map.json) resolves historical
+filenames; dated experiment results and their numbered sections remain intact.
 
 Full pressure-force JVP, mDBC and free-surface work belongs in its owning
 repositories; the [current execution plan](../../../REPOSITORY_PLAN.md) retains

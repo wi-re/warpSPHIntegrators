@@ -1,0 +1,41 @@
+{
+  "started_utc": "2026-10-23T12:34:50.680625+00:00",
+  "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:36:31) [GCC 14.3.0]",
+  "torch": "2.13.0+cu130",
+  "numpy": "2.5.2",
+  "pytest": "9.1.1",
+  "device": "cpu",
+  "platform": "Linux-7.0.0-30-generic-x86_64-with-glibc2.39",
+  "package": "0.7.0",
+  "git_head": "9bcbe6bcce2fa0dd1976b77223c5b489903043b0",
+  "gate_sha256": "dc6fd9db0276069f2211be35acba6fbe8dfae8db4de453fee412e312c7a87221",
+  "workers_per_run": 8,
+  "parallel_shards": 1,
+  "numerical_threads_per_worker": 1,
+  "runs": [
+    {
+      "label": "full",
+      "expression": null,
+      "command": [
+        "/home/lu26029/miniconda3/envs/warp/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "-n",
+        "8",
+        "--dist=worksteal",
+        "--durations=20",
+        "--junitxml=/home/lu26029/dev/warpSPHIntegrators/.tmp/repository-cleanup-batch4-2026-10-23/gate/full.xml"
+      ],
+      "seconds": 341.28,
+      "exit_code": 0,
+      "log": "/home/lu26029/dev/warpSPHIntegrators/.tmp/repository-cleanup-batch4-2026-10-23/gate/full.txt",
+      "failures": [],
+      "tests_count": 9451,
+      "failures_count": 0,
+      "errors_count": 0,
+      "skipped_count": 639
+    }
+  ],
+  "seconds": 341.291
+}

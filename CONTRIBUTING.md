@@ -2,7 +2,7 @@
 
 Use [REPOSITORY_PLAN.md](REPOSITORY_PLAN.md) as the current task list. The
 [developer index](docs/development/README.md) links architecture, numerical records
-and specialist designs. Historical experiments retain their original dates and
+and retained designs. Historical experiments retain their original dates and
 section numbers; they do not define current release behavior.
 
 ## Environment
@@ -22,6 +22,20 @@ Install `.[examples]` for plotting/notebooks and `.[benchmark]` for plot drivers
 Both `.[test]` (used by CI) and `.[dev]` include SciPy for independent numerical
 references and spatial solver tests; the library's basic runtime does not require it.
 Julia is needed only for the independent coefficient oracles, not normal tests.
+Use Node 22.8 or newer for the browser checks and documentation workflow; Node
+24.21.0 is the current local validation runtime.
+
+An editable install needs refreshing after source-version or packaging metadata
+changes. Re-run `python -m pip install --no-deps --no-build-isolation -e .` when
+its existing dependencies already satisfy the project. Check both the imported
+source and distribution metadata:
+
+```bash
+python -c "import importlib.metadata as m, warpSPHIntegrators as w; print(w.__file__); print(w.__version__, m.version('warpSPHIntegrators')); assert w.__version__ == m.version('warpSPHIntegrators')"
+```
+
+This verifies the development install; the isolated wheel gate below separately
+checks artifact version, import locations and installed behavior.
 
 ## Validation and multicore execution
 
@@ -43,9 +57,11 @@ python scripts/validate_test_gate.py --mode shards --workers 2 --parallel-shards
   --compare-full .tmp/full/full.xml --output-dir .tmp/shards
 ```
 
-The latest Phase 2 baseline was 6,740 passed / 609 skipped in 264 seconds with
-eight workers. This is a local measurement, not a promised CI duration.
-Concurrent shard times include shared-host contention.
+The [current validation record](docs/development/repository-cleanup-batch5-2026-10-23.md)
+links the dated full CPU and installed-wheel reports, with commands, versions
+and scope. Retain the report fingerprint when reusing a gate. Timings are local
+measurements rather than promised CI durations; concurrent shards share host
+resources.
 
 For a targeted development run, limit nested threads explicitly:
 
@@ -73,9 +89,15 @@ than case counts, preserving the full merge gate.
 1. Inspect the pinned primary source and record its version/revision, file and
    constructor in [the disposition ledger](docs/plans/method-dispositions.md).
    Mark unverified sources explicitly. Do not infer coefficients from a name.
-2. Add the coefficients/driver, public exports, `IntegrationSchemeType`, family
-   enum and registration in `integration.py`. Public names are compatibility
-   contracts; record equivalent maps without silently deleting identifiers.
+2. Choose the representation before editing the catalog. For a fixed method,
+   add pure coefficients under `src/warpSPHIntegrators/schemes/coefficients`,
+   bind a definition under `schemes/definitions` to an engine under `drivers`,
+   and register it in `schemes/registry.py`. Stable identifiers and family enums
+   live in `schemes/enums.py`. Preserve existing numeric enum values and lookup
+   names; record equivalent maps without silently deleting identifiers.
+   Parameterized configurations belong under `schemes/families`, with public
+   exports in `schemes/__init__.py` and stepping in the appropriate driver. They
+   need not add fixed registry entries. Keep the four-entry root API focused.
 3. Verify node/row sums, weight normalization, main and companion order,
    stability, lifecycle, reuse and applicable state/parameter gradients. Inspect
    metadata-driven fixtures before adding redundant method-name lists.
@@ -90,15 +112,26 @@ than case counts, preserving the full merge gate.
 environment, extracted data and independent comparisons. New coefficient changes
 need evidence tied to the proposed implementation, not just an old oracle run.
 
+Consumer maps such as ConservedLagrangian and ProjectedStep have application
+prediction/finalization contracts beyond an ordinary ODE RHS. Document their
+state tags, hooks, clocks and stage data, qualify direct steps and the intended
+run/restart path, and retain no-order/no-estimate boundaries where appropriate.
+Run callbacks must accept forwarded step options such as history. Custom systems
+use application serialization; in-memory continuation does not establish portable
+TensorState checkpoint support. See the [consumer qualification](docs/development/consumer-map-qualification-2026-10-23.md).
+
 ## Documentation and migration checks
 
 ```bash
 python scripts/validate_repository.py
 python scripts/validate_doc_examples.py
 python scripts/generate_catalog.py --check
-cd docs
-npm ci
-npm run build
+python web/tools/export_catalog.py --check
+python web/tools/export_reference.py --check
+npm --prefix web run check
+npm --prefix web test
+npm --prefix docs ci
+npm --prefix docs run build
 ```
 
 Runnable Python fences have `[example:run scope]: #` or
@@ -106,7 +139,13 @@ Runnable Python fences have `[example:run scope]: #` or
 `[example:skip reason]: #`. Included examples must match the saved source verbatim.
 The site uses repository URLs for developer/research documents outside `docs/docs`.
 Durable plots live in `docs/assets`; benchmark drivers locate them from their own
-file, independently of the shell's working directory.
+file, independently of the shell's working directory. Browser source lives in
+`web/`; its generated assets share a content version across modules, workers and
+coefficients. Optional Dawn checks need the external binding described in
+`web/README.md`; ordinary browser tests explicitly skip those checks without it.
+The local `web/.openai/hosting.json` association is ignored and preserved on disk.
+GitHub Pages deployment is configured by `.github/workflows/docs.yml` and does
+not depend on that local hosting-service project ID.
 
 ## Release validation
 
@@ -118,8 +157,18 @@ in a fresh environment outside the checkout before publishing; the
 editable checkout is not evidence of wheel correctness. CI exercises a fresh dependency install. Offline local validation can use
 `--reuse-dependencies`: it shares numerical dependencies but still installs the
 project wheel into a separate venv and checks every module's import location and
-installed version. This does not establish minimum numerical dependency versions. Publishing is a separate action
-from creating commits and running checks.
+installed version. It also runs the custom consumer-map tests against the
+installed factories, including in-memory continuation and the portable-save
+boundary. The wheel must contain the configured `license.md` bytes and no stale
+modules from an earlier build. This does not establish minimum numerical
+dependency versions. Publishing is a separate action from creating commits and
+running checks.
+
+Keep changes in Unreleased until an actual release is prepared. Confirm
+`pyproject.toml`, package `__version__`, installed metadata and wheel metadata
+agree, review the complete source/consumer commit set, then explicitly authorize
+publication. `scripts/publish_pypi.sh` builds and uploads; it is not a dry-run
+validation command. Do not run it as a substitute for the checks above.
 
 `.tmp` contains preserved local probes and generated validation output and is
 ignored after durable oracles were promoted. `literature/` is a local source cache;

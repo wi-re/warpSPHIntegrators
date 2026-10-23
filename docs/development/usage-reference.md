@@ -13,7 +13,7 @@ A flexible, fully differentiable numerical ODE integration library for PyTorch. 
 > backend-dispatched, so `wp.array` fields are copied correctly and a Warp state is safe
 > to hold — but a Warp *backend* still needs a preallocated-buffer path instead of the
 > allocate-per-stage design, and a decision between torch autograd and `wp.Tape` for
-> gradients. See `NOTES.md`.
+> gradients. See the [numerical measurement index](../research/integrators/notes-index.md).
 
 ## Overview
 
@@ -28,7 +28,7 @@ blended with a reference state", and your system object decides what that means.
 ### Key Features
 
 - **Multiple Integration Schemes**: 142 registered schemes across 11 families, including Runge-Kutta up to 14th order, embedded FSAL pairs (Bogacki–Shampine, Dormand–Prince, Cash–Karp), TVD-RK2/3, symplectic Verlet, Forest–Ruth high-order, and Euler methods; stabilized explicit super-timestepping for parabolic stiffness (RKC1/RKC2/RKL2, no nonlinear solver); diagonally implicit (Backward Euler, Implicit Midpoint, Trapezoidal, SDIRK2, TR-BDF2, ESDIRK3(2)4L[2]SA, ESDIRK4(3)6L[2]SA, Newmark) via a pluggable `NonlinearSolver`; coupled fully implicit RK (Gauss-Legendre 2, Radau IIA s=2) via one coupled JFNK block solve per step; explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4); implicit multistep (BDF1–BDF5, fully implicit Adams-Moulton 2–4); additive (IMEX) RK (ARK3(2)4L[2]SA, ARK4(3)6L[2]SA), IMEX Euler, and IMEX multistep (SBDF2/SBDF3: BDF2/BDF3 implicit backbone with explicit endpoint extrapolation; CNAB2: trapezoidal backbone with the AB2 increment), all through an explicit/implicit RHS split; Rosenbrock-W (ROS3P: one linear solve per stage against a frozen Jacobian, no Newton loop); and the exponential family (ETD2RK: the linear part `L` integrated exactly through matrix-free `exp(hL)` / `phi_k(hL)` Krylov builds, the nonlinear remainder quadrature; EXPRB32: order-3 exponential Rosenbrock, L-stable, full frozen Jacobian with matrix-free `phi_k` Krylov builds, embedded (3, 2) estimator, no semilinear split required)
-- **Adaptive Step Control & Dense Output**: `estimate_error_norm` + `propose_dt` turn all 47 estimate emitters' `IntegrationResult.error` into a predictive step-size controller (safety factor, growth clamps, zero-error growth) with the caller-driven accept/reject loop; Dormand–Prince carries a published dense output — Shampine's 1986 quartic continuous extension, exact at the step endpoints and `O(dt^5)` in between (NOTES.md §3.17)
+- **Adaptive Step Control & Dense Output**: `estimate_error_norm` + `propose_dt` turn all 47 estimate emitters' `IntegrationResult.error` into a predictive step-size controller (safety factor, growth clamps, zero-error growth) with the caller-driven accept/reject loop; Dormand–Prince carries a published dense output — Shampine's 1986 quartic continuous extension, exact at the step endpoints and `O(dt^5)` in between (numerical notes §3.17)
 - **Flexible State Management**: Custom state objects with metadata-driven field behavior (integrated, constant, copied, ephemeral, custom)
 - **Type-Safe Protocol**: Structural typing for integration systems with clear separation of concerns
 - **Fully Differentiable**: All operations preserve gradient flow for end-to-end learning
@@ -209,7 +209,7 @@ nonlinear=)` for the semilinear split `f = L·y + N`. Both remain callable as
 the combined `f`, so a scheme that only needs the full right-hand side treats
 the split as fully implicit; a scheme that needs a split the RHS does not
 declare fails before the solve with an error naming the missing capability.
-See [NOTES.md §3.12](../research/integrators/notes-index.md#312-phase-14-the-structured-rhs-interface--done-2026-09-10).
+See [numerical notes §3.12](../research/integrators/notes-index.md#312-phase-14-the-structured-rhs-interface--done-2026-09-10).
 
 ### 5. Choose an Integration Scheme and Integrate
 
@@ -300,7 +300,7 @@ when the previous step's last stage is fed back in as `k0` — see
 These return a step-size-control estimate in `IntegrationResult.error`, consumed by
 Phase 11's adaptive helpers — `estimate_error_norm` (the estimate as a dimensionless
 number, 1.0 = at the tolerance) and `propose_dt` (the predictive controller), with the
-accept/reject loop driven by the caller (NOTES.md §3.17). The first two are
+accept/reject loop driven by the caller (numerical notes §3.17). The first two are
 **FSAL**, so first-stage reuse is exact and costs one evaluation less per step.
 
 | Scheme | Order | Stages | Reuse | Use Case |
@@ -318,7 +318,7 @@ report `q = 3`). **Dormand–Prince additionally has published dense output**:
 (Shampine 1986, the formula `scipy`'s `RK45` uses) at any `θ ∈ [0, 1]` — exact at
 the step endpoints, `O(dt^5)` in between — for output at fixed times under a
 varying `dt`. The other emitters have no published interpolant
-(NOTES.md §3.17).
+(numerical notes §3.17).
 
 The expanded pairs include Tsit5/OwrenZen, Verner/TsitPap and 17 new DIRK
 companions. The [family catalog](../docs/families/dirk.md) records wave 8
@@ -392,7 +392,7 @@ CUDA-graph-capturable non-stiff solve, explicitly pass `FixedPointSolver(iterati
 damped `RelaxedFixedPointSolver(relaxation=..., iterations=...)`. The stiffly accurate schemes
 with an explicit first stage — 24 DIRKs including Trapezoidal, TR-BDF2, and the ESDIRKs — implement lossless
 `priorStep` reuse (the previous step's last stage *is* `f(t^{n+1}, y^{n+1})`); the rest reject it
-with the standard warning. See [NOTES.md §3.6](../research/integrators/notes-index.md#36-valid-schemes-and-what-each-costs) for
+with the standard warning. See [numerical notes §3.6](../research/integrators/notes-index.md#36-valid-schemes-and-what-each-costs) for
 the derivation and [the DIRK family catalog](../docs/families/dirk.md) for all 37 methods:
 
 | Scheme | Order | Stability | Use Case |
@@ -643,7 +643,7 @@ solve and its post-convergence re-evaluation run on it) and the explicit callbac
 evaluated on a throwaway clone of the converged stage; the final state's copied fields
 come from the implicit buffer. Each carries an embedded (3, 2) / (4, 3) error
 estimate, and their two-parameter stability region is in
-[NOTES.md §3.6](../research/integrators/notes-index.md#36-valid-schemes-and-what-each-costs) and
+[numerical notes §3.6](../research/integrators/notes-index.md#36-valid-schemes-and-what-each-costs) and
 `docs/assets/imex_stability_slices.png`.
 
 ### IMEX Multistep — SBDF2, SBDF3, CNAB2
@@ -656,7 +656,7 @@ increment `3Nⁿ/2 − Nⁿ⁻¹/2`. In SBDF2/3 the BDF derivative weight `β`
 (3/2, 12/5) scales the *whole* endpoint derivative, implicit and extrapolated
 explicit part alike; dropping it from the extrapolation makes the combined
 method first order — measured and pinned as a regression guard
-([NOTES.md §3.19](../research/integrators/notes-index.md#319-phase-12-imex-linear-multistep-sbdf2-sbdf3-cnab2--done-2026-09-15)
+([numerical notes §3.19](../research/integrators/notes-index.md#319-phase-12-imex-linear-multistep-sbdf2-sbdf3-cnab2--done-2026-09-15)
 has the form and the measurement).
 
 Like IMEX Euler and the ARK pairs, they take the `IMEXRHS` split — an ordinary
@@ -1012,7 +1012,7 @@ Results (n = 64, tested to CFL 5): the TVD-named schemes — TVD RK2, TVD RK3, a
 SSP RK3, together with every second- and third-order explicit RK scheme — have
 the published $r = 1$ and measure TVD to CFL 1. The order-4 SSP method
 SSPRK(10,4) certifies $r = 4.0$ from the stage maps (the scanner's cap; the
-exact convex-combination limit is 6.0, NOTES.md §3.20) and measures per-step TVD
+exact convex-combination limit is 6.0, numerical notes §3.20) and measures per-step TVD
 to the tested CFL 5. TVD is strictly broader than SSP:
 classical RK3 has $r = 1/2$ yet a per-step TVD CFL of 1 (RK4: $r = 2/3$, TVD to
 1.25); Nystrom 5th order and Dormand–Prince 5(4) have $r = 0$ — their stage maps
@@ -1025,7 +1025,7 @@ so the TVD question does not apply to them.
 
 The per-scheme verdict table is the maintained fact printed by
 `python benchmarks/tvd_classifier.py` (re-run it to refresh) and pinned by
-`tests/test_tvd.py`; NOTES.md §3.11 has the full landscape, including why
+`tests/test_tvd.py`; numerical notes §3.11 has the full landscape, including why
 per-step TV cannot separate classical RK3 from TVD RK3 at CFL 1 and how the
 classifier detects the difference at the stage level instead.
 
@@ -1313,7 +1313,7 @@ method runs.
 
 - **Adaptive step-size control is a helper, not a driver.** The ten embedded-estimator
   schemes' `IntegrationResult.error` is consumed by `estimate_error_norm` + `propose_dt`
-  (NOTES.md §3.17), but the accept/reject loop is yours: the library ships the controller
+  (numerical notes §3.17), but the accept/reject loop is yours: the library ships the controller
   and a demo loop (`benchmarks/adaptive_benchmark.py`, `tests/test_adaptive.py`), not a driver
   that owns output times and event location. The multistep family is deliberately outside
   adaptive stepping — it emits no estimate, and `StepHistory` restarts on any `dt` change —
@@ -1335,7 +1335,7 @@ method runs.
 - **The coupled (block) fully implicit RK family is partial.** Gauss-Legendre s=2
     (order 4, A-stable, symplectic for separable Hamiltonians) and Radau IIA s=2 (order 3,
     L-stable, stiffly accurate) are implemented in `fullyimplicit.py` — one coupled `s·N`-unknown
-    JFNK block solve per step, exact-JVP matvec by default (NOTES.md §3.18). The Lobatto
+    JFNK block solve per step, exact-JVP matvec by default (numerical notes §3.18). The Lobatto
     IIIA/IIIB and s=3 tableaus remain planned. BDF1–BDF5 and the fully implicit Adams-Moulton
     correctors AM2–AM4 are available as well.
 - **The additive (IMEX) family ships two RK pairs and the multistep trio.** The
@@ -1343,16 +1343,16 @@ method runs.
     embedded estimators and the `IMEXRHS` split), and the IMEX multistep family —
     SBDF2/SBDF3 (BDF2/BDF3 implicit backbone + explicit endpoint extrapolation)
     and CNAB2 (trapezoidal backbone + AB2 increment), orders 2/3/2 — is
-    implemented as well (NOTES.md §3.19); the order-4 SSP method SSPRK(10,4)
+    implemented as well (numerical notes §3.19); the order-4 SSP method SSPRK(10,4)
     (exact SSP coefficient 6.0, real axis [−13.916, 0]) is implemented too
-    (NOTES.md §3.20); higher-stage ARK, Radau-type additive schemes, and the
+    (numerical notes §3.20); higher-stage ARK, Radau-type additive schemes, and the
     remaining Phase 12 families (generalized-alpha/HHT-alpha, SSPRK(5,4),
     high-order symplectic composition, one-step RKN) remain planned
-    (NOTES.md §3.6). The Rosenbrock-W family has one member, `ROS3P` (NOTES.md §3.14).
+    (numerical notes §3.6). The Rosenbrock-W family has one member, `ROS3P` (numerical notes §3.14).
     The exponential-integrator family has two members: `ETD2RK` (order 2, L-stable
     for the linear part, needs the `SemilinearRHS` `linear` accessor) and `EXPRB32`
     (order 3, L-stable, full frozen Jacobian, embedded (3, 2) estimator, runs on
-    plain callables) (NOTES.md §3.15–§3.16).
+    plain callables) (numerical notes §3.15–§3.16).
 
 Explicit multistep (Adams-Bashforth 2–5, Adams-Bashforth-Moulton 2–4), implicit multistep
 (BDF1–BDF5, fully implicit Adams-Moulton 2–4), 37 DIRK schemes through order 6 (including Kvaerno, KenCarp, ESDIRK,
@@ -1383,7 +1383,7 @@ npm run serve    # local preview
 
 Every push to `main` rebuilds and redeploys the site
 (`.github/workflows/docs.yml`). The [Supported Integrators](#supported-integrators)
-table above is the short reference; `NOTES.md` is the detailed measurement
+table above is the short reference; the [numerical notes](../research/integrators/notes-index.md) provide the detailed measurement
 record; the notebooks (`examples/notebooks/integrators.ipynb`, `examples/notebooks/viscous_burgers_demo.ipynb`,
 `examples/integrations/jfnk_wave_equation.ipynb`) are the interactive examples.
 

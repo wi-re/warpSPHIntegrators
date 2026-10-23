@@ -6,6 +6,34 @@ physical wrappers and numerical analysis. The root exports exactly `get_scheme`,
 `solve`, `TensorState` and `tensor_rhs`. This is a local breaking change; no
 release, push or remote CI run is part of this pass.
 
+## Initial consumer audit
+
+The original design audit at `30d78a6` counted 225 declared root `__all__`
+entries and 386 non-private root attributes, including accidental wildcard
+exports. The 14 October pre-migration inspection found these direct Python
+consumers:
+
+| Checkout | Files importing the library | Migration surface |
+|---|---:|---|
+| warpSPH | 43 | Configuration enums/lookup, wildcard state helpers, deep solver/field imports, tableau access and graph/deferred-clock paths. |
+| warpSPHCore | 1 | A profile/spike script; no direct import found in inspected production Python source. |
+| warpSPHCases | 1 | A copied Sod resume example importing lookup from the old integration module. |
+| warpSPHPlotting | 0 | No direct Python usage found. |
+
+Those initial counts cover parseable Python files outside build/cache directories,
+not notebooks, dynamic imports or transitive usage. Intersecting AST names with
+root exports identified candidates rather than resolving every ambiguous wildcard
+binding. The later refreshed consumer checks below have their own broader scope.
+
+Configuration identifiers and stored cases, typed position/component/quantity
+updates, compatible finalization/reruns, nonlinear/FD/JVP solver hooks and direct
+coefficient inspection needed explicit new interfaces. Runner/graph and HDF5 code
+also used deferred tensor clocks and result/stage types. The migration therefore
+preserved actual contracts and numerical/storage gates, rather than retaining a
+broad facade for hypothetical unknown consumers. CPU checks do not establish
+new CUDA-graph behavior. This audit history was consolidated from the completed
+refactor design on 23 October 2026; it does not change the dated validation below.
+
 ## Boundaries and preserved numerical work
 
 Generic explicit, DIRK, coupled and additive RK use frozen definition records

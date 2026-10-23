@@ -4,7 +4,7 @@ pRRK22/33/54 (Liu, Burchard, Kuzmin & Shang 2023) apply a per-step relaxation
 with parameter z = kappa*dt to a base Shu-Osher SSPRK method. Because z =
 kappa*dt, the modified Butcher tableau depends on BOTH kappa and dt -- it is
 not a fixed tableau, so these are exposed as standalone per-step drivers
-(`prrk.py`), NOT registered in `IntegrationSchemes` (SCHEME_EXPANSION_PLAN
+(`prrk.py`), NOT registered in `IntegrationSchemes` (docs/development/plan-reconciliation-2026-10-23.md
 wave 4 registry decision). The gates pinned here:
 
   (a) exact kappa -> 0 reduction to the base SSPRK methods;
@@ -35,7 +35,7 @@ IDS = ['pRRK22', 'pRRK33', 'pRRK54']
 
 
 def test_prrk_is_not_registered_in_integration_schemes():
-    """Registry decision (SCHEME_EXPANSION_PLAN wave 4): at kappa = 0 pRRK
+    """Registry decision (docs/development/plan-reconciliation-2026-10-23.md wave 4): at kappa = 0 pRRK
     duplicates already-registered schemes, and at kappa > 0 there is no single
     fixed order/identifier (the tableau depends on dt). So pRRK is exposed
     alongside -- not inside -- IntegrationSchemes, and must not appear in the

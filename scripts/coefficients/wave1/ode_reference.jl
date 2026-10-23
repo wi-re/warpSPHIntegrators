@@ -1,4 +1,4 @@
-# Wave 1 SSPRK reference trajectories (SCHEME_EXPANSION_PLAN wave 1, 2026-10-12).
+# Wave 1 SSPRK reference trajectories (docs/development/plan-reconciliation-2026-10-23.md wave 1, 2026-10-12).
 #
 # Integrates a fixed nonlinear time-dependent 3D ODE with each of the 7 new
 # SSPRK methods at fixed dt and writes the final state. The python companion

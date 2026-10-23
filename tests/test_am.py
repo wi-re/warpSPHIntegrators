@@ -1,4 +1,4 @@
-"""Fully implicit (iterated) Adams-Moulton corrector (NOTES.md S3.8 Phase 4).
+"""Fully implicit (iterated) Adams-Moulton corrector (docs/research/integrators/notes-3-8.md Phase 4).
 
 The AM corrector formula solved to convergence with JFNK, as distinct from the
 uniterated Adams-Bashforth-Moulton (PECE) corrector in `test_multistep.py`. Covers
@@ -249,7 +249,7 @@ def test_dt_change_restarts_history_and_stays_correct():
 
 
 def test_testing_run_history_true_is_the_blessed_calling_convention():
-    """testing.run(..., history=True) (NOTES.md S5) must reach the claimed order too."""
+    """testing.run(..., history=True) (docs/research/integrators/baseline-audit-2026-08-05.md S5) must reach the claimed order too."""
     s = get_scheme('Adams-Moulton 4 (implicit)')
     prob = testing.PROBLEMS['oscillator']()
     dts = testing.default_step_sizes(0.1, 5)

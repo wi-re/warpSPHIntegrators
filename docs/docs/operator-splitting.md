@@ -3,7 +3,7 @@
 `ConservativeDissipativeRHS` declares two autonomous physical parts. `LieTrotter`,
 `Strang`, `Yoshida4` and `compose` build parameterized fixed-step schemes over existing
 one-step integrators. They remain outside the fixed catalog; pass the returned
-scheme to `solve` or call it directly. The 137 existing registrations are intact.
+scheme to `solve` or call it directly. They do not add fixed registry entries.
 
 [example:include examples/operator_splitting.py]: #
 ```python

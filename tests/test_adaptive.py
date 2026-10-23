@@ -1,7 +1,7 @@
-"""Adaptive step control and dense output (roadmap Phase 11, NOTES.md S3.17).
+"""Adaptive step control and dense output (roadmap Phase 11, docs/research/integrators/notes-3-17.md).
 
 The controller is a *helper, not a solver*: ``estimate_error_norm`` +
-``propose_dt``, and the caller drives the accept/reject loop (NOTES.md S3.8's
+``propose_dt``, and the caller drives the accept/reject loop (docs/research/integrators/notes-3-8.md's
 "no solver contract without a downstream" caution). ``run_adaptive`` below is
 that loop, the demo the Phase 11 contract leaves to the caller (the same loop
 lives in ``scripts/adaptive_benchmark.py``). The multistep refusal is pinned

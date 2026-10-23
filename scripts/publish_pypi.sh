@@ -63,7 +63,7 @@ except ModuleNotFoundError:
 
 pyproject_version = tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"]
 init_text = Path("src/warpSPHIntegrators/__init__.py").read_text()
-match = re.search(r'^__version__\s*=\s*"([^"]+)"', init_text, re.MULTILINE)
+match = re.search(r'''^__version__\s*=\s*['"]([^'"]+)['"]''', init_text, re.MULTILINE)
 if match is None:
     print("Could not find __version__ in src/warpSPHIntegrators/__init__.py", file=sys.stderr)
     sys.exit(1)

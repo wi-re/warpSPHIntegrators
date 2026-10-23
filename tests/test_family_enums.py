@@ -16,10 +16,10 @@ from warpSPHIntegrators.schemes import IntegrationSchemes
 
 # The member count per family, in FAMILY_ENUMS order. A count change means a
 # scheme moved families or a new one was registered -- both worth a look.
-#: Wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13): the eleven high-order tableaus
+#: Wave 7 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): the eleven high-order tableaus
 #: (Vern6-9, RKV76IIa, TanYam7, TsitPap8, DP8, Feagin10/12/14) join ExplicitRK,
 #: 52 -> 63; the registry grows 97 -> 108.
-#: Wave 8 (SCHEME_EXPANSION_PLAN, 2026-10-13; NOTES.md 3.28): the 29 remaining
+#: Wave 8 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13; docs/research/integrators/notes-3-28.md): the 29 remaining
 #: ODE v7.8.1 DIRK tableaus join DIRK, 7 -> 36; the registry grows 108 -> 137.
 EXPECTED_FAMILY_SIZES = (63, 6, 3, 10, 37, 4, 8, 7, 1, 2, 1)
 EXPECTED_TOTAL = sum(EXPECTED_FAMILY_SIZES)
@@ -111,13 +111,13 @@ def test_family_membership_spot_checks():
         ('ETD2RK', Exponential),
         ('EXPRB32', Exponential),
         ('Newmark', Newmark),
-        # Wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13): the high-order tableaus
+        # Wave 7 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): the high-order tableaus
         # land in ExplicitRK, the rest of the registry's ExplicitRK coverage
         # unchanged.
         ('Vern6 6(5)', ExplicitRK),
         ('DP8', ExplicitRK),
         ('Feagin14', ExplicitRK),
-        # Wave 8 (SCHEME_EXPANSION_PLAN, 2026-10-13; NOTES.md 3.28): the 29
+        # Wave 8 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13; docs/research/integrators/notes-3-28.md): the 29
         # remaining ODE v7.8.1 DIRK tableaus land in DIRK.
         ('Kvaerno5', DIRK),
         ('ESDIRK6(5)9L[2]SA', DIRK),

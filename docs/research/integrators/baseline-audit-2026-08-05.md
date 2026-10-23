@@ -81,7 +81,7 @@ are gone.
   s=3 pair (Gauss-Legendre / Radau IIA s=3) and Lobatto IIIA-IIIB, the remaining Phase 12
   families (generalized-alpha / HHT-alpha, SSPRK(5,4), high-order symplectic composition,
   one-step RKN), and the Phase 9/10 warm-start and cold-start-gradient items — is tracked
-  with per-item triggers in `docs/plans/implicit.md` (open-items-only since 2026-09-15);
+  with per-item triggers in `docs/development/plan-reconciliation-2026-10-23.md` (open-items-only since 2026-09-15);
   each is individually scoped (see the sections cited above) and gated on a concrete
   downstream need, per the recommendation at the end of §3.8; none of it is a groundwork
   gap the way Phase 0 was. (High-order IMEX/ARK landed as

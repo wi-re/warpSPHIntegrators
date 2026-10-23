@@ -33,12 +33,12 @@ class IntegrationSchemeType(Enum):
     bogackiShampine = 23
     dormandPrince = 24
     cashKarp = 25
-    # Diagonally implicit (NOTES.md S3.6 Phase 2). None implement first-stage reuse.
+    # Diagonally implicit (docs/research/integrators/notes-3-6.md Phase 2). None implement first-stage reuse.
     backwardEuler = 26
     implicitMidpoint = 27
     trapezoidal = 28
     sdirk2 = 29
-    # Explicit linear multistep (NOTES.md S3.6 Phase 1). `steps == order - 1`; none
+    # Explicit linear multistep (docs/research/integrators/notes-3-6.md Phase 1). `steps == order - 1`; none
     # implement first-stage reuse (a different, single-entry-lookback mechanism).
     ab2 = 30
     ab3 = 31
@@ -55,48 +55,48 @@ class IntegrationSchemeType(Enum):
     bdf3 = 42
     esdirk324l2sa = 43
     esdirk436l2sa = 44
-    # Additive (IMEX) Kennedy-Carpenter ARK pairs (NOTES.md S3.9 Phase 5). Each is an
+    # Additive (IMEX) Kennedy-Carpenter ARK pairs (docs/research/integrators/notes-3-9.md Phase 5). Each is an
     # explicit + implicit half pair; the combined method is not FSAL, so neither
     # implements first-stage reuse.
     ark324l2sa = 45
     ark436l2sa = 46
-    # Higher-order BDF (NOTES.md S3.8 Phase 4). BDF1/2 are A-stable; BDF3-BDF5 are
+    # Higher-order BDF (docs/research/integrators/notes-3-8.md Phase 4). BDF1/2 are A-stable; BDF3-BDF5 are
     # A(alpha)-stable (cone half-angles 86.03 / 73.35 / 51.84 deg).
     bdf4 = 47
     bdf5 = 48
-    # Fully implicit (iterated) Adams-Moulton correctors (NOTES.md S3.8 Phase 4),
+    # Fully implicit (iterated) Adams-Moulton correctors (docs/research/integrators/notes-3-8.md Phase 4),
     # distinct from the ABM PECE predictor-correctors above.
     am2 = 49
     am3 = 50
     am4 = 51
-    # Relaxed Chebyshev / Lobatto super-timestepping (NOTES.md S3.13, Phase 12).
+    # Relaxed Chebyshev / Lobatto super-timestepping (docs/research/integrators/notes-3-13.md, Phase 12).
     # Explicit, matrix-free, O(s^2) real-axis stability; s is a per-step parameter
     # (pass s= or lambda_max=). None implement first-stage reuse.
     rkc1 = 52
     rkc2 = 53
     rkl2 = 54
-    # Rosenbrock-W (linearly implicit, semilinear split) (NOTES.md S3.14, Phase 7).
+    # Rosenbrock-W (linearly implicit, semilinear split) (docs/research/integrators/notes-3-14.md, Phase 7).
     # Each stage is one GMRES solve against a frozen operator W (no outer Newton);
     # not stiffly accurate, so no first-stage reuse.
     ros3p = 55
-    # Exponential integrator (NOTES.md S3.15, Phase 7): integrates the linear part
+    # Exponential integrator (docs/research/integrators/notes-3-15.md, Phase 7): integrates the linear part
     # exactly via the matrix exponential / phi_k, matrix-free through a Krylov
     # approximation of phi_k(hL)v. Not stiffly accurate, so no first-stage reuse.
     etd2rk = 56
-    # Exponential Rosenbrock (NOTES.md S3.16, Phase 7): order 3 with an embedded
+    # Exponential Rosenbrock (docs/research/integrators/notes-3-16.md, Phase 7): order 3 with an embedded
     # order-2 estimator; freezes the FULL right-hand-side Jacobian (no semilinear
     # split needed), phi_k(hJn)v matrix-free through a Krylov approximation.
     # Exact on linear problems, L-stable for the linear part; not stiffly
     # accurate, so no first-stage reuse.
     exprb32 = 57
-    # Coupled (block) fully implicit RK (NOTES.md S3.18, Phase 6): the stage
+    # Coupled (block) fully implicit RK (docs/research/integrators/notes-3-18.md, Phase 6): the stage
     # equations are solved as one s-by-s coupled system (fullyimplicit.BlockState),
     # so first-stage reuse does not apply to either. Gauss-Legendre 2 is order 4,
     # A-stable and symplectic; Radau IIA s=2 is order 3, L-stable, stiffly
     # accurate.
     gaussLegendre2 = 58
     radauIia2 = 59
-    # IMEX linear multistep (NOTES.md S3.19, Phase 12): a BDF / trapezoidal
+    # IMEX linear multistep (docs/research/integrators/notes-3-19.md, Phase 12): a BDF / trapezoidal
     # implicit backbone for the stiff part plus explicit endpoint extrapolation
     # for the smooth part (imexmultistep.py). A plain callable degenerates to
     # the pure-implicit limit (BDF2 / BDF3 / trapezoidal), so no first-stage
@@ -112,7 +112,7 @@ class IntegrationSchemeType(Enum):
     # barrier for explicit RK bites (order 4 needs 5+ stages). Explicit
     # single-step, so no first-stage reuse.
     ssprk104 = 63
-    # The OrdinaryDiffEq SSPRK wave (SCHEME_EXPANSION_PLAN wave 1, 2026-10-12):
+    # The OrdinaryDiffEq SSPRK wave (docs/development/plan-reconciliation-2026-10-23.md wave 1, 2026-10-12):
     # Ruuth's globally optimized SSP methods (ssprk53/63/73/83 order 3, ssprk54
     # order 4) and the two Kubatko-Yeager-Ketcheson DG-optimized methods
     # (order 2). Plain tableaus on the generic RK driver; none are FSAL, so no
@@ -124,7 +124,7 @@ class IntegrationSchemeType(Enum):
     ssprk54 = 68
     kykssprk42 = 69
     kyk2014dgssprk3s2 = 70
-    # The OrdinaryDiffEq SSPRK wave 2 (SCHEME_EXPANSION_PLAN, 2026-10-12):
+    # The OrdinaryDiffEq SSPRK wave 2 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-12):
     # the embedded 3(2) pairs ssprk43 / ssprk432 (order-3 main, order-2
     # estimate) and the high-stage ssprk932 (order 3, 9 stages, registered
     # fixed-step: ODE's adaptive estimate is O(dt), not a valid 3(2) pair).
@@ -132,7 +132,7 @@ class IntegrationSchemeType(Enum):
     ssprk43 = 71
     ssprk432 = 72
     ssprk932 = 73
-    # The OrdinaryDiffEq SSPRK wave 3 (SCHEME_EXPANSION_PLAN, 2026-10-13): Shu's
+    # The OrdinaryDiffEq SSPRK wave 3 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): Shu's
     # strong-stability-preserving *multistep* methods (ssprkmsvs.py). Convex
     # combinations of forward-Euler substeps across past states: ssprkmsvs32 is
     # 3-step / order 2 / SSP C = 1/2, ssprkmsvs43 is 4-step / order 3 / SSP
@@ -141,7 +141,7 @@ class IntegrationSchemeType(Enum):
     # reuse is the history= mechanism).
     ssprkmsvs32 = 74
     ssprkmsvs43 = 75
-    # The OrdinaryDiffEq SSPRK wave 5 (SCHEME_EXPANSION_PLAN, 2026-10-13):
+    # The OrdinaryDiffEq SSPRK wave 5 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13):
     # Higueras & Roldan's new third-order low-storage SSP methods
     # (arXiv:1809.04807). Screened before registration: all three are
     # algebraically distinct one-step maps from ssprk53 (different stages and
@@ -152,7 +152,7 @@ class IntegrationSchemeType(Enum):
     ssprk53_2n1 = 76
     ssprk53_2n2 = 77
     ssprk53_h = 78
-    # The OrdinaryDiffEq wave-6 tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13):
+    # The OrdinaryDiffEq wave-6 tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13):
     # Tsit5 (Tsitouras 5(4), ODE's recommended default) and the LowOrderRK
     # workhorses. The embedded pairs (tsit5, owrenzen3/4/5, bs5, stefanov5,
     # arushina2) store `b` as a (main, embedded) tuple on the generic RK
@@ -177,11 +177,11 @@ class IntegrationSchemeType(Enum):
     psrk4p7q6 = 94
     psrk3p6q5 = 95
     psrk3p5q4 = 96
-    # The OrdinaryDiffEq wave-7 high-order tableaus (SCHEME_EXPANSION_PLAN,
+    # The OrdinaryDiffEq wave-7 high-order tableaus (docs/development/plan-reconciliation-2026-10-23.md,
     # 2026-10-13): the Verner family, Tsitouras's high-order embedded pairs
     # (tanyam7, tsitpap8), Dormand-Prince 8, and the Feagin symmetric methods.
     # Coefficients from ODE v7.8.1's caches, cross-checked one step against
-    # the real ODE solvers (NOTES.md 3.27). The embedded pairs (vern6-9,
+    # the real ODE solvers (docs/research/integrators/notes-3-27.md). The embedded pairs (vern6-9,
     # rkv76iia, tanyam7, tsitpap8) store `b` as a (main, embedded) tuple;
     # dp8 and the feagins are fixed-step plain tableaus (DP8's ODE estimate
     # is a dual 5th+3rd-order companion, not a (p-1) solution). FSAL:
@@ -198,9 +198,9 @@ class IntegrationSchemeType(Enum):
     feagin10 = 105
     feagin12 = 106
     feagin14 = 107
-    # The OrdinaryDiffEq wave-8 DIRK tableaus (SCHEME_EXPANSION_PLAN,
+    # The OrdinaryDiffEq wave-8 DIRK tableaus (docs/development/plan-reconciliation-2026-10-23.md,
     # 2026-10-13): the remaining ODE v7.8.1 OrdinaryDiffEqSDIRK methods
-    # (NOTES.md 3.28), all on the JFNK DIRK driver. Sub-batch A is the L-stable
+    # (docs/research/integrators/notes-3-28.md), all on the JFNK DIRK driver. Sub-batch A is the L-stable
     # stiff workhorse set (kvaerno4 is A- but not L-stable, R(inf) ~ 0.72;
     # sspsdirk2 is A- but not L-stable, R(inf) -> 1). Sub-batch B: the L-stable
     # ARS family + bhr553, the L-stable cash4/hairer4/hairer42 (embedded (4,3)
@@ -346,7 +346,7 @@ class Symplectic(Enum):
     Verlet, the Forest-Ruth PEFRL/VEFRL). Symplectic for separable
     Hamiltonians (force depending on position alone) -- with a
     velocity-dependent force the order-2+ members drop to first order
-    (NOTES.md, 'Still open').
+    (docs/research/integrators/notes-index.md, 'Still open').
     """
     semiImplicitEuler = IntegrationSchemeType.semiImplicitEuler.value
     symplecticEuler = IntegrationSchemeType.symplecticEuler.value
@@ -397,7 +397,7 @@ class DIRK(Enum):
     tableaus: the Kvaerno and KenCarp stiff workhorses, the Kennedy-Carpenter
     ESDIRK325/436L2SA2/437/547L2SA2/54I8/659L2SA family, SSPSDIRK2, the
     L-stable ARS family + BHR553, Cash4/Hairer4/Hairer42 (embedded (4,3)
-    pairs), and the Ferracina-Spijker SFSDIRK4-8 (NOTES.md 3.28). The
+    pairs), and the Ferracina-Spijker SFSDIRK4-8 (docs/research/integrators/notes-3-28.md). The
     stiffly accurate tableaus with an explicit first stage accept lossless
     `priorStep` reuse.
     """

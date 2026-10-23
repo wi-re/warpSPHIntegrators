@@ -208,3 +208,6 @@ cython_debug/
 # Generated browser laboratory assets.
 /web/dist/
 /docs/static/laboratory/
+
+# Local optional hosting-service association; Pages builds use source/config in Git.
+/web/.openai/hosting.json

@@ -1,8 +1,8 @@
 {
-  "SCHEME_EXPANSION_PLAN.md": "docs/plans/scheme-expansion.md",
-  "IMPLICIT_ROADMAP.md": "docs/plans/implicit.md",
-  "SPLITTING_PLAN.md": "docs/plans/splitting.md",
-  "JFNK_PLAN.md": "docs/plans/wcsph-jfnk.md",
+  "SCHEME_EXPANSION_PLAN.md": "docs/development/plan-reconciliation-2026-10-23.md#expansion-inventory-dispositions",
+  "IMPLICIT_ROADMAP.md": "docs/development/plan-reconciliation-2026-10-23.md#implicit-roadmap-dispositions",
+  "SPLITTING_PLAN.md": "docs/development/operator-splitting-design.md",
+  "JFNK_PLAN.md": "docs/research/downstream/wcsph-jfnk-design.md",
   "JFNK_DRIVER_OVERHEAD_NOTES.md": "docs/research/integrators/jfnk-driver-overhead-2026-08-24.md",
   "hamiltonian.md": "docs/research/integrators/hamiltonian-proposal.md",
   "scratch_dfsph_kolmogorov_findings.md": "docs/research/downstream/dfsph-kolmogorov-2026-08-26.md",
@@ -49,5 +49,10 @@
   "images/jfnk_preconditioner_benchmark.png": "docs/assets/jfnk_preconditioner_benchmark.png",
   "images/newmark_integrator_comparison_order_2.png": "docs/assets/newmark_integrator_comparison_order_2.png",
   "images/modified_harmonic_oscillator_order_3_integrators.png": "docs/assets/modified_harmonic_oscillator_order_3_integrators.png",
-  "NOTES.md": "docs/research/integrators/notes-index.md"
+  "NOTES.md": "docs/research/integrators/notes-index.md",
+  "docs/plans/scheme-expansion.md": "docs/development/plan-reconciliation-2026-10-23.md#expansion-inventory-dispositions",
+  "docs/plans/implicit.md": "docs/development/plan-reconciliation-2026-10-23.md#implicit-roadmap-dispositions",
+  "docs/plans/splitting.md": "docs/development/operator-splitting-design.md",
+  "docs/plans/wcsph-jfnk.md": "docs/research/downstream/wcsph-jfnk-design.md",
+  "docs/plans/package-api-refactor.md": "docs/development/architecture.md#package-design-rationale"
 }

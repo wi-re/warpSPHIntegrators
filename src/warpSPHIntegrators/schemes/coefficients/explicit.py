@@ -106,7 +106,7 @@ def getButcherTableau(scheme, alpha = 1/2, beta = 2/3):
             b = np.array([1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10]),
             c = np.array([0, 1/6, 1/3, 1/2, 2/3, 1/3, 1/2, 2/3, 5/6, 1])
         )
-    # The OrdinaryDiffEq wave-1 SSP tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12):
+    # The OrdinaryDiffEq wave-1 SSP tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-12):
     # Ruuth's globally optimized methods SSPRK53/63/73/83 (order 3) and SSPRK54
     # (order 4) -- Ruuth, "Global optimization of explicit strong-stability-
     # preserving Runge-Kutta methods", Mathematics of Computation 75.253 (2006)
@@ -214,7 +214,7 @@ def getButcherTableau(scheme, alpha = 1/2, beta = 2/3):
             b = np.array([0.3384803991135379, 0.3156535616530465, 0.345866039233415]),
             c = np.array([0.0, 0.528005024856522, 0.9637642772679866])
         )
-    # The OrdinaryDiffEq wave-2 SSP tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12):
+    # The OrdinaryDiffEq wave-2 SSP tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-12):
     # the embedded 3(2) pairs SSPRK43 and SSPRK432 (order-3 main / order-2
     # estimate, 4 stages) and the high-stage SSPRK932 (order 3, 9 stages,
     # fixed-step only here). Coefficients transcribed from OrdinaryDiffEq v7.8.1
@@ -281,12 +281,12 @@ def getButcherTableau(scheme, alpha = 1/2, beta = 2/3):
             b = np.array([1/6, 1/15, 1/15, 1/15, 1/15, 1/15, 1/6, 1/6, 1/6]),
             c = np.array([0.0, 1/6, 1/3, 1/2, 2/3, 5/6, 1/2, 2/3, 5/6])
         )
-    # The OrdinaryDiffEq wave-5 SSP tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13):
+    # The OrdinaryDiffEq wave-5 SSP tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13):
     # Higueras & Roldan's new third-order low-storage SSP methods (arXiv:1809.04807).
     # Screened before registration: all three are algebraically DISTINCT one-step
     # maps from SSPRK53 (different stages and final b-row; one-step-map diff
     # O(dt^4) ~ 1.5e-4..4.6e-3 per unit dt^4, not ~1e-16), so they are their own
-    # methods, not storage rearrangements of it (NOTES.md S3.25). ODE's storage
+    # methods, not storage rearrangements of it (docs/research/integrators/notes-3-25.md). ODE's storage
     # saving (1-2 temporaries) does not apply to this driver, which builds each
     # stage state fresh from the a-row. Coefficients transcribed from
     # OrdinaryDiffEq v7.8.1 (ssprk_caches.jl alphas/betas,
@@ -362,7 +362,7 @@ def getButcherTableau(scheme, alpha = 1/2, beta = 2/3):
             b = np.array([23/192, 0, 125/192,  0, -27/64, 125/192]),
             c = np.array([0, 1/3, 2/5, 1, 2/3, 4/5])
         )
-    # The OrdinaryDiffEq wave-6 tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13): the
+    # The OrdinaryDiffEq wave-6 tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): the
     # fixed-step workhorses of LowOrderRK (the embedded pairs follow below).
     # Coefficients are the exact Float64s ODE stores in its ConstantCache
     # (extracted with a local Julia probe, transcribed by script, zero hand
@@ -556,10 +556,10 @@ def getButcherTableau(scheme, alpha = 1/2, beta = 2/3):
             c = np.array([0.0, 0.375, 0.25, 1.0])
         )
     # The OrdinaryDiffEq wave-7 plain high-order tableaus
-    # (SCHEME_EXPANSION_PLAN, 2026-10-13): Dormand-Prince 8 and the
+    # (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): Dormand-Prince 8 and the
     # Feagin 10/12/14 methods. Coefficients from ODE v7.8.1's caches,
     # cross-checked one step for bit-for-bit agreement with the real ODE
-    # solvers (NOTES.md 3.27). Row sums == c.
+    # solvers (docs/research/integrators/notes-3-27.md). Row sums == c.
     elif scheme == 'DP8':
         # Dormand-Prince 8th order, 12 stages (ODE's HighOrderRK DP8). Not FSAL: ODE
         # recomputes f fresh each step (the last-row a's != b). ODE's error estimate is a dual
@@ -736,7 +736,7 @@ def getButcherTableau(scheme, alpha = 1/2, beta = 2/3):
                  np.array([2825/27648, 0, 18575/48384, 13525/55296, 277/14336, 1/4])),
             c = np.array([0, 1/5, 3/10, 3/5, 1, 7/8])
         )
-    # The OrdinaryDiffEq wave-6 embedded pairs (SCHEME_EXPANSION_PLAN, 2026-10-13):
+    # The OrdinaryDiffEq wave-6 embedded pairs (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13):
     # b_embed = b_main - btilde (or - bhat for BS5), the difference convention of
     # DiffEqBase's calculate_residuals. Coefficients and the one-step
     # bit-for-bit cross-check as for the fixed-step wave-6 tableaus above.
@@ -869,7 +869,7 @@ def getButcherTableau(scheme, alpha = 1/2, beta = 2/3):
                  np.array([1.0, 0.0])),
             c = np.array([0.0, 0.666666666666666])
         )
-    # The OrdinaryDiffEq wave-7 embedded pairs (SCHEME_EXPANSION_PLAN,
+    # The OrdinaryDiffEq wave-7 embedded pairs (docs/development/plan-reconciliation-2026-10-23.md,
     # 2026-10-13): TanYam7 7(6), TsitPap8 8(7), Vern6/7/8/9, RKV76IIa 7(6).
     # b_embed = b_main - btilde (or ODE's bh for RKV76IIa). Coefficients and
     # the one-step bit-for-bit cross-check as for the wave-7 plain tableaus

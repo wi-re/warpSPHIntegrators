@@ -1,0 +1,707 @@
+{
+  "batch": 3,
+  "retired_files": [
+    "IMPLICIT_ROADMAP.md",
+    "JFNK_PLAN.md",
+    "SPLITTING_PLAN.md",
+    "SCHEME_EXPANSION_PLAN.md",
+    "NOTES.md",
+    "docs/plans/implicit.md",
+    "docs/plans/wcsph-jfnk.md",
+    "docs/plans/splitting.md",
+    "docs/plans/scheme-expansion.md",
+    "docs/plans/package-api-refactor.md"
+  ],
+  "migration_destinations": 56,
+  "python_comment_migrations": [
+    {
+      "path": "src/warpSPHIntegrators/testing.py",
+      "before_sha256": "7cf03d8925b8812ec8ef41cb3abdb7eda793f0d5daf609b0d5060c800dbebb4d",
+      "after_sha256": "cc3f49dceeac7dc08e77219a24d0f307998f46129bf6d050caf3a338c7b0dbb2",
+      "executable_ast_sha256": "767faad8da5daf64565a0e4b2416882e28bd08a15951480b4dd5d5a24205f78b"
+    },
+    {
+      "path": "src/warpSPHIntegrators/schemes/model.py",
+      "before_sha256": "88af1a75511f5f6396cb0349ae74f1f0316c51d44ae4dbdd900be9a3c3935836",
+      "after_sha256": "4490a6412798313a369c30e97455c7c3309290b9141265526c22d52a9b955fcd",
+      "executable_ast_sha256": "28dcbe11c9a6018894dadd8d1333d4940e2add843b0e84050cc2b923a8a4ac39"
+    },
+    {
+      "path": "src/warpSPHIntegrators/schemes/enums.py",
+      "before_sha256": "00409497635065bd8b731d4ac049030a36656eabdbf21d8b3f24958a903bd1a8",
+      "after_sha256": "9ed5d7b422fc9fc496887eab3174581ef8c8c0595025303b66a3cf16006f9954",
+      "executable_ast_sha256": "992fdf248fd2b8648b85cf45cdf2797619ac97b6ce22ce7968077e4be253ded5"
+    },
+    {
+      "path": "src/warpSPHIntegrators/schemes/registry.py",
+      "before_sha256": "668e630333675fe03ecb6a6ef7f16bf9123a615364dac85a78e0d782e04c076b",
+      "after_sha256": "c0c9ad71f41ece52dde728369c80e902ace3c9b82e723b809174baed4cab35b1",
+      "executable_ast_sha256": "f0c436c738bb5b8c5fa4eee56ed904314350e085317961d20c7ef1937c70b599"
+    },
+    {
+      "path": "src/warpSPHIntegrators/state/lifecycle.py",
+      "before_sha256": "b7f1e4d4fc09b513891e023443237bfec7e7c1be9ba3232e01803f5b575e50fd",
+      "after_sha256": "ceee022b2c1a93d6605e1a865eb9333321550fdccc05e736a1b38489c660f41d",
+      "executable_ast_sha256": "e174ef4a459e800ca58b282756fe73106d2e7262501d92c404dc5b54061e9ff5"
+    },
+    {
+      "path": "src/warpSPHIntegrators/state/fields.py",
+      "before_sha256": "412fd541ba82a4d1fee239a5d31ba1becb1742267b4de7e13face5f6646c1c9e",
+      "after_sha256": "e47f3e55be0099602537c42d7f4bd517f6fc30137f218dbd6e98fde0db9afd3f",
+      "executable_ast_sha256": "714b6aabdf440326d122296ede3132ab9b7d8de7c7f06a8c719243e1111753aa"
+    },
+    {
+      "path": "src/warpSPHIntegrators/state/history.py",
+      "before_sha256": "9ea0d2509e1cac0dfd94f59628b5cb0412fbcff304d4ec4f52b38cf01d6f2967",
+      "after_sha256": "ef3dea547d6dbe08e296c84968a668859e6015dab0a2b2b437da16a902b75679",
+      "executable_ast_sha256": "9377417a8af6cbb7d1bc1155d7422e5f9439abde7026d0339e66f4baf3f505ac"
+    },
+    {
+      "path": "src/warpSPHIntegrators/drivers/runge_kutta.py",
+      "before_sha256": "64f52ed99a8056864ac5a9a578eef80a83c7f648471f1211170ac77b8f56d17c",
+      "after_sha256": "a99b56fadfdc14c548777474b09e345cf7cd7e62e61e1af68b542bfaea964763",
+      "executable_ast_sha256": "de1afbd4ccf1d7659bc9c8dbf58cdc49a7a20684c1e871e91e4aa4fb521f2c07"
+    },
+    {
+      "path": "src/warpSPHIntegrators/analysis/reuse.py",
+      "before_sha256": "2e9c2bb6d9b3e18ae036e93e76428f62602e10bcf3f3fb8af98cbfdf5fe77b7b",
+      "after_sha256": "a0d94eea0216366b8d4beea6e8ea10622baa53aed7732ed55f0d3a100f5d76f8",
+      "executable_ast_sha256": "f9875f56eb2fce3284b36c3bc01149d5d94ed18e58973e3ed78da5c03ddc3a27"
+    },
+    {
+      "path": "src/warpSPHIntegrators/analysis/tvd.py",
+      "before_sha256": "32547fa5cee4cc27a401e0108e444d4188fe8da0bede59a8a87d12b8aeb99813",
+      "after_sha256": "932619e07b9cf3f018919f1dd42f0c1486c1998cb454e6dd29bb1b8b1f3d9f19",
+      "executable_ast_sha256": "c4afdda0505a8e3475ee922dc02f8f08c77ad307edfb0128c7ec52f47f62a018"
+    },
+    {
+      "path": "src/warpSPHIntegrators/runtime/adaptive.py",
+      "before_sha256": "b29348f5286ee96db4e6325e40865b1d33cbd3194a1fa6c5f66ed85d6aa7ffd4",
+      "after_sha256": "bb92a4de7546ab0ed56b3997491f2976db27e867c87cd3ad548410e303478bd3",
+      "executable_ast_sha256": "5f847f1708a1713a7096b027a368d568d578c3326b8a7d3891ca4fc8de3853fa"
+    },
+    {
+      "path": "src/warpSPHIntegrators/solvers/nonlinear.py",
+      "before_sha256": "3f49999894b622f015d532ccf4c85fa9df0eb6e92f3d7e0feb3e4e9d50f1bd86",
+      "after_sha256": "4b0278d203373865b3b55ec20fb6c1325a4d8b6639fdcba824b368a7b79f34d6",
+      "executable_ast_sha256": "d6faa5bcf98d645632a5489d1ce357afd57d88657691fc514871745ea479973e"
+    },
+    {
+      "path": "src/warpSPHIntegrators/solvers/krylov.py",
+      "before_sha256": "04c0fe1015f76f081df6064a95fb69db79bb102b7cba04d0f4f5d2716b4ceee5",
+      "after_sha256": "7f3d1c62b0d373dd00b28048032fbf06a7c8c1ecd8600a59447e9ad42ea83105",
+      "executable_ast_sha256": "e291f3b2499811b0d939d1c336e5d967b00be2682681b48c3228bf94760901c6"
+    },
+    {
+      "path": "src/warpSPHIntegrators/drivers/implicit/ark.py",
+      "before_sha256": "04b728df0d23783dfd1a0b137b71823826c4145588d7b4ecf979f734f2cf06a6",
+      "after_sha256": "ca6de2215c3eb8e29d93255ba2dd6b06e71e8a5b7610c86b3046ca7f1fd40477",
+      "executable_ast_sha256": "c5bb263af1093a15c1731a3a40cb715fbebc8da16a67c241619fffa070678cdc"
+    },
+    {
+      "path": "src/warpSPHIntegrators/drivers/implicit/coupled.py",
+      "before_sha256": "eb8bfb21324c4012139bd3e4d0410ffe750faed14b39194517bcac5f53001314",
+      "after_sha256": "81d108a4d05ca3f81a5bab2c116bd8efe885890b2923740879dcd7a1a66ceec9",
+      "executable_ast_sha256": "0e0d0a106ce64dd7839787202d6ebed305b1fea800014340f2169d499ce48ac9"
+    },
+    {
+      "path": "src/warpSPHIntegrators/drivers/implicit/rosenbrock.py",
+      "before_sha256": "ad735c1b21df27b4f238c801321ad44703a494766362935d5e323424ff2f5de7",
+      "after_sha256": "4dc3775ecebcddb0c5dc44a8ee5ca32af2e1573361df3e7e19a303f71acbe94c",
+      "executable_ast_sha256": "f5a42ce85860cb8907fce1b85ddc2a1426671a0804c10a4578cdbaa8d0be0b88"
+    },
+    {
+      "path": "src/warpSPHIntegrators/drivers/history/imex.py",
+      "before_sha256": "cd037552f3e16ac171daff48b5c70d5de1a705c2628f27641a3489594624e971",
+      "after_sha256": "6b524dd12203b73fc1db05f7c96919c44bca5e9d44deda4539627fdc9a81e8f4",
+      "executable_ast_sha256": "2fc1d6416ffd21f0bf6afae1c41146f3cb101947b457378002677cbd5978cbb6"
+    },
+    {
+      "path": "src/warpSPHIntegrators/drivers/history/adams.py",
+      "before_sha256": "8c2597a4a516eff97c738359eca56a7025271bf4eb014378de80fc3e764675bd",
+      "after_sha256": "bbf510a71452c0de22c06fa3c99f51be3ff28b86cb8e5976b51f7d5a25386715",
+      "executable_ast_sha256": "edef5b59a308885294576f8a48ac5c3e48b417a4270252d04b013d564d514688"
+    },
+    {
+      "path": "src/warpSPHIntegrators/drivers/history/ssp.py",
+      "before_sha256": "c30bd3540918585d80b3396bcfb6683a954e8998a8000072fa47f9dcf8db04fd",
+      "after_sha256": "01efff1cc76baaa2e739434955f6c592431b7968501935ce70296f8e99a9bcfa",
+      "executable_ast_sha256": "3caf1d6b551358018cf158cac305a474c85ccde09083ec311b48e20a2530e9fd"
+    },
+    {
+      "path": "src/warpSPHIntegrators/drivers/explicit/relaxation.py",
+      "before_sha256": "4ca7c946d52454aa3cb772a81291fc0e4bcee60da67a0dfeb654d1169898901a",
+      "after_sha256": "2e1bbcaec6ccb04a50a304bdeed8d8d04ae3c3dd8fda5803c8d537d619e80a64",
+      "executable_ast_sha256": "da208b07c730a0e45fe7af6701b04bde0b5bc1805a26c5e0ab145593546042da"
+    },
+    {
+      "path": "src/warpSPHIntegrators/drivers/exponential/legacy.py",
+      "before_sha256": "f8e2caa73eae1906aad7826a0b6db9e9658d45c1ca25a6fe6aaca2dd771a5c09",
+      "after_sha256": "04de3277bb2d03338fbe2e5a667dcbd493f52a57f6dabc76d80445909e9afd30",
+      "executable_ast_sha256": "b337400336f82e99cff9341a524302fa21f2715c4ee9e7994ad5878867ed2ce5"
+    },
+    {
+      "path": "src/warpSPHIntegrators/drivers/mechanics/verlet.py",
+      "before_sha256": "b8017c568159056d3a40bb277763fcf64a4440092852305b4d500f5dc6f53640",
+      "after_sha256": "52ccb5396ee9ddf79f7c2d4660313e9a0322d0b86b5371527f88837990ed1b2c",
+      "executable_ast_sha256": "1a47929adc5388b0d2a0ff7c0ad5a9d31b083c43c281bfd5fd5cd5aea1620ce3"
+    },
+    {
+      "path": "src/warpSPHIntegrators/schemes/coefficients/coupled.py",
+      "before_sha256": "7cbf94caccd8585532191fbde331f97a20f032dfe97e9c5b1400e353b850c71a",
+      "after_sha256": "54ca96e166172147ef53ae98edf92312a0580587761362aa546502263e950d16",
+      "executable_ast_sha256": "f61bc23f6a220b8cf0240158023d507c791f8dca74fd8e79a41a054f64bbf04e"
+    },
+    {
+      "path": "src/warpSPHIntegrators/schemes/coefficients/implicit.py",
+      "before_sha256": "c959f9f81749a46978d908ab9a8380ae591138cd22ff4a0a02870bc10158a718",
+      "after_sha256": "f524efde0045912f20c39b60c88c29050f9e03227de331c2dfbf31e0ff9cbc3e",
+      "executable_ast_sha256": "d3399410525ac27b5b77e13b1a8b767f2334470e5d80ddf041a58b9087887c0e"
+    },
+    {
+      "path": "src/warpSPHIntegrators/schemes/coefficients/explicit.py",
+      "before_sha256": "94eef20933547d6f2373dfde78d8db2d76560a7da2ac83b53f3696adab4ddebe",
+      "after_sha256": "d002a1e09d35509d8ef411577e03aab7c9e478c217c9a0552bb3528ba1bc7768",
+      "executable_ast_sha256": "f74e21afd814b7fb53195c7bff854af1c4e3510f38f10dc16ff1cf14465deee3"
+    },
+    {
+      "path": "src/warpSPHIntegrators/schemes/definitions/dirk.py",
+      "before_sha256": "1af14e38c5ec166f49ea8b02936061120b14f578b7d1e7f12c50b873820c881f",
+      "after_sha256": "9a89e691d2979bfd226109977c22b0cc86de28d2841dcef92937e6bf25588003",
+      "executable_ast_sha256": "d17892ff8612e2f8221e3f89464bae5b6e719c112d07c5f7239844fae3a1bfed"
+    },
+    {
+      "path": "src/warpSPHIntegrators/schemes/definitions/explicit.py",
+      "before_sha256": "56b09c545a6d01d90df643f38739bad5753c6a6c33f0e59b2b2c6eaf38676669",
+      "after_sha256": "6229c755e2e3e65a6ff6ca7133810017b3acc86c6e1bac6227e1a37b33c6c74d",
+      "executable_ast_sha256": "f3f1f43a5baa795930938b03b38360ab02749d188bfe82fdd8fd3f6d42645af0"
+    },
+    {
+      "path": "tests/test_state.py",
+      "before_sha256": "466523077501412016acec549e9acc00908cdf582df81b92ba4dfb28be6eb4ce",
+      "after_sha256": "46d321a1b47327ca457bfc8bd2c338592f4a4a30f1a62e40330a5967251d0acd",
+      "executable_ast_sha256": "a6ffbf5258832ec0b9f3e0993df1d46461f27083cc4af44fb686edafaa00ee36"
+    },
+    {
+      "path": "tests/test_step_reuse.py",
+      "before_sha256": "e979bb44932d546fb2684c336d26613d302c2437b9d0ebc6362a998081cefedd",
+      "after_sha256": "e3ff26bc44b00b0594e022065a07e33a4af9cc03677ef1d09b99eae9f3b8ca42",
+      "executable_ast_sha256": "2cbfe2135f72a842c9e144adc01a47d57bde335914cd73997a2c58d9c7eaa0f4"
+    },
+    {
+      "path": "tests/conftest.py",
+      "before_sha256": "1b89f69dd411b4d8c3644a9f43b070ae18e5a0c09726fd8aa2511603460c9d4a",
+      "after_sha256": "37133a500cba3b3c1d02bdb28d157634541776e881a35d1946780c749da50b9d",
+      "executable_ast_sha256": "62325608540f85128ad38a4dfc19c0342644fa78dfff4400bdaee51d2d800c40"
+    },
+    {
+      "path": "tests/test_embedded.py",
+      "before_sha256": "28f5a9addb2e0f620d8014852d7fb8c12dbb84f56cc129e0698baf7f4d3075e5",
+      "after_sha256": "f287ebed448550af3d7625c8a8f40ab845dff88adb587ebf984eff32ccf89479",
+      "executable_ast_sha256": "f3c476cb62372b5895233903d140ec142bc4bcff445f1bf55bda0ec05268b650"
+    },
+    {
+      "path": "tests/test_hamiltonian.py",
+      "before_sha256": "3136045bacb47ab42cf9e21cf59258d42c7b6203e8edd31cb4610f04592f5244",
+      "after_sha256": "2fe0599266ccb0496e7a6d3ee29577fe0c8809dbdc101cdae0db4c91e3e1065b",
+      "executable_ast_sha256": "851db1a0d7d8e64c49d85044e5b307b8b8d057e11306827875583a0a9204c2f8"
+    },
+    {
+      "path": "tests/test_copied_fields.py",
+      "before_sha256": "47e2dbba2cd9cfe7c658f52df42a522081a16f2e52727c4d9d9427a78b728393",
+      "after_sha256": "37225c7a265ca482b0ee42aedb15aac0a53364ad42049b3cc0ecc61da9d00602",
+      "executable_ast_sha256": "1e6d954a6ea6c8e2aeaa77391e4bd8e9357e9c5a8d4c7f8ea53a37230969dfc4"
+    },
+    {
+      "path": "tests/test_dirk.py",
+      "before_sha256": "6b110370b86ce4bc03b4f999068da0e2ff59653603ed4df261c99367d6fdc4cd",
+      "after_sha256": "d3b3a3390d34cdc644d1385d0cae4a020579a0a226106e0efb6a6c566a783088",
+      "executable_ast_sha256": "a3c7edb38d47326f5c077749b8857e3ed6064de167c26aa6df48d4a3ca6ae837"
+    },
+    {
+      "path": "tests/test_backend_dispatch.py",
+      "before_sha256": "16e1a347c316d1cb71ebb87839c44e8e3c8b80e17ae60f12468da990a94f0d0f",
+      "after_sha256": "578f6746204cf43d7e3c07238a545f744c5eca7768ba73c7f85ba55a827a1a2b",
+      "executable_ast_sha256": "4ecc5be2d4bb5321224765b59f0e932c14a39038c228b9b6ec9d8d2c8bff2716"
+    },
+    {
+      "path": "tests/test_family_enums.py",
+      "before_sha256": "e07a06f38b0669d5cca57280e28b199a229eb19934c70f6fe8a7fb8edecc0ce5",
+      "after_sha256": "19082cdc5c70bd75b481aaa91f0fd3009e1de800b9811afdffbdf6dc83fafe19",
+      "executable_ast_sha256": "5da587d9e910a085a96ef95c6bcb89787221b9b67dfcfe38acf5443c05c92e85"
+    },
+    {
+      "path": "tests/test_groundwork.py",
+      "before_sha256": "a5431dab811e84ed3e55e907e5af7bad76f99b7a7ba1b0015bf316c34a60258c",
+      "after_sha256": "c1fac9f4c30647f350e932e1a53a0bfc20d058931b7ffa1b575101a772b97a23",
+      "executable_ast_sha256": "b1f55900bcb55493d971414b1b896d111e97f3520ac1d4d878101406718bc062"
+    },
+    {
+      "path": "tests/test_tvd.py",
+      "before_sha256": "b6033dea3abfed05644d6c481e13f7df6ba5d05538b5940154638c72d72dfcb3",
+      "after_sha256": "fc6bc5fcd3b60a33124f87059d660dd2ee856a2829293691a3b7350107444108",
+      "executable_ast_sha256": "d1f86130e63ef12eebf0b46c13e8e3bc90667990b7ce9b224feffe39e69e2f4a"
+    },
+    {
+      "path": "tests/test_ark.py",
+      "before_sha256": "f5a4616e639a0ff45c04011e0e64ea824253c0d998797d9266b47f75dd3910e2",
+      "after_sha256": "769e64bd98e89fc082e58b9e13330636070a3f4a7c7c71ff4964948a97d6fc04",
+      "executable_ast_sha256": "35614bf749948de1c06289217d0530a0c8d2a2a11d55577b38df86d5b50ed1fe"
+    },
+    {
+      "path": "tests/test_am.py",
+      "before_sha256": "29f54d5dcf03af00af1311a85c084ee12ccc159fdb966708457935d95a63e30d",
+      "after_sha256": "d66be6f4c789f9ce0efa97036ac1b828dc958e56ba776298a11976965a07714d",
+      "executable_ast_sha256": "df40038adfae496954f5a0aee1639fd180894100eb1f176f9aaf387a09cc02a1"
+    },
+    {
+      "path": "tests/test_preconditioner.py",
+      "before_sha256": "cd6de9e45401bbdb16756f9c6eb06d77f317fc02ee2d12296ccae47e6f965353",
+      "after_sha256": "e56553c41df9d57c7cfde99af24ceac76bdbc6520c27ccd8738369cca36e3113",
+      "executable_ast_sha256": "4b9d0a096bd799a20e375eac7b21902d285753ee147c1d1fa9c3c81d968c9ce3"
+    },
+    {
+      "path": "tests/test_adaptive.py",
+      "before_sha256": "fddb0800b2ce7be37ae83ee74ef58b015ee45856f2d69ef130389760dbe83f3f",
+      "after_sha256": "2579629460a4902310dec471bd23dd9c77551951f0b07cd05d47b9adeef6466f",
+      "executable_ast_sha256": "017cbe87d86ad3a22597a77b2eeaa94ee3908b63a87a7120836b7362a14e8e1e"
+    },
+    {
+      "path": "tests/test_jfnk.py",
+      "before_sha256": "0944c30f6e23c14cf1533a5a94d355e60a81120b7adb0a2298d8b135e831aa77",
+      "after_sha256": "f0a99baf96222ad7ac632a83164f4dc1ddad9ed10847c879c32ea5637d7f24ef",
+      "executable_ast_sha256": "fa2244cba6409c15fef098a4fedeb1d4c6ad70e1784ad11aa444510636200f12"
+    },
+    {
+      "path": "tests/test_prrk.py",
+      "before_sha256": "da0e60554cfa01a862632c106d5228b0fb4f86da4d4964d84d38428b440c4426",
+      "after_sha256": "49234216f3fb83ea5e741b05de57282e7ea58b79aa35e10e1994ef2916a4da60",
+      "executable_ast_sha256": "64b3813316a50878cbcb0a84915fa3c2541dc175db81f0159801381def65cc83"
+    },
+    {
+      "path": "tests/test_stiff.py",
+      "before_sha256": "40fefd0e75d27e6d7e00ac5a9963931e5e7ecff789668ab9b2e326cd118babcf",
+      "after_sha256": "86dc679d493959c73b5e4d71a0f72b6c6982bbaf2ea583878d2f7a0400dd7100",
+      "executable_ast_sha256": "9521e9b97fd2aca700a35aba888b5126c2d990b92911873f7f5dbe67c43d5da5"
+    },
+    {
+      "path": "tests/test_gradients.py",
+      "before_sha256": "510de0b993f33758001b4c22e8cbb07cd4055f43bf451650bbe9c16ecaddab51",
+      "after_sha256": "7d45c69b14a6a3e41a9940f239eae226757b04c7eff4ed29f961c957a9d55ad3",
+      "executable_ast_sha256": "283cf39505d2af75ee56ebeb165cdc484431ae55faf30d3bc1a477a9301d1da1"
+    },
+    {
+      "path": "tests/test_fullyimplicit.py",
+      "before_sha256": "237925f5bc8e0972896564eded942f375a12af88adfd5372bd79a2b916a448e5",
+      "after_sha256": "f80dd1c54b06915ee9310938b657e617296ed80d7a38f14fe62b9047fa50c1f3",
+      "executable_ast_sha256": "3e2beeafd5889f8e073999d4ba096081f08289f1a9d6c74ee7a6fe9f5c46251e"
+    },
+    {
+      "path": "tests/test_multistep.py",
+      "before_sha256": "73b16d47d6fd7fdd30a2a00e7fa7254e0c80745897c422cdaafe6b80c7b0f96b",
+      "after_sha256": "7bd9f51cf0b8439d39b2c2ad71b36bfc427f450cc53945fe5e8884cd218e9a66",
+      "executable_ast_sha256": "34733943de886257f3c6ecdbd0431a6d20fbc6f69cec9fe8a7a7a7ffe995d84d"
+    },
+    {
+      "path": "tests/test_convergence.py",
+      "before_sha256": "90a0f2291c017354356ebf85e1c53d15436192a7c5878c88d54dbed0f537a62c",
+      "after_sha256": "def0f32388d76dc49cb1f9ae52e82fbd9af849cfe6d1588cf67568c85165ff6d",
+      "executable_ast_sha256": "1d79609587fb11f16b4874d454a98be053a6a6dcb991ba07f08709aca462ee90"
+    },
+    {
+      "path": "scripts/coefficients/wave7/assemble_wave7.py",
+      "before_sha256": "cddf2afa654e02abe96e06d724c2888ce5fd48cfb373bf346ecb790dcc9bb6ca",
+      "after_sha256": "71ff508a39ee7a62533d563b1d72796a05f3aad74dccd53b7a7478decedd2c1d",
+      "executable_ast_sha256": "7efd398bbb67105238dfb4bf9473529289c6de633df5535950537667b24283f2"
+    },
+    {
+      "path": "benchmarks/blockrk_benchmark.py",
+      "before_sha256": "23e20251750bc72cba30290e110fa9e2221394a9b39ad83d03bff6a4e96db3e7",
+      "after_sha256": "e480bc53653e8b39e7aa34a090e960982e4cf2b752235fde035c0eaf93f8d2a0",
+      "executable_ast_sha256": "bc8b9b6406f5b613d04688aeacd68d97f2f4d823ee24e4d4b81768c177a40aa2"
+    },
+    {
+      "path": "benchmarks/jfnk_preconditioner_benchmark.py",
+      "before_sha256": "5b6c2e37de5ca58a3e240dbc1e1e820addbaa45861b1b3c9b3132b9389b6abe8",
+      "after_sha256": "684d9d7152739057c4cea90781cf103e7dc1b58217aa169f77fed6a5f2d2b4a9",
+      "executable_ast_sha256": "79372475f9dbd6ed04857839fb48feb7b226a256b8f819a6959ebe435a0b9111"
+    },
+    {
+      "path": "benchmarks/adaptive_benchmark.py",
+      "before_sha256": "d5e97c4cb4f032fa3e033c273daeb37c3817c8650723bd4b3272935928f05f6f",
+      "after_sha256": "6c16812434457052eb9b80f030a4f8d5a4fdc633715dd9cd7652c0f4c2f28ee2",
+      "executable_ast_sha256": "8bee303eb8c49d2914852367a5237987bd9a56c2e37ffe9844fd835377a61a18"
+    }
+  ],
+  "notebooks_checked": [
+    "examples/integrations/jfnk_wave_equation.ipynb",
+    "examples/notebooks/integrators.ipynb",
+    "examples/notebooks/viscous_burgers_demo.ipynb"
+  ],
+  "notebook_outputs_and_metadata_unchanged": true,
+  "notes_aliases_preserved": 52,
+  "numeric_fixture_json_unchanged": 32,
+  "ledger_unchanged_from_batch2": true,
+  "sibling_references": [
+    {
+      "repository": "warpSPH",
+      "files": [
+        {
+          "path": "COMPRESSIBLE_SPH_PLAN.md",
+          "lines": [
+            214
+          ],
+          "reference_lines": 1
+        },
+        {
+          "path": "COUPLED_INCOMPRESSIBLE_NEWTON_PLAN.md",
+          "lines": [
+            87,
+            182
+          ],
+          "reference_lines": 2
+        },
+        {
+          "path": "PESPH_PLAN.md",
+          "lines": [
+            697,
+            874,
+            945,
+            1058,
+            1074,
+            1075,
+            1081,
+            1096,
+            1194,
+            1204
+          ],
+          "reference_lines": 10
+        },
+        {
+          "path": "benchmarks/wave/bench_stability.py",
+          "lines": [
+            21
+          ],
+          "reference_lines": 1
+        },
+        {
+          "path": "docs/historic_plans/CEILING_STICKING_PLAN.md",
+          "lines": [
+            268
+          ],
+          "reference_lines": 1
+        },
+        {
+          "path": "examples/wave/jfnk_solver_exploration.ipynb",
+          "lines": [
+            10,
+            102,
+            351,
+            357,
+            414,
+            582,
+            778,
+            865,
+            867
+          ],
+          "reference_lines": 9
+        },
+        {
+          "path": "examples/wave/waveCase_implicit_vs_explicit.ipynb",
+          "lines": [
+            338,
+            612,
+            620
+          ],
+          "reference_lines": 3
+        },
+        {
+          "path": "examples/weaklyCompressible/acousticCore_implicit_vs_explicit.ipynb",
+          "lines": [
+            10,
+            16,
+            20,
+            101,
+            354,
+            450,
+            868,
+            900
+          ],
+          "reference_lines": 8
+        },
+        {
+          "path": "literature/ABSTRACTS.md",
+          "lines": [
+            1505,
+            1515,
+            1534,
+            1548,
+            1565,
+            1586,
+            1598,
+            1610,
+            1647,
+            1683
+          ],
+          "reference_lines": 10
+        },
+        {
+          "path": "literature/MANIFEST.md",
+          "lines": [
+            71,
+            276,
+            280,
+            281,
+            282,
+            283,
+            284,
+            285,
+            286,
+            296,
+            299
+          ],
+          "reference_lines": 11
+        },
+        {
+          "path": "literature/TO_ACQUIRE.md",
+          "lines": [
+            4,
+            92,
+            108,
+            137
+          ],
+          "reference_lines": 4
+        },
+        {
+          "path": "scripts/probe_kolmogorovAdjacencyRebuild.py",
+          "lines": [
+            1,
+            22
+          ],
+          "reference_lines": 2
+        },
+        {
+          "path": "scripts/probe_kolmogorovIncompressible.py",
+          "lines": [
+            4,
+            24,
+            34,
+            73
+          ],
+          "reference_lines": 4
+        },
+        {
+          "path": "scripts/probe_kolmogorovSpinup.py",
+          "lines": [
+            2,
+            46
+          ],
+          "reference_lines": 2
+        },
+        {
+          "path": "src/warpSPH/cases/periodic/kolmogorovIncompressible.py",
+          "lines": [
+            4,
+            25,
+            124
+          ],
+          "reference_lines": 3
+        },
+        {
+          "path": "src/warpSPH/configurations/acousticCoreConfig.py",
+          "lines": [
+            1,
+            11,
+            25,
+            78,
+            84
+          ],
+          "reference_lines": 5
+        },
+        {
+          "path": "src/warpSPH/sample/acousticCore.py",
+          "lines": [
+            1,
+            47
+          ],
+          "reference_lines": 2
+        },
+        {
+          "path": "src/warpSPH/schemes/experimental/acousticCore.py",
+          "lines": [
+            3,
+            26,
+            213,
+            215
+          ],
+          "reference_lines": 4
+        },
+        {
+          "path": "src/warpSPH/systems/acousticCore.py",
+          "lines": [
+            2
+          ],
+          "reference_lines": 1
+        },
+        {
+          "path": "tests/test_acousticCore.py",
+          "lines": [
+            1,
+            39
+          ],
+          "reference_lines": 2
+        },
+        {
+          "path": "tests/test_acousticCoreDissipation.py",
+          "lines": [
+            1
+          ],
+          "reference_lines": 1
+        },
+        {
+          "path": "tests/test_acousticCoreForcing.py",
+          "lines": [
+            1
+          ],
+          "reference_lines": 1
+        },
+        {
+          "path": "tests/test_acousticCoreStability.py",
+          "lines": [
+            1,
+            26
+          ],
+          "reference_lines": 2
+        },
+        {
+          "path": "tests/test_implicitWaveEquation.py",
+          "lines": [
+            249,
+            292,
+            356,
+            367
+          ],
+          "reference_lines": 4
+        }
+      ],
+      "navigable_markdown_links": 0,
+      "qualified_path_literals_outside_docstrings": 0
+    },
+    {
+      "repository": "warpSPHCore",
+      "files": [
+        {
+          "path": "docs/historic_plans/warpier_core.md",
+          "lines": [
+            593
+          ],
+          "reference_lines": 1
+        },
+        {
+          "path": "docs/historic_plans/warpier_fields.md",
+          "lines": [
+            433,
+            1746,
+            1754,
+            1777,
+            1784,
+            1813,
+            1818,
+            1823
+          ],
+          "reference_lines": 8
+        },
+        {
+          "path": "docs/historic_plans/warpier_forward_mode_plan.md",
+          "lines": [
+            323,
+            324,
+            677,
+            687,
+            716
+          ],
+          "reference_lines": 5
+        },
+        {
+          "path": "warpier_residual_open_problems_plan.md",
+          "lines": [
+            201,
+            202,
+            205,
+            212,
+            223,
+            235,
+            237,
+            243,
+            255,
+            259,
+            261,
+            279,
+            282,
+            490,
+            493,
+            497,
+            529,
+            539,
+            540
+          ],
+          "reference_lines": 19
+        }
+      ],
+      "navigable_markdown_links": 0,
+      "qualified_path_literals_outside_docstrings": 0
+    },
+    {
+      "repository": "warpSPHCases",
+      "files": [
+        {
+          "path": "cases/demos/wave-equation/from-examples/jfnk_solver_exploration.ipynb",
+          "lines": [
+            10,
+            102,
+            351,
+            357,
+            414,
+            582,
+            778,
+            865,
+            867
+          ],
+          "reference_lines": 9
+        },
+        {
+          "path": "cases/demos/wave-equation/from-examples/waveCase_implicit_vs_explicit.ipynb",
+          "lines": [
+            338,
+            612,
+            620
+          ],
+          "reference_lines": 3
+        },
+        {
+          "path": "legacy/unmapped-examples/acousticCore_implicit_vs_explicit.ipynb",
+          "lines": [
+            10,
+            16,
+            20,
+            101,
+            354,
+            450,
+            868,
+            900
+          ],
+          "reference_lines": 8
+        }
+      ],
+      "navigable_markdown_links": 0,
+      "qualified_path_literals_outside_docstrings": 0
+    },
+    {
+      "repository": "warpSPHPlotting",
+      "files": [],
+      "navigable_markdown_links": 0,
+      "qualified_path_literals_outside_docstrings": 0
+    }
+  ],
+  "sibling_worktrees_modified": false
+}

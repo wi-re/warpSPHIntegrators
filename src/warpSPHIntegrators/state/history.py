@@ -1,7 +1,7 @@
 """Step history: the shared reuse primitive behind ``priorStep`` and multistep.
 
 ``priorStep`` (a single ``StageResult``) is the one-entry degenerate case of this --
-see NOTES.md S2. Both feed the same underlying need: "give me a derivative evaluated
+see docs/research/integrators/baseline-audit-2026-08-05.md S2. Both feed the same underlying need: "give me a derivative evaluated
 at an earlier step, without recomputing it." A two-stage scheme only ever needs the
 last one; an order-k Adams-Bashforth scheme needs the last k-1. ``StepHistory`` is the
 one container both read from, so the two mechanisms do not drift apart.
@@ -37,7 +37,7 @@ def _uid_fingerprint(uid) -> Optional[tuple]:
     Not a hash of contents -- the point is to catch the *particle set itself* moving
     (a resort, a resize), not a change to individual uid values, which a real resort
     wouldn't produce anyway under this library's stable-indexing assumption
-    (NOTES.md S3.0).
+    (docs/research/integrators/notes-3-0.md).
     """
     if uid is None:
         return None
@@ -49,7 +49,7 @@ def _uid_fingerprint(uid) -> Optional[tuple]:
 class StepHistory:
     """An ordered, bounded run of :class:`HistoryEntry`, newest last.
 
-    Two guards turn a silent wrong answer into an automatic restart (NOTES.md S2g):
+    Two guards turn a silent wrong answer into an automatic restart (docs/research/integrators/notes-index.md S2g):
     a ``dt`` change (fixed multistep coefficients are only correct under constant
     ``dt``) and a ``uid`` identity change (a resort or a resize invalidates every
     entry's meaning). Neither is a correctness *check* in the sense of raising --
@@ -98,7 +98,7 @@ class StepHistory:
 
         Returns a new :class:`StepHistory` rather than mutating -- history is carried
         on ``IntegrationResult`` the same way state is, so it follows the same
-        value-not-reference convention (NOTES.md 4.1) instead of becoming a second,
+        value-not-reference convention (docs/research/integrators/baseline-audit-2026-08-05.md 4.1) instead of becoming a second,
         aliasing exception to it.
 
         Variable-coefficient drivers opt into preserve_dt and explicitly supply

@@ -3,7 +3,7 @@
 
 ## 3.22 Scheme-expansion wave 2: the SSPRK 3(2) pairs and SSPRK932 — done 2026-10-12
 
-Wave 2 of `docs/plans/scheme-expansion.md`: the remaining one-step SSPRK methods
+Wave 2 of `docs/development/plan-reconciliation-2026-10-23.md`: the remaining one-step SSPRK methods
 present in local OrdinaryDiffEq v7.8.1 — SSPRK43 and SSPRK432 (4-stage
 order-3 SSP with an embedded order-2 estimate; the registry's first SSP 3(2)
 pairs) and SSPRK932 (9-stage order-3 SSP, registered fixed-step only). All

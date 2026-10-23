@@ -126,7 +126,7 @@ backprop through this solve, doesn't need either, and can pass a much larger
 without waiting on JFNK. The energy-drift recovery measured above used a bare
 iteration-count sweep, not this `tol`-based path specifically; confirming the two give
 the same answer is a small, concrete piece of follow-up if it matters to a caller
-before `docs/plans/wcsph-jfnk.md`'s work lands.
+before `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md`'s work lands.
 
 **A second finding, matching an existing §3.2 claim exactly rather than contradicting
 it:** L-stability is a property of the *exact* method, not of a truncated Picard

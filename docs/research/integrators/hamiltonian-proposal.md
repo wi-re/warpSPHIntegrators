@@ -1,4 +1,4 @@
-> Background proposal. [The corrected splitting design](../../plans/splitting.md)
+> Background proposal. [The corrected splitting design](../../development/operator-splitting-design.md)
 > supersedes its backward-Euler/Strang order and unconditional-composition claims.
 
 To address the separable hamiltonian leveraging the existing idea of frozen viscosity to get to the separability would be a potentially viable approach with minimal change to the interface. the rhs interface already supports split into linear and non linear so splitting into viscous and non viscous terms would also be an interface option. here's the full idea derivation:

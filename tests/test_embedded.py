@@ -2,7 +2,7 @@
 
 Before this, `RungeKuttaB` computed both solutions, finalized every one of them with a
 `b_` leaked from the loop variable, and returned only the last -- so the estimate that
-is the entire point of an embedded pair was thrown away (NOTES.md 2.8).
+is the entire point of an embedded pair was thrown away (docs/research/integrators/baseline-audit-2026-08-05.md 2.8).
 """
 
 import math
@@ -21,11 +21,11 @@ from warpSPHIntegrators.schemes.coefficients.explicit import getButcherTableau
 # ESDIRK and ARK pairs are (3, 2) and (4, 3): the estimate is the embedded branch's
 # local error, O(dt^p) = dt^order.
 EMBEDDED = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)', 'Cash-Karp 5(4)',
-            # The wave-2 ODE SSPRK 3(2) pairs (SCHEME_EXPANSION_PLAN, 2026-10-12):
+            # The wave-2 ODE SSPRK 3(2) pairs (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-12):
             # order-3 main, order-2 estimate, so the estimate is the embedded
             # branch's local error, O(dt^3) = dt^order.
             'SSPRK43', 'SSPRK432',
-            # The wave-6 ODE embedded pairs (SCHEME_EXPANSION_PLAN, 2026-10-13):
+            # The wave-6 ODE embedded pairs (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13):
             # each is (p, p-1), so the estimate is the embedded branch's local
             # error, O(dt^(p-1+1)) = dt^order. BS5's embedded branch is ODE's
             # bhat (order 4), not btilde (invalid).
@@ -40,7 +40,7 @@ EMBEDDED = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)', 'Cash-Karp 5(4)',
             # stage U2 (exp-Rosenbrock-Euler), so the estimate is the corrector
             # correction y - y_hat = 2 h phi_3(hJn) D2 (local error O(dt^3)).
             'EXPRB32',
-            # The coupled fully implicit block pair (NOTES.md S3.18): the
+            # The coupled fully implicit block pair (docs/research/integrators/notes-3-18.md): the
             # estimate is the null-stage order-2 companion (k0 = f(t^n, y^n)
             # plus the two stages). Both tableaus carry an order-2 companion,
             # so main-minus-companion is O(dt^3) for both -- one order below
@@ -49,15 +49,15 @@ EMBEDDED = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)', 'Cash-Karp 5(4)',
             'Gauss-Legendre 2',
             'Radau IIA s=2',
             'Gauss-Legendre 3', 'Radau IIA s=3',
-            # The wave-7 Verner / TsitPap embedded pairs (SCHEME_EXPANSION_PLAN,
+            # The wave-7 Verner / TsitPap embedded pairs (docs/development/plan-reconciliation-2026-10-23.md,
             # 2026-10-13): each is (p, p-1), so the estimate is the embedded
             # branch's local error, O(dt^(p-1+1)) = dt^order, like the wave-6
             # pairs. DP8 and the Feagin tableaus are PLAIN (no embedded weight
             # vector) and stay out of this list.
             'Vern6 6(5)', 'Vern7 7(6)', 'Vern8 8(7)', 'Vern9 9(8)',
             'RKV76IIa 7(6)', 'TanYam7 7(6)', 'TsitPap8 8(7)',
-            # The wave-8 DIRK embedded pairs (SCHEME_EXPANSION_PLAN, 2026-10-13;
-            # NOTES.md 3.28): each is (p, p-1) (ODE's btilde is the error weight,
+            # The wave-8 DIRK embedded pairs (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13;
+            # docs/research/integrators/notes-3-28.md): each is (p, p-1) (ODE's btilde is the error weight,
             # registered as b_embed = b - btilde), so the estimate is the embedded
             # branch's local error, O(dt^p) = dt^order, like the wave-6/7 pairs.
             # The remaining 12 wave-8 DIRK tableaus (SSPSDIRK2, ARS222-443,
@@ -70,7 +70,7 @@ EMBEDDED = ['Bogacki-Shampine 3(2)', 'Dormand-Prince 5(4)', 'Cash-Karp 5(4)',
             'Hairer42']
 
 
-#: Wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13): per-pair grids for the new (p, p-1)
+#: Wave 7 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): per-pair grids for the new (p, p-1)
 #: estimates, which floor out (below 1e-13) at the finest points of the standard
 #: grid. Measured single-step estimate rates against dt^order on these grids:
 #: Vern6 6.08/6.04/6.00, Vern7 7.24/7.11/7.05, Vern8 8.48/8.32/8.19, Vern9
@@ -86,7 +86,7 @@ EMBEDDED_GRID = {
     'TsitPap8 8(7)': [0.8, 0.4, 0.2, 0.1],
 }
 
-#: Wave 8 (SCHEME_EXPANSION_PLAN, 2026-10-13; NOTES.md 3.28): three wave-8 DIRK
+#: Wave 8 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13; docs/research/integrators/notes-3-28.md): three wave-8 DIRK
 #: pairs whose measured single-step estimate rates on the standard grid sit
 #: ABOVE the asymptotic dt^order rate (pre-asymptotic overshoot of the (p, p-1)
 #: difference, and for KenCarp5 the finest magnitude 2.7e-15 also sits at the

@@ -707,6 +707,8 @@ contracts allow it.
 | `ExpandedRK` | 54 checked main maps, 19 estimates | Source-expanded low-storage-family coefficients; current execution uses full-stage buffers |
 | `AlgorithmSwitch` | Declared child methods and a pure selector | Owned active-child history, cold starts on transitions, accepted control delegation |
 | `FunctionMap` | A supplied complete state map | Discrete transitions, such as a known analytic flow; no general ODE order or error estimate |
+| `ConservedLagrangian` | Hancock, historical moving-quadrature SSPRK, KDK | Custom position/conserved-state staging with application prediction and compatibility hooks; no universal ODE order or estimate |
+| `ProjectedStep` | One complete projected state map | Single evaluation and stage-state finalization; custom systems with integrated fields can use fixed runs and in-memory continuation |
 | `LieTrotter` / `Strang` / `Yoshida4` | Declared conservative/dissipative or Hamiltonian flows | Physical operator composition; negative substeps and reversibility requirements restrict Yoshida4 |
 
 [Family guides](docs/docs/index.md) describe the exact configuration names and
@@ -736,8 +738,8 @@ serialization. Dense output and event localization are method-dependent.
 
 Current gates include source/forced-time order checks, nonlinear geometric tests,
 parameter/state gradients, lifecycle ownership, adaptive rollback, portable
-restart and installed-wheel smoke tests. The latest full CPU backend gate passes
-8,139 tests with 639 skips on eight workers. That evidence does not establish
+restart and installed-wheel smoke tests. The [current CPU and wheel qualification](docs/development/repository-cleanup-batch5-2026-10-23.md)
+records the suite counts, environment and tested scope. That evidence does not establish
 native Warp buffers, universal SPH conservation, or a preconditioner for every
 large operator.
 

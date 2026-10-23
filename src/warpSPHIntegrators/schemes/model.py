@@ -25,7 +25,7 @@ class IntegrationScheme(NamedTuple):
     fsal: bool = False
 
     # ------------------------------------------------------------------ #
-    # NOTES.md S3: metadata a driver needs to tell schemes apart without    #
+    # docs/research/integrators/notes-index.md S3: metadata a driver needs to tell schemes apart without    #
     # special-casing them by name. All default to the "plain explicit RK"  #
     # answer, so every scheme registered before this landed is unaffected. #
     # ------------------------------------------------------------------ #

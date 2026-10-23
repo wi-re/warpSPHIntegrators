@@ -16,7 +16,7 @@ def reject_prior_step(scheme_name: str, priorStep) -> None:
 
     Schemes that do not implement reuse must still ``pop`` ``priorStep`` -- otherwise
     it flows through into the user's right-hand side and lifecycle hooks and breaks
-    any strict signature (see NOTES.md 2.9).
+    any strict signature (see docs/research/integrators/baseline-audit-2026-08-05.md 2.9).
     """
     if priorStep is not None:
         import warnings
@@ -34,7 +34,7 @@ def unpack_prior_step(priorStep, verbose: bool = False):
     ``StageResult`` stores ``(aux, update)`` while every scheme works with
     ``(update, aux)``, so the two are deliberately swapped here. This lives in one
     place because three schemes used to open-code it and one of them got the order
-    backwards (see NOTES.md 2.4).
+    backwards (see docs/research/integrators/baseline-audit-2026-08-05.md 2.4).
     """
     if isinstance(priorStep, StageResult):
         verbosePrint(verbose, f"[Integrator] Reusing prior stage {priorStep}")
@@ -62,7 +62,7 @@ def updateStateSemiImplicitEuler(systemState_, systemUpdate, dt, copyState = Tru
     applyVelocityUpdate(systemState, systemUpdate, explicit_step(dt), semiImplicit = True, **kwargs)
     applyPositionUpdate(systemState, systemUpdate, semi_implicit_position_step(dt), **kwargs)
     applyQuantityUpdate(systemState, systemUpdate, explicit_step(dt), **kwargs)
-    # Time is owned by the integrator, not by the update helpers (see NOTES.md 2.15).
+    # Time is owned by the integrator, not by the update helpers (see docs/research/integrators/baseline-audit-2026-08-05.md 2.15).
     # `updateStateEuler` never advanced `t`; this one used to, so composing the two
     # double-advanced time.
     return systemState

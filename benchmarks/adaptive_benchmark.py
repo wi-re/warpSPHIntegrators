@@ -1,7 +1,7 @@
 """Phase 11: adaptive step control and dense output ->
 docs/assets/adaptive_benchmark.png.
 
-The controller is a *helper, not a solver* (NOTES.md S3.17): the library exposes
+The controller is a *helper, not a solver* (docs/research/integrators/notes-3-17.md): the library exposes
 ``estimate_error_norm`` (the embedded-pair difference as a dimensionless number,
 1.0 = at the tolerance) and ``propose_dt`` (the classic predictive controller,
 ``dt * clamp(safety * (target/error)**(1/order))``), and the caller drives the

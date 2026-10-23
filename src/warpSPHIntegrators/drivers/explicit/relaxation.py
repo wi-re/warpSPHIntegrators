@@ -31,9 +31,9 @@ Mechanism -- and why these are NOT registered in ``IntegrationSchemes``:
     So at ``kappa = 0`` these duplicate already-registered schemes; their
     value is only at ``kappa > 0``, where there is no single fixed
     order/identifier. Hence they are exposed *alongside* (not inside)
-    ``IntegrationSchemes`` -- see SCHEME_EXPANSION_PLAN.md wave 4.
+    ``IntegrationSchemes`` -- see docs/development/plan-reconciliation-2026-10-23.md wave 4.
 
-Stability (measured; NOTES.md 3.24): the relaxation enlarges the
+Stability (measured; docs/research/integrators/notes-3-24.md): the relaxation enlarges the
 negative-real-axis stability interval. At ``kappa = 0`` it is the base
 SSPRK interval ([-2, 0] / [-2.51, 0] / [-5.33, 0] for 22/33/54); at
 ``kappa >= 0.5`` the interval is UNBOUNDED -- A-stable on the real axis

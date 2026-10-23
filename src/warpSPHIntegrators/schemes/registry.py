@@ -36,7 +36,7 @@ from warpSPHIntegrators.schemes.enums import IntegrationSchemeType
 # and so do not drift in energy secularly, and True for the plain Runge-Kutta
 # schemes, which do. That is the only reading of the flag consistent with the values
 # that were already recorded, and it removes the copy-paste inconsistencies noted in
-# NOTES.md 2.13 (symplecticEuler was True while leapFrog was False; PEFRL was False
+# docs/research/integrators/baseline-audit-2026-08-05.md 2.13 (symplecticEuler was True while leapFrog was False; PEFRL was False
 # while VEFRL was True).
 #
 # The former `nonLagrangian` flag agreed with `dissipation` for every registered
@@ -53,7 +53,7 @@ IntegrationSchemes.append(IntegrationScheme(ralston3rd,   'Ralston\'s Method (3r
 IntegrationSchemes.append(IntegrationScheme(Wray3rd,      'Wray\'s Method (3rd order)', IntegrationSchemeType.wray3rd, 3, True))
 IntegrationSchemes.append(IntegrationScheme(SSPRK3,       'SSP RK3',       IntegrationSchemeType.sspRK3, 3, True))
 IntegrationSchemes.append(IntegrationScheme(SSPRK104,     'SSPRK(10,4)',   IntegrationSchemeType.ssprk104, 4, True))
-# The OrdinaryDiffEq wave-1 SSP tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12);
+# The OrdinaryDiffEq wave-1 SSP tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-12);
 # display names are ODE's verbatim.
 IntegrationSchemes.append(IntegrationScheme(SSPRK53,      'SSPRK53',       IntegrationSchemeType.ssprk53, 3, True))
 IntegrationSchemes.append(IntegrationScheme(SSPRK63,      'SSPRK63',       IntegrationSchemeType.ssprk63, 3, True))
@@ -62,16 +62,16 @@ IntegrationSchemes.append(IntegrationScheme(SSPRK83,      'SSPRK83',       Integ
 IntegrationSchemes.append(IntegrationScheme(SSPRK54,      'SSPRK54',       IntegrationSchemeType.ssprk54, 4, True))
 IntegrationSchemes.append(IntegrationScheme(KYKSSPRK42,   'KYKSSPRK42',    IntegrationSchemeType.kykssprk42, 2, True))
 IntegrationSchemes.append(IntegrationScheme(KYK2014DGSSPRK3S2, 'KYK2014DGSSPRK_3S2', IntegrationSchemeType.kyk2014dgssprk3s2, 2, True))
-# The OrdinaryDiffEq wave-2 SSP tableaus (SCHEME_EXPANSION_PLAN, 2026-10-12);
+# The OrdinaryDiffEq wave-2 SSP tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-12);
 # display names are ODE's verbatim. SSPRK43/SSPRK432 are 3(2) embedded pairs
 # (order-3 main, order-2 estimate); SSPRK932 is fixed-step order 3.
 IntegrationSchemes.append(IntegrationScheme(SSPRK43,      'SSPRK43',       IntegrationSchemeType.ssprk43, 3, True))
 IntegrationSchemes.append(IntegrationScheme(SSPRK432,     'SSPRK432',      IntegrationSchemeType.ssprk432, 3, True))
 IntegrationSchemes.append(IntegrationScheme(SSPRK932,     'SSPRK932',      IntegrationSchemeType.ssprk932, 3, True))
-# The OrdinaryDiffEq wave-5 SSP tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13);
+# The OrdinaryDiffEq wave-5 SSP tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13);
 # display names are ODE's verbatim. Higueras & Roldan low-storage third-order
 # SSP variants, screened and confirmed to be distinct one-step maps from
-# SSPRK53 (NOTES.md S3.25).
+# SSPRK53 (docs/research/integrators/notes-3-25.md).
 IntegrationSchemes.append(IntegrationScheme(SSPRK53_2N1,  'SSPRK53_2N1',   IntegrationSchemeType.ssprk53_2n1, 3, True))
 IntegrationSchemes.append(IntegrationScheme(SSPRK53_2N2,  'SSPRK53_2N2',   IntegrationSchemeType.ssprk53_2n2, 3, True))
 IntegrationSchemes.append(IntegrationScheme(SSPRK53_H,    'SSPRK53_H',     IntegrationSchemeType.ssprk53_h, 3, True))
@@ -81,7 +81,7 @@ IntegrationSchemes.append(IntegrationScheme(Nystrom5th,   'Nystrom 5th order', I
 IntegrationSchemes.append(IntegrationScheme(BogackiShampine, 'Bogacki-Shampine 3(2)', IntegrationSchemeType.bogackiShampine, 3, True))
 IntegrationSchemes.append(IntegrationScheme(DormandPrince, 'Dormand-Prince 5(4)', IntegrationSchemeType.dormandPrince, 5, True))
 IntegrationSchemes.append(IntegrationScheme(CashKarp,     'Cash-Karp 5(4)', IntegrationSchemeType.cashKarp, 5, True))
-# The OrdinaryDiffEq wave-6 tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13):
+# The OrdinaryDiffEq wave-6 tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13):
 # Tsit5 (Tsitouras 5(4), ODE's recommended default) and the LowOrderRK
 # workhorses. Tsit5 / OwrenZen3 / OwrenZen4 / OwrenZen5 / BS5 / Stepanov5 /
 # Alshina2 are (p, p-1) embedded pairs on the generic RK driver (the main
@@ -106,11 +106,11 @@ IntegrationSchemes.append(IntegrationScheme(RKM,          'RKM',           Integ
 IntegrationSchemes.append(IntegrationScheme(PSRK4p7q6,    'PSRK4p7q6',     IntegrationSchemeType.psrk4p7q6, 4, True))
 IntegrationSchemes.append(IntegrationScheme(PSRK3p6q5,    'PSRK3p6q5',     IntegrationSchemeType.psrk3p6q5, 3, True))
 IntegrationSchemes.append(IntegrationScheme(PSRK3p5q4,    'PSRK3p5q4',     IntegrationSchemeType.psrk3p5q4, 3, True))
-# The OrdinaryDiffEq wave-7 high-order tableaus (SCHEME_EXPANSION_PLAN,
+# The OrdinaryDiffEq wave-7 high-order tableaus (docs/development/plan-reconciliation-2026-10-23.md,
 # 2026-10-13): the Verner family, Tsitouras's high-order embedded pairs
 # (TanYam7 7(6), TsitPap8 8(7)), Dormand-Prince 8, and the Feagin 10/12/14
 # symmetric methods. Coefficients from ODE v7.8.1's caches, cross-checked
-# one step against the real ODE solvers (NOTES.md 3.27). The embedded pairs
+# one step against the real ODE solvers (docs/research/integrators/notes-3-27.md). The embedded pairs
 # (Vern6-9, RKV76IIa, TanYam7, TsitPap8) store `b` as a (main, embedded)
 # tuple; DP8 and the Feagin methods are fixed-step plain tableaus (DP8's ODE
 # estimate is a dual 5th+3rd-order companion, not a (p-1) solution). FSAL:
@@ -136,11 +136,11 @@ IntegrationSchemes.append(IntegrationScheme(EPECmodified, 'EPEC Modified', Integ
 IntegrationSchemes.append(IntegrationScheme(TVDRK3, 'TVD RK3', IntegrationSchemeType.tvdRK3, 3, True))
 IntegrationSchemes.append(IntegrationScheme(TVDRK2, 'TVD RK2', IntegrationSchemeType.tvdRK2, 2, True))
 # Semi-implicit (symplectic) Euler is first order, not second: it is one force
-# evaluation per step, and measures 1.0 (see NOTES.md 2.13).
+# evaluation per step, and measures 1.0 (see docs/research/integrators/baseline-audit-2026-08-05.md 2.13).
 IntegrationSchemes.append(IntegrationScheme(semiImplicitEuler, 'Semi-Implicit Euler', IntegrationSchemeType.semiImplicitEuler, 1, False))
 IntegrationSchemes.append(IntegrationScheme(explicitEuler, 'Explicit Euler', IntegrationSchemeType.explicitEuler, 1, True))
 
-# ---- Diagonally implicit (NOTES.md S3.6 Phase 2) -------------------------- #
+# ---- Diagonally implicit (docs/research/integrators/notes-3-6.md Phase 2) -------------------------- #
 # JFNK is the default nonlinear solve, so these flags describe the converged method
 # rather than an uncorrected fixed-count Picard iterate. Implicit midpoint is the
 # symplectic Gauss-Legendre s=1 method once its stage equation is solved; the other
@@ -166,9 +166,9 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     ESDIRK436L2SA, 'ESDIRK4(3)6L[2]SA', IntegrationSchemeType.esdirk436l2sa, 4, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
-# ---- Wave 8: the remaining ODE v7.8.1 DIRK tableaus (NOTES.md 3.28) -------- #
+# ---- Wave 8: the remaining ODE v7.8.1 DIRK tableaus (docs/research/integrators/notes-3-28.md) -------- #
 # All on the JFNK DIRK driver. Coefficients from the ODE v7.8.1 tableaus,
-# verified one step against the real ODE solvers (NOTES.md 3.28). Stability
+# verified one step against the real ODE solvers (docs/research/integrators/notes-3-28.md). Stability
 # strings from a left-half-plane stability-function grid (same file): the
 # sub-A set is L-stable except kvaerno4 (A-stable, R(inf) ~ 0.72) and
 # sspsdirk2 (A-stable, R(inf) -> 1); the ARS family, bhr553, cash4, hairer4,
@@ -263,7 +263,7 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     SFSDIRK8, 'SFSDIRK8', IntegrationSchemeType.sfstdirk8, 4, True,
     implicit=True, steps=1, stiffly_accurate=False))
-# ---- Coupled (block) fully implicit RK (NOTES.md S3.18, Phase 6) ----------- #
+# ---- Coupled (block) fully implicit RK (docs/research/integrators/notes-3-18.md, Phase 6) ----------- #
 # The stage equations are coupled (a_ij != 0 for i != j), so they are solved as
 # one s-by-s block system (fullyimplicit.BlockState) rather than s sequential
 # stage solves -- a DIRK driver structurally cannot take these tableaus. Both
@@ -286,7 +286,7 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     radauIia3, 'Radau IIA s=3', IntegrationSchemeType.radauIia3, 5, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
-# Additive (IMEX) Kennedy-Carpenter ARK pairs (NOTES.md S3.9 Phase 5). Each is an
+# Additive (IMEX) Kennedy-Carpenter ARK pairs (docs/research/integrators/notes-3-9.md Phase 5). Each is an
 # explicit + implicit half; the combined method is *not* FSAL (the explicit half is
 # not stiffly accurate), so `stiffly_accurate=False` and priorStep is rejected. The
 # order is the *combined* additive order (3 / 4); pass an IMEXRHS to activate the
@@ -322,7 +322,7 @@ IntegrationSchemes.append(IntegrationScheme(
 IntegrationSchemes.append(IntegrationScheme(
     IMEXEuler, 'IMEX Euler', IntegrationSchemeType.imexEuler, 1, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='A'))
-# ---- IMEX linear multistep (NOTES.md S3.19, Phase 12) ---------------------- #
+# ---- IMEX linear multistep (docs/research/integrators/notes-3-19.md, Phase 12) ---------------------- #
 # BDF / trapezoidal implicit backbone for the stiff part, explicit endpoint
 # extrapolation for the smooth part (imexmultistep.py). Pass an IMEXRHS to
 # activate the split; an ordinary RHS runs the pure-implicit limit (BDF2 /
@@ -349,10 +349,10 @@ IntegrationSchemes.append(IntegrationScheme(
     MEBDF2, 'MEBDF2', IntegrationSchemeType.mebdf2, 2, True,
     implicit=True, steps=1, stiffly_accurate=True, stability='L'))
 
-# ---- Explicit linear multistep (NOTES.md S3.6 Phase 1) -------------------- #
+# ---- Explicit linear multistep (docs/research/integrators/notes-3-6.md Phase 1) -------------------- #
 # `dissipation=True` for all seven, measured directly (max relative energy error on
 # `oscillator` grows ~7-9x over an 8x-longer run for every one) and consistent with
-# NOTES.md S3.6's own citation (Tang 1993: no linear multistep method is symplectic
+# docs/research/integrators/notes-3-6.md's own citation (Tang 1993: no linear multistep method is symplectic
 # for a general Hamiltonian). `startup_order` equals each scheme's own `order`, not a
 # capped value: the Dormand-Prince 5(4) starter these schemes bootstrap from (S3.7
 # pain point 1) has order 5, at or above every one of these, so none of them lose
@@ -384,7 +384,7 @@ IntegrationSchemes.append(IntegrationScheme(
     ABM5, 'Adams-Bashforth-Moulton 5 (PECE)', IntegrationSchemeType.abm5, 5, True,
     implicit=False, steps=4, startup_order=5))
 
-# ---- SSP multistep (NOTES.md S3.23, SCHEME_EXPANSION_PLAN wave 3) ---------- #
+# ---- SSP multistep (docs/research/integrators/notes-3-23.md, docs/development/plan-reconciliation-2026-10-23.md wave 3) ---------- #
 # Shu's strong-stability-preserving multistep methods (ssprkmsvs.py): convex
 # combinations of forward-Euler substeps across past states. SSPRKMSVS32 is
 # 3-step / order 2 / SSP C = 1/2, SSPRKMSVS43 is 4-step / order 3 / SSP C = 1/3.
@@ -400,7 +400,7 @@ IntegrationSchemes.append(IntegrationScheme(
     SSPRKMSVS43, 'SSPRKMSVS43', IntegrationSchemeType.ssprkmsvs43, 3, True,
     implicit=False, steps=3, startup_order=3))
 
-# ---- Fully implicit Adams-Moulton (NOTES.md S3.8 Phase 4) ------------------ #
+# ---- Fully implicit Adams-Moulton (docs/research/integrators/notes-3-8.md Phase 4) ------------------ #
 # The AM corrector formula solved to convergence with JFNK, as distinct from the
 # uniterated PECE corrector above. AM2 is the trapezoidal rule, so it inherits
 # A-stability; AM3/AM4 have only a bounded stability region around the origin
@@ -417,7 +417,7 @@ IntegrationSchemes.append(IntegrationScheme(
     AM4, 'Adams-Moulton 4 (implicit)', IntegrationSchemeType.am4, 4, True,
     implicit=True, steps=3, stiffly_accurate=False, startup_order=4))
 
-# ---- Stabilised explicit super-timestepping (NOTES.md S3.13, Phase 12) ---- #
+# ---- Stabilised explicit super-timestepping (docs/research/integrators/notes-3-13.md, Phase 12) ---- #
 # RKC/RKL trade a variable number `s` of cheap right-hand-side evaluations for a
 # real-axis stability interval that grows like O(s^2), so the step size is set by
 # the physics rather than the stiffest diffusive eigenvalue. They are fully explicit
@@ -436,7 +436,7 @@ IntegrationSchemes.append(IntegrationScheme(
     RKL2, 'RKL2', IntegrationSchemeType.rkl2, 2, True,
     implicit=False, steps=1, stiffly_accurate=False, stability=None))
 
-# ---- Rosenbrock-W (NOTES.md S3.14, Phase 7) --------------------------------- #
+# ---- Rosenbrock-W (docs/research/integrators/notes-3-14.md, Phase 7) --------------------------------- #
 # Linearly-implicit Rosenbrock-W on the semilinear split f = L·y + N: each of the
 # three stages is ONE GMRES solve against the frozen operator W (the Jacobian of f
 # at the step start, or the linear part), so there is no outer Newton loop. ROS3P
@@ -451,7 +451,7 @@ IntegrationSchemes.append(IntegrationScheme(
     implicit=True, steps=1, stiffly_accurate=False, stability='A'))
 
 
-# ---- Exponential integrator (NOTES.md S3.15, Phase 7) ---------------------- #
+# ---- Exponential integrator (docs/research/integrators/notes-3-15.md, Phase 7) ---------------------- #
 # ETD2RK: a two-stage, order-2 exponential Runge-Kutta method for the semilinear
 # split f = L·y + N. The linear part L is integrated EXACTLY through the matrix
 # exponential and the entire phi_k functions, applied matrix-free as
@@ -467,7 +467,7 @@ IntegrationSchemes.append(IntegrationScheme(
     implicit=False, steps=1, stiffly_accurate=False, stability='L'))
 
 
-# ---- Exponential Rosenbrock (NOTES.md S3.16, Phase 7) ---------------------- #
+# ---- Exponential Rosenbrock (docs/research/integrators/notes-3-16.md, Phase 7) ---------------------- #
 # EXPRB32: a two-stage, order-3 exponential Rosenbrock method (Hochbrueck,
 # Ostermann & Schweitzer 2009) with an embedded order-2 estimator. Where ETD2RK
 # needs the semilinear split f = L·y + N, it freezes the FULL right-hand-side

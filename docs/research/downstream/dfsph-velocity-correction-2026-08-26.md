@@ -4,8 +4,8 @@
 
 # Follow-on to E1.9: fixing the missing velocity correction in `IncompressibleSystem.finalize`
 
-Scratch findings file for a supervising session to fold into `docs/plans/wcsph-jfnk.md`.
-Direct follow-on to `docs/research/downstream/dfsph-kolmogorov-2026-08-26.md` / `docs/plans/wcsph-jfnk.md`
+Scratch findings file for a supervising session to fold into `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md`.
+Direct follow-on to `docs/research/downstream/dfsph-kolmogorov-2026-08-26.md` / `docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md`
 E1.9 finding #3: at `nx=128`, `xi=1.0`, `k=4` (`cases/kolmogorov.py`'s own
 parameters), a DFSPH run **with** the case's own default physical viscosity
 (`alpha=0.01`) diverged to NaN at step 720, while the zero-viscosity run at

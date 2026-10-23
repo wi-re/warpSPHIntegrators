@@ -76,6 +76,10 @@ The downstream SPH/GPU notebooks are not claimed as freshly executed experiments
 
 Root specialist pointers and NOTES anchor aliases are retained until the next
 documentation migration review. New links target maintained paths directly.
+That review occurred on 23 October: [cleanup Batch 3](repository-cleanup-batch3-2026-10-23.md)
+removed the temporary root files after migrating references. Numbered aliases
+remain in the numerical measurement index. The Phase 3 results above describe
+the original 14 October migration.
 Site developer navigation uses repository URLs; plots under `docs/assets` are
 repository assets, not implicitly served as site static files.
 

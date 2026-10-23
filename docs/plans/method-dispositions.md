@@ -1,7 +1,7 @@
 # Method dispositions and coefficient provenance
 
-Original audit at `5eb45e0`, supplemented by the Phase 8 first wave-9 batch on
-14 October 2026. The [JSON ledger](method-dispositions.json)
+Original audit at `5eb45e0`, expanded through the completed Phase 8 candidate
+review and reconciled on 23 October 2026. The [JSON ledger](method-dispositions.json)
 records all 142 registered identifiers plus standalone, equivalent, deferred and
 screening candidates. It includes implementation/source constructors, modifications,
 test files, numerical evidence and intended consumers. Method implementation and
@@ -26,7 +26,8 @@ Fixed classical AB5/AM5 PECE, MEBDF2 and CNLF2 are registered wave-10 additions.
 `Nystrom` supplies fourteen qualified mechanics configurations with component
 quadratures and [source/order/thermal evidence](../development/nystrom-backend-validation.md).
 The pinned RKN4 candidate is excluded for its velocity-order limitation and
-restricted equivalence; improved IRKN history is separate backend work.
+restricted equivalence. ImprovedNystrom supplies corrected startup and owned
+warm history with [source and numerical qualifications](../development/improved-nystrom-validation.md).
 
 `NDF` supplies fixed target orders 1–5 with [difference-state/source/consumer evidence](../development/ndf-backend-validation.md). Its fifth-order constant-step main map equals BDF5; its variable history and policy are distinct. `AdaptiveNDF` adds [accepted-order selection](../development/adaptive-ndf-validation.md) with explicit package policies. Full upstream QNDF rejection/discontinuity semantics remain separate.
 
@@ -37,6 +38,14 @@ restricted equivalence; improved IRKN history is separate backend work.
 `FunctionMap` supplies [explicit complete-state transitions](../development/function-map-validation.md); the source scaled convention is an explicit map wrapper, with no overloaded rate/map flag.
 
 ## Source pin and transformations
+
+The [source candidate inventory](../development/source-candidate-inventory.md)
+retains all 59 awaiting-verification ExplicitTableaus constructors and the
+PFRK87 runtime-fitted contract. The [plan reconciliation](../development/plan-reconciliation-2026-10-23.md)
+assigns residual scope and triggers without changing source-method statuses.
+Nonregistered implementation/test/evidence paths and Markdown anchors now join
+registered entries in repository validation; historical source paths are citations,
+not current implementation locations.
 
 Expansion waves use OrdinaryDiffEq **7.8.1**, metapackage git tree
 `bae9b8e5f1d00e51c554648e5094e215164a19f8`. The

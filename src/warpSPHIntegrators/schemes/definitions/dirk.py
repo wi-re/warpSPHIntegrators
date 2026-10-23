@@ -34,8 +34,8 @@ MEBDF2 = dirkScheme('MEBDF2',default_solver=JFNKSolver(tol=1e-12,newton_tol=1e-7
 TRBDF2 = dirkScheme('TRBDF2')
 ESDIRK324L2SA = dirkScheme('ESDIRK324L2SA')
 ESDIRK436L2SA = dirkScheme('ESDIRK436L2SA')
-# Wave 8 (SCHEME_EXPANSION_PLAN, 2026-10-13): the remaining ODE v7.8.1
-# OrdinaryDiffEqSDIRK tableaus (NOTES.md S3.28). SDIRK22 is deliberately absent:
+# Wave 8 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): the remaining ODE v7.8.1
+# OrdinaryDiffEqSDIRK tableaus (docs/research/integrators/notes-3-28.md). SDIRK22 is deliberately absent:
 # its ODE constructor is a stub (returns Trapezoid), so there is nothing to
 # transcribe.
 Kvaerno3 = dirkScheme('Kvaerno3')

@@ -1,4 +1,4 @@
-"""Phase 2: preconditioned JFNK (IMPLICIT_ROADMAP.md Phase 2).
+"""Phase 2: preconditioned JFNK (docs/research/integrators/notes-index.md Phase 2).
 
 Covers the optional ``preconditioner(v, state, context)`` hook added to
 ``gmres`` (left or right) and ``JFNKSolver``:

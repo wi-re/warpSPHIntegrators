@@ -1,6 +1,6 @@
 """State cloning, field behaviours, stage times, and registry lookup.
 
-These cover the defects in NOTES.md 2.3, 2.5, 2.6, 2.13 and 2.15 -- all of them silent
+These cover the defects in docs/research/integrators/baseline-audit-2026-08-05.md 2.3, 2.5, 2.6, 2.13 and 2.15 -- all of them silent
 in the sense that they produce a wrong answer or a crash far from their cause.
 """
 
@@ -139,7 +139,7 @@ def _stage_times(scheme, dt, steps, t0=0.0):
 DRIFT_BEFORE_FIRST_EVALUATION = {
     'PEFRL', 'Backward Euler (implicit)', 'Implicit Midpoint', 'SDIRK2', 'BDF1',
     'IMEX Euler', 'Gauss-Legendre 2', 'Radau IIA s=2',
-    # Wave 8 (NOTES.md 3.28): DIRK tableaus with an implicit first stage
+    # Wave 8 (docs/research/integrators/notes-3-28.md): DIRK tableaus with an implicit first stage
     # (c[0] != 0), so their first f evaluation sits at t^n + c[0]*dt.
     'SSPSDIRK2', 'Cash4', 'Hairer4', 'Hairer42', 'SFSDIRK4', 'SFSDIRK5',
     'SFSDIRK6', 'SFSDIRK7', 'SFSDIRK8',
@@ -198,7 +198,7 @@ def test_stage_times_stay_within_the_step(scheme):
     elif scheme.name=='MEBDF2':
         slack = 1.0  # source's second BE stage is deliberately at t+2h
     elif scheme.name in ('ESDIRK4(3)6L[2]SA2', 'Kvaerno5', 'BHR553', 'Cash4'):
-        # Wave 8 (NOTES.md 3.28): tableau nodes outside [0, 1] --
+        # Wave 8 (docs/research/integrators/notes-3-28.md): tableau nodes outside [0, 1] --
         # ESDIRK4(3)6L[2]SA2 c4 = 1.046923, Kvaerno5 c2 = 1.230333,
         # BHR553 c3 = 1.5, Cash4 c2 = -0.7 (its c row is scrambled: the step
         # OPENS at c1 = 0.4359 and the -0.7 node is the second stage).

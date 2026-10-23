@@ -3,7 +3,7 @@
 ``SSPRKMSVS32`` (3-step, order 2, SSP coefficient ``C = 1/2``) and
 ``SSPRKMSVS43`` (4-step, order 3, SSP coefficient ``C = 1/3``), from Shu,
 *Efficient time integration for parabolic and hyperbolic PDEs*, J. Comput.
-Phys. 169 (2001) 201-228, pulled in from OrdinaryDiffEq (SCHEME_EXPANSION_PLAN
+Phys. 169 (2001) 201-228, pulled in from OrdinaryDiffEq (docs/development/plan-reconciliation-2026-10-23.md
 wave 3). The steady-state step is a convex combination of forward-Euler
 substeps -- the exact structure that makes the methods strongly stability
 preserving:
@@ -30,7 +30,7 @@ multistep saving. ``tests/test_multistep.py`` pins this "safe but expensive,
 never silently wrong" fallback as a tested property.
 
 Cold start: Dormand-Prince 5(4) for the first ``steps`` calls, the library's
-uniform multistep bootstrap (NOTES.md S3.7 pain point 1). OrdinaryDiffEq
+uniform multistep bootstrap (docs/research/integrators/notes-3-7.md pain point 1). OrdinaryDiffEq
 self-starts these with a 2nd-order Heun step; a fixed ``(k - 1)``-step
 bootstrap of a ``q``-order starter accumulates only ``O(dt^{q+1})`` starting
 error (``k - 1`` is a constant, not ``T/dt``, steps), so a ``p``-order method

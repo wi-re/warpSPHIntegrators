@@ -31,6 +31,30 @@ damping. Raw per-method functions, preferred-method aliases and old flat modules
 are removed. The small `enums` bridge preserves stored enum pickles; it does not
 restore the old import facade. See the [migration guide](../docs/migration.md).
 
+## Package design rationale
+
+The 0.7 change separates ownership and dependency direction as well as imports.
+Moving the old flat surface under another generic package would preserve its
+coupling. Pure coefficient builders therefore do not execute methods or select
+the registry; definitions bind immutable coefficients to shared engines. History
+and result contracts live below runtime/driver consumers, while each numerical
+driver owns its method's candidate memory. The runtime alone decides acceptance.
+
+Configuration and physical composition remain distinct: selecting a child
+algorithm is not splitting a vector field. Direct FunctionMap stepping belongs
+to a driver; adapting user callbacks belongs to adapters. Structural stepping
+and accepted-control protocols avoid reproducing each child's algorithm or
+maintaining concrete factory whitelists in wrappers and run control.
+
+The supported migration set is warpSPH and its sibling projects. The small root
+serves ordinary users; intentional coefficient, solver and state interfaces serve
+advanced consumers without restoring every old raw-function export. Stored enum
+and checkpoint compatibility is separate from import compatibility. The
+[initial consumer audit](package-refactor-validation.md#initial-consumer-audit)
+retains the original scope and why tableau, finalizer, serialization and clock
+checks were required. Numerical changes need their own evidence rather than
+being hidden in a structural move.
+
 ## State, updates and lifecycle
 
 The package advances application systems through tagged fields and update
@@ -79,7 +103,8 @@ own documented size/action limits; differentiability is a family contract.
 
 Numerical stepping is PyTorch based. Warp array cloning and downstream Warp RHS
 operations do not establish a native Warp integrator backend. Storage pooling,
-CUDA graph capture and native gradient ownership remain Phase 9 work. The
+CUDA graph capture and native gradient ownership remain deferred backend and
+performance work. The
 consumer migration checks real CPU configuration, state, restart and deferred
 clock paths; CUDA hardware was unavailable.
 
@@ -91,8 +116,9 @@ order failures retain explicit dispositions in the candidate-review records.
 
 ## Repository layout
 
-`docs/docs` contains user documentation; `docs/plans` contains specialist designs
-and method dispositions; `docs/development` contains architecture and validation.
+`docs/docs` contains user documentation; `docs/plans` contains the durable method
+disposition ledger and its index. `docs/development` contains architecture,
+retained designs, reconciliation records and validation.
 Dated numerical evidence lives in `docs/research/integrators`, and downstream SPH
 experiments in `docs/research/downstream`. Examples/notebooks live in `examples`,
 measurement drivers in `benchmarks`, coefficient/maintenance tools in `scripts`

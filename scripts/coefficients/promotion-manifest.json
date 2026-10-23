@@ -12,7 +12,8 @@
   "wave1/ode_reference.jl": {
     "original_scratch_path": ".tmp/ode_reference.jl",
     "original_sha256": "225bdb5d44adcb728b26d412519b344c99a66146318f51f6dc71df22417c5d89",
-    "maintained_sha256": "a65a5dc11f3f2ec9c9675c7a5c08801a322ebf466082eacf75edf7d24f962969"
+    "maintained_sha256": "85be8998b7e6d5d25a75bfaac4a426b3fd22627e71cb45d0732cb428a7332960",
+    "maintenance_note": "23 October 2026 plan-reference migration in comments only; executable code, coefficients and original provenance retained"
   },
   "wave1/wave1_tableaus.py": {
     "original_scratch_path": ".tmp/wave1_tableaus.py",
@@ -59,7 +60,8 @@
   "wave7/assemble_wave7.py": {
     "original_scratch_path": ".tmp/wave7_julia/assemble_wave7.py",
     "original_sha256": "bf6574872d8b886a27a1b380cae1a3b0f54aeb4575220577e27afe5b9c482941",
-    "maintained_sha256": "cddf2afa654e02abe96e06d724c2888ce5fd48cfb373bf346ecb790dcc9bb6ca"
+    "maintained_sha256": "71ff508a39ee7a62533d563b1d72796a05f3aad74dccd53b7a7478decedd2c1d",
+    "maintenance_note": "23 October 2026 plan-reference migration in comments only; executable code, coefficients and original provenance retained"
   },
   "wave7/crosscheck_wave7.py": {
     "original_scratch_path": ".tmp/wave7_julia/crosscheck_wave7.py",

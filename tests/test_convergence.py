@@ -1,6 +1,6 @@
 """Every registered scheme must achieve its registered convergence order.
 
-This is the regression net for NOTES.md 2.2 and 2.3: several schemes used to evaluate
+This is the regression net for docs/research/integrators/baseline-audit-2026-08-05.md 2.2 and 2.3: several schemes used to evaluate
 the right-hand side at the correct *state* but the wrong *time*, which is invisible on
 an autonomous problem and collapses the order to 1 on a time-dependent one. So every
 order assertion runs on both `oscillator` (autonomous) and `forced` (non-autonomous),

@@ -106,14 +106,14 @@ def pytest_collection_modifyitems(config, items):
 
 
 #: Schemes that take a per-step stage count (`s=`, or `lambda_max=`) the generic
-#: one-step-callable tests do not provide (NOTES.md S3.13, Phase 12). They are
+#: one-step-callable tests do not provide (docs/research/integrators/notes-3-13.md, Phase 12). They are
 #: stabilised explicit methods for parabolic (real negative-eigenvalue) right-hand
 #: sides, so the generic oscillator / forced / kepler convergence problems do not
 #: exercise them correctly either. They are covered in tests/test_rkc.py instead.
 NEEDS_STAGE_COUNT = {'RKC1', 'RKC2', 'RKL2'}
 
 #: Schemes that integrate the linear part exactly and therefore require the
-#: `linear` accessor of a SemilinearRHS (NOTES.md S3.15, Phase 7). The generic
+#: `linear` accessor of a SemilinearRHS (docs/research/integrators/notes-3-15.md, Phase 7). The generic
 #: oscillator / forced / kepler convergence problems are registered as plain
 #: callables (no `linear` part), so they cannot be run on those as registered.
 #: Their order and driver contract are covered in tests/test_exponential.py on
@@ -123,7 +123,7 @@ NEEDS_STAGE_COUNT = {'RKC1', 'RKC2', 'RKL2'}
 NEEDS_SEMILINEAR_RHS = {'ETD2RK'}
 
 #: Schemes whose step is the *exact* exponential flow on a linear autonomous
-#: right-hand side (NOTES.md S3.16, Phase 7). EXPRB32 freezes the full Jacobian
+#: right-hand side (docs/research/integrators/notes-3-16.md, Phase 7). EXPRB32 freezes the full Jacobian
 #: `Jn`; on a linear autonomous problem `Jn` is constant and the nonlinear
 #: remainder `D2 = f - f_n - Jn (u - un)` vanishes, so the step reduces to
 #: `exp(h Jn)` applied exactly (the two `phi`-Krylov builds exhaust the small
@@ -204,7 +204,7 @@ ORDER_TOLERANCE = 0.15
 #: On the [2.0, 1.0, 0.5, 0.25] grid its finest usable pair measures 6.95, above
 #: the registered 5, which is pinned directly on oscillator / kepler.
 #:
-#: The wave-7 high-order tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13) are the
+#: The wave-7 high-order tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13) are the
 #: first schemes whose errors floor out on more than one problem at once. The
 #: 3-point grids (RKV76IIa, TanYam7 on forced; Feagin10 on kepler) are the
 #: coarsest that keeps the two finest points above the floor: with a 4th point
@@ -232,12 +232,12 @@ PROBLEM_COARSE_GRIDS = {
         # this grid pins its lower-order REUSE order in test_step_reuse.py
         # (measured 7.04 here vs the predicted 6).
         'Feagin12': [1.0, 0.5, 0.25, 0.125],
-        # Wave 8 (NOTES.md 3.28): the order-6 ESDIRK's standard-grid errors sit
+        # Wave 8 (docs/research/integrators/notes-3-28.md): the order-6 ESDIRK's standard-grid errors sit
         # at the floor from dt = 0.025 down (2.8e-13, 9.0e-15, 3.9e-15), so no
         # order is measurable there; on this grid all four points sit above the
         # floor and measure 6.00.
         'ESDIRK6(5)9L[2]SA': [0.5, 0.25, 0.125, 0.0625],
-        # Wave 8 (NOTES.md 3.28): the 12-digit ODE DIRK families sit on a
+        # Wave 8 (docs/research/integrators/notes-3-28.md): the 12-digit ODE DIRK families sit on a
         # higher effective roundoff floor than the explicit schemes (their JFNK
         # solves leave a small residual per stage), so their standard-grid
         # finest points are floor-contaminated and the measured order drifts
@@ -261,12 +261,12 @@ PROBLEM_COARSE_GRIDS = {
         'Feagin10': [0.4, 0.2, 0.1, 0.05],
         'Feagin12': [0.4, 0.2, 0.1, 0.05],
         'Feagin14': [0.4, 0.2, 0.1, 0.05],
-        # Wave 8 (NOTES.md 3.28): the order-6 ESDIRK's standard-grid errors are
+        # Wave 8 (docs/research/integrators/notes-3-28.md): the order-6 ESDIRK's standard-grid errors are
         # floor-contaminated at the two finest points (8.8e-14, 5.7e-15), which
         # drags the measured order to 5.84 (below the 6 - 0.15 bound); on this
         # grid all four points sit above the floor and measure 5.89.
         'ESDIRK6(5)9L[2]SA': [0.5, 0.25, 0.125, 0.0625],
-        # Wave 8 (NOTES.md 3.28): roundoff-floor grids, as under 'forced'
+        # Wave 8 (docs/research/integrators/notes-3-28.md): roundoff-floor grids, as under 'forced'
         # (measured 4.050 and 3.990 respectively).
         'SFSDIRK5': [0.1, 0.05, 0.025, 0.0125],
         'SFSDIRK8': [0.2, 0.1, 0.05, 0.025],
@@ -308,7 +308,7 @@ PROBLEM_COARSE_GRIDS = {
         'Feagin10': [0.4, 0.2, 0.1, 0.05],
         'Feagin12': [0.4, 0.2, 0.1, 0.05],
         'Feagin14': [0.4, 0.2, 0.1, 0.05],
-        # Wave 8 (NOTES.md 3.28): roundoff-floor grids, as under 'forced'
+        # Wave 8 (docs/research/integrators/notes-3-28.md): roundoff-floor grids, as under 'forced'
         # (measured 4.087, 4.033 and 3.993 respectively).
         'SFSDIRK5': [0.1, 0.05, 0.025, 0.0125],
         'SFSDIRK7': [0.2, 0.1, 0.05, 0.025],

@@ -3,7 +3,7 @@
 
 ## 3.21 Scheme-expansion wave 1: the seven plain SSPRK tableaus — done 2026-10-12
 
-Wave 1 of `docs/plans/scheme-expansion.md`: the plain (non-embedded, non-multistep)
+Wave 1 of `docs/development/plan-reconciliation-2026-10-23.md`: the plain (non-embedded, non-multistep)
 SSPRK methods present in local OrdinaryDiffEq v7.8.1 but missing from this
 library. All seven ride the generic `butcher.RungeKuttaB` driver as plain
 tableaus (complexity class C1); none are FSAL, so the reuse guard applies

@@ -108,7 +108,7 @@ HANDROLLED_REUSE = {
     IntegrationSchemeType.exprb32: (None, 'EXPRB32 does not implement first-stage reuse (it is not stiffly accurate)'),
 }
 
-#: Wave 7 (SCHEME_EXPANSION_PLAN, 2026-10-13): tableaus whose reuse-modified
+#: Wave 7 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13): tableaus whose reuse-modified
 #: recurrence is unstable on the imaginary axis. Reuse turns the step into a
 #: recurrence whose state is (y^{n-1}, y^n, k_s^{n-1}) -- the new step's k0 is
 #: the previous step's last-stage derivative, which depends on the step before

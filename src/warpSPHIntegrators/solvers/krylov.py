@@ -1,12 +1,11 @@
-"""Jacobian-free Newton-Krylov solver (JFNK_PLAN.md Phase A).
+"""Jacobian-free Newton-Krylov solver (docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md Phase A).
 
 ``FixedPointSolver`` (``solvers.py``) is a fixed-count Picard iteration -- the
 right default for the non-stiff regime, but not a stiff solver at any iteration
-count (NOTES.md S3.4: it measures -9999 at 2 Picard iterations and 10**39 at 20,
-same stiffness, same tableau). ``JFNKSolver`` is the rung above it on NOTES.md
-S3.4's ladder: an outer inexact-Newton loop, each correction found by GMRES
+count (docs/research/integrators/notes-3-4.md: it measures -9999 at 2 Picard iterations and 10**39 at 20,
+same stiffness, same tableau). ``JFNKSolver`` is the rung above it on docs/research/integrators/notes-3-4.md's ladder: an outer inexact-Newton loop, each correction found by GMRES
 (``gmres``, A4) against a Jacobian-vector product that is never formed as a dense
-matrix (NOTES.md S3.4's own caution -- an SPH state has 10**6-10**7 unknowns, and
+matrix (docs/research/integrators/notes-3-4.md's own caution -- an SPH state has 10**6-10**7 unknowns, and
 a dense per-column Jacobian would cost that many extra force evaluations *per
 Newton iteration*) -- only ever applied to a single vector, either by finite
 differences (``fd_matvec``, A2, works for any ``step``) or, when ``step`` is built
@@ -47,7 +46,7 @@ def _fd_epsilon(y_norm: float, v: torch.Tensor) -> float:
     by ``fd_matvec`` below rather than recomputed (with a fresh GPU->CPU sync)
     on every single matvec call, the JFNK-driver-level analogue of
     ``warpSPHCore``'s own hasLiveTangent sync-batching fix
-    (``JFNK_DRIVER_OVERHEAD_NOTES.md`` item 2) -- ``v_norm`` below is genuinely
+    (``docs/research/integrators/jfnk-driver-overhead-2026-08-24.md`` item 2) -- ``v_norm`` below is genuinely
     call-varying (``v`` is a fresh Krylov basis vector each call) and still
     computed fresh every time.
     """
@@ -65,7 +64,7 @@ def fd_matvec(step: Callable, Y, y_flat: torch.Tensor, G_y: torch.Tensor,
 
     ``y_flat``/``G_y`` are the caller's already-computed ``flatten_integrated(Y)``
     and ``G(Y)`` -- one ``step`` evaluation, shared across every Krylov iteration of
-    the outer Newton step this matvec belongs to (NOTES.md S3.4: "one extra
+    the outer Newton step this matvec belongs to (docs/research/integrators/notes-3-4.md: "one extra
     evaluation per Krylov iteration, not one per unknown"), not recomputed here.
     Works for any ``step``, no capability gate; this is the default matvec.
     """
@@ -92,13 +91,13 @@ def jvp_matvec(step: Callable, Y) -> Callable[[torch.Tensor], torch.Tensor]:
 
     Exact for any ``step`` built entirely from warpSPHCore's wrapped operators
     (Density, Interpolate, Gradient, Divergence, Curl, Laplacian, Covariance) --
-    the entire warp-native forward-mode surface that exists (NOTES.md S3.4's
+    the entire warp-native forward-mode surface that exists (docs/research/integrators/notes-3-4.md's
     correction). For anything else this **must fail loudly**:
     ``StateAwareWarpFunction.jvp`` already raises ``NotImplementedError`` the
     moment a live tangent reaches an operator with no registered ``JVPSpec``
     (``warpSPHCore/autograd/operator_spec.py``), and nothing here catches that --
     catching it would turn "some terms have no JVP" into a matvec that silently
-    drops them instead of one that refuses to build (JFNK_PLAN.md A3).
+    drops them instead of one that refuses to build (docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md A3).
     """
     is_block = isinstance(_maybe_reference_state(Y), BlockState)
     if is_block:
@@ -150,7 +149,7 @@ def jvp_matvec(step: Callable, Y) -> Callable[[torch.Tensor], torch.Tensor]:
             # for the whole call via one `.tolist()`) instead of one
             # `bool(...)`/sync per field -- this repo's own version of the
             # anti-pattern warpSPHCore's Fix 2 batched away inside the bridge
-            # (see JFNK_DRIVER_OVERHEAD_NOTES.md item 3); same "> 0" test,
+            # (see docs/research/integrators/jfnk-driver-overhead-2026-08-24.md item 3); same "> 0" test,
             # same per-field result, just not one sync per field.
             live = (torch.stack([t.abs().max() for t in tangents]) > 0).tolist() if tangents else []
             if is_block:
@@ -198,7 +197,7 @@ def gmres(matvec: Callable[[torch.Tensor], torch.Tensor], b: torch.Tensor,
           maxiter: Optional[int] = None, restart: int = 30,
           preconditioner: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
           preconditioning: str = 'right'):
-    """Restarted GMRES, no symmetry assumption (JFNK_PLAN.md A4), with an optional
+    """Restarted GMRES, no symmetry assumption (docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md A4), with an optional
     left or right preconditioner (Phase 2).
 
     Matrix-free: ``matvec(v)`` is the only way this ever touches the operator, so
@@ -208,7 +207,7 @@ def gmres(matvec: Callable[[torch.Tensor], torch.Tensor], b: torch.Tensor,
     ``warpSPH/modules/incompressible/krylov.py`` has a GMRES too, at the
     SPH-pressure-field abstraction level rather than this module's arbitrary
     flat-vector one -- a correctness cross-check while developing this, not
-    something to import (JFNK_PLAN.md A4).
+    something to import (docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md A4).
 
     ``preconditioner`` is a 1-arg *linear* operator ``v -> M(v)`` approximating
     the inverse of the operator ``matvec`` applies (``M ~= A^{-1}``). The 3-arg
@@ -407,8 +406,8 @@ class JFNKSolver:
     """Jacobian-free Newton-Krylov: an outer inexact-Newton loop over GMRES (A4)
     against a matrix-free Jacobian-vector product (A2 finite-difference by
     default, A3 exact-JVP opt-in). Implements the ``NonlinearSolver`` protocol
-    (NOTES.md S4) so a DIRK driver can swap it in for ``FixedPointSolver`` with no
-    other change (JFNK_PLAN.md A5).
+    (docs/research/integrators/baseline-audit-2026-08-05.md S4) so a DIRK driver can swap it in for ``FixedPointSolver`` with no
+    other change (docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md A5).
 
     The default solver for registered DIRK and Newmark schemes. ``FixedPointSolver``
     remains available for a fixed-depth, CUDA-graph-capturable non-stiff solve, but
@@ -446,7 +445,7 @@ class JFNKSolver:
         corrections but never trip the check, and burn its entire
         ``max_iterations`` budget on every single stage solve chasing a
         threshold the weighted-RMS norm can't satisfy past float32 noise
-        (see ``warpSPHIntegrators``'s ``JFNK_DRIVER_OVERHEAD_NOTES.md``).
+        (see ``warpSPHIntegrators``'s ``docs/research/integrators/jfnk-driver-overhead-2026-08-24.md``).
       ``newton_stagnation_ratio``/``newton_stagnation_patience``: a *second*,
         resolution-independent early exit -- ``newton_tol`` alone is not
         enough, because the float32 noise floor ``norm_fn`` actually reaches
@@ -670,7 +669,7 @@ class JFNKSolver:
             # extra ``step`` evaluation, so it counts toward ``n`` exactly like
             # the base residual does -- the documented cost model keeps
             # holding: total step evaluations = rhs_evaluations +
-            # gmres_iterations (NOTES.md S3.4).
+            # gmres_iterations (docs/research/integrators/notes-3-4.md).
             alpha = 1.0
             while True:
                 Y_trial = unflatten_integrated(y_flat + alpha * delta, Y)

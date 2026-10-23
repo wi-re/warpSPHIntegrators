@@ -1,6 +1,6 @@
 """Semi-implicit BDF, CN/Adams-Bashforth and CN/leapfrog methods.
 
-IMEX linear multistep methods (NOTES.md S3.19, Phase 12): a BDF or
+IMEX linear multistep methods (docs/research/integrators/notes-3-19.md, Phase 12): a BDF or
 trapezoidal implicit backbone for the stiff part, explicit endpoint
 extrapolation for the smooth part. The split is read by capability through
 ``resolve`` (NOTES S3.12): an ``IMEXRHS`` (or a structured ``RHS`` providing

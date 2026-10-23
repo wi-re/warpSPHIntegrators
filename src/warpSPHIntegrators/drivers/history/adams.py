@@ -1,11 +1,11 @@
 """Linear multistep: Adams-Bashforth, Adams-Bashforth-Moulton (PECE), and the
-fully implicit (iterated) Adams-Moulton corrector (NOTES.md S3.6 Phase 1, Phase 4).
+fully implicit (iterated) Adams-Moulton corrector (docs/research/integrators/notes-3-6.md Phase 1, Phase 4).
 
 `y^{n+1} = y^n + dt * sum_j beta_j * f^{n-j}` is exactly the shape
 `butcher._weighted_update` already builds for a Runge-Kutta `b`-weight accumulation --
 the "list of updates weighted by a list of coefficients, times dt" primitive does not
 care whether the updates came from stages of *this* step or evaluations kept from
-*past* steps. The only genuinely new piece is `StepHistory` (NOTES.md S2, Phase 0)
+*past* steps. The only genuinely new piece is `StepHistory` (docs/research/integrators/baseline-audit-2026-08-05.md S2, Phase 0)
 supplying those past evaluations, and a startup strategy for the first `order - 1`
 steps, before there is enough history to run the real formula.
 
@@ -21,7 +21,7 @@ per-step saving that is the entire point of choosing Adams-Bashforth over a
 Runge-Kutta method. `tests/test_multistep.py` pins this "safe but expensive, not
 silently wrong" fallback down as a tested property, not an accident. The correct
 calling convention is exactly what `testing.run(..., history=True)` already does
-(NOTES.md S5): thread `result.history` back in as `history=` on the next call.
+(docs/research/integrators/baseline-audit-2026-08-05.md S5): thread `result.history` back in as `history=` on the next call.
 """
 
 from typing import Optional
@@ -70,7 +70,7 @@ def getAMCoefficients(order: int) -> np.ndarray:
 
     `order` points total: the predicted point first, then `order - 1` already-known
     ones (f^n, then progressively older history) -- the pairing that makes ABM_order's
-    corrector the same order as its AB_order predictor (NOTES.md S3.6).
+    corrector the same order as its AB_order predictor (docs/research/integrators/notes-3-6.md).
     """
     if order == 1:
         return np.array([1.0])
@@ -111,7 +111,7 @@ def AdamsBashforth(initialState, dt, f, order: int, *args,
 
     Needs `order - 1` past derivatives; `history=None` (or one with fewer entries
     than that) bootstraps from Dormand-Prince 5(4) instead, exactly the "high-order
-    starter" NOTES.md S3.7 pain point 1 found necessary -- a low-order self-starter
+    starter" docs/research/integrators/notes-3-7.md pain point 1 found necessary -- a low-order self-starter
     (e.g. one Euler step) was measured to cap AB3/AB4 at order 2 no matter how many
     later steps ran at full order. Not a `starter=` parameter: that pain point's own
     conclusion was "the starter must be registered scheme metadata, not caller
@@ -153,7 +153,7 @@ def AdamsBashforthMoulton(initialState, dt, f, order: int, *args,
     """One Adams-Bashforth-Moulton (PECE) step of the given `order` (2-5).
 
     Predict-Evaluate-Correct-Evaluate with a *fixed* (uniterated) correction, per
-    NOTES.md S3.6: the AM corrector uses the predictor's new evaluation in place of the
+    docs/research/integrators/notes-3-6.md: the AM corrector uses the predictor's new evaluation in place of the
     true implicit f(t^{n+1}, y^{n+1}), rather than iterating to convergence the way the
     DIRK driver's Picard solve does. 2 evaluations per step (f^n, f at the predicted
     point) against AB's 1 -- the corrector step itself needs no further evaluation,

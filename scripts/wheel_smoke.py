@@ -13,6 +13,7 @@ import torch
 import warpSPHIntegrators as package
 from warpSPHIntegrators import TensorState, tensor_rhs, get_scheme, solve
 from warpSPHIntegrators.schemes import ExplicitRK
+from warpSPHIntegrators.schemes import ConservedLagrangian, ProjectedStep
 from warpSPHIntegrators.schemes import filter_schemes, GeneralizedAlpha, Collocation, VariableAdams, StabilizedRK, Nystrom, NDF, AdaptiveNDF, AdaptiveAdams, Extrapolation, FunctionMap, ExpandedRK, ImprovedNystrom, ParallelDIRK, Rosenbrock, OrthogonalRK, ExponentialRK
 from warpSPHIntegrators.state import StepHistory, get_reference_state
 from warpSPHIntegrators.adapters import SemilinearRHS, tensor_map
@@ -37,6 +38,9 @@ assert all(hasattr(package, name) for name in package.__all__)
 expected = json.loads(Path(sys.argv[2]).read_text())
 assert {s.identifier.name for s in filter_schemes()} == {s['identifier'] for s in expected['schemes']}
 assert get_scheme(ExplicitRK.rungeKutta4) is get_scheme('RK4')
+for consumer in (ConservedLagrangian(), ProjectedStep()):
+    assert get_scheme(consumer) is consumer
+    assert consumer.order is None and not consumer.has_error_estimate
 y = torch.tensor([1., 2.], dtype=torch.float64)
 for scheme in filter_schemes(state_kind='tensor'):
     state = TensorState(y)

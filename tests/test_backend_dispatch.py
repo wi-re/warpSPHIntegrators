@@ -4,7 +4,7 @@
 through **by reference**. A state holding `wp.array` fields -- or a plain list or dict
 of tensors -- was therefore not cloned at all: every RK stage wrote into the same
 buffer as the initial state, stage 2 read stage-1-corrupted data, and nothing raised
-anywhere (NOTES.md 4.1).
+anywhere (docs/research/integrators/baseline-audit-2026-08-05.md 4.1).
 
 That is the worst failure mode this library can have, because it is silent. These tests
 cover the dispatch itself and then the thing that actually matters: an integration step

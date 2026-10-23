@@ -19,7 +19,7 @@ the pair from the rest of the registry:
   dt 0.1, z = -10): the L-stable schemes (Radau IIA, BE, BDF2-5, ESDIRK)
   damp the stiff transient to their method-order floor in a few steps -- the
   BDF3-5 curves carry the shared DP5 startup spike documented in
-  NOTES.md S3.7 -- while the A-stable but NOT L-stable pair (Gauss-Legendre 2,
+  docs/research/integrators/notes-3-7.md -- while the A-stable but NOT L-stable pair (Gauss-Legendre 2,
   |R(-10)| ~= 0.30; Trapezoidal, |R(-10)| = 2/3 by the (1-z/2)/(1+z/2) closed
   form) bounds the transient but damps it slowly, one |R(-10)| factor per step.
 * Panel 3 (order ladder, oscillator convergence): both block schemes land on

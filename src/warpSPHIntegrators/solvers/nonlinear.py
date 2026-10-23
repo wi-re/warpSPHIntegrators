@@ -1,8 +1,8 @@
-"""Pluggable stage-equation solvers (NOTES.md S4).
+"""Pluggable stage-equation solvers (docs/research/integrators/baseline-audit-2026-08-05.md S4).
 
 An implicit scheme's stage equation -- `Y = g(Y)` for a DIRK stage, more generally
 `F(Y) = 0` for a residual -- needs something to drive `Y` towards a solution.
-`NonlinearSolver` is the one interface every rung of the ladder in NOTES.md S3.4
+`NonlinearSolver` is the one interface every rung of the ladder in docs/research/integrators/notes-3-4.md
 implements: fixed-count Picard today (`FixedPointSolver`, all Phase 2 ships), JFNK
 with finite-difference matvecs and a user-supplied `solve_linear` hook later. A driver
 is written once against the protocol and gets a solver swapped under it without a
@@ -154,14 +154,14 @@ class NonlinearSolver(Protocol):
 class FixedPointSolver:
     """Picard iteration with a fixed, data-independent iteration count.
 
-    The default, and the only solver Phase 2 ships (NOTES.md S3.1, S3.4 rung 1). Two
+    The default, and the only solver Phase 2 ships (docs/research/integrators/notes-3-1.md, S3.4 rung 1). Two
     iterations reach full order for every second-order implicit tableau measured
     there, with no norm, no Jacobian, and no branching -- which also means the
     unrolled graph has a fixed depth, so it is differentiable in both backends by
-    construction and CUDA-graph-capturable (NOTES.md S3.7 pain point 12).
+    construction and CUDA-graph-capturable (docs/research/integrators/notes-3-7.md pain point 12).
 
     Diverges outside the Picard stability limit (`|dt*a_ii*L| < 1`, tighter in
-    practice -- NOTES.md S3.2); that regime needs a Newton-based solver instead of
+    practice -- docs/research/integrators/notes-3-2.md); that regime needs a Newton-based solver instead of
     more Picard iterations, since more iterations of a divergent map only diverge
     faster.
     """
@@ -188,7 +188,7 @@ class FixedPointSolver:
             y = y_new
         # No `tol`: running to a fixed count *is* the contract, not a convergence
         # failure, so `converged=True` here means "completed its fixed schedule" --
-        # the only claim this mode makes (NOTES.md S3.4 rung 1). With `tol` set but
+        # the only claim this mode makes (docs/research/integrators/notes-3-4.md rung 1). With `tol` set but
         # never reached within `iterations`, it genuinely did not converge.
         return SolveResult(y, tol is None, n, SolveDiagnostics(
             residual=residual if norm is not None else None,

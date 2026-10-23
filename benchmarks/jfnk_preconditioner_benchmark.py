@@ -1,4 +1,4 @@
-"""Phase 2: JFNK preconditioner benchmark (IMPLICIT_ROADMAP.md Phase 2).
+"""Phase 2: JFNK preconditioner benchmark (docs/research/integrators/notes-index.md Phase 2).
 
 Solves a variable-coefficient stiff relaxation of growing size through
 ``JFNKSolver``, with and without the per-DOF diagonal preconditioner, and
@@ -80,7 +80,7 @@ def main():
         assert ref.converged and prec.converged, f'n={n}: convergence failure'
         ref_iters.append(ref.diagnostics.gmres_iterations)
         prec_iters.append(prec.diagnostics.gmres_iterations)
-        # Documented cost model (NOTES.md S3.4): total stage-map evaluations =
+        # Documented cost model (docs/research/integrators/notes-3-4.md): total stage-map evaluations =
         # rhs_evaluations + gmres_iterations (one FD matvec is one step eval).
         # This linear problem needs one Newton correction, so rhs_evaluations is
         # a constant 3 and the Krylov count is essentially the whole cost.

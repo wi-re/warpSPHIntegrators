@@ -1,0 +1,34 @@
+{
+  "source_version": "0.7.0",
+  "installed_metadata_version": "0.7.0",
+  "source_import": "/home/lu26029/dev/warpSPHIntegrators/src/warpSPHIntegrators/__init__.py",
+  "editable_direct_url": {
+    "dir_info": {
+      "editable": true
+    },
+    "url": "file:///home/lu26029/dev/warpSPHIntegrators"
+  },
+  "torch": "2.13.0+cu130",
+  "numpy": "2.5.2",
+  "preserved_files": [
+    "src/warpSPHIntegrators/schemes/__init__.py",
+    "docs/development/conserved-lagrangian-2026-10-21.md",
+    "src/warpSPHIntegrators/drivers/mechanics/conserved_lagrangian.py",
+    "src/warpSPHIntegrators/drivers/mechanics/projection.py",
+    "src/warpSPHIntegrators/schemes/families/conserved_lagrangian.py",
+    "src/warpSPHIntegrators/schemes/families/projected.py",
+    "web/.openai/hosting.json"
+  ],
+  "hosting_association": "preserved on disk, ignored by exact path",
+  "publishing_preflight": "both quote styles accepted; mismatches rejected; shell syntax valid; upload not invoked",
+  "full_gate_sha256": "dc6fd9db0276069f2211be35acba6fbe8dfae8db4de453fee412e312c7a87221",
+  "preserved_file_sha256": {
+    "src/warpSPHIntegrators/schemes/__init__.py": "081af2a6bc6ebc34952a259544e9b19fbcf2687a706076d7b38dd65864f7b324",
+    "docs/development/conserved-lagrangian-2026-10-21.md": "e70856172a3f7c9e901c721d132cd91453f71b382226b46bf9dcc182fe549a79",
+    "src/warpSPHIntegrators/drivers/mechanics/conserved_lagrangian.py": "c00331c3916874288046499bf734bc5a41043e637415d41983e2feb0fbccb964",
+    "src/warpSPHIntegrators/drivers/mechanics/projection.py": "42c513619605905a0f3cd067af1c223eb9945069333bb6723616fda89fa86ed9",
+    "src/warpSPHIntegrators/schemes/families/conserved_lagrangian.py": "647179ac7e4dd3647e1be9c4958360fdc0e29e1d99887859f76d0631dfd05c82",
+    "src/warpSPHIntegrators/schemes/families/projected.py": "1b7795812c90688f5152dff482df409ca1efdedcdc5e2fbb6edeaa4ced5defb6",
+    "web/.openai/hosting.json": "1f63290e2b95cb540e2f096ead667bf475172ed78079bb354c8f3fb0bd8c2da5"
+  }
+}

@@ -1,4 +1,4 @@
-"""Exponential integrators: ETD2RK (NOTES.md S3.15) and EXPRB32 (NOTES.md S3.16),
+"""Exponential integrators: ETD2RK (docs/research/integrators/notes-3-15.md) and EXPRB32 (docs/research/integrators/notes-3-16.md),
 Phase 7.
 
 A **two-stage, second-order exponential time-differencing Runge-Kutta (ETD2RK)**

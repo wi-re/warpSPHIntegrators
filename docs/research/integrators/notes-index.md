@@ -4,6 +4,11 @@ The original NOTES sections are preserved below, including their numbered anchor
 These are dated evidence, not an active task list. See [the current plan](../../../REPOSITORY_PLAN.md)
 and [architecture](../../development/architecture.md) for current behavior.
 
+The root NOTES redirect was removed in the [23 October reference migration](../../development/repository-cleanup-batch3-2026-10-23.md).
+The numbered anchors below remain the stable entry points for historical
+measurements; [the migration map](../../development/migration-map.json) records
+retired filenames and their retained destinations.
+
 <a id="warpsphintegrators--architecture-notes-and-open-work"></a>
 - [`warpSPHIntegrators` — architecture notes and open work](baseline-audit-2026-08-05.md#warpsphintegrators--architecture-notes-and-open-work)
 

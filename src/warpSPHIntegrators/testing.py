@@ -107,7 +107,7 @@ class ParticleSystem(BaseIntegrationSystem):
 
     def initializeNewState(self, *args, **kwargs):
         # `t` is forwarded on purpose. The integrator sets stage times explicitly, so
-        # dropping it here is no longer fatal (see NOTES.md 2.3), but forwarding it is
+        # dropping it here is no longer fatal (see docs/research/integrators/baseline-audit-2026-08-05.md 2.3), but forwarding it is
         # what a real system should do.
         return ParticleSystem(state=get_reference_state(self).initializeNewState(), t=self.t)
 
@@ -180,7 +180,7 @@ def forced_problem() -> Problem:
     """x'' = cos(t), with x(0) = 1, u(0) = 0, so x = 2 - cos t.
 
     The right-hand side reads ``system.t``, so every stage-time error shows up as an
-    order collapse. This is the problem that exposes NOTES.md 2.2 and 2.3.
+    order collapse. This is the problem that exposes docs/research/integrators/baseline-audit-2026-08-05.md 2.2 and 2.3.
     """
 
     def rhs(system, dt, **kwargs):
@@ -926,15 +926,15 @@ def run(scheme, problem: Problem, dt: float, T: float, *,
     ``reuse`` is also set, alongside) the single-entry ``priorStep``. A one-step
     scheme ignores a ``history`` kwarg it doesn't recognise -- ``RungeKuttaB`` pops it
     like ``priorStep`` and only acts on it if given one -- so this is safe to pass for
-    every registered scheme today; it exists so a multistep scheme (NOTES.md S3
+    every registered scheme today; it exists so a multistep scheme (docs/research/integrators/notes-index.md S3
     Phase 1) or a step-reuse test that wants more than one entry of lookback can
     exercise this without every other test's ``run`` call changing shape first
-    (NOTES.md S5).
+    (docs/research/integrators/baseline-audit-2026-08-05.md S5).
 
     ``**scheme_kwargs`` are forwarded to the scheme on every step (and are therefore
     ignored by schemes that do not read them). They exist for schemes that take a
     per-step parameter the run loop does not own -- the RKC/RKL family's stage count
-    ``s=`` (or ``lambda_max=``) is the first consumer (NOTES.md S3.13, Phase 12).
+    ``s=`` (or ``lambda_max=``) is the first consumer (docs/research/integrators/notes-3-13.md, Phase 12).
     """
     system = problem.initial()
     prior = None

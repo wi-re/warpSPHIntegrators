@@ -1,4 +1,4 @@
-"""NOTES.md S1-S5: the implicit/multistep groundwork layer.
+"""docs/research/integrators/baseline-audit-2026-08-05.md S1-S5: the implicit/multistep groundwork layer.
 
 Nothing here is consumed by a registered scheme yet (that's Phase 1/2) -- these test
 the primitives in isolation, plus one end-to-end check that `history=` threaded

@@ -1,4 +1,4 @@
-"""DIRK driver (NOTES.md §§3.6, 3.28): 36 tableaus and pluggable stage solves.
+"""DIRK driver (docs/research/integrators/notes-index.md §§3.6, 3.28): 36 tableaus and pluggable stage solves.
 
 Most of the generic behaviour (state cloning, copied/ephemeral fields, stage times,
 kwargs passthrough) is already covered for these schemes by the existing parametrized
@@ -31,7 +31,7 @@ from warpSPHIntegrators.analysis.stability import rk_stability_function
 DIRK_SCHEMES = [
     'Backward Euler (implicit)', 'Implicit Midpoint', 'Trapezoidal (Crank-Nicolson)',
     'SDIRK2', 'TR-BDF2', 'ESDIRK3(2)4L[2]SA', 'ESDIRK4(3)6L[2]SA',
-    # Wave 8 (SCHEME_EXPANSION_PLAN, 2026-10-13; NOTES.md 3.28): the remaining
+    # Wave 8 (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13; docs/research/integrators/notes-3-28.md): the remaining
     # ODE v7.8.1 DIRK tableaus.
     'Kvaerno3', 'Kvaerno4', 'Kvaerno5', 'KenCarp3', 'KenCarp4', 'KenCarp47',
     'KenCarp5', 'KenCarp58', 'ESDIRK3(2)5L[2]SA', 'ESDIRK4(3)6L[2]SA2',
@@ -44,7 +44,7 @@ DIRK_SCHEMES = [
 # Stiffly accurate (a[-1] == b, c[-1] == 1) WITH an explicit first stage
 # (a[0,0] == 0): the previous step's last stage IS y^{n+1}, so its converged
 # derivative is exactly the f(t^{n+1}, y^{n+1}) the next step's first stage needs.
-# Reuse is lossless for exactly these (Phase 10; wave-8 additions per NOTES.md
+# Reuse is lossless for exactly these (Phase 10; wave-8 additions per docs/research/integrators/notes-index.md
 # 3.28). The no-reuse schemes either have an implicit first stage (SDIRK2,
 # SSPSDIRK2, Cash4, Hairer4, Hairer42, SFSDIRK4-8) or are single-stage
 # (backward Euler, implicit midpoint), so they cannot consume a reused k0 and
@@ -215,14 +215,14 @@ def test_esdirk_like_tableaus_have_an_explicit_first_stage(name):
     """a[0,0] == 0: exercises the DIRK driver's non-Picard branch on a real
     tableau. For the ESDIRKs this is the 'E' in the name -- the first stage
     evaluates f explicitly and needs no solve. The wave-8 Kvaerno, KenCarp,
-    ARS, BHR and CFNLIRK tableaus open the same way (NOTES.md 3.28)."""
+    ARS, BHR and CFNLIRK tableaus open the same way (docs/research/integrators/notes-3-28.md)."""
     tab = getDIRKTableau(name)
     assert tab.a[0, 0] == 0.0
     assert tab.c[0] == 0.0
 
 
 # --------------------------------------------------------------------------- #
-# Convergence order (empirical, matching NOTES.md S3.1's own verified table)   #
+# Convergence order (empirical, matching docs/research/integrators/notes-3-1.md's own verified table)   #
 # --------------------------------------------------------------------------- #
 
 @pytest.mark.parametrize('name', DIRK_SCHEMES)
@@ -230,14 +230,14 @@ def test_esdirk_like_tableaus_have_an_explicit_first_stage(name):
 def test_dirk_scheme_reaches_its_claimed_order(name, problem_name):
     s = get_scheme(name)
     # ESDIRK6(5)9L[2]SA's standard-grid errors sit at the roundoff floor on
-    # oscillator/forced (NOTES.md 3.28); dts_for gives it the coarser grid.
+    # oscillator/forced (docs/research/integrators/notes-3-28.md); dts_for gives it the coarser grid.
     dts = dts_for(name, problem_name, testing.default_step_sizes(0.1, 5))
     order, errors = testing.convergence(s, testing.PROBLEMS[problem_name](), dts, T=2.0)
     if (name, problem_name) == ('ESDIRK4(3)7L[2]SA', 'forced'):
         # Superconvergent cell: this (scheme, problem) pair measures ~5.0 on
         # EVERY grid above the roundoff floor, so the two-sided band can never
         # be met -- the order-4 error term nearly vanishes on this problem and
-        # a higher-order term dominates (NOTES.md 3.28, the same phenomenon as
+        # a higher-order term dominates (docs/research/integrators/notes-3-28.md, the same phenomenon as
         # BS5 on forced, which test_convergence.py treats one-sided). Assert
         # the one-sided lower bound instead.
         assert order is not None and order >= s.order - 0.15, (
@@ -252,13 +252,13 @@ def test_dirk_scheme_reaches_its_claimed_order(name, problem_name):
 
 
 # --------------------------------------------------------------------------- #
-# Picard solver behaviour (NOTES.md S3.2, S3.4)                               #
+# Picard solver behaviour (docs/research/integrators/notes-3-2.md, S3.4)                               #
 # --------------------------------------------------------------------------- #
 
 def test_picard_diverges_on_a_stiff_problem_regardless_of_tableau_stability():
     """L-stability is a property of the *exact* method, not of a truncated Picard solve.
 
-    NOTES.md S3.2 measured this for backward Euler specifically with Picard(20): a
+    docs/research/integrators/notes-3-2.md measured this for backward Euler specifically with Picard(20): a
     bounded answer up to dt*omega=1, then explosive, iteration-count-dependent
     divergence past it -- 3.7e+239 at dt*omega=10 -- even though the exact method is
     unconditionally stable. Reproduced directly: at this stiffness (dt*omega=100) the
@@ -266,7 +266,7 @@ def test_picard_diverges_on_a_stiff_problem_regardless_of_tableau_stability():
     iterations, 10^39 at 20), the signature of a divergent fixed-point map, not of
     "wrong but settling down". The shipped 2-iteration default does not run enough
     iterations to reach an astronomical value by itself -- it just returns something
-    finite and badly wrong -- which is exactly why the ladder in NOTES.md S3.4 treats
+    finite and badly wrong -- which is exactly why the ladder in docs/research/integrators/notes-3-4.md treats
     Picard as only the non-stiff rung, not something to run more iterations of here.
     """
     k = 1e6  # dt*omega = 0.1 * 1000 = 100, well past the Picard breakdown point (S3.2: ~1)
@@ -410,7 +410,7 @@ def test_dirk_reuse_saves_an_explicit_evaluation_per_step(name):
     first step does, because the reused k0 IS the previous step's final-stage
     evaluation, which sits at t^n since every one of these schemes is stiffly
     accurate. Counting total f calls instead is unreliable: JFNK's iteration count
-    on the implicit stages varies by a few from step to step (NOTES.md 3.28 measured
+    on the implicit stages varies by a few from step to step (docs/research/integrators/notes-3-28.md measured
     per-step savings of -7 to +3 for KenCarp47), so the total is a band, not a count.
     """
     s = get_scheme(name)

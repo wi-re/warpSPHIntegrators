@@ -1,7 +1,7 @@
-"""Adaptive step-size control and dense output (roadmap Phase 11, NOTES.md S3.17).
+"""Adaptive step-size control and dense output (roadmap Phase 11, docs/research/integrators/notes-3-17.md).
 
 This module is a *set of helpers, not a solver*: nothing here owns a step loop.
-The optional run.solve API or a caller drives the accept/reject loop (NOTES.md S3.8's "no solver contract
+The optional run.solve API or a caller drives the accept/reject loop (docs/research/integrators/notes-3-8.md's "no solver contract
 without a downstream" caution), and the two primitives it needs are:
 
 - :func:`estimate_error_norm` -- turn the embedded-pair estimate carried on an
@@ -32,12 +32,12 @@ citable coefficients). The coefficients are those implemented in SciPy 1.18.0
 ``k_i`` of the ``DormandPrince`` tableau in the order ``RungeKuttaB`` emits
 them (``k7`` is the FSAL stage at ``c = 1``). Verified against the continuous
 order conditions through order 4 (interior error ``O(dt**5)``) and exact
-endpoint reproduction; see NOTES.md S3.17.
+endpoint reproduction; see docs/research/integrators/notes-3-17.md.
 
 Multistep schemes (BDF1-5, AM2-4, AB2-5, ABM2-4) emit no error estimate and
 ``StepHistory`` restarts on any ``dt`` change, so adaptive stepping with them
 is *refused by construction*, not just unimplemented: the controller applies to
-the one-step estimate-emitting schemes only (NOTES.md S3.17).
+the one-step estimate-emitting schemes only (docs/research/integrators/notes-3-17.md).
 """
 
 import numpy as np
@@ -154,7 +154,7 @@ def dormand_prince_dense_output(state, stages, dt: float, theta: float,
       path the step itself uses (``butcher._weighted_update``).
 
     The quartic satisfies the continuous order conditions through order 4, so
-    the interior error is ``O(dt**5)`` for a fixed ``theta`` (NOTES.md S3.17).
+    the interior error is ``O(dt**5)`` for a fixed ``theta`` (docs/research/integrators/notes-3-17.md).
     This is the only published dense output in the library: the other
     estimate-emitting schemes have no citable coefficients, so they get none.
     """

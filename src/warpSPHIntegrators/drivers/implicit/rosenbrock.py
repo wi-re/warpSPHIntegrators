@@ -1,4 +1,4 @@
-"""Rosenbrock-W driver: ROS3P (NOTES.md S3.14, Phase 7).
+"""Rosenbrock-W driver: ROS3P (docs/research/integrators/notes-3-14.md, Phase 7).
 
 A **Rosenbrock-W** (implicit-explicit, linearly-implicit) one-step method for
 **semilinear** right-hand sides ``f = L·y + N``. Unlike the DIRK/BDF drivers

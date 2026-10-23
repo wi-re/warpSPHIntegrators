@@ -48,6 +48,12 @@ part of the migration gate. Resupply the RHS and application/solver options when
 restarting; arbitrary functions and external resources are not serialized.
 Custom simulation objects still use application-owned serialization.
 
+This migration targets the known warpSPH/sibling consumer set. Keep advanced
+tableau access, typed finalization/rerun data and deferred clock hooks through
+their explicit interfaces; a storage alias is not a promise to restore removed
+wildcard imports. The [architecture rationale](https://github.com/wi-re/warpSPHIntegrators/blob/main/docs/development/architecture.md#package-design-rationale)
+explains those ownership boundaries and links the original consumer audit.
+
 ## Definitions and extensions
 
 A fixed scheme record contains a definition bound to its numerical driver.

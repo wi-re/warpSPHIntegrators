@@ -216,7 +216,7 @@ def field_behavior(f) -> str:
 # other type through *by reference*. That meant a state holding `wp.array` fields --
 # or a plain list or dict of tensors -- was not cloned at all: every RK stage wrote
 # into the same buffer as the initial state, stage 2 read stage-1-corrupted data, and
-# nothing raised anywhere (NOTES.md 4.1).
+# nothing raised anywhere (docs/research/integrators/baseline-audit-2026-08-05.md 4.1).
 #
 # Adding a backend is now one `register_clone_handler` call rather than an edit to two
 # functions. Handlers are tried newest-first, so a registration overrides a built-in.
@@ -454,7 +454,7 @@ def copy_finalized_fields(final_system, last_stage_system):
     A `copied` field is one the system recomputes per stage rather than integrating --
     summation density, pressure, a smoothing length. It is nulled in
     `initializeNewState` and so would otherwise arrive at the caller as `None`, which
-    is what made the behaviour indistinguishable from `ephemeral` (NOTES.md 2.7).
+    is what made the behaviour indistinguishable from `ephemeral` (docs/research/integrators/baseline-audit-2026-08-05.md 2.7).
 
     Called by `finalizeSystem` before the user's `finalize` hook runs, so a hook that
     wants to override the copied value still can.
@@ -484,8 +484,7 @@ class BlockState:
     A fully implicit RK scheme whose tableau has a nonzero off-diagonal entry
     (``a_ij`` with ``i != j``) -- Gauss-Legendre 2, Radau IIA s=2 -- has stage
     equations that reference each other, so the ``s`` stage states must be solved
-    as one coupled system rather than ``s`` sequential stage solves (NOTES.md
-    S3.18). This is the container that carries the ``s`` Newton/Picard iterates
+    as one coupled system rather than ``s`` sequential stage solves (docs/research/integrators/notes-3-18.md). This is the container that carries the ``s`` Newton/Picard iterates
     through that single solve: one substate per stage, all of the same type. The
     state machinery (``state_difference``, ``state_norm``,
     ``integrated_field_names``, ``flatten_integrated``/``unflatten_integrated``,
@@ -600,7 +599,7 @@ def _integrated_norm_parts(s, ref, rtol: float, atol: float):
 def integrated_field_names(state) -> List[str]:
     """Names of ``state``'s ``integrated`` tensor fields, in declaration order.
 
-    The order ``flatten_integrated``/``unflatten_integrated`` (JFNK_PLAN.md A1)
+    The order ``flatten_integrated``/``unflatten_integrated`` (docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md A1)
     agree on -- both call this on states of the same dataclass type, so
     ``dataclasses.fields``'s stable declaration order is what keeps flattening and
     unflattening in sync without either side needing to record field names
@@ -627,7 +626,7 @@ def integrated_field_names(state) -> List[str]:
 def flatten_integrated(state) -> torch.Tensor:
     """Every ``integrated`` tensor field of ``state``, concatenated into one 1-D tensor.
 
-    The primitive JFNK's GMRES operates on (JFNK_PLAN.md A1): Krylov basis vectors,
+    The primitive JFNK's GMRES operates on (docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md A1): Krylov basis vectors,
     dot products, and linear combinations all live in this flat space.
     ``unflatten_integrated`` is the inverse, turning a flat vector back into a real
     state so a scheme's ``step_fn`` can be called on it.
@@ -708,7 +707,7 @@ def _replace_dataclass_fields(state, replacements):
 def unflatten_integrated(flat: torch.Tensor, template):
     """The inverse of ``flatten_integrated``: ``template`` with its ``integrated``
     tensor fields overwritten from ``flat``'s values, in ``integrated_field_names``'s
-    order (JFNK_PLAN.md A1).
+    order (docs/research/downstream/wcsph-jfnk-2026-08-24-to-09-04.md A1).
 
     ``template`` supplies everything ``flat`` does not carry on its own: field
     shapes (to know how to slice ``flat`` back apart) and every non-integrated

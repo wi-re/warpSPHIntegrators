@@ -76,6 +76,33 @@ def destination(page, link, root):
     return target, parsed.fragment
 
 
+def validate_disposition_paths(entries, root=ROOT):
+    """Check current local paths, leaving historical source citations untouched."""
+    errors = []
+    root = root.resolve()
+    for entry in entries:
+        for field in ('implementation', 'tests', 'evidence'):
+            value = entry.get(field)
+            if value is None:
+                continue
+            references = [value] if isinstance(value, str) else value
+            if not isinstance(references, list) or not all(
+                    isinstance(ref, str) and ref for ref in references):
+                errors.append(f'{entry["name"]}: {field} must be a path, a list of paths or null')
+                continue
+            for reference in references:
+                relative, _, fragment = reference.partition('#')
+                target = (root / relative).resolve()
+                if not relative or Path(relative).is_absolute() or not target.is_relative_to(root):
+                    errors.append(f'{entry["name"]}: {field} is not a repository path: {reference}')
+                elif not target.is_file():
+                    errors.append(f'{entry["name"]}: missing {field} path {reference}')
+                elif fragment and target.suffix == '.md' and fragment not in anchors(target):
+                    if not re.fullmatch(r'L\d+(?:-L\d+)?', fragment):
+                        errors.append(f'{entry["name"]}: missing {field} anchor {reference}')
+    return errors
+
+
 def validate(root=ROOT):
     errors = []
     pages = notebooks = links = 0
@@ -142,6 +169,12 @@ def validate(root=ROOT):
             module='.'.join(relative.with_suffix('').parts[1:])
             if not hasattr(importlib.import_module(module),entry['implementation']['constructor']):
                 errors.append(f"{entry['name']}: implementation constructor does not resolve")
+
+    errors.extend(validate_disposition_paths(ledger['other_dispositions'], root))
+
+    migrations = json.loads((root / 'docs/development/migration-map.json').read_text())
+    errors.extend(validate_disposition_paths(
+        [dict(name=f'Migration {old}', evidence=new) for old, new in migrations.items()], root))
 
     # Import-only inspection catches stale advanced paths in benchmarks,
     # coefficient tools and conditional test branches without executing them.

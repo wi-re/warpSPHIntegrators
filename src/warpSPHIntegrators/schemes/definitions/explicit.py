@@ -59,7 +59,7 @@ Nystrom5th      = butcherScheme('Nystrom5')
 BogackiShampine = butcherScheme('BogackiShampine')
 DormandPrince   = butcherScheme('DormandPrince')
 CashKarp        = butcherScheme('CashKarp')
-# The OrdinaryDiffEq wave-6 tableaus (SCHEME_EXPANSION_PLAN, 2026-10-13):
+# The OrdinaryDiffEq wave-6 tableaus (docs/development/plan-reconciliation-2026-10-23.md, 2026-10-13):
 # Tsit5 and the LowOrderRK workhorses (embedded pairs first, then fixed-step).
 Tsit5           = butcherScheme('Tsit5')
 OwrenZen3       = butcherScheme('OwrenZen3')
@@ -79,7 +79,7 @@ RKM             = butcherScheme('RKM')
 PSRK4p7q6       = butcherScheme('PSRK4p7q6')
 PSRK3p6q5       = butcherScheme('PSRK3p6q5')
 PSRK3p5q4       = butcherScheme('PSRK3p5q4')
-# The OrdinaryDiffEq wave-7 high-order tableaus (SCHEME_EXPANSION_PLAN,
+# The OrdinaryDiffEq wave-7 high-order tableaus (docs/development/plan-reconciliation-2026-10-23.md,
 # 2026-10-13): the Verner family, Tsitouras's high-order pairs, DP8, and the
 # Feagin symmetric methods.
 Vern6           = butcherScheme('Vern6')
