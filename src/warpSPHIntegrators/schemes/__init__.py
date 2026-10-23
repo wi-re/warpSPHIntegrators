@@ -1,7 +1,8 @@
 """Validated scheme selection, identifiers and family configurations."""
 from importlib import import_module as _import_module
 
-_EXPORTS = {'ConservedLagrangian': ('warpSPHIntegrators.schemes.families.conserved_lagrangian', 'ConservedLagrangian'),
+_EXPORTS = {'ProjectedStep': ('warpSPHIntegrators.schemes.families.projected', 'ProjectedStep'),
+ 'ConservedLagrangian': ('warpSPHIntegrators.schemes.families.conserved_lagrangian', 'ConservedLagrangian'),
  'get_scheme': ('warpSPHIntegrators.schemes.registry', 'get_scheme'),
  'IntegrationScheme': ('warpSPHIntegrators.schemes.model', 'IntegrationScheme'),
  'IntegrationSchemeType': ('warpSPHIntegrators.schemes.enums', 'IntegrationSchemeType'),
