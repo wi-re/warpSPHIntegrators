@@ -19,15 +19,16 @@ animates the state and error curves; hovering or focusing any scheme entry
 highlights its paths. Stability sampling defaults to 512 × 512 and can be raised
 to 2048 × 2048.
 
-The port includes all 142 fixed registered schemes plus 131 parameterized
+The port includes all 142 fixed registered schemes plus 138 parameterized
 configurations. Source coefficients are exported directly, and browser drivers
 are checked against Python fixtures. GPU execution uses float32; the CPU uses
 float64. Auto selects float64 for convergence studies so high orders can be
 resolved before rounding dominates. The GPU paths have explicit state/stage
 budgets, and the interface reports CPU fallback reasons.
 
-This is not a replacement for every Python runtime contract. Variable-order
-Adams/NDF controllers, IRKN history, custom state/lifecycle hooks, general AD,
+This is not a replacement for every Python runtime contract. NDF1–5 and corrected IRKN3/4 run with accepted history on CPU and WebGPU.
+Explicit FSAL tableaus reuse accepted endpoint derivatives on both engines.
+Variable-order Adams/NDF controllers, implicit cache policies, custom state/lifecycle hooks, general AD,
 constraint wrappers, continuous dense output, event location and Python checkpoint
 interchange remain outside the port. Fixed toy RHSs provide analytic Jv/Jᵀv;
 the adjoint view does not claim differentiation through the selected integrator.

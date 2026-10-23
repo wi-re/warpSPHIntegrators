@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {makeProblem,problemCatalog,compatible,norm,tv} from '../src/problems.js';
-import {solveCPU,convergenceCPU,geometryCPU,createStepper,gmres,phiAction,dot,add} from '../src/engine.js';
+import {solveCPU,convergenceCPU,geometryCPU,createStepper,ndfDifferenceTransform,gmres,phiAction,dot,add} from '../src/engine.js';
 import {stabilityValue} from '../src/stability.js';
 const catalog=JSON.parse(fs.readFileSync(new URL('../src/catalog.json',import.meta.url)));
 const get=id=>catalog.schemes.find(s=>s.identifier===id);
@@ -20,6 +20,28 @@ test('GMRES verifies its residual, and scaled phi actions handle stiff decay',()
 test('stability functions agree with known Euler and midpoint values',()=>{assert.equal(stabilityValue(get('forwardEuler'),[-10,0],catalog),9);assert.ok(Math.abs(stabilityValue(get('backwardEuler'),[-10,0],catalog)-1/11)<1e-14);assert.ok(Math.abs(stabilityValue(get('implicitMidpoint'),[-10,0],catalog)-2/3)<1e-14);});
 test('geometry contracts and input budgets fail explicitly',()=>{assert.ok(compatible(get('velocityVerlet'),makeProblem('diffusion')));assert.throws(()=>makeProblem('diffusion',{n:3}));assert.throws(()=>solveCPU(get('rungeKutta4'),makeProblem('oscillator'),catalog,{dt:0,T:1}));assert.throws(()=>solveCPU(get('bdf2'),makeProblem('oscillator'),catalog,{dt:.1,T:1,adaptive:true}));const r=solveCPU(get('rungeKutta4'),makeProblem('oscillator'),catalog,{dt:.01,T:1,maxSteps:2});assert.match(r.failure,/budget/);});
 
-test('133 parameterized and structured exponential runs match Python',()=>{const rows=JSON.parse(fs.readFileSync(new URL('./parameter-reference.json',import.meta.url)));assert.equal(rows.length,133);for(const row of rows){const r=solveCPU(get(row.method),makeProblem(row.problem),catalog,{dt:row.dt,T:row.T,solveTolerance:1e-12,stages:9});assert.equal(r.failure,null,row.method);assert.ok(norm(add(r.y,row.y,-1))<1e-9,`${row.method}: ${norm(add(r.y,row.y,-1))}`);}});
+test('140 parameterized and structured exponential runs match Python',()=>{const rows=JSON.parse(fs.readFileSync(new URL('./parameter-reference.json',import.meta.url)));assert.equal(rows.length,140);for(const row of rows){const r=solveCPU(get(row.method),makeProblem(row.problem),catalog,{dt:row.dt,T:row.T,solveTolerance:1e-12,stages:9});assert.equal(r.failure,null,row.method);assert.ok(norm(add(r.y,row.y,-1))<1e-9,`${row.method}: ${norm(add(r.y,row.y,-1))}`);}});
 test('fixed clocks fit the endpoint and unresolved fine-grid slopes are omitted',()=>{const p=makeProblem('oscillator'),r=solveCPU(get('rungeKutta4'),p,catalog,{dt:.03,T:1});assert.equal(r.t,1);assert.equal(r.accepted,34);assert.equal(r.actualDt,1/34);const study=convergenceCPU(get('gaussLegendre2'),p,catalog,{dt:.04,T:12,levels:6,linearSolver:'dense'});assert.ok(study.numericFloor>study.rows.at(-1).error);assert.equal(study.rows.at(-1).order,null);assert.ok(study.rows.some(row=>row.order>3.8&&row.order<4.2));});
 test('adaptive playback samples remain bounded on long resolved trajectories',()=>{const r=solveCPU(get('dormandPrince'),makeProblem('oscillator',{k:10000}),catalog,{dt:1,T:1,adaptive:true,rtol:1e-10,atol:1e-12,maxSteps:20000});assert.equal(r.failure,null);assert.ok(r.accepted>600);assert.ok(r.trajectory.length<=600);assert.equal(r.trajectory[0].t,0);assert.equal(r.trajectory.at(-1).t,1);});
+
+test('1872 NDF and IRKN endpoints match Python across warm history, resampling and restart',()=>{
+ const rows=JSON.parse(fs.readFileSync(new URL('./history-reference.json',import.meta.url)));assert.equal(rows.length,1872);let stepper,memory,y,t;
+ for(const row of rows){if(row.index===0){const p=makeProblem(row.problem);stepper=createStepper(get(row.method),p,catalog,{linearSolver:'dense',solveTolerance:1e-12});memory={};y=p.y0.slice();t=0;}if(row.restart)memory={};const before=structuredClone(memory),result=stepper.step(y,t,row.h,memory);assert.deepEqual(memory,before,'accepted history must not be mutated by a trial');y=result.y;memory=result.memory;t+=row.h;assert.ok(norm(add(y,row.y,-1))<1e-9,`${row.method} / ${row.problem} / ${row.sequence} / ${row.index}: ${norm(add(y,row.y,-1))}`);assert.ok(Math.abs(t-row.t)<1e-12);}
+});
+test('NDF and IRKN retain their measured orders and enforce mechanics contracts',()=>{
+ for(const id of ['irkn3','irkn4','ndf_1','ndf_2','ndf_3','ndf_4','ndf_5']){const m=get(id),rows=convergenceCPU(m,makeProblem('oscillator'),catalog,{dt:.1,T:2,levels:4,solveTolerance:1e-13,linearSolver:'dense'}).rows;const observed=rows.at(-1).order;assert.ok(Math.abs(observed-m.order)<.3,`${id}: ${observed}`);}
+ for(const id of ['irkn3','irkn4']){assert.match(compatible(get(id),makeProblem('damped')),/velocity-independent/);assert.match(compatible(get(id),makeProblem('diffusion')),/mechanics/);assert.throws(()=>geometryCPU(get(id),makeProblem('oscillator'),catalog),/hidden/);}
+});
+test('history maps restart on changed state/time and NDF transforms preserve polynomials',()=>{
+ for(const id of ['ndf_3','irkn4']){const p=makeProblem('oscillator'),r=createStepper(get(id),p,catalog,{linearSolver:'dense'});let y=p.y0,t=0,memory={};for(let i=0;i<8;i++){const s=r.step(y,t,.05,memory);y=s.y;memory=s.memory;t+=.05;}for(const [z,time]of [[add(y,[.1,0]),t],[y,t+.01]]){const a=r.step(z,time,.05,memory),b=r.step(z,time,.05,{});assert.ok(norm(add(a.y,b.y,-1))<1e-13,id);}}
+ for(let q=1;q<=5;q++){const identity=ndfDifferenceTransform(q,1);identity.forEach((row,i)=>row.forEach((x,j)=>assert.ok(Math.abs(x-(i===j?1:0))<1e-12)));const R=ndfDifferenceTransform(q,1.5),U=ndfDifferenceTransform(q,1/1.5);for(let i=0;i<q;i++)for(let j=0;j<q;j++)assert.ok(Math.abs(R[i].reduce((sum,x,k)=>sum+x*U[k][j],0)-(i===j?1:0))<1e-10);}
+});
+test('adaptive fixed-order NDF rejects coarse trials and reaches a checked stiff endpoint',()=>{
+ for(const id of ['ndf_2','ndf_3','ndf_5']){const p=makeProblem('stiffRelaxation',{rate:100,forcing:'sin'}),r=solveCPU(get(id),p,catalog,{dt:.5,T:2,adaptive:true,rtol:1e-7,atol:1e-10,linearSolver:'dense',solveTolerance:1e-12});assert.equal(r.failure,null,id);assert.equal(r.t,2);assert.ok(r.rejected>0,id);assert.ok(r.error<2e-6,`${id}: ${r.error}`);assert.ok(r.accepted<2000,id);}
+});
+test('explicit FSAL reuses only accepted, matching endpoints including adaptive retries',()=>{
+ const p=makeProblem('damped'),m=get('dormandPrince'),cfg={dt:.05,T:2},cached=solveCPU(m,p,catalog,cfg),cold=solveCPU({...m,fsal:false},p,catalog,cfg);
+ assert.equal(cached.stats.rhs,6*cached.accepted+1);assert.equal(cold.stats.rhs,7*cold.accepted);assert.ok(norm(add(cached.y,cold.y,-1))<1e-13);
+ const adaptive={dt:1,T:4,adaptive:true,rtol:1e-9,atol:1e-12},a=solveCPU(m,p,catalog,adaptive),b=solveCPU({...m,fsal:false},p,catalog,adaptive);assert.ok(a.rejected>0);assert.equal(a.accepted,b.accepted);assert.equal(a.rejected,b.rejected);assert.ok(norm(add(a.y,b.y,-1))<1e-12);assert.equal(b.stats.rhs-a.stats.rhs,a.stats.fsalReuses);
+ const runner=createStepper(m,p,catalog),first=runner.step(p.y0,0,.05),before=runner.stats.rhs;runner.step(add(first.y,[.1,0]),.05,.05,first.memory);assert.equal(runner.stats.rhs-before,7);
+});

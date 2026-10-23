@@ -2,8 +2,8 @@
 export const methodCategories=[
  {id:'explicit',name:'Explicit Runge–Kutta',note:'Classical, embedded and low-storage stages',families:['ExplicitRK','ExpandedRK']},
  {id:'implicit',name:'Implicit Runge–Kutta',note:'DIRK, coupled, collocation and IMEX',families:['DIRK','CoupledRK','Collocation','ParallelDIRK','IMEX']},
- {id:'mechanics',name:'Mechanics & structure',note:'Symplectic splitting, Nyström and structural dynamics',families:['Symplectic','Nystrom','Newmark','GeneralizedAlpha']},
- {id:'multistep',name:'Multistep',note:'Adams, BDF and accepted history',families:['MultistepImplicit','MultistepExplicit']},
+ {id:'mechanics',name:'Mechanics & structure',note:'Symplectic splitting, Nyström and structural dynamics',families:['Symplectic','Nystrom','ImprovedNystrom','Newmark','GeneralizedAlpha']},
+ {id:'multistep',name:'Multistep',note:'Adams, BDF and accepted history',families:['MultistepImplicit','MultistepExplicit','NDF']},
  {id:'stabilized',name:'Stabilized explicit',note:'Chebyshev, Legendre and orthogonal stages',families:['RelaxedChebyshev','StabilizedRK','OrthogonalRK']},
  {id:'rosenbrock',name:'Linearly implicit',note:'Rosenbrock and analytic linear solves',families:['LinearlyImplicit','Rosenbrock']},
  {id:'exponential',name:'Exponential',note:'Linear flows and exponential actions',families:['Exponential','ExponentialRK']},

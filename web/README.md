@@ -56,7 +56,7 @@ The documentation site's `npm run build` also copies the app into its
   Newton–Krylov preset separately demonstrates matrix-free stage solves using Jv.
 
 The presets cover smooth motion, stiff decay, SSP/TVD, nonlinear Kepler motion,
-two-mass structural damping, and Newton–Krylov on viscous Burgers. Every preset
+two-mass structural damping, history methods, and Newton–Krylov on viscous Burgers. Every preset
 and problem selection resets to a tested combination of methods, physical
 parameters and solver options. A description above the plots explains the
 selected problem, initial state and reference. Controls expose
@@ -70,8 +70,8 @@ contain the executed setup, samples, refinement tables, engine, counters and fai
 
 ## Numerical coverage
 
-The checked-in source export contains **142 registered schemes and 131 additional
-configurations**. All 273 configurations have CPU numeric drivers. **242** can
+The checked-in source export contains **142 registered schemes and 138 additional
+configurations**. All 280 configurations have CPU numeric drivers. **249** can
 produce WebGPU kernels for a compatible small mechanics problem; eligibility
 also depends on the particular problem, dimensions and selected options.
 
@@ -79,7 +79,7 @@ The additional configurations cover all 54 ExpandedRK maps; Gauss/Radau
 collocation at 2–9 stages; all 14 Nyström and 14 ExponentialRK configurations;
 three parameterized Rosenbrock maps; Euler/midpoint extrapolation; three bounded
 stage configurations for each OrthogonalRK method; stabilized RKL/RKG; ParallelDIRK;
-and generalized alpha. The 17 toy systems cover all 12 `testing.PROBLEMS`, the
+generalized alpha, NDF1–5 and corrected IRKN3/4. The 17 toy systems cover all 12 `testing.PROBLEMS`, the
 acoustic and drift-field helpers, and the heated and structural examples.
 
 The **Port coverage** view is the maintained user-facing record of limitations:
@@ -95,11 +95,12 @@ The **Port coverage** view is the maintained user-facing record of limitations:
 | Exponential actions | CPU operator programs from source; scaled augmented Taylor actions with explicit budgets, distinct from Python's Arnoldi action policy |
 | General AD | Not available; fixed analytic RHS derivatives only |
 | VariableAdams / AdaptiveAdams | Variable-step and order controllers remain Python-only |
-| NDF / AdaptiveNDF | Modified-difference history/controllers remain Python-only; BDF is a distinct available family |
-| ImprovedNystrom | IRKN3/4 history remains Python-only; ordinary Nyström maps are available |
+| NDF | Orders 1–5, source DIRK startup, owned backward differences and bounded variable-h transforms; CPU defect control with quasi-constant blocks and fixed-step WGSL |
+| AdaptiveNDF | Separate variable-order controller remains Python-only |
+| ImprovedNystrom | Corrected startup and actual IRKN3/4 warm recurrences on CPU and WebGPU; state/time/h changes restart CPU history; separable mechanics with passive extras |
 | Orthogonal stage selection | Three bounded source stage choices per method; no automatic spectral sizing |
 | Application mechanics | Conservative Lagrangian/projection wrappers and custom lifecycle contracts remain Python-only |
-| Runtime | FSAL optimization, dense output, events, Python checkpoints, AlgorithmSwitch, arbitrary FunctionMap and user-defined physical splitting are not ported |
+| Runtime | Implicit FSAL/cache policies, dense output, events, Python checkpoints, AlgorithmSwitch, arbitrary FunctionMap and user-defined physical splitting are not ported |
 | Structured drift quantities | Generic ODE integration is available; drift-aware mechanics hooks for acoustic/drift-field states are not ported |
 
 CPU counts record actual RHS and analytic Jv calls, Newton iterations, direct
@@ -107,7 +108,9 @@ linear solves or GMRES iterations. GPU counts record actual RHS calls, Newton
 iterations and direct solves. These counts have different costs across backends.
 GPU wall time includes batch submission/readback and excludes pipeline compilation;
 convergence batch timings are not individual per-job timings. No speedup is inferred
-from these tiny systems. Browser drivers do not optimize FSAL/cache reuse.
+from these tiny systems. Eleven source-declared explicit FSAL tableaus reuse accepted endpoint derivatives
+on CPU and GPU. CPU trial memory is immutable, so rejected adaptive trials cannot
+replace the accepted cache. Implicit FSAL and other cache policies remain open.
 
 ## Coefficient regeneration and validation
 
@@ -124,11 +127,13 @@ factories directly. Orthogonal source recurrences are expanded using formal
 independent RHS vectors. No method is replaced by a different scheme under its
 original name. The JSON is deterministic and the check detects source drift.
 The reference exporter executes Python drivers, including warm history, to create
-553 independent fixtures.
+560 independent fixtures plus 1,872 accepted NDF/IRKN endpoints covering fixed
+steps, resampling, rapid caller changes and explicit restarts.
 
 `npm test` checks all CPU configurations, fixture parity, cross-family and forced-time
 orders, adaptive rejection, derivative/adjoint actions, Newton–GMRES, SSP stages,
-nonlinear geometry, structural damping and stable exponential actions. Optional
+nonlinear geometry, structural damping, NDF/IRKN history, explicit FSAL reuse
+and stable exponential actions. Optional
 Dawn tests compile all eligible shaders and execute over 340 cross-problem cases:
 
 ```bash

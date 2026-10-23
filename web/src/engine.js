@@ -1,3 +1,4 @@
+import {fsalEligible} from './method-contracts.js';
 import {makeProblem,compatible,norm,tv} from './problems.js';
 export const zeros=n=>Array(n).fill(0);
 export const add=(a,b,c=1)=>a.map((x,i)=>x+c*b[i]);
@@ -50,6 +51,12 @@ export function newton(residual,jvp,initial,opts={},stats={}){
 const AB={1:[1],2:[3/2,-1/2],3:[23/12,-16/12,5/12],4:[55/24,-59/24,37/24,-9/24],5:[1901/720,-2774/720,2616/720,-1274/720,251/720]};
 const AM={1:[1],2:[.5,.5],3:[5/12,8/12,-1/12],4:[9/24,19/24,-5/24,1/24],5:[251/720,646/720,-264/720,106/720,-19/720]};
 const BDF={1:[[1],1],2:[[4/3,-1/3],2/3],3:[[18/11,-9/11,2/11],6/11],4:[[48/25,-36/25,16/25,-3/25],12/25],5:[[300/137,-300/137,200/137,-75/137,12/137],60/137]};
+// Source NDF R(ratio) U transform; rows are old differences, columns new.
+export function ndfDifferenceTransform(order,ratio){
+ if(!Number.isInteger(order)||order<1||order>5||!Number.isFinite(ratio)||ratio<=0)throw Error('Invalid NDF history transform');
+ const matrix=scale=>Array.from({length:order},(_,i)=>Array.from({length:order},(_,j)=>{let x=1;for(let k=1;k<=i+1;k++)x*=((k-1)-(j+1)*scale)/k;return x;}));
+ const R=matrix(ratio),U=matrix(1);return R.map(row=>U[0].map((_,j)=>row.reduce((a,x,k)=>a+x*U[k][j],0)));
+}
 export function createStepper(method,problem,catalog,options={}){
   const issue=compatible(method,problem);if(issue)throw Error(issue);
   const stats={rhs:0,jvp:0,newton:0,linear:0,stageTV:0,stageOvershoot:0,residual:0};
@@ -59,7 +66,7 @@ export function createStepper(method,problem,catalog,options={}){
   const J=(t,y,v,part='full')=>{stats.jvp++;return problem.jvp(t,y,v,part);};
   const lookup=id=>catalog.schemes.find(s=>s.identifier===id);
   function implicit(base,t,c,part='full',guess=base){return newton(z=>add(add(z,base,-1),f(t,z,part),-c),(z,v)=>add(v,J(t,z,v,part),-c),guess,options,stats);}
-  function rk(tab,y,t,h,coupled=false){
+  function rk(tab,y,t,h,coupled=false,cachedFirst=null){
     let k=[],error=null;
     if(coupled){
       const s=tab.c.length,n=y.length;
@@ -69,10 +76,10 @@ export function createStepper(method,problem,catalog,options={}){
       k=tab.c.map((c,i)=>f(t+c*h,stages.slice(i*n,(i+1)*n)));
       if(tab.companion_b){const ext=[f(t,y),...k];error=scale(add(combine(y,h,k,tab.b),combine(y,h,ext,tab.companion_b),-1),1);}
     }else{
-      for(let i=0;i<tab.c.length;i++){let stage=combine(y,h,k,tab.a[i].slice(0,i));if(tab.a[i][i])stage=implicit(stage,t+h*tab.c[i],h*tab.a[i][i]);k.push(f(t+h*tab.c[i],stage));}
+      for(let i=0;i<tab.c.length;i++){if(i===0&&cachedFirst){k.push(cachedFirst);stats.fsalReuses=(stats.fsalReuses??0)+1;observe(y);continue;}let stage=combine(y,h,k,tab.a[i].slice(0,i));if(tab.a[i][i])stage=implicit(stage,t+h*tab.c[i],h*tab.a[i][i]);k.push(f(t+h*tab.c[i],stage));}
       if(tab.bhat)error=combine(zeros(y.length),h,k,tab.b.map((b,i)=>b-tab.bhat[i]));
     }
-    return {y:combine(y,h,k,tab.b),error};
+    return {y:combine(y,h,k,tab.b),error,lastRate:k.at(-1)};
   }
   function ark(tab,y,t,h){const e=[],im=[];for(let i=0;i<tab.c.length;i++){let z=combine(combine(y,h,e,tab.a_explicit[i].slice(0,i)),h,im,tab.a_implicit[i].slice(0,i));if(tab.a_implicit[i][i])z=implicit(z,t+h*tab.c[i],h*tab.a_implicit[i][i],'implicit');e.push(f(t+h*tab.c[i],z,'explicit'));im.push(f(t+h*tab.c[i],z,'implicit'));}
     return {y:combine(combine(y,h,e,tab.b_explicit),h,im,tab.b_implicit),error:combine(combine(zeros(y.length),h,e,tab.b_explicit.map((x,i)=>x-tab.d_explicit[i])),h,im,tab.b_implicit.map((x,i)=>x-tab.d_implicit[i]))};}
@@ -99,6 +106,54 @@ export function createStepper(method,problem,catalog,options={}){
       if(tab.abar)for(let j=m;j<N;j++)for(let l=0;l<i;l++)z[j]+=h*(tab.abar[i][l]||0)*ks[l][j];ks.push(f(t+tab.c[i]*h,z));}
     const z=y.slice(),error=zeros(N);for(let j=0;j<m;j++){z[j]+=h*y[m+j];for(let i=0;i<ks.length;i++){z[j]+=h*h*tab.b[i]*ks[i][m+j];error[j]+=h*h*(tab.btilde[i]||0)*ks[i][m+j];}}
     for(let j=m;j<N;j++)if(j<2*m||tab.abar)for(let i=0;i<ks.length;i++){z[j]+=h*tab.bp[i]*ks[i][j];error[j]+=h*(tab.bptilde[i]||0)*ks[i][j];}f(t+h,z);return {y:z,error:method.estimate_order?error:null};
+  }
+  // Memory describes only accepted endpoints. Trial steps never modify it.
+  function validHistory(memory,y,t){return memory.method===method.identifier&&memory.t!=null&&Math.abs(memory.t-t)<=8*Number.EPSILON*Math.max(1,Math.abs(t))&&memory.current?.length===y.length&&memory.current.every((x,i)=>x===y[i]);}
+  function acceptedMemory(y,t,h,fields){return {...fields,method:method.identifier,current:y.slice(),t,h};}
+  function irkn(y,t,h,memory){
+    const warm=validHistory(memory,y,t)&&Math.abs(memory.h-h)<=1e-12*Math.abs(h),q=method.order,m=problem.m,c=q===3?.5:.25,a21=q===3?1/8:1/32;
+    let initial,second,third=null,z=y.slice();
+    const node=(clock,position)=>{const state=y.slice();for(let j=0;j<m;j++)state[j]=position(j);return f(clock,state);};
+    if(warm){
+      initial=memory.endpoint;
+      second=node(t+c*h,j=>y[j]+c*h*y[m+j]+h*h*a21*(q===3?memory.initial[m+j]:initial[m+j]));
+      if(q===4)third=node(t+.75*h,j=>y[j]+.75*h*y[m+j]+h*h*9/32*second[m+j]);
+      for(let j=0;j<m;j++){
+        z[j]+=h*(1.5*y[m+j]-.5*memory.velocity[j])+h*h*(q===3?5/12:7/24)*(second[m+j]-memory.second[m+j]);
+        z[m+j]+=h*(q===3?2/3*initial[m+j]+1/3*memory.initial[m+j]+5/6*(second[m+j]-memory.second[m+j]):19/18*initial[m+j]-1/18*memory.initial[m+j]-1/6*(second[m+j]-memory.second[m+j]));
+        if(q===4){z[j]+=h*h/8*(third[m+j]-memory.third[m+j]);z[m+j]+=h*11/18*(third[m+j]-memory.third[m+j]);}
+      }
+    }else{
+      initial=f(t,y);const midpoint=node(t+h/2,j=>y[j]+h/2*y[m+j]+h*h/8*initial[m+j]);
+      const endstage=node(t+h,j=>y[j]+h*y[m+j]+h*h/2*midpoint[m+j]);
+      for(let j=0;j<m;j++){z[j]+=h*y[m+j]+h*h/6*(initial[m+j]+2*midpoint[m+j]);z[m+j]+=h/6*(initial[m+j]+4*midpoint[m+j]+endstage[m+j]);}
+      second=node(t+c*h,j=>y[j]+c*h*y[m+j]+h*h*a21*initial[m+j]);
+      if(q===4)third=node(t+.75*h,j=>y[j]+.75*h*y[m+j]+h*h*9/32*second[m+j]);
+    }
+    const endpoint=f(t+h,z);return {y:z,memory:acceptedMemory(z,t+h,h,{initial,second,third,endpoint,velocity:y.slice(m,2*m)}),phase:warm?'warm':'startup'};
+  }
+  function ndf(y,t,h,memory){
+    const q=method.order,ratio=h/(memory.h??h),changed=memory.h!=null&&Math.abs(h-memory.h)>1e-12*Math.abs(h),valid=validHistory(memory,y,t)&&ratio>=(1-1e-12)/method.max_step_ratio&&ratio<=method.max_step_ratio*(1+1e-12)&&!(memory.phase==='warm'&&changed&&memory.constantSteps<q+1);
+    const prior=valid?memory:null,constantSteps=valid&&!changed?memory.constantSteps+1:1;let z,error,differences,phase='startup',starts=prior?.starts??[],estimateOrder=method.startup_estimate_order;
+    if(prior?.phase==='warm'){
+      differences=prior.differences.map(row=>row.slice());
+      if(h!==prior.h){const transform=ndfDifferenceTransform(q,ratio),old=differences.slice(0,q);for(let j=0;j<q;j++)differences[j]=combine(zeros(y.length),1,old,transform.map(row=>row[j]));}
+      const prediction=combine(y,1,differences.slice(0,q),Array(q).fill(1)),harmonic=Array.from({length:q},(_,i)=>Array.from({length:i+1},(_,j)=>1/(j+1)).reduce((a,b)=>a+b,0));
+      const known=combine(prediction,-method.beta,differences.slice(0,q),harmonic);
+      z=implicit(known,t+h,h*method.beta,'full',prediction);const correction=add(z,prediction,-1);
+      error=scale(correction,method.error_constant);estimateOrder=method.estimate_order;
+      differences[q+1]=add(correction,differences[q],-1);differences[q]=correction;
+      for(let j=q-1;j>=0;j--)differences[j]=add(differences[j],differences[j+1]);phase='warm';starts=[];
+    }else{
+      const result=rk(lookup(method.starter).tableau,y,t,h);z=result.y;error=q===1?add(z,add(y,f(t,y),h),-1):result.error;
+      starts=[...starts,{t,y:y.slice()}];
+      if(starts.length>=q){
+        const values=[z,...starts.slice(-q).map(entry=>entry.y).reverse()],nodes=[0,...starts.slice(-q).map(entry=>(entry.t-(t+h))/h).reverse()];
+        let virtual=[z];for(let j=1;j<=q;j++){let value=z.slice();for(let i=0;i<nodes.length;i++){let weight=1;for(let k=0;k<nodes.length;k++)if(k!==i)weight*=(-j-nodes[k])/(nodes[i]-nodes[k]);value=add(value,add(values[i],z,-1),weight);}virtual.push(value);}
+        differences=[];for(let j=0;j<q;j++){virtual=virtual.slice(0,-1).map((v,i)=>add(v,virtual[i+1],-1));differences.push(virtual[0]);}differences.push(zeros(y.length),zeros(y.length));phase='warm';starts=[];
+      }
+    }
+    f(t+h,z);return {y:z,error,estimateOrder,memory:acceptedMemory(z,t+h,h,{differences,phase,starts,constantSteps})};
   }
   function structural(y,t,h,memory){
     const m=problem.m,rho=options.rhoInfinity??.5,isAlpha=method.identifier==='generalizedAlpha',am=isAlpha?(2*rho-1)/(rho+1):0,af=isAlpha?rho/(rho+1):0,gamma=isAlpha?.5-am+af:options.gamma??.5,beta=isAlpha?(1-am+af)**2/4:options.beta??.25;
@@ -166,10 +221,12 @@ export function createStepper(method,problem,catalog,options={}){
   function step(y,t,h,memory={}){
     let r;
     switch(method.kind){
-      case 'rk':r=rk(method.tableau,y,t,h);break;
+      case 'rk':{const reuse=fsalEligible(method),cached=reuse&&validHistory(memory,y,t)?memory.fsal:null;r=rk(method.tableau,y,t,h,false,cached);if(reuse)r.memory=acceptedMemory(r.y,t+h,h,{fsal:r.lastRate});break;}
       case 'coupled':r=rk(method.tableau,y,t,h,true);break;
       case 'ark':r=ark(method.tableau,y,t,h);break;
       case 'mechanics':r=mechanics(method.identifier,y,t,h);break;
+      case 'irkn':r=irkn(y,t,h,memory);break;
+      case 'ndf':r=ndf(y,t,h,memory);break;
       case 'nystrom':r=nystrom(method.tableau,y,t,h);break;
       case 'newmark':r=structural(y,t,h,memory);break;
       case 'recurrence':r=recurrence(y,t,h);break;
@@ -209,7 +266,7 @@ export function solveCPU(method,problem,catalog,config={}){
     let ratio=0;
     if(config.adaptive){if(!result.error)throw Error('Driver returned no error estimate');ratio=Math.sqrt(result.error.reduce((s,x,i)=>s+(x/(atol+rtol*Math.max(Math.abs(y[i]),Math.abs(result.y[i]))))**2,0)/y.length);if(!Number.isFinite(ratio))ratio=Infinity;}
     if(!config.adaptive||ratio<=1){y=result.y;t=config.adaptive?Math.min(T,t+h):Math.min(T,(accepted+1)*h);memory=result.memory;accepted++;if(accepted%stride===0||t>=T-1e-13)record();}else rejected++;
-    if(config.adaptive)h*=Math.max(.2,Math.min(5,.9*Math.max(ratio,1e-14)**(-1/method.estimate_order)));
+    if(config.adaptive){const proposal=h*Math.max(.2,Math.min(5,.9*Math.max(ratio,1e-14)**(-1/(result.estimateOrder??method.estimate_order))));h=method.kind==='ndf'&&ratio<=1&&(memory.constantSteps<method.order+1||(proposal/h>=1&&proposal/h<=1.5))?h:proposal;}
   }
   const endReference=problem.exact?.(t),error=endReference?norm(add(y,endReference,-1))/Math.sqrt(y.length):null;
   return {method:method.identifier,name:method.friendly_name??method.name,order:method.order,backend:'CPU · float64',precision:'f64',trajectory,y,t,accepted,rejected,attempts,error,failure,elapsed:performance.now()-start,stats:runner.stats,actualDt:config.adaptive?null:T/Math.ceil(T/dt)};
@@ -223,7 +280,7 @@ export function convergenceCPU(method,problem,catalog,config={}){
 }
 export function geometryCPU(method,problem,catalog,config={}){
   if(!problem.mechanics||!problem.separable||problem.y0.length!==2*problem.m)throw Error('Use harmonic oscillator, Kepler, structural or forced mechanics for the canonical form test');
-  if(['history','imex-history','newmark'].includes(method.kind))throw Error('The one-step canonical form test does not apply to methods with hidden acceleration/history state');
+  if(['history','imex-history','newmark','ndf','irkn'].includes(method.kind))throw Error('The one-step canonical form test does not apply to methods with hidden acceleration/history state');
   const y=problem.y0,m=problem.m,N=y.length,h=config.dt??.1,epsilon=1e-5;const columns=y.map((_,j)=>{const a=y.slice(),b=y.slice();a[j]+=epsilon;b[j]-=epsilon;const A=createStepper(method,problem,catalog,config).step(a,0,h).y,B=createStepper(method,problem,catalog,config).step(b,0,h).y;return scale(add(A,B,-1),1/(2*epsilon));});
   const omega=(a,b)=>a.slice(0,m).reduce((s,x,i)=>s+x*b[m+i]-a[m+i]*b[i],0);let defect=0;for(let i=0;i<N;i++)for(let j=0;j<N;j++){const target=i<m&&j===m+i?1:j<m&&i===m+j?-1:0;defect+=(omega(columns[i],columns[j])-target)**2;}
   return {defect:Math.sqrt(defect),epsilon,dt:h,description:'Frobenius norm of DΦᵀ Ω DΦ − Ω; central differences of the numerical step map.'};

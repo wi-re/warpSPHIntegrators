@@ -79,3 +79,37 @@ replacement mode, preserving comparison slots and rejecting duplicates. Hover
 and keyboard focus synchronize the right-hand inspector with path highlighting.
 Browser checks cover adding, replacing, filtering, incompatible cards, keyboard
 close/focus return and inspector synchronization; existing CPU checks pass.
+
+## GitHub Pages and history-family expansion
+
+Published the laboratory through the existing documentation workflow at
+https://fluids.dev/warpSPHIntegrators/laboratory/. The first deployment is commit
+`2d85c5996c27b7ff97df3681d7a8fb3004559df5`; build/deploy workflow 39926276921 passed.
+
+Added seven source-derived maps: fixed-target NDF1–5 and corrected IRKN3/4.
+NDF preserves the Python DIRK startup, backward-difference warm update, bounded
+R(ratio)U resampling, invalidation/restart rules and quasi-constant CPU adaptive
+defect policy. IRKN preserves corrected physical startup nodes and cached warm
+acceleration recurrences. Accepted trial memory is never mutated. Both families
+have real fixed-step WGSL drivers. The canonical reduced two-form diagnostic
+rejects these hidden-history methods. Variable-order AdaptiveNDF remains separate.
+
+Python parity covers 1,872 individual history endpoints for oscillator, forced
+motion, Kepler and damped mechanics, with fixed, resampled, rapidly changed and
+explicitly restarted histories. CPU checks also cover measured convergence,
+contract rejection, adaptive stiff relaxation, transform inversion and state/time
+invalidation. The catalog now has 280 configurations, 249 eligible oscillator
+shaders. Existing parameterized fixtures increased to 140 (560 total short runs).
+
+Eleven source-declared explicit FSAL tableaus now reuse accepted endpoint rates
+on both engines. Tests compare cached/uncached trajectories and counters, ensure
+adaptive rejection cannot poison the cache, and invalidate changed state/time.
+Implicit FSAL and general lifecycle caches remain explicitly unported.
+
+The expanded suite passes all 32 tests with Dawn/Vulkan enabled: 249 eligible
+oscillator shaders compile, the cross-problem execution gate remains green,
+and batched long NDF/IRKN histories plus exact explicit-FSAL work counts pass.
+Browser inspection confirms all four History methods demo results complete and
+the coverage page exposes the new families without classifying variable-order
+controllers or general lifecycle contracts as implemented. Production docs build
+and clean-checkout Python coefficient/reference checks pass.

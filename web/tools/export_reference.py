@@ -32,7 +32,7 @@ path=ROOT/'web/tests/python-reference.json';save_or_check(path,out);print(f'{len
 # Parameterized backends and the two structured exponential registry entries.
 import torch
 from warpSPHIntegrators.schemes import get_scheme
-from warpSPHIntegrators.schemes.families import expanded_rk,collocation,nystrom,linearized,extrapolation,parallel_dirk,generalized_alpha,stabilized,exponential_rk,orthogonal
+from warpSPHIntegrators.schemes.families import expanded_rk,collocation,nystrom,linearized,extrapolation,parallel_dirk,generalized_alpha,stabilized,exponential_rk,orthogonal,ndf,improved_nystrom
 from warpSPHIntegrators.adapters.rhs import SemilinearRHS
 from warpSPHIntegrators.testing import ParticleUpdate
 catalog=json.loads((ROOT/'web/src/catalog.json').read_text());extra=[]
@@ -46,6 +46,8 @@ for item in catalog['schemes']:
  elif id.startswith('rosenbrock_'):scheme=linearized.Rosenbrock(id.removeprefix('rosenbrock_'))
  elif id.startswith('extrapolation_'):
   _,base,order=id.split('_');scheme=extrapolation.Extrapolation(base,int(order))
+ elif id.startswith('ndf_'):scheme=ndf.NDF(item['order'])
+ elif id.startswith('irkn'):scheme=improved_nystrom.ImprovedNystrom(item['order'])
  elif id=='pdirk44':scheme=parallel_dirk.ParallelDIRK()
  elif id=='generalizedAlpha':scheme=generalized_alpha.GeneralizedAlpha(.5)
  elif id.startswith('stabilized_'):scheme=stabilized.StabilizedRK(id.removeprefix('stabilized_'),stages=9)
@@ -66,3 +68,23 @@ for item in catalog['schemes']:
   result=scheme(state,.025,rhs,**kwargs);state=result.state;history=result.history
  ref=get_reference_state(state);extra.append(dict(problem='oscillator',method=id,dt=.025,T=.15,y=[*ref.x.tolist(),*ref.u.tolist()]))
 save_or_check(ROOT/'web/tests/parameter-reference.json',extra);print(f'{len(extra)} parameterized/structured Python fixtures')
+
+# History-sensitive parity includes every accepted endpoint and caller step changes.
+from warpSPHIntegrators.testing import kepler_problem
+history_rows=[]
+sequences={'fixed':[.025]*16,'resample':[.025]*8+[.0375]*8+[.01875]*8,
+    'rapid':[.02,.025,.03,.015]*4,'restart':[.025]*16}
+for item in catalog['schemes']:
+ if item['kind'] not in ('ndf','irkn'):continue
+ for pid,factory in [('oscillator',oscillator_problem),('forced',forced_problem),('kepler',kepler_problem),('damped',damped_problem)]:
+  if item['kind']=='irkn' and pid=='damped':continue
+  for name,steps in sequences.items():
+   method=ndf.NDF(item['order']) if item['kind']=='ndf' else improved_nystrom.ImprovedNystrom(item['order'])
+   problem=factory();state=problem.initial();memory=None
+   for index,h in enumerate(steps):
+    restart=name=='restart' and index==8
+    result=method(state,h,problem.rhs,history=memory,restart_history=restart,solver=JFNKSolver(tol=1e-13,newton_tol=1e-12))
+    state=result.state;memory=result.history;ref=get_reference_state(state)
+    history_rows.append(dict(method=item['identifier'],problem=pid,sequence=name,index=index,h=h,restart=restart,
+        t=float(state.t),y=[*ref.x.tolist(),*ref.u.tolist()]))
+save_or_check(ROOT/'web/tests/history-reference.json',history_rows);print(f'{len(history_rows)} history endpoint fixtures')

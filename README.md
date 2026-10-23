@@ -745,14 +745,14 @@ large operator.
 
 The [browser laboratory](https://fluids.dev/warpSPHIntegrators/laboratory/) runs
 real WebGPU kernels with a float64 CPU fallback. Compare the toy problems and all
-142 registered schemes, plus 131 parameterized configurations; inspect trajectories,
+142 registered schemes, plus 138 parameterized configurations; inspect trajectories,
 convergence, SSP/TVD stages, nonlinear symplectic structure and analytic derivative
 actions. The in-app coverage report lists the Python-only runtime contracts.
 
 Serve locally with `cd web && npm run dev`. See the
 [browser README](web/README.md) for capabilities, validation and coefficient export.
 
-![Browser laboratory convergence study](docs/assets/browser-laboratory.jpg)
+![Browser laboratory with synchronized trajectory plots](docs/assets/browser-laboratory.jpg)
 
 ## Documentation and development
 

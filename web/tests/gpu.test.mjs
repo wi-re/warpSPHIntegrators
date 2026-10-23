@@ -19,3 +19,14 @@ test('structural Newmark and generalized alpha complete long GPU runs at default
   const energyDrift=g.trajectory.map(s=>s.energy/p.energy(p.y0)-1);if(id==='newmark'||rhoInfinity===1)assert.ok(Math.max(...energyDrift.map(Math.abs))<.002);
  }}finally{device.destroy();}
 });
+test('NDF and corrected IRKN preserve warm GPU history across batched trajectories',{skip:!binding},async()=>{
+ const {create,globals}=await import(pathToFileURL(binding));Object.assign(globalThis,globals);const gpu=create([`backend=${process.env.DAWN_BACKEND??'vulkan'}`]),device=await(await gpu.requestAdapter()).requestDevice(),engine=new GPUEngine(device);
+ try{for(const id of ['ndf_1','ndf_2','ndf_3','ndf_4','ndf_5','irkn3','irkn4'])for(const pid of ['oscillator','forced','kepler',...(id.startsWith('ndf')?['stiffRelaxation']:[])]){
+  const m=catalog.schemes.find(m=>m.identifier===id),p=makeProblem(pid,{rate:100,forcing:'sin'}),configs=[.025,.0125,.00625].map(dt=>({T:1,dt,linearSolver:'dense',solveTolerance:1e-6})),batch=await engine.solve(m,p,catalog,configs);
+  for(let i=0;i<batch.length;i++){const g=batch[i],c=solveCPU(m,p,catalog,{...configs[i],solveTolerance:1e-12});assert.equal(g.failure,null,`${id}/${pid}`);assert.equal(c.failure,null);assert.ok(norm(add(g.y,c.y,-1))<1e-3*Math.max(1,norm(c.y)),`${id}/${pid}: ${norm(add(g.y,c.y,-1))}`);assert.equal(g.accepted,c.accepted);}
+ }}finally{device.destroy();}
+});
+test('GPU explicit FSAL saves one RHS per accepted step after the first',{skip:!binding},async()=>{
+ const {create,globals}=await import(pathToFileURL(binding));Object.assign(globalThis,globals);const gpu=create([`backend=${process.env.DAWN_BACKEND??'vulkan'}`]),device=await(await gpu.requestAdapter()).requestDevice(),engine=new GPUEngine(device);
+ try{const m=catalog.schemes.find(m=>m.identifier==='dormandPrince'),p=makeProblem('damped'),cfg={T:2,dt:.025},[g]=await engine.solve(m,p,catalog,[cfg]),c=solveCPU(m,p,catalog,cfg);assert.equal(g.failure,null);assert.equal(g.stats.rhs,6*g.accepted+1);assert.ok(norm(add(g.y,c.y,-1))<1e-4);}finally{device.destroy();}
+});

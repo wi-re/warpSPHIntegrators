@@ -6,6 +6,7 @@ export const presets={
  ssp:{problem:'advectionStep',mode:'ssp',methods:['tvdRK3','ssprk104','rungeKutta4','rungeKutta2'],config:{dt:.0125,T:.5},params:{n:64,speed:1}},
  orbit:{problem:'kepler',mode:'geometry',methods:['rungeKutta4','velocityVerlet','pefrl','implicitMidpoint'],config:{dt:.12,T:80}},
  modes:{problem:'structural',mode:'trajectory',methods:['newmark','generalizedAlpha','rungeKutta4','radauIia3'],config:{dt:.05,T:12}},
+ history:{problem:'oscillator',mode:'trajectory',methods:['ndf_3','irkn3','irkn4','rungeKutta4'],config:{dt:.05,T:6},params:{k:4}},
  jfnk:{problem:'viscousBurgers',mode:'trajectory',methods:['backwardEuler','trbdf2','ark324l2sa','bdf2'],config:{dt:.01,T:.5,backend:'cpu',linearSolver:'gmres'},params:{n:32,nu:.04}},
 };
 export const problemSetups={

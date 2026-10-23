@@ -103,12 +103,23 @@ for name in ('ROCK2','ROCK4','SERK2','RKMC2'):
         tab=dict(a=[row[:count].tolist() for row in rows],b=final[:count].tolist(),bhat=(final-error)[:count].tolist(),c=list(coeff.c))
         if len(tab['c'])<count:tab['c'].append(1.)
         add(f'orthogonal_{name}_{stages}',f'{name} · {stages} stages','OrthogonalRK',method.order,'rk',tableau=tab,estimate_order=method.estimate_order)
+# Fixed-target NDF and corrected-startup IRKN are independent history maps.
+from warpSPHIntegrators.schemes.families.ndf import NDF
+for order in range(1,6):
+    method=NDF(order)
+    add(f'ndf_{order}',method.name,'NDF',order,'ndf',implicit=True,
+        estimate_order=method.estimate_order,history_length=order,kappa=method.kappa,
+        beta=method.beta,error_constant=method.error_constant,max_step_ratio=method.max_step_ratio,
+        starter={1:'trbdf2',2:'trbdf2',3:'esdirk324l2sa',4:'kencarp4',5:'kencarp5'}[order],
+        startup_estimate_order={1:2,2:3,3:3,4:4,5:5}[order])
+for order in (3,4):
+    add(f'irkn{order}',f'Improved Nyström {order} (corrected startup)','ImprovedNystrom',order,
+        'irkn',state_kind='second_order',requires_separable=True,history_length=1)
 out['exponentialPrograms']=clean(PROGRAMS)
 out['portGaps']=[
  {'family':'AdaptiveAdams / VariableAdams','reason':'Variable-step and variable-order history controllers are not ported. Fixed AB/ABM orders 2–5 are available.'},
- {'family':'NDF / AdaptiveNDF','reason':'Modified difference history and controller policies are not ported; BDF1–5 are available as distinct methods.'},
+ {'family':'AdaptiveNDF','reason':'Fixed-target NDF1–5 with variable-h differences and defect control are available. The separate variable-order AdaptiveNDF controller is not yet ported.'},
  {'family':'OrthogonalRK stage selection','reason':'Source recurrences are expanded at three bounded stage configurations per method. Automatic spectral stage selection and larger source stage counts are not ported.'},
- {'family':'ImprovedNystrom','reason':'IRKN3/4 history recurrences are not ported; ordinary Nyström configurations are available.'},
  {'family':'ConservedLagrangian / ProjectedStep','reason':'Custom constrained mechanics and application-defined projection contracts are not ported.'},
  {'family':'State lifecycle / AD','reason':'Browser states use fixed numeric layouts. Arbitrary Python callbacks, autograd graphs, custom lifecycle hooks, checkpoint compatibility and particle reordering are not portable.'}]
 text=json.dumps(clean(out),indent=None,separators=(',',':'),allow_nan=False)+'\n'

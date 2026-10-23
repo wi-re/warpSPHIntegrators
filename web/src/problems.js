@@ -95,8 +95,8 @@ export function makeProblem(id,options={}) {
   return {...meta,p,y0,rhs,jvp,vjp,ft,exact,energy,m,mechanics:mech,separable,linear,spectral,grid:meta.type==='pde',feLimit:id.startsWith('advection')?1/(p.speed*n):id==='burgers'?1/n:null};
 }
 export function compatible(method,problem){
-  if(['mechanics','newmark','nystrom','splitting'].includes(method.kind)&&!problem.mechanics)return 'Requires a position/velocity mechanics problem';
-  if(method.kind==='nystrom'&&method.requires_separable&&!problem.separable)return 'Requires velocity-independent forces and passive extra fields';
+  if(['mechanics','newmark','nystrom','irkn','splitting'].includes(method.kind)&&!problem.mechanics)return 'Requires a position/velocity mechanics problem';
+  if(['nystrom','irkn'].includes(method.kind)&&method.requires_separable&&!problem.separable)return 'Requires velocity-independent forces and passive extra fields';
   if(method.kind==='splitting'&&!['oscillator','damped','heated','stiffDampedOscillator','kepler','structural'].includes(problem.id))return 'Requires declared exact physical flows';
   if(method.kind==='exponential'&&(method.identifier==='etd2rk'||['LawsonEuler','NorsettEuler','ETDRK2','ETDRK3','ETDRK4','HochOst4'].includes(method.program))&&!problem.linear&&problem.id!=='viscousBurgers')return 'Requires a declared constant linear operator';
   if(method.kind==='functionmap'&&!problem.exact)return 'Requires a known analytic flow';

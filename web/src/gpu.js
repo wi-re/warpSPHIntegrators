@@ -1,3 +1,4 @@
+import {fsalEligible} from './method-contracts.js';
 import {makeProblem,compatible,norm,tv} from './problems.js';
 const f=x=>{if(!Number.isFinite(x))throw Error('Nonfinite shader constant');const s=Number(x).toPrecision(17);return s.includes('.')||s.includes('e')?s:s+'.0';};
 const arr=(name,a)=>`const ${name}=array<f32,${a.length}>(${a.map(f).join(',')});`;
@@ -9,7 +10,7 @@ export function gpuSupport(method,problem,config={}){
   if(method.kind==='coupled'&&method.tableau.c.length*problem.y0.length>48)return 'Coupled stages exceed the GPU dense Newton budget (48 unknowns)';
   if(config.linearSolver==='gmres'&&method.implicit)return 'Matrix-free Newton–GMRES is implemented on the CPU engine';
   if(method.kind==='newmark'&&problem.y0.length>2*problem.m)return 'Coupled structural quantities currently use the CPU engine';
-  if(!['rk','coupled','ark','mechanics','history','imex-history','recurrence','nystrom','newmark','ros3p'].includes(method.kind))return 'No WebGPU kernel for this driver';
+  if(!['rk','coupled','ark','mechanics','history','imex-history','recurrence','nystrom','newmark','ros3p','ndf','irkn'].includes(method.kind))return 'No WebGPU kernel for this driver';
   return null;
 }
 function problemWGSL(problem){
@@ -43,12 +44,12 @@ fn rhs(t:f32,y:Vec,part:u32)->Vec{rhsCount++;observe(y);return raw(t,y,part);}
 fn jvp(t:f32,y:Vec,v:Vec,part:u32)->Vec{var z:Vec;${split}${jac}return z;}
 fn partial(t:f32)->Vec{var z:Vec;${ft}return z;}`;
 }
-function rkFunction(name,tab){const S=tab.c.length,explicit=tab.a.every((row,i)=>row[i]===0);
- return `${arr(name+'A',tab.a.flat())}${arr(name+'B',tab.b)}${arr(name+'C',tab.c)}
-fn ${name}(y:Vec,t:f32,h:f32)->Vec{var k:array<Vec,${S}>;
-for(var i=0u;i<${S}u;i++){var z=y;for(var j=0u;j<i;j++){z=vadd(z,k[j],h*${name}A[i*${S}u+j]);}
+function rkFunction(name,tab,fsal=false){const S=tab.c.length,explicit=tab.a.every((row,i)=>row[i]===0);
+ return `${fsal?'var<private> fsalRate:Vec;':''}${arr(name+'A',tab.a.flat())}${arr(name+'B',tab.b)}${arr(name+'C',tab.c)}
+fn ${name}(y:Vec,t:f32,h:f32${fsal?',reuse:bool':''})->Vec{var k:array<Vec,${S}>;
+for(var i=0u;i<${S}u;i++){${fsal?'if(i==0u&&reuse){k[0]=fsalRate;observe(y);continue;}':''}var z=y;for(var j=0u;j<i;j++){z=vadd(z,k[j],h*${name}A[i*${S}u+j]);}
 ${explicit?'':`if(${name}A[i*${S}u+i]!=0.0){z=implicit(z,z,t+h*${name}C[i],h*${name}A[i*${S}u+i],0u);}`}
-k[i]=rhs(t+h*${name}C[i],z,0u);}var result=y;for(var j=0u;j<${S}u;j++){result=vadd(result,k[j],h*${name}B[j]);}return result;}`;
+k[i]=rhs(t+h*${name}C[i],z,0u);}var result=y;for(var j=0u;j<${S}u;j++){result=vadd(result,k[j],h*${name}B[j]);}${fsal?`fsalRate=k[${S-1}u];`:''}return result;}`;
 }
 function implicitWGSL(N){return `
 fn implicit(base:Vec,seed:Vec,t:f32,c:f32,part:u32)->Vec{
@@ -84,7 +85,7 @@ fn advance(y:Vec,t:f32,h:f32,index:u32)->Vec{
 export function shaderSource(method,problem,catalog,config={}){
   const support=gpuSupport(method,problem,config);if(support)throw Error(support);
   const N=problem.y0.length,m=problem.m,lookup=id=>catalog.schemes.find(s=>s.identifier===id);let functions='',advance='';
-  if(method.kind==='rk'){functions=rkFunction('rkmain',method.tableau);advance='return rkmain(y,t,h);';}
+  if(method.kind==='rk'){const fsal=fsalEligible(method);functions=rkFunction('rkmain',method.tableau,fsal);advance=`return rkmain(y,t,h${fsal?',index>0u':''});`;}
   if(method.kind==='coupled')functions=coupledWGSL(method.tableau,N);
   if(method.kind==='ark'){const tab=method.tableau,S=tab.c.length;functions=[arr('ae',tab.a_explicit.flat()),arr('ai',tab.a_implicit.flat()),arr('be',tab.b_explicit),arr('bi',tab.b_implicit),arr('clock',tab.c)].join('');advance=`var e:array<Vec,${S}>;var im:array<Vec,${S}>;for(var i=0u;i<${S}u;i++){var z=y;for(var j=0u;j<i;j++){z=vadd(vadd(z,e[j],h*ae[i*${S}u+j]),im[j],h*ai[i*${S}u+j]);}if(ai[i*${S}u+i]!=0.0){z=implicit(z,z,t+h*clock[i],h*ai[i*${S}u+i],1u);}e[i]=rhs(t+h*clock[i],z,2u);im[i]=rhs(t+h*clock[i],z,1u);}var z=y;for(var j=0u;j<${S}u;j++){z=vadd(vadd(z,e[j],h*be[j]),im[j],h*bi[j]);}return z;`;}
   if(method.kind==='mechanics'){
@@ -95,6 +96,20 @@ export function shaderSource(method,problem,catalog,config={}){
     else {const xi=id==='pefrl'?.1786178958448091:.1720865590295143,lambda=id==='pefrl'?-.2123418310626054:-.09156203075515678,chi=id==='pefrl'?-.06626458266981849:-.1616217622107222,drift=id==='pefrl'?[xi,chi,1-2*(xi+chi),chi,xi]:[(1-2*lambda)/2,lambda,lambda,(1-2*lambda)/2],kick=id==='pefrl'?[(1-2*lambda)/2,lambda,lambda,(1-2*lambda)/2]:[xi,chi,1-2*(xi+chi),chi,xi];functions=arr('drifts',drift)+arr('kicks',kick);advance='var z=y;var clock=t;';if(id==='pefrl')advance+=`for(var i=0u;i<5u;i++){for(var j=0u;j<${m}u;j++){z[j]+=h*drifts[i]*z[j+${m}u];}clock+=h*drifts[i];if(i<4u){let k=rhs(clock,z,0u);for(var j=${m}u;j<N;j++){z[j]+=h*kicks[i]*k[j];}}}`;else advance+=`for(var i=0u;i<5u;i++){let k=rhs(clock,z,0u);for(var j=${m}u;j<N;j++){z[j]+=h*kicks[i]*k[j];}if(i<4u){for(var j=0u;j<${m}u;j++){z[j]+=h*drifts[i]*z[j+${m}u];}clock+=h*drifts[i];}}`;advance+='return z;';}
   }
   if(method.kind==='nystrom'){const a=method.tableau,S=a.c.length;functions=arr('na',a.a.map(row=>[...row,...Array(S-row.length).fill(0)]).flat())+arr('nc',a.c)+arr('nb',a.b)+arr('np',a.bp)+(a.abar?arr('nv',a.abar.map(row=>[...row,...Array(S-row.length).fill(0)]).flat()):'');advance=`var ks:array<Vec,${S}>;for(var i=0u;i<${S}u;i++){var z=y;for(var j=0u;j<${m}u;j++){z[j]+=h*nc[i]*y[j+${m}u];for(var l=0u;l<i;l++){z[j]+=h*h*na[i*${S}u+l]*ks[l][j+${m}u];}}${a.abar?`for(var j=${m}u;j<N;j++){for(var l=0u;l<i;l++){z[j]+=h*nv[i*${S}u+l]*ks[l][j];}}`:''}ks[i]=rhs(t+h*nc[i],z,0u);}var z=y;for(var j=0u;j<${m}u;j++){z[j]+=h*y[j+${m}u];for(var i=0u;i<${S}u;i++){z[j]+=h*h*nb[i]*ks[i][j+${m}u];}}for(var j=${m}u;j<${a.abar?'N':2*m+'u'};j++){for(var i=0u;i<${S}u;i++){z[j]+=h*np[i]*ks[i][j];}}return z;`;}
+  if(method.kind==='irkn'){
+    const q=method.order,c=q===3?.5:.25,a=q===3?1/8:1/32;
+    functions='var<private> irInitial:Vec;var<private> irSecond:Vec;var<private> irThird:Vec;var<private> irEndpoint:Vec;var<private> irVelocity:Vec;';
+    advance=`var z=y;var initial:Vec;var second:Vec;var third:Vec;
+if(index==0u){initial=rhs(t,y,0u);var stage=y;for(var j=0u;j<${m}u;j++){stage[j]=y[j]+h/2.0*y[j+${m}u]+h*h/8.0*initial[j+${m}u];}let midpoint=rhs(t+h/2.0,stage,0u);stage=y;for(var j=0u;j<${m}u;j++){stage[j]=y[j]+h*y[j+${m}u]+h*h/2.0*midpoint[j+${m}u];}let endstage=rhs(t+h,stage,0u);for(var j=0u;j<${m}u;j++){z[j]+=h*y[j+${m}u]+h*h/6.0*(initial[j+${m}u]+2.0*midpoint[j+${m}u]);z[j+${m}u]+=h/6.0*(initial[j+${m}u]+4.0*midpoint[j+${m}u]+endstage[j+${m}u]);}stage=y;for(var j=0u;j<${m}u;j++){stage[j]=y[j]+${f(c)}*h*y[j+${m}u]+h*h*${f(a)}*initial[j+${m}u];}second=rhs(t+${f(c)}*h,stage,0u);${q===4?`stage=y;for(var j=0u;j<${m}u;j++){stage[j]=y[j]+0.75*h*y[j+${m}u]+h*h*9.0/32.0*second[j+${m}u];}third=rhs(t+0.75*h,stage,0u);`:''}
+}else{initial=irEndpoint;var stage=y;for(var j=0u;j<${m}u;j++){stage[j]=y[j]+${f(c)}*h*y[j+${m}u]+h*h*${f(a)}*${q===3?'irInitial':'initial'}[j+${m}u];}second=rhs(t+${f(c)}*h,stage,0u);${q===4?`stage=y;for(var j=0u;j<${m}u;j++){stage[j]=y[j]+0.75*h*y[j+${m}u]+h*h*9.0/32.0*second[j+${m}u];}third=rhs(t+0.75*h,stage,0u);`:''}
+for(var j=0u;j<${m}u;j++){z[j]+=h*(1.5*y[j+${m}u]-0.5*irVelocity[j])+h*h*${f(q===3?5/12:7/24)}*(second[j+${m}u]-irSecond[j+${m}u]);z[j+${m}u]+=h*(${q===3?`2.0/3.0*initial[j+${m}u]+1.0/3.0*irInitial[j+${m}u]+5.0/6.0*(second[j+${m}u]-irSecond[j+${m}u])`:`19.0/18.0*initial[j+${m}u]-1.0/18.0*irInitial[j+${m}u]-1.0/6.0*(second[j+${m}u]-irSecond[j+${m}u])`});${q===4?`z[j]+=h*h/8.0*(third[j+${m}u]-irThird[j+${m}u]);z[j+${m}u]+=h*11.0/18.0*(third[j+${m}u]-irThird[j+${m}u]);`:''}}}
+irInitial=initial;irSecond=second;irThird=third;irEndpoint=rhs(t+h,z,0u);for(var j=0u;j<${m}u;j++){irVelocity[j]=y[j+${m}u];}return z;`;
+  }
+  if(method.kind==='ndf'){
+    const q=method.order,harmonic=Array.from({length:q},(_,i)=>Array.from({length:i+1},(_,j)=>1/(j+1)).reduce((a,b)=>a+b,0));
+    functions=`var<private> nd:array<Vec,${q+2}>;var<private> ndStarts:array<Vec,${q}>;`+arr('ndHarmonic',harmonic)+rkFunction('ndStartup',lookup(method.starter).tableau);
+    advance=`var z=y;if(index<${q}u){ndStarts[index]=y;z=ndStartup(y,t,h);if(index==${q-1}u){var values:array<Vec,${q+1}>;values[0]=z;for(var i=0u;i<${q}u;i++){values[i+1u]=ndStarts[${q-1}u-i];}for(var k=0u;k<${q}u;k++){for(var i=0u;i<${q}u-k;i++){values[i]=vadd(values[i],values[i+1u],-1.0);}nd[k]=values[0];}}}else{var prediction=y;var phi=Vec();for(var i=0u;i<${q}u;i++){prediction=vadd(prediction,nd[i],1.0);phi=vadd(phi,nd[i],ndHarmonic[i]);}let known=vadd(prediction,phi,-${f(method.beta)});z=implicit(known,prediction,t+h,h*${f(method.beta)},0u);let correction=vadd(z,prediction,-1.0);nd[${q+1}u]=vadd(correction,nd[${q}u],-1.0);nd[${q}u]=correction;for(var rev=0u;rev<${q}u;rev++){let i=${q-1}u-rev;nd[i]=vadd(nd[i],nd[i+1u],1.0);}}let endpoint=rhs(t+h,z,0u);return z;`;
+  }
   if(method.kind==='recurrence'){const fam=method.identifier.replace('stabilized_',''),S=config.stages??9,data=catalog.recurrences[fam]?.[S];if(!data)throw Error('Unsupported recurrence stage count');functions=arr('rmu',data.mu)+arr('rnu',data.nu)+arr('rmt',data.mtilde)+arr('rgt',data.gtilde)+arr('rc',data.c);advance=`let f0=rhs(t,y,0u);var prev=y;var z=vadd(y,f0,h*rmt[1]);for(var j=2u;j<=${S}u;j++){let rate=rhs(t+h*rc[j-1u],z,0u);var next:Vec;for(var i=0u;i<N;i++){next[i]=y[i]+rmu[j]*(z[i]-y[i])+rnu[j]*(prev[i]-y[i])+h*(rmt[j]*rate[i]+rgt[j]*f0[i]);}prev=z;z=next;}return z;`;}
   if(['history','imex-history'].includes(method.kind)){
     const id=method.identifier,q=method.order,AB={1:[1],2:[1.5,-.5],3:[23/12,-16/12,5/12],4:[55/24,-59/24,37/24,-9/24],5:[1901/720,-2774/720,2616/720,-1274/720,251/720]},AM={2:[.5,.5],3:[5/12,8/12,-1/12],4:[9/24,19/24,-5/24,1/24],5:[251/720,646/720,-264/720,106/720,-19/720]},BDF={1:[[1],1],2:[[4/3,-1/3],2/3],3:[[18/11,-9/11,2/11],6/11],4:[[48/25,-36/25,16/25,-3/25],12/25],5:[[300/137,-300/137,200/137,-75/137,12/137],60/137]};
