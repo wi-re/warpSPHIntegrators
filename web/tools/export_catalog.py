@@ -4,7 +4,7 @@ No rounded/transcribed method data lives in the browser implementation. Output i
 stable and --check detects source drift. This does not modify the Python catalog.
 """
 from pathlib import Path
-import sys, json, dataclasses, argparse
+import sys, json, dataclasses, argparse, math
 import numpy as np
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'src'))
@@ -125,6 +125,26 @@ out['portGaps']=[
 text=json.dumps(clean(out),indent=None,separators=(',',':'),allow_nan=False)+'\n'
 path=ROOT/'web/src/catalog.json'
 if '--check' in sys.argv:
-    if not path.exists() or path.read_text()!=text:raise SystemExit('Browser catalog is stale; run web/tools/export_catalog.py')
+    if not path.exists():raise SystemExit('Browser catalog is missing; run web/tools/export_catalog.py')
+    def difference(saved,current,path='$'):
+        # Equivalent source algebra can differ by a handful of binary ULPs
+        # across Python/NumPy/libm builds; do not require identical JSON bytes.
+        if isinstance(saved,(int,float)) and isinstance(current,(int,float)):
+            if isinstance(saved,int) and isinstance(current,int):return None if saved==current else (path,saved,current)
+            return None if abs(saved-current)<=8*max(math.ulp(saved),math.ulp(current)) else (path,saved,current)
+        if type(saved) is not type(current):return (path,saved,current)
+        if isinstance(saved,dict):
+            if saved.keys()!=current.keys():return (path+' keys',list(saved),list(current))
+            pairs=((path+'.'+str(key),saved[key],value) for key,value in current.items())
+        elif isinstance(saved,list):
+            if len(saved)!=len(current):return (path+' length',len(saved),len(current))
+            pairs=((path+'['+str(i)+']',a,b) for i,(a,b) in enumerate(zip(saved,current)))
+        else:return None if saved==current else (path,saved,current)
+        for key,a,b in pairs:
+            mismatch=difference(a,b,key)
+            if mismatch:return mismatch
+        return None
+    mismatch=difference(json.loads(path.read_text()),json.loads(text))
+    if mismatch:raise SystemExit(f'Browser catalog is stale at {mismatch[0]}: saved={mismatch[1]!r}, source={mismatch[2]!r}; run web/tools/export_catalog.py')
 else:path.write_text(text)
 print(f'{len(out["schemes"])} browser configurations, {out["summary"]["scheme_count"]} registered schemes')
