@@ -113,3 +113,11 @@ Browser inspection confirms all four History methods demo results complete and
 the coverage page exposes the new families without classifying variable-order
 controllers or general lifecycle contracts as implemented. Production docs build
 and clean-checkout Python coefficient/reference checks pass.
+
+The first expansion deployment exposed cross-runner collocation regeneration
+noise: a tableau entry differed by 1.3e-17 between local and CI numerical builds.
+The coefficient consistency gate now compares structure and nonnumeric metadata
+exactly, with numeric tolerance 64 eps × max(1, |coefficient|); it reports the first
+differing path. Manual checks verify that boolean/shape changes and substantive
+coefficient drift still fail. Python trajectory fixtures remain independently
+checked at their existing absolute tolerances.

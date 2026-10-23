@@ -127,11 +127,12 @@ path=ROOT/'web/src/catalog.json'
 if '--check' in sys.argv:
     if not path.exists():raise SystemExit('Browser catalog is missing; run web/tools/export_catalog.py')
     def difference(saved,current,path='$'):
-        # Equivalent source algebra can differ by a handful of binary ULPs
-        # across Python/NumPy/libm builds; do not require identical JSON bytes.
+        # Generated collocation roots/polynomials vary slightly across BLAS/libm
+        # builds. Bound normwise roundoff; retain exact schema and metadata.
+        if isinstance(saved,bool) or isinstance(current,bool):return None if type(saved) is type(current) and saved==current else (path,saved,current)
         if isinstance(saved,(int,float)) and isinstance(current,(int,float)):
             if isinstance(saved,int) and isinstance(current,int):return None if saved==current else (path,saved,current)
-            return None if abs(saved-current)<=8*max(math.ulp(saved),math.ulp(current)) else (path,saved,current)
+            return None if abs(saved-current)<=64*sys.float_info.epsilon*max(1.,abs(saved),abs(current)) else (path,saved,current)
         if type(saved) is not type(current):return (path,saved,current)
         if isinstance(saved,dict):
             if saved.keys()!=current.keys():return (path+' keys',list(saved),list(current))

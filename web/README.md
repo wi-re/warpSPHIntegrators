@@ -125,7 +125,9 @@ python web/tools/export_reference.py
 The exporter reads the registered definitions and parameterized coefficient
 factories directly. Orthogonal source recurrences are expanded using formal
 independent RHS vectors. No method is replaced by a different scheme under its
-original name. The JSON is deterministic and the check detects source drift.
+original name. The check detects source drift with exact structure/metadata and a numeric
+roundoff allowance of 64 machine epsilons scaled by max(1, |coefficient|).
+This accommodates collocation root/polynomial differences across BLAS/libm builds.
 The reference exporter executes Python drivers, including warm history, to create
 560 independent fixtures plus 1,872 accepted NDF/IRKN endpoints covering fixed
 steps, resampling, rapid caller changes and explicit restarts.
