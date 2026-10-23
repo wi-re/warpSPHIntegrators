@@ -4,7 +4,7 @@ import {createMethodPicker} from './method-picker.js';
 import {baseConfig,presets,problemSetups} from './experiments.js';
 import {setPlotHighlight,plot,emptyPlot,stabilityPlot,fieldPlot,bars,colors,number} from './plots.js';
 const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
-const catalog=await fetch('./src/catalog.json').then(r=>{if(!r.ok)throw Error('Coefficient catalog unavailable');return r.json();});
+const catalog=await fetch(new URL('./catalog.json',import.meta.url)).then(r=>{if(!r.ok)throw Error('Coefficient catalog unavailable');return r.json();});
 let state={problem:'oscillator',params:{...defaults},methods:[...presets.smooth.methods],mode:'trajectory',config:{...baseConfig}};
 let highlightedMethod=null;
 function markup(element,value){if(element._markup!==value){element.innerHTML=value;element._markup=value;}}

@@ -16,7 +16,9 @@ npm run check
 npm run build
 ```
 
-`dist/` is a portable static site. Serve it over HTTPS or localhost; browsers
+`dist/` is a portable static site with content-versioned assets. The entry module,
+its imports, the computation worker and coefficient catalog share a version
+directory, so GitHub Pages caches cannot mix deployments. Serve it over HTTPS or localhost; browsers
 require a secure context for WebGPU. If an adapter is unavailable or a GPU run fails, Auto retries with the
 browser's float64 CPU engine and reports why. Explicit WebGPU selection preserves
 the GPU failure for inspection. For WebGPU API details, see the

@@ -2,7 +2,7 @@ import {makeProblem,compatible,norm} from './problems.js';
 import {solveCPU,convergenceCPU,geometryCPU,sensitivityCPU} from './engine.js';
 import {GPUEngine,gpuSupport} from './gpu.js';
 import {stabilityMap} from './stability.js';
-const catalogPromise=fetch('./catalog.json').then(r=>{if(!r.ok)throw Error('Unable to load coefficient catalog');return r.json();});
+const catalogPromise=fetch(new URL('./catalog.json',import.meta.url)).then(r=>{if(!r.ok)throw Error('Unable to load coefficient catalog');return r.json();});
 let gpuPromise;
 self.onmessage=async({data:task})=>{
  try{
