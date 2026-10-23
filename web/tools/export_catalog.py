@@ -116,6 +116,18 @@ for order in (3,4):
     add(f'irkn{order}',f'Improved Nyström {order} (corrected startup)','ImprovedNystrom',order,
         'irkn',state_kind='second_order',requires_separable=True,history_length=1)
 out['exponentialPrograms']=clean(PROGRAMS)
+# Driver-native weights for the coefficient inspector (not ordinary RK tableaus).
+from warpSPHIntegrators.drivers.history.adams import getABCoefficients, getAMCoefficients
+from warpSPHIntegrators.drivers.history.bdf import getBDFCoefficients
+from warpSPHIntegrators.drivers.implicit import rosenbrock as ros3p_source
+out['driverCoefficients']={
+    'AB':{q:clean(getABCoefficients(q)) for q in range(1,6)},
+    'AM':{q:clean(getAMCoefficients(q)) for q in range(1,6)},
+    'BDF':{q:clean(getBDFCoefficients(q)) for q in range(1,6)},
+    'ROS3P':dict(gamma=ros3p_source._GAMMA,
+        A=[[0,0,0],[1,0,0],[1,0,0]],
+        G=[[0,0,0],[ros3p_source._G21,0,0],[ros3p_source._G31,ros3p_source._G32,0]],
+        c=[0,1,1],d=clean(ros3p_source._GAMMA_ROW),b=clean(ros3p_source._B),btilde=[1/3,-1/3,0])}
 out['portGaps']=[
  {'family':'AdaptiveAdams / VariableAdams','reason':'Variable-step and variable-order history controllers are not ported. Fixed AB/ABM orders 2–5 are available.'},
  {'family':'AdaptiveNDF','reason':'Fixed-target NDF1–5 with variable-h differences and defect control are available. The separate variable-order AdaptiveNDF controller is not yet ported.'},

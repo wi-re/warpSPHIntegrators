@@ -28,6 +28,28 @@ The documentation site's `npm run build` also copies the app into its
 `laboratory/` route. The generated documentation assets are ignored; edit this
 `web/` source directory.
 
+## Coefficients and CFL controls
+
+The right inspector opens a coefficient viewer for every browser configuration.
+It shows full-precision RK/IMEX/Nyström/Rosenbrock tableaus, history weights,
+splitting maps, stabilized recurrences and exponential operator programs in their
+native conventions. Copy or download a self-contained JSON record with method
+metadata, notation, provenance and the active stage count or structural parameters.
+The open viewer keeps its own snapshot even if the inspected method changes.
+
+For spatial problems, the left time-step control also offers an editable transport
+CFL, initial Burgers CFL, acoustic CFL or diffusion ratio. Editing either value
+updates the other. ODEs explicitly report that CFL is undefined. Arrow buttons and
+keyboard arrows use increments of 1–10% of the current magnitude instead of one
+whole time unit (for example, 0.0000125 → 0.0000135).
+
+The inspector separates documented SSP guarantees from approximate all-stage
+convexity boundaries measured on the library's upwind model. Unknown coefficients
+remain unknown. A known SSP constant and a valid forward-Euler foundation give
+h ≤ C hFE and the requested h/bound. Acoustic and central viscous Burgers ratios
+are descriptive; they do not establish an SSP bound. Burgers CFL uses the initial
+wave speed; adaptive runs show the requested initial step here.
+
 ## Experiments
 
 - **Trajectory:** compare up to six methods, inspect time histories, phase/orbit
